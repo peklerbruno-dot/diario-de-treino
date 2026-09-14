@@ -1,0 +1,261 @@
+// Plataforma de precificação de machanot — Chazit Hanoar
+// Todos os campos *Cents são inteiros em centavos de real. Nunca Float (§2).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Machane {
+  id         String      @id @default(cuid())
+  nome       String // "Machané Kaitz 2026"
+  tipo       TipoMachane
+  ano        Int
+  dataInicio DateTime?
+  dataFim    DateTime?
+
+  diariaCents       Int // parâmetro-raiz
+  diariaTabelaCents Int? // valor de tabela antes da negociação
+  diariaObservacao  String? // "180 com 10% de desconto — acordado com X em jan/26"
+
+  diasGrandes  Int @default(6)
+  diasPequenos Int @default(4)
+
+  pesoOverride      Float? // null = usa o peso calculado
+  pesoJustificativa String? // obrigatório se pesoOverride != null
+  pesoOverridePor   String?
+  pesoOverrideEm    DateTime?
+
+  /// Total real arrecadado dos madrichim (devido − bolsa), quando a coordenação
+  /// manda usar o cadastro nominal em vez da soma das contribuições (tela 4).
+  receitaMadrichimRealCents Int?
+
+  status StatusMachane @default(RASCUNHO)
+
+  categorias    Categoria[]
+  gastos        GastoFixo[]
+  politica      PoliticaPreco?
+  madrichim     Madrich[]
+  alteracoes    RegistroAlteracao[]
+  duplicadaDeId String?
+  duplicadaDe   Machane?            @relation("Duplicacao", fields: [duplicadaDeId], references: [id])
+  derivadas     Machane[]           @relation("Duplicacao")
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@index([ano, tipo])
+}
+
+enum TipoMachane {
+  KAITZ
+  CHOREF
+}
+
+enum StatusMachane {
+  RASCUNHO
+  EM_REVISAO
+  PUBLICADA
+  ENCERRADA
+}
+
+model Categoria {
+  id        String  @id @default(cuid())
+  machaneId String
+  machane   Machane @relation(fields: [machaneId], references: [id], onDelete: Cascade)
+
+  nome       String // "madrichim grandes", "seguranca 6 dias"
+  papel      Papel
+  turma      Turma
+  dias       Int // herda de machane.diasGrandes/Pequenos, sobrescrevível
+  quantidade Int
+
+  geraHospedagem    Boolean @default(true) // ver §6 — armadilha de dupla contagem
+  contribuicaoCents Int     @default(0) // 0 = não paga nada (equipe, prestadores)
+
+  ordem Int @default(0)
+
+  @@index([machaneId])
+}
+
+enum Papel {
+  CHANICH
+  MADRICH
+  PT
+  EQUIPE
+  PRESTADOR
+}
+
+enum Turma {
+  GRANDES
+  PEQUENOS
+}
+
+model GastoFixo {
+  id        String  @id @default(cuid())
+  machaneId String
+  machane   Machane @relation(fields: [machaneId], references: [id], onDelete: Cascade)
+
+  descricao String
+  tipo      TipoGasto
+  categoria CategoriaGasto
+
+  valorCents Int // significado depende de `tipo` — ver §5
+  pessoas    Int? // para POR_DIARIA e CACHE_DIARIO
+  dias       Int? // para POR_DIARIA e CACHE_DIARIO
+
+  observacao String // OBRIGATÓRIO. de onde veio este número?
+  revisado   Boolean @default(false) // false quando herdado por duplicação
+  ordem      Int     @default(0)
+
+  @@index([machaneId])
+}
+
+enum TipoGasto {
+  VALOR_FECHADO // valorCents é o total
+  POR_PESSOA // valorCents × total de pessoas da machané
+  POR_DIARIA // diária da machané × pessoas × dias
+  CACHE_DIARIO // valorCents × pessoas × dias (cachê próprio, não a diária do local)
+}
+
+enum CategoriaGasto {
+  TRANSPORTE
+  ALIMENTACAO
+  SAUDE
+  SEGURANCA
+  MATERIAL
+  BOLSA
+  ESTRUTURA
+  OUTROS
+}
+
+model PoliticaPreco {
+  id        String  @id @default(cuid())
+  machaneId String  @unique
+  machane   Machane @relation(fields: [machaneId], references: [id], onDelete: Cascade)
+
+  metodo MetodoPreco
+
+  // método ADITIVO: valores em centavos
+  margemBaseGrandesCents    Int?
+  margemBasePequenosCents   Int?
+  acrescimoNaoSocioCents    Int?
+  descontoSegundoFilhoCents Int?
+
+  // método MULTIPLICATIVO: frações (0.03 = 3%)
+  margemBasePct           Float?
+  acrescimoNaoSocioPct    Float?
+  descontoSegundoFilhoPct Float?
+
+  /// Desconto de 2º filho por turma. Vazio = usa o desconto único acima.
+  /// Existe para reproduzir a grade histórica (−R$ 130 grandes, −R$ 100 pequenos).
+  /// Ver docs/DIVERGENCIAS.md.
+  descontoSegundoFilhoGrandesCents  Int?
+  descontoSegundoFilhoPequenosCents Int?
+  descontoSegundoFilhoGrandesPct    Float?
+  descontoSegundoFilhoPequenosPct   Float?
+
+  // comuns
+  acrescimoSegundaLevaCents Int            @default(10000) // R$ 100
+  superavitAlvoCents        Int            @default(0) // margem de segurança somada ao rateio
+  arredondamento            Arredondamento @default(NENHUM)
+}
+
+enum MetodoPreco {
+  ADITIVO
+  MULTIPLICATIVO
+}
+
+enum Arredondamento {
+  NENHUM
+  DEZ
+  CINQUENTA
+  CEM
+}
+
+model Madrich {
+  id        String  @id @default(cuid())
+  machaneId String
+  machane   Machane @relation(fields: [machaneId], references: [id], onDelete: Cascade)
+
+  nome     String
+  telefone String?
+  kvutza   String?
+  turma    Turma
+
+  valorDevidoCents Int
+  bolsaCents       Int                @default(0)
+  parcelas         Int                @default(1)
+  pagamentos       PagamentoMadrich[]
+
+  @@index([machaneId])
+}
+
+model PagamentoMadrich {
+  id         String   @id @default(cuid())
+  madrichId  String
+  madrich    Madrich  @relation(fields: [madrichId], references: [id], onDelete: Cascade)
+  valorCents Int
+  data       DateTime @default(now())
+  observacao String?
+
+  @@index([madrichId])
+}
+
+// ===== Acesso e auditoria (§11) =====
+
+model Usuario {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  nome           String?
+  criadoEm       DateTime  @default(now())
+  ultimoAcessoEm DateTime?
+
+  tokens TokenAcesso[]
+}
+
+/// Link mágico de entrada. Token guardado como hash; uso único.
+model TokenAcesso {
+  id        String    @id @default(cuid())
+  usuarioId String
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiraEm  DateTime
+  usadoEm   DateTime?
+  criadoEm  DateTime  @default(now())
+
+  @@index([usuarioId])
+}
+
+/// Quem mexeu em peso, preço e gasto — e o que o número era antes.
+model RegistroAlteracao {
+  id        String  @id @default(cuid())
+  machaneId String
+  machane   Machane @relation(fields: [machaneId], references: [id], onDelete: Cascade)
+
+  email         String
+  alvo          AlvoAlteracao
+  descricao     String
+  valorAntes    String?
+  valorDepois   String?
+  justificativa String?
+  em            DateTime      @default(now())
+
+  @@index([machaneId, em])
+}
+
+enum AlvoAlteracao {
+  MACHANE
+  PESO
+  POLITICA
+  CATEGORIA
+  GASTO
+  MADRICH
+  PAGAMENTO
+  STATUS
+  DUPLICACAO
+}

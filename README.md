@@ -120,3 +120,11 @@ continua funcionando sem internet.
 
 Para pegar uma versão nova depois de um deploy: abra o app e feche; ele baixa a atualização em
 segundo plano e ela aparece na abertura seguinte.
+
+---
+
+## Outro projeto neste repositório
+
+`machanot/` guarda a plataforma de precificação de machanot da Chazit Hanoar —
+um app Next.js independente deste diário, com o seu próprio `package.json`.
+Veja `machanot/README.md`.
