@@ -36,7 +36,7 @@ export default defineConfig({
       },
       workbox: {
         // Tudo que o app precisa vai para o cache na instalação: funciona offline.
-        globPatterns: ["**/*.{js,css,html,png,svg,woff,woff2,json}"],
+        globPatterns: ["**/*.{js,css,html,png,webp,svg,woff,woff2,json}"],
         navigateFallback: "/index.html",
         cleanupOutdatedCaches: true,
       },

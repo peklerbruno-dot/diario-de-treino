@@ -2,7 +2,16 @@ import { useState } from "react";
 import { db } from "../dados/bd.js";
 import { MOD, GRUPOS, CATEGORIAS } from "../dados/constantes.js";
 import { fmt, ultimaSerieDe } from "../dados/calculos.js";
-import { Pict } from "./Pict.jsx";
+import Figura from "./Figura.jsx";
+import { fotosDe } from "../dados/fotos.js";
+
+/** O id do vídeo, quando o link é do YouTube — aí dá para embutir o tocador. */
+function idDoYouTube(url) {
+  const m = String(url || "").match(
+    /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/
+  );
+  return m ? m[1] : null;
+}
 
 /**
  * Ficha do exercício: pictograma, últimas cargas e as suas anotações.
@@ -22,6 +31,9 @@ export default function Ficha({ exercicio, sessoes, fechar, gerenciar, avisar })
     ultimas.push(u);
     antes = u.data;
   }
+
+  const fotos = fotosDe(e.id);
+  const video = idDoYouTube(e.video);
 
   // Um exercício já usado não pode sumir: os treinos antigos ficariam sem nome.
   const usos = sessoes.filter((s) => (s.itens || []).some((i) => i.exId === e.id)).length;
@@ -47,7 +59,7 @@ export default function Ficha({ exercicio, sessoes, fechar, gerenciar, avisar })
     <div className="fundo" onClick={fechar}>
       <div className="folha" onClick={(ev) => ev.stopPropagation()}>
         <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-          <Pict cat={e.cat} cor={MOD[e.mod].cor} tam={44} />
+          <Figura exercicio={e} cor={MOD[e.mod].cor} tam={44} />
           <div style={{ flex: 1 }}>
             <div className="sub" style={{ color: MOD[e.mod].cor, fontStyle: "normal", marginTop: 0 }}>
               {e.cat}
@@ -57,10 +69,42 @@ export default function Ficha({ exercicio, sessoes, fechar, gerenciar, avisar })
           </div>
         </div>
 
-        <div className="video">
-          <div className="play" />
-          <small>Foto e vídeo da execução chegam na etapa 6</small>
-        </div>
+        {fotos.length > 0 && (
+          <div className="fotos">
+            {fotos.map((src, k) => (
+              <figure key={src}>
+                <img src={src} alt={`${e.nome} — ${k === 0 ? "início" : "fim"} do movimento`} loading="lazy" />
+                <figcaption>{k === 0 ? "início" : "fim"}</figcaption>
+              </figure>
+            ))}
+          </div>
+        )}
+
+        <h2>Vídeo</h2>
+        {video ? (
+          <iframe
+            className="tocador"
+            src={`https://www.youtube-nocookie.com/embed/${video}`}
+            title={`Vídeo de ${e.nome}`}
+            allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            loading="lazy"
+          />
+        ) : e.video ? (
+          <a className="btn q" href={e.video} target="_blank" rel="noreferrer" style={{ textAlign: "center" }}>
+            Ver vídeo
+          </a>
+        ) : null}
+        <input
+          type="url"
+          inputMode="url"
+          autoCapitalize="off"
+          autoCorrect="off"
+          placeholder="Cole o link do vídeo (YouTube ou outro)"
+          value={e.video || ""}
+          onChange={(ev) => db.exercicios.update(e.id, { video: ev.target.value.trim() })}
+          style={{ marginTop: 8 }}
+        />
 
         {e.mod === "musc" && (
           <>
@@ -151,6 +195,12 @@ export default function Ficha({ exercicio, sessoes, fechar, gerenciar, avisar })
             </button>
             <button className="btn q" onClick={() => setEditando(null)}>Cancelar</button>
           </>
+        )}
+
+        {fotos.length > 0 && (
+          <div className="credito">
+            Fotos de execução do acervo público free-exercise-db (github.com/yuhonas/free-exercise-db).
+          </div>
         )}
 
         {!editando && (

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { db } from "../dados/bd.js";
 import { MOD, ORDEM, norm, agoraISO } from "../dados/constantes.js";
-import { Pict } from "../componentes/Pict.jsx";
+import Figura from "../componentes/Figura.jsx";
 
 export default function Treinos({ exercicios, treinos, ex, avisar, Excluir, limparConfirmacao }) {
   const [novoTr, setNovoTr] = useState(null);
@@ -160,7 +160,7 @@ export default function Treinos({ exercicios, treinos, ex, avisar, Excluir, limp
                       })
                     }
                   />
-                  <Pict cat={e.cat} cor={MOD[e.mod].cor} tam={20} />
+                  <Figura exercicio={e} cor={MOD[e.mod].cor} tam={22} />
                   <span style={{ flex: 1, minWidth: 0 }}>
                     {e.nome}
                     <span style={{ display: "block", fontSize: 12, color: "var(--cinza)", fontStyle: "italic" }}>{e.cat}</span>

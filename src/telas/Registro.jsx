@@ -1,6 +1,6 @@
 import { MOD } from "../dados/constantes.js";
 import { fmt, ultimaSerieDe } from "../dados/calculos.js";
-import { Pict } from "../componentes/Pict.jsx";
+import Figura from "../componentes/Figura.jsx";
 
 export default function Registro({ ativa, setAtiva, sessoes, ex, setDetalhe, salvar, Excluir, limparConfirmacao }) {
   const ultimaSerie = (exId, antesDe) => ultimaSerieDe(sessoes, exId, antesDe);
@@ -48,7 +48,7 @@ export default function Registro({ ativa, setAtiva, sessoes, ex, setDetalhe, sal
             <div className="exer" key={ii}>
               <div className="cabx">
                 <button className="cab" onClick={() => !e.novo && setDetalhe(e)}>
-                  <Pict cat={e.cat} cor={MOD.musc.cor} tam={30} />
+                  <Figura exercicio={e} cor={MOD.musc.cor} tam={30} />
                   <span style={{ flex: 1 }}>
                     <h3>{e.nome}</h3>
                     <span className="ult">

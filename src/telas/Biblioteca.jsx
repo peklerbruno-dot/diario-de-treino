@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { db } from "../dados/bd.js";
 import { MOD, ORDEM, GRUPOS, norm, agoraISO } from "../dados/constantes.js";
-import { Pict } from "../componentes/Pict.jsx";
+import Figura from "../componentes/Figura.jsx";
 
 export default function Biblioteca({ exercicios, setDetalhe, avisar }) {
   const [bib, setBib] = useState("musc");
@@ -54,7 +54,7 @@ export default function Biblioteca({ exercicios, setDetalhe, avisar }) {
               <h2 className="grupo" style={{ "--c": MOD[bib].cor, borderBottomColor: MOD[bib].cor, marginTop: 18 }}>{c}</h2>
               {doGrupo.map((e) => (
                 <button key={e.id} className="lin" onClick={() => setDetalhe(e, true)}>
-                  <Pict cat={e.cat} cor={MOD[bib].cor} tam={26} />
+                  <Figura exercicio={e} cor={MOD[bib].cor} tam={26} />
                   <span className="t">{e.nome}</span>
                   <span className="ver">ver</span>
                 </button>
@@ -70,7 +70,7 @@ export default function Biblioteca({ exercicios, setDetalhe, avisar }) {
             <div className="sub">Fora das listas, mas os treinos antigos continuam mostrando o nome.</div>
             {arquivados.map((e) => (
               <button key={e.id} className="lin" onClick={() => setDetalhe(e, true)}>
-                <Pict cat={e.cat} cor="#BDB6A6" tam={26} />
+                <Figura exercicio={e} cor="#BDB6A6" tam={26} />
                 <span className="t">{e.nome}</span>
                 <span className="ver">ver</span>
               </button>

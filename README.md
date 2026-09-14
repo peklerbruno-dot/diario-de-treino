@@ -3,10 +3,10 @@
 App pessoal de treinos (musculação, pilates e natação) para iPhone. PWA em React + Vite,
 sem servidor e sem login: os dados ficam no aparelho.
 
-Etapas 1 a 5 de [`BRIEFING-diario-de-treino.md`](BRIEFING-diario-de-treino.md): projeto, PWA
+Etapas 1 a 6 de [`BRIEFING-diario-de-treino.md`](BRIEFING-diario-de-treino.md): projeto, PWA
 instalável, banco de dados no aparelho e as seis telas do protótipo ligadas a ele, incluindo os
 refinamentos que o briefing marca como "no app final" para essas telas, e o registro por texto
-livre, PDF, planilha e backup. O protótipo aprovado está em `diario-de-treino-v5.jsx`.
+livre, PDF, planilha, backup e as fotos de execução. O protótipo aprovado está em `diario-de-treino-v5.jsx`.
 
 ## Escrever o treino em vez de preencher
 
@@ -36,12 +36,27 @@ Arquivos, mandar por e-mail, abrir no Numbers):
 - **Backup JSON** — as quatro coleções inteiras. Restaurar mostra o que há no arquivo e só troca
   depois de confirmado. Vale o hábito: o Safari apaga dados de sites pouco usados.
 
+## Fotos dos exercícios
+
+As 134 fotos em `public/exercicios/` vêm do [free-exercise-db](https://github.com/yuhonas/free-exercise-db),
+que está sob a Unlicense (domínio público) — dataset e imagens. São dois quadros por exercício, o
+início e o fim do movimento, reduzidos a 420 px de largura em WebP (1,7 MB no total) e guardados no
+cache do app, para a ficha funcionar sem internet.
+
+`scripts/mapa-imagens.json` liga cada um dos 67 exercícios de musculação ao nome correspondente no
+acervo, conferido um a um. `node scripts/baixar-imagens.mjs` baixa, redimensiona e regrava
+`src/dados/fotos.js`; só é preciso rodar de novo se o mapa mudar. Exercícios sem foto — os que você
+criar — continuam com o pictograma do protótipo.
+
+O vídeo é um link por exercício, colado na ficha: se for do YouTube, o tocador aparece embutido;
+qualquer outro link vira um botão "Ver vídeo".
+
 ## Como o código está organizado
 
     src/App.jsx          navegação, sessão em registro, aviso e ficha do exercício
     src/telas/           uma tela por arquivo: Inicio, Registro, Treinos, Biblioteca,
                          Historico, Exportar
-    src/componentes/     Pict (pictograma), Icone, Ficha do exercício
+    src/componentes/     Figura (foto ou pictograma), Pict, Icone, Ficha do exercício
     src/dados/           bd.js (Dexie), biblioteca.js, constantes.js, calculos.js,
                          interpretar.js (texto livre → registro),
                          relatorio.js (PDF, planilha, backup)
