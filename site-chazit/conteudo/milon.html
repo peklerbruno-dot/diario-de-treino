@@ -1,0 +1,53 @@
+<section class="pagina-topo">
+  <div class="envoltorio">
+    <span class="sobrancelha">Milon · מילון</span>
+    <h1>O dicionário da Chazit</h1>
+    <p>São {{total_verbetes}} verbetes de hebraico e os termos que a gente usa todo sábado sem
+       perceber. Digite em português ou na transliteração — a busca acha no meio da palavra e ignora
+       acentos. Adaptado do site da Chazit Porto Alegre.</p>
+  </div>
+</section>
+
+<section class="busca-milon">
+  <div class="envoltorio">
+    <div class="campo-busca">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <label for="busca" class="pular">Buscar no dicionário</label>
+      <input id="busca" type="search" placeholder="peulá, amigo, machané, shalom…" autocomplete="off" spellcheck="false">
+      <button id="limpar-busca" type="button">Limpar</button>
+    </div>
+    <p class="contagem" id="contagem" role="status"
+       data-inicial="{{total_verbetes}} verbetes de hebraico e {{total_termos}} termos da tnuá.">{{total_verbetes}} verbetes de hebraico e {{total_termos}} termos da tnuá.</p>
+  </div>
+</section>
+
+<section class="secao-curta bloco-milon" id="bloco-termos">
+  <div class="envoltorio">
+    <h2 style="font-size:1.3rem">Termos da tnuá</h2>
+    <p style="color:var(--suave)">As palavras que aparecem no mifkad, na machané e nos avisos de
+       sábado. Os nomes das kvutzot e das vaadot estão no
+       <a href="organograma.html">organograma</a>.</p>
+    <div class="verbetes" style="margin-top:1.2rem">
+      {{termos}}
+    </div>
+  </div>
+</section>
+
+<section class="secao-curta bloco-milon" id="bloco-verbetes">
+  <div class="envoltorio">
+    <h2 style="font-size:1.3rem">Português – hebraico</h2>
+    <nav class="alfabeto" aria-label="Ir para a letra">{{alfabeto}}</nav>
+    <div class="verbetes">
+      {{verbetes}}
+    </div>
+
+  </div>
+</section>
+
+<section class="secao-curta">
+  <div class="envoltorio">
+    <p class="nota" style="margin-top:0">O Milon foi adaptado do site da Chazit Porto Alegre e é mantido pela vaadat
+       Chibur. Achou um erro de grafia ou de transliteração?
+       <a href="contato.html">Conte para a gente</a> que a gente corrige.</p>
+  </div>
+</section>

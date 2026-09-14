@@ -1,0 +1,110 @@
+{
+  "site": "https://chazithanoarsp.org.br",
+  "menu": [
+    { "rotulo": "Início", "url": "index.html" },
+    {
+      "rotulo": "O movimento",
+      "itens": [
+        { "rotulo": "Quem somos", "url": "quem-somos.html" },
+        { "rotulo": "História", "url": "historia.html" },
+        { "rotulo": "Missão & Visão", "url": "missao-visao.html" },
+        { "rotulo": "Ideologia", "url": "ideologia.html" },
+        { "rotulo": "Concepção Educativa", "url": "concepcao-educativa.html" },
+        { "rotulo": "Pirkei Hapeilim", "url": "pirkei-hapeilim.html" },
+        { "rotulo": "Organograma", "url": "organograma.html" },
+        { "rotulo": "Mishná", "url": "mishna.html" }
+      ]
+    },
+    { "rotulo": "Milon", "url": "milon.html" },
+    { "rotulo": "Dúvidas", "url": "faq.html" },
+    { "rotulo": "Amigos da Chazit", "url": "amigos-da-chazit.html" },
+    { "rotulo": "Contato", "url": "contato.html", "destaque": true }
+  ],
+  "paginas": [
+    {
+      "arquivo": "inicio.html",
+      "url": "index.html",
+      "aba": "Chazit Hanoar São Paulo — movimento juvenil judaico sionista",
+      "descricao": "Movimento juvenil judaico, sionista e educativo em São Paulo. Sábados das 14h às 18h, do 1º ano do fundamental ao fim do ensino médio, com educação não formal do jovem pelo jovem."
+    },
+    {
+      "arquivo": "quem-somos.html",
+      "url": "quem-somos.html",
+      "aba": "Quem somos — Chazit Hanoar São Paulo",
+      "descricao": "Somos um movimento juvenil, judaico, sionista, educativo, apartidário e continental, que educa pela educação não formal do jovem pelo jovem."
+    },
+    {
+      "arquivo": "historia.html",
+      "url": "historia.html",
+      "aba": "História — Chazit Hanoar São Paulo",
+      "descricao": "De 1959 até hoje: do Setor “B” da CIP ao movimento continental com snifim em São Paulo, Rio, Porto Alegre e Montevidéu."
+    },
+    {
+      "arquivo": "missao-visao.html",
+      "url": "missao-visao.html",
+      "aba": "Missão & Visão — Chazit Hanoar São Paulo",
+      "descricao": "A missão e a visão da Chazit Hanoar, aprovadas no Pemach de Porto Alegre, em outubro de 2009."
+    },
+    {
+      "arquivo": "ideologia.html",
+      "url": "ideologia.html",
+      "aba": "Ideologia — Chazit Hanoar São Paulo",
+      "descricao": "A Plataforma Ideológica da Chazit Hanoar Hadrom Americait: juvenil, judaísmo, sionismo, educação, apartidarismo, continentalidade e militância."
+    },
+    {
+      "arquivo": "concepcao-educativa.html",
+      "url": "concepcao-educativa.html",
+      "aba": "Concepção Educativa — Chazit Hanoar São Paulo",
+      "descricao": "A pirâmide educativa — pensar, sentir e fazer — e os seis conceitos que orientam o trabalho dos madrichim: coerência, exemplo, identidade, diálogo, conteúdo e grupo."
+    },
+    {
+      "arquivo": "pirkei-hapeilim.html",
+      "url": "pirkei-hapeilim.html",
+      "aba": "Pirkei Hapeilim — Chazit Hanoar São Paulo",
+      "descricao": "Liberdade, consciência ambiental, respeito e justiça social: os valores escritos pelos peilim, com os questionamentos e as práticas que vêm junto."
+    },
+    {
+      "arquivo": "organograma.html",
+      "url": "organograma.html",
+      "aba": "Organograma — Chazit Hanoar São Paulo",
+      "descricao": "Como a Chazit São Paulo se organiza: Hanalá, Hanagá, os fóruns Chinuch e Mazkirut, as kvutzot por idade e as vaadot."
+    },
+    {
+      "arquivo": "mishna.html",
+      "url": "mishna.html",
+      "aba": "Mishná — Chazit Hanoar São Paulo",
+      "descricao": "O documento que descreve o funcionamento continental da tnuá: símbolos, órgãos de decisão, kvutzot e eventos continentais."
+    },
+    {
+      "arquivo": "milon.html",
+      "url": "milon.html",
+      "aba": "Milon — dicionário de hebraico da Chazit",
+      "descricao": "Dicionário português–hebraico com 1.367 verbetes e os termos usados no dia a dia da tnuá. Busque por qualquer palavra, em português ou transliterada."
+    },
+    {
+      "arquivo": "faq.html",
+      "url": "faq.html",
+      "aba": "Perguntas frequentes — Chazit Hanoar São Paulo",
+      "descricao": "O que é a Chazit, o que acontece nos sábados, quem cuida dos chanichim, o que são kvutzot, vaadot e o projeto Yalla."
+    },
+    {
+      "arquivo": "amigos-da-chazit.html",
+      "url": "amigos-da-chazit.html",
+      "aba": "Amigos da Chazit — apoie o movimento",
+      "descricao": "Com uma doação anual você ajuda a pagar bolsas de machané, segurança nas atividades externas, materiais de sábado e a formação dos madrichim."
+    },
+    {
+      "arquivo": "contato.html",
+      "url": "contato.html",
+      "aba": "Contato — Chazit Hanoar São Paulo",
+      "descricao": "Telefones, e-mails e redes da Chazit Hanoar São Paulo, e os contatos dos outros snifim da tnuá."
+    },
+    {
+      "arquivo": "404.html",
+      "url": "404.html",
+      "aba": "Página não encontrada — Chazit Hanoar São Paulo",
+      "descricao": "A página que você procurava não existe mais.",
+      "fora_do_mapa": true
+    }
+  ]
+}

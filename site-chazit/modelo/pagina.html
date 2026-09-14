@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{titulo_aba}}</title>
+<meta name="description" content="{{descricao}}">
+<meta name="theme-color" content="#241a8f">
+<link rel="canonical" href="{{site}}/{{url}}">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:site_name" content="Chazit Hanoar São Paulo">
+<meta property="og:title" content="{{titulo_aba}}">
+<meta property="og:description" content="{{descricao}}">
+<meta property="og:url" content="{{site}}/{{url}}">
+<meta property="og:image" content="{{site}}/estatico/imagens/mifkad.webp">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="estatico/semel.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="estatico/imagens/semel-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700&family=Frank+Ruhl+Libre:wght@400;500&display=swap">
+<link rel="stylesheet" href="estatico/estilo.css">
+</head>
+<body>
+
+<a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+<header class="cabecalho">
+  <div class="envoltorio barra">
+    <a class="marca" href="index.html">
+      {{semel}}
+      <span>Chazit Hanoar<small>São Paulo</small></span>
+    </a>
+
+    <button class="hamburguer" type="button" aria-expanded="false" aria-controls="menu" aria-label="Abrir o menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+
+    <nav aria-label="Principal">
+      <ul class="menu" id="menu" data-aberto="nao">
+        {{menu}}
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="conteudo">
+{{conteudo}}
+</main>
+
+<footer class="rodape">
+  <div class="envoltorio">
+    <div class="colunas-rodape">
+      <div>
+        <h2>Chazit Hanoar São Paulo</h2>
+        <p>Movimento juvenil judaico, sionista, educativo, apartidário e continental.
+           Sábados, das 14h às 18h, na Casa da Juventude da CIP.</p>
+        <p class="selo-hebraico">חזית הנוער</p>
+      </div>
+      <div>
+        <h3>O movimento</h3>
+        <ul>
+          <li><a href="quem-somos.html">Quem somos</a></li>
+          <li><a href="historia.html">História</a></li>
+          <li><a href="ideologia.html">Ideologia</a></li>
+          <li><a href="organograma.html">Organograma</a></li>
+          <li><a href="mishna.html">Mishná</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Para as famílias</h3>
+        <ul>
+          <li><a href="faq.html">Perguntas frequentes</a></li>
+          <li><a href="milon.html">Milon (dicionário)</a></li>
+          <li><a href="amigos-da-chazit.html">Amigos da Chazit</a></li>
+          <li><a href="contato.html">Contato</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Fale com a gente</h3>
+        <ul>
+          <li><a href="mailto:chazit@chazit.org.br">chazit@chazit.org.br</a></li>
+          <li><a href="tel:+551128086214">(11) 2808-6214</a></li>
+          <li><a href="https://www.instagram.com/chazithanoarsp/" rel="noopener">Instagram</a></li>
+          <li><a href="https://www.facebook.com/pages/Chazit-Hanoar-S%C3%A3o-Paulo/111121728965305" rel="noopener">Facebook</a></li>
+          <li><a href="https://www.youtube.com/user/ChazitHanoar2012" rel="noopener">YouTube</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="fim-rodape">
+      <span>Chazak Ve’alê! · © {{ano}} Chazit Hanoar São Paulo</span>
+      <span>Outros snifim: Rio de Janeiro · Porto Alegre · Montevidéu</span>
+    </div>
+  </div>
+</footer>
+
+<script src="estatico/site.js" defer></script>
+</body>
+</html>

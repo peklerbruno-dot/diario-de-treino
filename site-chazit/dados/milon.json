@@ -1,0 +1,6837 @@
+[
+{
+"pt": "0",
+"tr": "Efes",
+"he": "אפס"
+},
+{
+"pt": "1(f)",
+"tr": "Achat",
+"he": "אחת"
+},
+{
+"pt": "1(m)",
+"tr": "Echad",
+"he": "אחד"
+},
+{
+"pt": "10(f)",
+"tr": "Esser",
+"he": "עשר"
+},
+{
+"pt": "10(m)",
+"tr": "Assará",
+"he": "עשרה"
+},
+{
+"pt": "100",
+"tr": "Meá",
+"he": "מאה"
+},
+{
+"pt": "1000",
+"tr": "Elef",
+"he": "אלף"
+},
+{
+"pt": "10º(m)",
+"tr": "Assirí",
+"he": "עשירי"
+},
+{
+"pt": "11(f)",
+"tr": "Achat esrê",
+"he": "אחת-עשרה"
+},
+{
+"pt": "11(m)",
+"tr": "Achad assar",
+"he": "אחד-עשר"
+},
+{
+"pt": "12(f)",
+"tr": "Shteim esrê",
+"he": "שתים-עשרה"
+},
+{
+"pt": "12(m)",
+"tr": "Shneim assar",
+"he": "שנים-עשר"
+},
+{
+"pt": "13(f)",
+"tr": "Shlosh esrê",
+"he": "שלוש-עשרה"
+},
+{
+"pt": "13(m)",
+"tr": "Shloshá assar",
+"he": "שלושה-עשר"
+},
+{
+"pt": "14(f)",
+"tr": "Arba esrê",
+"he": "ארבע-עשרה"
+},
+{
+"pt": "14(m)",
+"tr": "Arbaá assar",
+"he": "ארבעה-עשר"
+},
+{
+"pt": "15(f)",
+"tr": "Chamesh esrê",
+"he": "חמש-עשרה"
+},
+{
+"pt": "15(m)",
+"tr": "Chamishá assar",
+"he": "חמישה-עשר"
+},
+{
+"pt": "16(f)",
+"tr": "Shesh esrê",
+"he": "שש-עשרה"
+},
+{
+"pt": "16(m)",
+"tr": "Shishá assar",
+"he": "שישה-עשר"
+},
+{
+"pt": "17(f)",
+"tr": "Shvá esrê",
+"he": "שבע-עשרה"
+},
+{
+"pt": "17(m)",
+"tr": "Shivá assar",
+"he": "שבעה-עשר"
+},
+{
+"pt": "18(f)",
+"tr": "Shmone esrê",
+"he": "שמונה-עשרה"
+},
+{
+"pt": "18(m)",
+"tr": "Shmoná assar",
+"he": "שמונה-עשר"
+},
+{
+"pt": "19(f)",
+"tr": "Tshá esrê",
+"he": "תשע-עשרה"
+},
+{
+"pt": "19(m)",
+"tr": "Tishá assar",
+"he": "תשעה-עשר"
+},
+{
+"pt": "1º(m)",
+"tr": "Rishon",
+"he": "ראשון"
+},
+{
+"pt": "2(f)",
+"tr": "Shtaim",
+"he": "שתים"
+},
+{
+"pt": "2(m)",
+"tr": "Shnaim",
+"he": "שנים"
+},
+{
+"pt": "20",
+"tr": "Esrim",
+"he": "עשרים"
+},
+{
+"pt": "200",
+"tr": "Mataim",
+"he": "מאתיים"
+},
+{
+"pt": "2º(m)",
+"tr": "Shení",
+"he": "שני"
+},
+{
+"pt": "3(f)",
+"tr": "Shalosh",
+"he": "שלוש"
+},
+{
+"pt": "3(m)",
+"tr": "Shloshá",
+"he": "שלושה"
+},
+{
+"pt": "30",
+"tr": "Shloshim",
+"he": "שלושים"
+},
+{
+"pt": "300",
+"tr": "Shlosh Meot",
+"he": "שלוש מאות"
+},
+{
+"pt": "3º(m)",
+"tr": "Shlishí",
+"he": "שלישי"
+},
+{
+"pt": "4(f)",
+"tr": "Arba",
+"he": "ארבע"
+},
+{
+"pt": "4(m)",
+"tr": "Arbaá",
+"he": "ארבעה"
+},
+{
+"pt": "40",
+"tr": "Arbaim",
+"he": "ארבעים"
+},
+{
+"pt": "400",
+"tr": "Arba Meot",
+"he": "ארבע מאות"
+},
+{
+"pt": "4º(m)",
+"tr": "Rêvií",
+"he": "רביעי"
+},
+{
+"pt": "5(f)",
+"tr": "Chamesh",
+"he": "חמש"
+},
+{
+"pt": "5(m)",
+"tr": "Chamishá",
+"he": "חמישה"
+},
+{
+"pt": "50",
+"tr": "Chamishim",
+"he": "חמישים"
+},
+{
+"pt": "500",
+"tr": "Chamesh Meot",
+"he": "חמש מאות"
+},
+{
+"pt": "5º(m)",
+"tr": "Chamishí",
+"he": "חמישי"
+},
+{
+"pt": "6(f)",
+"tr": "Shesh",
+"he": "שש"
+},
+{
+"pt": "6(m)",
+"tr": "Shishá",
+"he": "שישה"
+},
+{
+"pt": "60",
+"tr": "Shishim",
+"he": "שישים"
+},
+{
+"pt": "600",
+"tr": "Shesh Meot",
+"he": "שש מאות"
+},
+{
+"pt": "6º(m)",
+"tr": "Shishí",
+"he": "שישי"
+},
+{
+"pt": "7(f)",
+"tr": "Sheva",
+"he": "שבע"
+},
+{
+"pt": "7(m)",
+"tr": "Shivá",
+"he": "שבעה"
+},
+{
+"pt": "70",
+"tr": "Shivim",
+"he": "שבעים"
+},
+{
+"pt": "700",
+"tr": "Shvá Meot",
+"he": "שבע מאות"
+},
+{
+"pt": "7º(m)",
+"tr": "Shvií",
+"he": "שביעי"
+},
+{
+"pt": "8(f)",
+"tr": "Shmone",
+"he": "שמונה"
+},
+{
+"pt": "8(m)",
+"tr": "Shmoná",
+"he": "שמונה"
+},
+{
+"pt": "80",
+"tr": "Shmonim",
+"he": "שמונים"
+},
+{
+"pt": "800",
+"tr": "Shmone Meot",
+"he": "שמונה מאות"
+},
+{
+"pt": "8º(m)",
+"tr": "Shminí",
+"he": "שמיעי"
+},
+{
+"pt": "9(f)",
+"tr": "Tesha",
+"he": "תשע"
+},
+{
+"pt": "9(m)",
+"tr": "Tishá",
+"he": "תשעה"
+},
+{
+"pt": "90",
+"tr": "Tishim",
+"he": "תשעים"
+},
+{
+"pt": "900",
+"tr": "Tshá Meot",
+"he": "תשע מאות"
+},
+{
+"pt": "9º(m)",
+"tr": "Tshií",
+"he": "תשעי"
+},
+{
+"pt": "A fim de",
+"tr": "Kedei",
+"he": "כדי"
+},
+{
+"pt": "Abacate",
+"tr": "Avocado",
+"he": "אבוקדו"
+},
+{
+"pt": "Abacaxi",
+"tr": "Ananás",
+"he": "אננס"
+},
+{
+"pt": "Abandonou",
+"tr": "Azav",
+"he": "עזב"
+},
+{
+"pt": "Abelha",
+"tr": "Dvora",
+"he": "דבורה"
+},
+{
+"pt": "Abençoado",
+"tr": "Mevorach",
+"he": "מבורך"
+},
+{
+"pt": "Abençoou",
+"tr": "Berech",
+"he": "ברך"
+},
+{
+"pt": "Aberto",
+"tr": "Patuach",
+"he": "פתוח"
+},
+{
+"pt": "Abertura",
+"tr": "Petach",
+"he": "פתח"
+},
+{
+"pt": "Abismo",
+"tr": "Tehom",
+"he": "תהום"
+},
+{
+"pt": "Aboliu",
+"tr": "Bitel",
+"he": "ביטל"
+},
+{
+"pt": "Abolição",
+"tr": "Bitul",
+"he": "בטול"
+},
+{
+"pt": "Abraço",
+"tr": "Chibuk",
+"he": "חיבוק"
+},
+{
+"pt": "Abreviação",
+"tr": "Kitzur",
+"he": "קיצור"
+},
+{
+"pt": "Absorvente",
+"tr": "Sofeg",
+"he": "סופג"
+},
+{
+"pt": "Aceso",
+"tr": "Mudlak",
+"he": "מודלק"
+},
+{
+"pt": "Acompanhou",
+"tr": "Livá",
+"he": "ליוה"
+},
+{
+"pt": "Acostumado",
+"tr": "Raguil",
+"he": "רגיל"
+},
+{
+"pt": "Adiante",
+"tr": "Kadima",
+"he": "קדימה"
+},
+{
+"pt": "Adulto",
+"tr": "Boguer",
+"he": "בוגר"
+},
+{
+"pt": "Agarrou",
+"tr": "Tafás",
+"he": "תפס"
+},
+{
+"pt": "Agora",
+"tr": "Achshav",
+"he": "עכשיו"
+},
+{
+"pt": "Agudo",
+"tr": "Chad",
+"he": "חד"
+},
+{
+"pt": "Agulha",
+"tr": "Machat",
+"he": "מחט"
+},
+{
+"pt": "Ajudou",
+"tr": "Azar",
+"he": "עזר"
+},
+{
+"pt": "Aldeia",
+"tr": "Kfar",
+"he": "כפר"
+},
+{
+"pt": "Alface",
+"tr": "Chasa",
+"he": "חסה"
+},
+{
+"pt": "Algo",
+"tr": "Masheú",
+"he": "משהו"
+},
+{
+"pt": "Alguém",
+"tr": "Misheú",
+"he": "מישהו"
+},
+{
+"pt": "Alho",
+"tr": "Shum",
+"he": "שום"
+},
+{
+"pt": "Aliança",
+"tr": "Brit",
+"he": "ברית"
+},
+{
+"pt": "Alma",
+"tr": "Nefesh",
+"he": "נפש"
+},
+{
+"pt": "Almofada",
+"tr": "Carit",
+"he": "כרית"
+},
+{
+"pt": "Alto",
+"tr": "Gavôa",
+"he": "גבוה"
+},
+{
+"pt": "Alí",
+"tr": "Sham",
+"he": "שם"
+},
+{
+"pt": "Amanhã",
+"tr": "Machar",
+"he": "מחר"
+},
+{
+"pt": "Amarelo",
+"tr": "Tzahov",
+"he": "צהב"
+},
+{
+"pt": "Amargo",
+"tr": "Mar",
+"he": "מר"
+},
+{
+"pt": "Amassou",
+"tr": "Lash",
+"he": "לש"
+},
+{
+"pt": "Ameno",
+"tr": "Naim",
+"he": "נעים"
+},
+{
+"pt": "Amiga",
+"tr": "Chaverá",
+"he": "חברה"
+},
+{
+"pt": "Amigo",
+"tr": "Chaver",
+"he": "חבר"
+},
+{
+"pt": "Amor",
+"tr": "Ahavá",
+"he": "האהב"
+},
+{
+"pt": "Amou",
+"tr": "Ahav",
+"he": "אהב"
+},
+{
+"pt": "Ancião",
+"tr": "Zakén",
+"he": "זקן"
+},
+{
+"pt": "Anel",
+"tr": "Tabaat",
+"he": "תבעת"
+},
+{
+"pt": "Ano",
+"tr": "Shaná",
+"he": "שנה"
+},
+{
+"pt": "Antena",
+"tr": "Antena",
+"he": "אנטנה"
+},
+{
+"pt": "Antes",
+"tr": "Lifnei",
+"he": "לפני"
+},
+{
+"pt": "Anão",
+"tr": "Gamad",
+"he": "גמד"
+},
+{
+"pt": "Ao Contrário",
+"tr": "Lehefech",
+"he": "להפך"
+},
+{
+"pt": "Ao Lado",
+"tr": "Al iad",
+"he": "על יד"
+},
+{
+"pt": "Apagador",
+"tr": "Machak",
+"he": "מחק"
+},
+{
+"pt": "Aprendeu",
+"tr": "Lamad",
+"he": "למד"
+},
+{
+"pt": "Após",
+"tr": "Acharei",
+"he": "אחרי"
+},
+{
+"pt": "Aquecedor",
+"tr": "Shemeramem",
+"he": "שמחמם"
+},
+{
+"pt": "Aqui",
+"tr": "Pó",
+"he": "פה"
+},
+{
+"pt": "Ar",
+"tr": "Avir",
+"he": "אויר"
+},
+{
+"pt": "Arbusto",
+"tr": "Siach",
+"he": "שיח"
+},
+{
+"pt": "Arco",
+"tr": "Keshet",
+"he": "קשת"
+},
+{
+"pt": "Armário",
+"tr": "Aron",
+"he": "ארון"
+},
+{
+"pt": "Arroio",
+"tr": "Nachal",
+"he": "נחל"
+},
+{
+"pt": "Arroz",
+"tr": "Orez",
+"he": "אורז"
+},
+{
+"pt": "Arrumou",
+"tr": "Tikén",
+"he": "תקן"
+},
+{
+"pt": "Asa",
+"tr": "Kanaf",
+"he": "כנף"
+},
+{
+"pt": "Assim",
+"tr": "Kach",
+"he": "כך"
+},
+{
+"pt": "Ataque",
+"tr": "Hatkafá",
+"he": "התקפה"
+},
+{
+"pt": "Atividade",
+"tr": "Peilut",
+"he": "פעילות"
+},
+{
+"pt": "Ator",
+"tr": "Sachkan",
+"he": "שחקן"
+},
+{
+"pt": "Até",
+"tr": "Ad",
+"he": "עד"
+},
+{
+"pt": "Auge",
+"tr": "Si",
+"he": "שיא"
+},
+{
+"pt": "Aula",
+"tr": "Shiur",
+"he": "שעור"
+},
+{
+"pt": "Ausente",
+"tr": "Nedar",
+"he": "נעדר"
+},
+{
+"pt": "Autor",
+"tr": "Mechaber",
+"he": "מחבר"
+},
+{
+"pt": "Autorização",
+"tr": "Rashut",
+"he": "רשות"
+},
+{
+"pt": "Ave",
+"tr": "Of",
+"he": "עוף"
+},
+{
+"pt": "Aviação",
+"tr": "Tais",
+"he": "טיס"
+},
+{
+"pt": "Aviso",
+"tr": "Hodaá",
+"he": "הודעה"
+},
+{
+"pt": "Avião",
+"tr": "Matos",
+"he": "מטוס"
+},
+{
+"pt": "Avó",
+"tr": "Savta",
+"he": "סבתא"
+},
+{
+"pt": "Avô",
+"tr": "Saba",
+"he": "סבא"
+},
+{
+"pt": "Azeitona",
+"tr": "Zait",
+"he": "זית"
+},
+{
+"pt": "Azul",
+"tr": "Kachol",
+"he": "כחול"
+},
+{
+"pt": "Açúcar",
+"tr": "Sukár",
+"he": "סוכר"
+},
+{
+"pt": "Bactéria",
+"tr": "Chaidak",
+"he": "חיידק"
+},
+{
+"pt": "Bagagem",
+"tr": "Mitan",
+"he": "מטען"
+},
+{
+"pt": "Baile",
+"tr": "Neshef",
+"he": "נשף"
+},
+{
+"pt": "Baixo",
+"tr": "Namuch",
+"he": "נמוך"
+},
+{
+"pt": "Balança",
+"tr": "Moznaim",
+"he": "מאזנים"
+},
+{
+"pt": "Balde",
+"tr": "Dli",
+"he": "דלי"
+},
+{
+"pt": "Bandeira",
+"tr": "Deguel",
+"he": "דגל"
+},
+{
+"pt": "Bandeja",
+"tr": "Magash",
+"he": "מגש"
+},
+{
+"pt": "Banheiro",
+"tr": "Sherutim",
+"he": "שרותים"
+},
+{
+"pt": "Banho",
+"tr": "Miklachat",
+"he": "מקלחת"
+},
+{
+"pt": "Banquete",
+"tr": "Seudá",
+"he": "סעודה"
+},
+{
+"pt": "Bar",
+"tr": "Bar",
+"he": "בר"
+},
+{
+"pt": "Barata",
+"tr": "Tikán",
+"he": "תיקן"
+},
+{
+"pt": "Barato",
+"tr": "Zol",
+"he": "זול"
+},
+{
+"pt": "Barba",
+"tr": "Zakan",
+"he": "זקן"
+},
+{
+"pt": "Barco",
+"tr": "Oniá",
+"he": "אניה"
+},
+{
+"pt": "Barco",
+"tr": "Sirá",
+"he": "סירה"
+},
+{
+"pt": "Barriga",
+"tr": "Beten",
+"he": "בטן"
+},
+{
+"pt": "Barril",
+"tr": "Chavit",
+"he": "חבית"
+},
+{
+"pt": "Barro",
+"tr": "Botz",
+"he": "בוץ"
+},
+{
+"pt": "Batalha",
+"tr": "Krav",
+"he": "קרב"
+},
+{
+"pt": "Batata",
+"tr": "Tapuach Adamá",
+"he": "תפוח אדמה"
+},
+{
+"pt": "Baía",
+"tr": "Mifratz",
+"he": "מפרץ"
+},
+{
+"pt": "Bebeu",
+"tr": "Shatá",
+"he": "שתה"
+},
+{
+"pt": "Bebida",
+"tr": "Mashke",
+"he": "משקה"
+},
+{
+"pt": "Bebê",
+"tr": "Tinok",
+"he": "תינוק"
+},
+{
+"pt": "Beijo",
+"tr": "Neshiká",
+"he": "נשיקה"
+},
+{
+"pt": "Bela",
+"tr": "Iafá",
+"he": "יפה"
+},
+{
+"pt": "Bem Vindo",
+"tr": "Baruch Abá",
+"he": "ברוך הבא"
+},
+{
+"pt": "Bendito",
+"tr": "Baruch",
+"he": "ברוך"
+},
+{
+"pt": "Besouro",
+"tr": "Chipushit",
+"he": "תפושית"
+},
+{
+"pt": "Bezerro",
+"tr": "Eguel",
+"he": "עגל"
+},
+{
+"pt": "Bicicleta",
+"tr": "Ofanáim",
+"he": "אופנים"
+},
+{
+"pt": "Bico",
+"tr": "Makor",
+"he": "מקור"
+},
+{
+"pt": "Bigode",
+"tr": "Safam",
+"he": "שפם"
+},
+{
+"pt": "Bis",
+"tr": "Shenit",
+"he": "שנית"
+},
+{
+"pt": "Blusa",
+"tr": "Chultzá",
+"he": "חולצה"
+},
+{
+"pt": "Boca",
+"tr": "Pe",
+"he": "פה"
+},
+{
+"pt": "Bode",
+"tr": "Táish",
+"he": "תיש"
+},
+{
+"pt": "Boi",
+"tr": "Par",
+"he": "פר"
+},
+{
+"pt": "Bola",
+"tr": "Kadur",
+"he": "כדור"
+},
+{
+"pt": "Bolso",
+"tr": "Tik",
+"he": "תיק"
+},
+{
+"pt": "Bom",
+"tr": "Tov",
+"he": "טוב"
+},
+{
+"pt": "Boneca",
+"tr": "Bubá",
+"he": "בבה"
+},
+{
+"pt": "Branco",
+"tr": "Lavan",
+"he": "לבך"
+},
+{
+"pt": "Brigou",
+"tr": "Rav",
+"he": "רב"
+},
+{
+"pt": "Brinde",
+"tr": "Lechaim",
+"he": "לחיים"
+},
+{
+"pt": "Burro",
+"tr": "Chamor",
+"he": "חמור"
+},
+{
+"pt": "Búfalo",
+"tr": "Teó",
+"he": "תאו"
+},
+{
+"pt": "Cabelo",
+"tr": "Seár",
+"he": "שער"
+},
+{
+"pt": "Cabeça",
+"tr": "Rosh",
+"he": "ראש"
+},
+{
+"pt": "Cabine",
+"tr": "Ta",
+"he": "תא"
+},
+{
+"pt": "Cabrito",
+"tr": "Gdi",
+"he": "גדי"
+},
+{
+"pt": "Cachecol",
+"tr": "Tzaif",
+"he": "צעיף"
+},
+{
+"pt": "Cachorro",
+"tr": "Kelev",
+"he": "כלב"
+},
+{
+"pt": "Caiu",
+"tr": "Nafal",
+"he": "נפל"
+},
+{
+"pt": "Cal",
+"tr": "Sid",
+"he": "סידה"
+},
+{
+"pt": "Caldeira",
+"tr": "Dud",
+"he": "דוד"
+},
+{
+"pt": "Caldo",
+"tr": "Marak",
+"he": "מרק"
+},
+{
+"pt": "Cama",
+"tr": "Mitá",
+"he": "מית"
+},
+{
+"pt": "Camada",
+"tr": "Shichvá",
+"he": "שכבה"
+},
+{
+"pt": "Camarote",
+"tr": "Ta",
+"he": "תא"
+},
+{
+"pt": "Camelo",
+"tr": "Gamal",
+"he": "גמל"
+},
+{
+"pt": "Caminho",
+"tr": "Derech",
+"he": "דרך"
+},
+{
+"pt": "Campeão",
+"tr": "Aluf",
+"he": "אלוף"
+},
+{
+"pt": "Camponês",
+"tr": "Icar",
+"he": "אכר"
+},
+{
+"pt": "Canal",
+"tr": "Teala",
+"he": "תעלה"
+},
+{
+"pt": "Canguru",
+"tr": "Kanguru",
+"he": "קנגורו"
+},
+{
+"pt": "Cantina",
+"tr": "Kantina",
+"he": "קנטינה"
+},
+{
+"pt": "Cantou",
+"tr": "Shar",
+"he": "שר"
+},
+{
+"pt": "Capacidade",
+"tr": "Iecholet",
+"he": "יכולת"
+},
+{
+"pt": "Capilar",
+"tr": "Nimi",
+"he": "נימי"
+},
+{
+"pt": "Capital",
+"tr": "Hon",
+"he": "הון"
+},
+{
+"pt": "Capote",
+"tr": "Meil",
+"he": "מעיל"
+},
+{
+"pt": "Caracol",
+"tr": "Chilazon",
+"he": "חלזון"
+},
+{
+"pt": "Cargo",
+"tr": "Tafkid",
+"he": "תפקיד"
+},
+{
+"pt": "Carne",
+"tr": "Bassar",
+"he": "בשר"
+},
+{
+"pt": "Carneiro",
+"tr": "Áil",
+"he": "איל"
+},
+{
+"pt": "Caro",
+"tr": "Iakar",
+"he": "יקר"
+},
+{
+"pt": "Censo",
+"tr": "Mifkad",
+"he": "מפקד"
+},
+{
+"pt": "Centralizador",
+"tr": "Rikez",
+"he": "רכז"
+},
+{
+"pt": "Cervo",
+"tr": "Tzvi",
+"he": "צבי"
+},
+{
+"pt": "Chacal",
+"tr": "Tan",
+"he": "תן"
+},
+{
+"pt": "Chaminé",
+"tr": "Arubá",
+"he": "ארבה"
+},
+{
+"pt": "Cheiro",
+"tr": "Reiach",
+"he": "ריח"
+},
+{
+"pt": "Chiclete",
+"tr": "Mastik",
+"he": "מםתיק"
+},
+{
+"pt": "Chuva",
+"tr": "Guéshem",
+"he": "גשם"
+},
+{
+"pt": "Chuvarada",
+"tr": "Matar",
+"he": "מטר"
+},
+{
+"pt": "Chá",
+"tr": "Te",
+"he": "תה"
+},
+{
+"pt": "Cinza",
+"tr": "Afor",
+"he": "אפר"
+},
+{
+"pt": "Coelho",
+"tr": "Shafan",
+"he": "שפן"
+},
+{
+"pt": "Combatente",
+"tr": "Kravi",
+"he": "קרבי"
+},
+{
+"pt": "Comeu",
+"tr": "Achal",
+"he": "אכל"
+},
+{
+"pt": "Comprou",
+"tr": "Kaná",
+"he": "קנה"
+},
+{
+"pt": "Computador",
+"tr": "Machshev",
+"he": "מחשב"
+},
+{
+"pt": "Comunidade",
+"tr": "Kehilá",
+"he": "קהילה"
+},
+{
+"pt": "Conde",
+"tr": "Rozen",
+"he": "רוזן"
+},
+{
+"pt": "Confortável",
+"tr": "Noach",
+"he": "נוח"
+},
+{
+"pt": "Conjunto",
+"tr": "Leaká",
+"he": "להקה"
+},
+{
+"pt": "Consolidação",
+"tr": "Likud",
+"he": "ליכוד"
+},
+{
+"pt": "Construir",
+"tr": "Baná",
+"he": "בנה"
+},
+{
+"pt": "Contas",
+"tr": "Charuz",
+"he": "חרוז"
+},
+{
+"pt": "Conter- Hichil",
+"tr": "",
+"he": "הכיל"
+},
+{
+"pt": "Contudo",
+"tr": "Af Al Pi",
+"he": "אף על פי"
+},
+{
+"pt": "Conversa",
+"tr": "Sichá",
+"he": "שיחה"
+},
+{
+"pt": "Coragem",
+"tr": "Ometz",
+"he": "אומץ"
+},
+{
+"pt": "Corajoso",
+"tr": "Amitz",
+"he": "אמיץ"
+},
+{
+"pt": "Coração",
+"tr": "Lêv",
+"he": "לב"
+},
+{
+"pt": "Corpo",
+"tr": "Guf",
+"he": "גוף"
+},
+{
+"pt": "Correio",
+"tr": "Dóar",
+"he": "דאר"
+},
+{
+"pt": "Correu",
+"tr": "Ratz",
+"he": "רץ"
+},
+{
+"pt": "Costa",
+"tr": "Gav",
+"he": "גב"
+},
+{
+"pt": "Cozinha",
+"tr": "Mitbach",
+"he": "מטבח"
+},
+{
+"pt": "Criou",
+"tr": "Iatzar",
+"he": "יצר"
+},
+{
+"pt": "Crocodilo",
+"tr": "Tanin",
+"he": "תנין"
+},
+{
+"pt": "Cultura",
+"tr": "Tarbut",
+"he": "תרבות"
+},
+{
+"pt": "Cálculo",
+"tr": "Chishuv",
+"he": "חישוב"
+},
+{
+"pt": "Cálido",
+"tr": "Cham",
+"he": "חם"
+},
+{
+"pt": "Cérebro",
+"tr": "Moach",
+"he": "מח"
+},
+{
+"pt": "Dado",
+"tr": "Kubiá",
+"he": "קדביה"
+},
+{
+"pt": "Dama",
+"tr": "Gveret",
+"he": "גברת"
+},
+{
+"pt": "Dano",
+"tr": "Nezek",
+"he": "נזק"
+},
+{
+"pt": "Dança",
+"tr": "Rikud",
+"he": "רקוד"
+},
+{
+"pt": "Dançarino",
+"tr": "Rakdan",
+"he": "רקדן"
+},
+{
+"pt": "Dançou",
+"tr": "Rakad",
+"he": "רקד"
+},
+{
+"pt": "Daqui",
+"tr": "Mipó",
+"he": "מפה"
+},
+{
+"pt": "Data",
+"tr": "Taarich",
+"he": "תאריך"
+},
+{
+"pt": "De",
+"tr": "Shel",
+"he": "של"
+},
+{
+"pt": "Debaixo",
+"tr": "Tachat",
+"he": "תחת"
+},
+{
+"pt": "Decadente",
+"tr": "Mitnaven",
+"he": "מתנוון"
+},
+{
+"pt": "Decente",
+"tr": "Hagun",
+"he": "הגון"
+},
+{
+"pt": "Decepcionado",
+"tr": "Meuchzav",
+"he": "מואכזב"
+},
+{
+"pt": "Decepcionou",
+"tr": "Ichzev",
+"he": "אכזב"
+},
+{
+"pt": "Decepção",
+"tr": "Achzavá",
+"he": "אכזבה"
+},
+{
+"pt": "Decidido",
+"tr": "Muchlat",
+"he": "מוחלט"
+},
+{
+"pt": "Decidiu",
+"tr": "Hechlit",
+"he": "החליט"
+},
+{
+"pt": "Decifrou",
+"tr": "Pinach",
+"he": "פענח"
+},
+{
+"pt": "Decisivo",
+"tr": "Hechlití",
+"he": "החלטי"
+},
+{
+"pt": "Decisão",
+"tr": "Hachlatá",
+"he": "החלטה"
+},
+{
+"pt": "Declamou",
+"tr": "Diklem",
+"he": "דקלם"
+},
+{
+"pt": "Declarado",
+"tr": "Mutzhar",
+"he": "מוצהר"
+},
+{
+"pt": "Declarante",
+"tr": "Matzhir",
+"he": "מצהיר"
+},
+{
+"pt": "Declaração",
+"tr": "Hatzhará",
+"he": "הצהרה"
+},
+{
+"pt": "Declarou",
+"tr": "Hitzhir",
+"he": "הצהיר"
+},
+{
+"pt": "Declive",
+"tr": "Shipua",
+"he": "שיפע"
+},
+{
+"pt": "Declínio",
+"tr": "Shkiá",
+"he": "שקיעה"
+},
+{
+"pt": "Decolagem",
+"tr": "Amraá",
+"he": "המראה"
+},
+{
+"pt": "Decomposição",
+"tr": "Hitparkuit",
+"he": "התפרקות"
+},
+{
+"pt": "Decoro",
+"tr": "Tzniut",
+"he": "צניעות"
+},
+{
+"pt": "Decorou",
+"tr": "Kishet",
+"he": "קישט"
+},
+{
+"pt": "Decotado",
+"tr": "Chassuf",
+"he": "חשוף"
+},
+{
+"pt": "Decote",
+"tr": "Machssof",
+"he": "מחשוף"
+},
+{
+"pt": "Decretado",
+"tr": "Chakuk",
+"he": "חקוק"
+},
+{
+"pt": "Decreto",
+"tr": "Tzav",
+"he": "צוו"
+},
+{
+"pt": "Decretou",
+"tr": "Passak",
+"he": "פסק"
+},
+{
+"pt": "Decrépito",
+"tr": "Tashush",
+"he": "תשוש"
+},
+{
+"pt": "Dedicatória",
+"tr": "Hakdashá",
+"he": "הקדשה"
+},
+{
+"pt": "Dedicação",
+"tr": "Hitmasrut",
+"he": "התמסרות"
+},
+{
+"pt": "Dedo",
+"tr": "Etzbá",
+"he": "אצבע"
+},
+{
+"pt": "Deduziu",
+"tr": "Hissik",
+"he": "הסיק"
+},
+{
+"pt": "Dedução (conclusão)",
+"tr": "Maskaná",
+"he": "מסקנה"
+},
+{
+"pt": "Defeito",
+"tr": "Pgam",
+"he": "פגם"
+},
+{
+"pt": "Defeituoso",
+"tr": "Pagum",
+"he": "פגום"
+},
+{
+"pt": "Defendeu",
+"tr": "Heguen",
+"he": "הגן"
+},
+{
+"pt": "Defesa",
+"tr": "Haganá",
+"he": "הגנה"
+},
+{
+"pt": "Degelo",
+"tr": "Hafshará",
+"he": "הפשרה"
+},
+{
+"pt": "Degolado",
+"tr": "Shachut",
+"he": "שחוט"
+},
+{
+"pt": "Degolou",
+"tr": "Shachat",
+"he": "שחט"
+},
+{
+"pt": "Degrau",
+"tr": "Madregá",
+"he": "מדרגה"
+},
+{
+"pt": "Deitado",
+"tr": "Shochev",
+"he": "שוכב"
+},
+{
+"pt": "Deitou",
+"tr": "Shachav",
+"he": "שכב"
+},
+{
+"pt": "Dela",
+"tr": "Shelá",
+"he": "שלה"
+},
+{
+"pt": "Dele",
+"tr": "Sheló",
+"he": "שלו"
+},
+{
+"pt": "Delegado",
+"tr": "Netzig",
+"he": "נציג"
+},
+{
+"pt": "Delegação",
+"tr": "Mishláchat",
+"he": "משלחת"
+},
+{
+"pt": "Delícia",
+"tr": "Ôneg",
+"he": "עונג"
+},
+{
+"pt": "Delírio",
+"tr": "Hazaiá",
+"he": "הזיה"
+},
+{
+"pt": "Demais",
+"tr": "Ioter Midai",
+"he": "יותר מדי"
+},
+{
+"pt": "Demônio",
+"tr": "Shed",
+"he": "שד"
+},
+{
+"pt": "Dente",
+"tr": "Shen",
+"he": "שן"
+},
+{
+"pt": "Dentro",
+"tr": "Betoch",
+"he": "בתוך"
+},
+{
+"pt": "Depois",
+"tr": "Acharei",
+"he": "אחרי"
+},
+{
+"pt": "Descendeu",
+"tr": "Ba",
+"he": "בא"
+},
+{
+"pt": "Desceu",
+"tr": "Iarád",
+"he": "ירד"
+},
+{
+"pt": "Desculpa",
+"tr": "Slichá",
+"he": "סליחה"
+},
+{
+"pt": "Desejo",
+"tr": "Cheshek",
+"he": "חשק"
+},
+{
+"pt": "Deserto",
+"tr": "Midbar",
+"he": "מדבר"
+},
+{
+"pt": "Desperto",
+"tr": "Er",
+"he": "ער"
+},
+{
+"pt": "Desprestígio",
+"tr": "Buz",
+"he": "בוז"
+},
+{
+"pt": "Desprezível",
+"tr": "Aluv",
+"he": "עלוב"
+},
+{
+"pt": "Desânimo",
+"tr": "Ieush",
+"he": "יאוש"
+},
+{
+"pt": "Deu",
+"tr": "Natán",
+"he": "נתן"
+},
+{
+"pt": "Deus",
+"tr": "Elohim",
+"he": "אלוהים"
+},
+{
+"pt": "Dez",
+"tr": "Esser",
+"he": "אסר"
+},
+{
+"pt": "Dia",
+"tr": "Iom",
+"he": "יום"
+},
+{
+"pt": "Direita",
+"tr": "Iemanit",
+"he": "ימנית"
+},
+{
+"pt": "Disse",
+"tr": "Amar",
+"he": "אמר"
+},
+{
+"pt": "Doce",
+"tr": "Matók",
+"he": "מתוק"
+},
+{
+"pt": "Documento",
+"tr": "Teudá",
+"he": "תעודה"
+},
+{
+"pt": "Doente",
+"tr": "Cholê",
+"he": "חולה"
+},
+{
+"pt": "Doença",
+"tr": "Machalá",
+"he": "מחלה"
+},
+{
+"pt": "Doeu",
+"tr": "Kaav",
+"he": "כאב"
+},
+{
+"pt": "Dolorido",
+"tr": "Koêv",
+"he": "כואב"
+},
+{
+"pt": "Doloroso",
+"tr": "Machiv",
+"he": "מכאיב"
+},
+{
+"pt": "Dom",
+"tr": "Kisharon",
+"he": "כשרון"
+},
+{
+"pt": "Domador",
+"tr": "Mealef",
+"he": "מאלף"
+},
+{
+"pt": "Domou",
+"tr": "Ilef",
+"he": "אילף"
+},
+{
+"pt": "Dor",
+"tr": "Keev",
+"he": "כאב"
+},
+{
+"pt": "Dorme",
+"tr": "Nam",
+"he": "נם"
+},
+{
+"pt": "Duvidoso",
+"tr": "Bessafek",
+"he": "בספק"
+},
+{
+"pt": "Débito",
+"tr": "Chov",
+"he": "חוב"
+},
+{
+"pt": "Década",
+"tr": "Assor",
+"he": "עשור"
+},
+{
+"pt": "Eco",
+"tr": "Hed",
+"he": "הד"
+},
+{
+"pt": "Egito",
+"tr": "Mitzraim",
+"he": "מצרים"
+},
+{
+"pt": "Eixo",
+"tr": "Tzir",
+"he": "ציר"
+},
+{
+"pt": "Ela",
+"tr": "Hih",
+"he": "היא"
+},
+{
+"pt": "Elas",
+"tr": "Hen",
+"he": "הן"
+},
+{
+"pt": "Ele",
+"tr": "Huh",
+"he": "הוא"
+},
+{
+"pt": "Elefante",
+"tr": "Pil",
+"he": "פיל"
+},
+{
+"pt": "Eles",
+"tr": "Hem",
+"he": "הם"
+},
+{
+"pt": "Elogio",
+"tr": "Shevch",
+"he": "שבח"
+},
+{
+"pt": "Emigrou",
+"tr": "Higuer",
+"he": "היגר"
+},
+{
+"pt": "Empacotar",
+"tr": "Araz",
+"he": "ארז"
+},
+{
+"pt": "Encapar",
+"tr": "Atáf",
+"he": "עטף"
+},
+{
+"pt": "Encher",
+"tr": "Mile",
+"he": "מלא"
+},
+{
+"pt": "Encorpado",
+"tr": "Chassom",
+"he": "חסן"
+},
+{
+"pt": "Encravar",
+"tr": "Taka",
+"he": "תקע"
+},
+{
+"pt": "Encruzilhada",
+"tr": "Tzomet",
+"he": "צומת"
+},
+{
+"pt": "Endereço",
+"tr": "Ktovet",
+"he": "כתובת"
+},
+{
+"pt": "Energia",
+"tr": "Méretz",
+"he": "מרץ"
+},
+{
+"pt": "Enfim",
+"tr": "Sof-Sof – ס ו ף",
+"he": "סוף"
+},
+{
+"pt": "Engano",
+"tr": "Taút",
+"he": "טעות"
+},
+{
+"pt": "Enjaular",
+"tr": "Kalá",
+"he": "כלא"
+},
+{
+"pt": "Enlutado",
+"tr": "Avel",
+"he": "אבל"
+},
+{
+"pt": "Enquanto",
+"tr": "Bentaim",
+"he": "בינתיים"
+},
+{
+"pt": "Ensaio",
+"tr": "Chazará",
+"he": "חזרה"
+},
+{
+"pt": "Ensinado",
+"tr": "Melumad",
+"he": "מלומד"
+},
+{
+"pt": "Ensino",
+"tr": "Limud",
+"he": "למוד"
+},
+{
+"pt": "Ensinou",
+"tr": "Limed",
+"he": "לימד"
+},
+{
+"pt": "Entardecer",
+"tr": "Arav",
+"he": "ערב"
+},
+{
+"pt": "Entendeu",
+"tr": "Hevin",
+"he": "הבין"
+},
+{
+"pt": "Entendido",
+"tr": "Muvan",
+"he": "מובן"
+},
+{
+"pt": "Entendimento",
+"tr": "Havaná",
+"he": "הבנה"
+},
+{
+"pt": "Enterrado",
+"tr": "Kavur",
+"he": "קבור"
+},
+{
+"pt": "Enterrar",
+"tr": "Kavar",
+"he": "קבר"
+},
+{
+"pt": "Enterro",
+"tr": "Levaiá",
+"he": "לוויה"
+},
+{
+"pt": "Entrada",
+"tr": "Knissá",
+"he": "כניסה"
+},
+{
+"pt": "Entre",
+"tr": "Bein",
+"he": "בין"
+},
+{
+"pt": "Entretanto (mas)",
+"tr": "Aval",
+"he": "אבל"
+},
+{
+"pt": "Entrevista",
+"tr": "Reaion",
+"he": "ראיון"
+},
+{
+"pt": "Entrou",
+"tr": "Nichnas",
+"he": "נכנס"
+},
+{
+"pt": "Então",
+"tr": "Az",
+"he": "אז"
+},
+{
+"pt": "Envelope",
+"tr": "Maatafá",
+"he": "מעטפה"
+},
+{
+"pt": "Enviou",
+"tr": "Shalach",
+"he": "שלח"
+},
+{
+"pt": "Equação",
+"tr": "Mishvaá",
+"he": "משוואה"
+},
+{
+"pt": "Equilibrado",
+"tr": "Meuzan",
+"he": "מאוזן"
+},
+{
+"pt": "Equipamento",
+"tr": "Tziud",
+"he": "ציוד"
+},
+{
+"pt": "Escolher",
+"tr": "Bachár",
+"he": "בחר"
+},
+{
+"pt": "Escolhido",
+"tr": "Nivchar",
+"he": "נבחר"
+},
+{
+"pt": "Escoriar",
+"tr": "Sarat",
+"he": ""
+},
+{
+"pt": "Escravo",
+"tr": "Éved",
+"he": "עבד"
+},
+{
+"pt": "Escudo",
+"tr": "Magen",
+"he": "מגן"
+},
+{
+"pt": "Escultor",
+"tr": "Passál",
+"he": "פסל"
+},
+{
+"pt": "Esfregar",
+"tr": "Shifshef",
+"he": "שיפשף"
+},
+{
+"pt": "Espada",
+"tr": "Cherev",
+"he": "חרב"
+},
+{
+"pt": "Espinafre",
+"tr": "Téred",
+"he": "תרד"
+},
+{
+"pt": "Esqueceu",
+"tr": "Shachach",
+"he": "שכח"
+},
+{
+"pt": "Esquerda",
+"tr": "Smol",
+"he": "שמאל"
+},
+{
+"pt": "Estacionou",
+"tr": "Chaná",
+"he": "חנה"
+},
+{
+"pt": "Estufa",
+"tr": "Tanur",
+"he": "תנור"
+},
+{
+"pt": "Eternidade",
+"tr": "Netzach",
+"he": "נצח"
+},
+{
+"pt": "Eu",
+"tr": "Ani",
+"he": "אני"
+},
+{
+"pt": "Exausto",
+"tr": "Aief",
+"he": "עייף"
+},
+{
+"pt": "Extremo",
+"tr": "Katzê",
+"he": "קצה"
+},
+{
+"pt": "Fabricou",
+"tr": "Itzer",
+"he": "ייצר"
+},
+{
+"pt": "Faca",
+"tr": "Sakin",
+"he": "סכין"
+},
+{
+"pt": "Facilidade",
+"tr": "Kalut",
+"he": "קלות"
+},
+{
+"pt": "Facilmente",
+"tr": "Bekalut",
+"he": "בקלות"
+},
+{
+"pt": "Facção",
+"tr": "Sia",
+"he": "סיעה"
+},
+{
+"pt": "Fadiga",
+"tr": "Aiefut",
+"he": "עייפות"
+},
+{
+"pt": "Faixa",
+"tr": "Pas",
+"he": "פס"
+},
+{
+"pt": "Faleceu",
+"tr": "Niftar",
+"he": "נפתר"
+},
+{
+"pt": "Falha",
+"tr": "Kishalon",
+"he": "כישלון"
+},
+{
+"pt": "Falhou",
+"tr": "Nichshal",
+"he": "נכשל"
+},
+{
+"pt": "Falou",
+"tr": "Diber",
+"he": "דיבר"
+},
+{
+"pt": "Falso",
+"tr": "Mezuiaf",
+"he": "מזויף"
+},
+{
+"pt": "Faminto",
+"tr": "Raêv",
+"he": "רעב"
+},
+{
+"pt": "Família",
+"tr": "Mishpachá",
+"he": "מישפחה"
+},
+{
+"pt": "Fanatismo",
+"tr": "Kanaut",
+"he": "קנאות"
+},
+{
+"pt": "Fantasia",
+"tr": "Tachposset",
+"he": "תחפושת"
+},
+{
+"pt": "Faringe",
+"tr": "Veshet",
+"he": "וושת"
+},
+{
+"pt": "Farinha",
+"tr": "Kémach",
+"he": "קמח"
+},
+{
+"pt": "Fatal",
+"tr": "Goralí",
+"he": "גורלי"
+},
+{
+"pt": "Febre",
+"tr": "Chom",
+"he": "חום"
+},
+{
+"pt": "Fechado",
+"tr": "Sagur",
+"he": "סגור"
+},
+{
+"pt": "Feio",
+"tr": "Mechoar",
+"he": "מכוער"
+},
+{
+"pt": "Feira",
+"tr": "Shuk",
+"he": "שוק"
+},
+{
+"pt": "Feliz",
+"tr": "Sameach",
+"he": "סמח"
+},
+{
+"pt": "Feliz",
+"tr": "Meushar",
+"he": "מאושר"
+},
+{
+"pt": "Feriado",
+"tr": "Chag",
+"he": "חג"
+},
+{
+"pt": "Feroz",
+"tr": "Achzar",
+"he": "אכזר"
+},
+{
+"pt": "Ferramentas",
+"tr": "Kelim",
+"he": "כלים"
+},
+{
+"pt": "Festa",
+"tr": "Chaguigá",
+"he": "חגיגה"
+},
+{
+"pt": "Fez",
+"tr": "Assá",
+"he": "עשה"
+},
+{
+"pt": "Figo",
+"tr": "Teená",
+"he": "תאנה"
+},
+{
+"pt": "Fila",
+"tr": "Tor",
+"he": "תור"
+},
+{
+"pt": "Fila",
+"tr": "Shurá",
+"he": "שורה"
+},
+{
+"pt": "Filha",
+"tr": "Bat",
+"he": "בת"
+},
+{
+"pt": "Filho",
+"tr": "Ben",
+"he": "בן"
+},
+{
+"pt": "Filhote",
+"tr": "Gur",
+"he": "גור"
+},
+{
+"pt": "Filme",
+"tr": "Séret",
+"he": "סרט"
+},
+{
+"pt": "Fim",
+"tr": "Sof",
+"he": "סוף"
+},
+{
+"pt": "Flauta Doce",
+"tr": "Chalilit",
+"he": "חלילית"
+},
+{
+"pt": "Flecha",
+"tr": "Machog",
+"he": "מחוג"
+},
+{
+"pt": "Foca",
+"tr": "Kelev Iam",
+"he": "כלב;ים"
+},
+{
+"pt": "Fogo",
+"tr": "Esh",
+"he": "אש"
+},
+{
+"pt": "Foi",
+"tr": "Halach",
+"he": "הלך"
+},
+{
+"pt": "Folha",
+"tr": "Alê",
+"he": "אלה"
+},
+{
+"pt": "Folha de papel",
+"tr": "Daf",
+"he": "דף"
+},
+{
+"pt": "Formiga",
+"tr": "Nemalá",
+"he": "נמלה"
+},
+{
+"pt": "Forte",
+"tr": "Eitan",
+"he": "איתן"
+},
+{
+"pt": "Fraco",
+"tr": "Chalash",
+"he": "חלש"
+},
+{
+"pt": "Fralda",
+"tr": "Chitúl",
+"he": "חיתול"
+},
+{
+"pt": "Frango",
+"tr": "Of",
+"he": "עוף"
+},
+{
+"pt": "Franja",
+"tr": "Tzittzit",
+"he": "ציצית"
+},
+{
+"pt": "França",
+"tr": "Tzarfát",
+"he": "צרפת"
+},
+{
+"pt": "Frase",
+"tr": "Mishpat",
+"he": "משפט"
+},
+{
+"pt": "Fraude",
+"tr": "Honaá",
+"he": "הונאה"
+},
+{
+"pt": "Freguês",
+"tr": "Lakoach",
+"he": "לקוח"
+},
+{
+"pt": "Freio",
+"tr": "Belem",
+"he": "בלם"
+},
+{
+"pt": "Freira",
+"tr": "Nezirá",
+"he": "נזירה"
+},
+{
+"pt": "Frente",
+"tr": "Chazit",
+"he": "חזית"
+},
+{
+"pt": "Frente (diante)",
+"tr": "Mul",
+"he": "מול"
+},
+{
+"pt": "Fresco",
+"tr": "Tari",
+"he": "טרי"
+},
+{
+"pt": "Frio",
+"tr": "Kar",
+"he": "קר"
+},
+{
+"pt": "Frota",
+"tr": "Tzi",
+"he": "צי"
+},
+{
+"pt": "Fruta",
+"tr": "Prí",
+"he": "פרי"
+},
+{
+"pt": "Frágil",
+"tr": "Shavir",
+"he": "שביר"
+},
+{
+"pt": "Fumar",
+"tr": "Ishên",
+"he": "עשן"
+},
+{
+"pt": "Fumaça",
+"tr": "Ashan",
+"he": "עשן"
+},
+{
+"pt": "Fundação",
+"tr": "Keren",
+"he": "קרן"
+},
+{
+"pt": "Furtar",
+"tr": "Ganáv",
+"he": "גנב"
+},
+{
+"pt": "Futilidade",
+"tr": "Hevel",
+"he": "הבל"
+},
+{
+"pt": "Futuro",
+"tr": "Atid",
+"he": "אתיד"
+},
+{
+"pt": "Fuzil",
+"tr": "Rovê",
+"he": "רובה"
+},
+{
+"pt": "Fábrica",
+"tr": "Beit Charoshet",
+"he": "בית חרושת"
+},
+{
+"pt": "Fácil",
+"tr": "Kal",
+"he": "קל"
+},
+{
+"pt": "Fé",
+"tr": "Emuná",
+"he": "אמונה"
+},
+{
+"pt": "Férias",
+"tr": "Chofesh",
+"he": "חופש"
+},
+{
+"pt": "Gabinete",
+"tr": "Lishká",
+"he": "לשכה"
+},
+{
+"pt": "Gado",
+"tr": "Bakar",
+"he": "בקר"
+},
+{
+"pt": "Gafanhoto",
+"tr": "Arbê",
+"he": "ארבה"
+},
+{
+"pt": "Gago",
+"tr": "Megamguem",
+"he": "מגמגם"
+},
+{
+"pt": "Gaiola",
+"tr": "Kluv",
+"he": "כלוב"
+},
+{
+"pt": "Galho",
+"tr": "Anáf",
+"he": "ענף"
+},
+{
+"pt": "Galinheiro",
+"tr": "Lul",
+"he": "לול"
+},
+{
+"pt": "Galo",
+"tr": "Tarnegol",
+"he": "תרנגול"
+},
+{
+"pt": "Galope",
+"tr": "Tzrif",
+"he": "צריף"
+},
+{
+"pt": "Gancho",
+"tr": "Vav",
+"he": "וו"
+},
+{
+"pt": "Ganso",
+"tr": "Avaz",
+"he": "אוז"
+},
+{
+"pt": "Ganância",
+"tr": "Betzá",
+"he": "בצע"
+},
+{
+"pt": "Garfo",
+"tr": "Mazlêg",
+"he": "מזלג"
+},
+{
+"pt": "Garoto",
+"tr": "Náar",
+"he": "נער"
+},
+{
+"pt": "Garrafa",
+"tr": "Bakbuk",
+"he": "בקבוק"
+},
+{
+"pt": "Garçom",
+"tr": "Meltzár",
+"he": "מלצר"
+},
+{
+"pt": "Gasoso",
+"tr": "Gázi",
+"he": "גזי"
+},
+{
+"pt": "Gato",
+"tr": "Chatúl",
+"he": "חתול"
+},
+{
+"pt": "Gavião",
+"tr": "Netz",
+"he": "נץ"
+},
+{
+"pt": "Gazela",
+"tr": "Ayalá",
+"he": "אילה"
+},
+{
+"pt": "Geada",
+"tr": "Kfor",
+"he": "כפור"
+},
+{
+"pt": "Geladeira",
+"tr": "Mêkarer",
+"he": "מקרר"
+},
+{
+"pt": "Gelado",
+"tr": "Kafú",
+"he": "קפוא"
+},
+{
+"pt": "Gelo",
+"tr": "Kérach",
+"he": "קרח"
+},
+{
+"pt": "Gemido",
+"tr": "Anaká",
+"he": "אנקה"
+},
+{
+"pt": "General",
+"tr": "Alúf",
+"he": "אלוף"
+},
+{
+"pt": "Generoso",
+"tr": "Nadiv",
+"he": "נדיב"
+},
+{
+"pt": "Genial",
+"tr": "Gueoní",
+"he": "גאוני"
+},
+{
+"pt": "Gentil",
+"tr": "Adív",
+"he": "אדיב"
+},
+{
+"pt": "Genuíno",
+"tr": "Mekori",
+"he": "מקורי"
+},
+{
+"pt": "Geral",
+"tr": "Klalí",
+"he": "כללי"
+},
+{
+"pt": "Geração",
+"tr": "Dór",
+"he": "דור"
+},
+{
+"pt": "Gerente",
+"tr": "Menahêl",
+"he": "מנהל"
+},
+{
+"pt": "Geriu",
+"tr": "Nihel",
+"he": "נהל"
+},
+{
+"pt": "Gestação",
+"tr": "Heraion",
+"he": "הריון"
+},
+{
+"pt": "Gigante",
+"tr": "Anák",
+"he": "ענק"
+},
+{
+"pt": "Girafa",
+"tr": "Guirafa",
+"he": "גירפה"
+},
+{
+"pt": "Giz",
+"tr": "Guir",
+"he": "גיר"
+},
+{
+"pt": "Glória",
+"tr": "Tehilá",
+"he": "תהילה"
+},
+{
+"pt": "Goleiro",
+"tr": "Shoêr",
+"he": "שוער"
+},
+{
+"pt": "Gordo",
+"tr": "Shamen",
+"he": "שמן"
+},
+{
+"pt": "Grade",
+"tr": "Gadêr",
+"he": "גדר"
+},
+{
+"pt": "Grama",
+"tr": "Deshe",
+"he": "דשא"
+},
+{
+"pt": "Gramado",
+"tr": "Midshaá",
+"he": "מדשאה"
+},
+{
+"pt": "Gramínea",
+"tr": "Jatzav",
+"he": "חצב"
+},
+{
+"pt": "Granada",
+"tr": "Rimon",
+"he": "רימון"
+},
+{
+"pt": "Grande",
+"tr": "Gadol",
+"he": "גדול"
+},
+{
+"pt": "Gravador",
+"tr": "Charát",
+"he": "חרט"
+},
+{
+"pt": "Gravata",
+"tr": "Anivá",
+"he": "עניבה"
+},
+{
+"pt": "Grito",
+"tr": "Tzaaká",
+"he": "צעקה"
+},
+{
+"pt": "Gritou",
+"tr": "Tzarach",
+"he": "צרח"
+},
+{
+"pt": "Grosso",
+"tr": "Gas",
+"he": "גס"
+},
+{
+"pt": "Grupo",
+"tr": "Kvutzá",
+"he": "קבוצה"
+},
+{
+"pt": "Grávida",
+"tr": "Hará",
+"he": "הרה"
+},
+{
+"pt": "Grêmio",
+"tr": "Igud",
+"he": "איגד"
+},
+{
+"pt": "Guarda",
+"tr": "Shomér",
+"he": "שומר"
+},
+{
+"pt": "Guarda-Chuva",
+"tr": "Mitriá",
+"he": "מטריה"
+},
+{
+"pt": "Guerra",
+"tr": "Milchamá",
+"he": "מלחמה"
+},
+{
+"pt": "Guerreiro",
+"tr": "Lochem",
+"he": "לוחם"
+},
+{
+"pt": "Guia",
+"tr": "Moré Derech",
+"he": "מורה דרך"
+},
+{
+"pt": "Guitarra",
+"tr": "Guitarra",
+"he": "גיטרה"
+},
+{
+"pt": "Gás",
+"tr": "Gaz",
+"he": "גז"
+},
+{
+"pt": "Gêmeo",
+"tr": "Têom",
+"he": "תאום"
+},
+{
+"pt": "Gênio",
+"tr": "Gaon",
+"he": "גאון"
+},
+{
+"pt": "Gíria",
+"tr": "Sleng",
+"he": "סלנג"
+},
+{
+"pt": "Habitante",
+"tr": "Tosháv",
+"he": "תושב"
+},
+{
+"pt": "Habitar",
+"tr": "Gár",
+"he": "גר"
+},
+{
+"pt": "Harpa",
+"tr": "Nével",
+"he": "נבל"
+},
+{
+"pt": "Havia",
+"tr": "Haiá",
+"he": "היה"
+},
+{
+"pt": "Hebraico",
+"tr": "Ivrit",
+"he": "עברית"
+},
+{
+"pt": "Hebreu",
+"tr": "Ivrí",
+"he": "עברי"
+},
+{
+"pt": "Helicóptero",
+"tr": "Massok",
+"he": "מסוק"
+},
+{
+"pt": "Herdar",
+"tr": "Iarash",
+"he": "ירש"
+},
+{
+"pt": "Heresia",
+"tr": "Kfirá",
+"he": "כפירה"
+},
+{
+"pt": "Herói",
+"tr": "Guibor",
+"he": "גיבור"
+},
+{
+"pt": "Hino",
+"tr": "Himnon",
+"he": "המנון"
+},
+{
+"pt": "Hipoteca",
+"tr": "Hipótese – Hashará",
+"he": "השערה"
+},
+{
+"pt": "Hoje",
+"tr": "Haiom",
+"he": "היום"
+},
+{
+"pt": "Holocausto",
+"tr": "Shoá",
+"he": "שואה"
+},
+{
+"pt": "Homem",
+"tr": "Ish",
+"he": "איש"
+},
+{
+"pt": "Honesto",
+"tr": "Iashár",
+"he": "ישר"
+},
+{
+"pt": "Honra",
+"tr": "Kavód",
+"he": "כבוד"
+},
+{
+"pt": "Hora",
+"tr": "Shaá",
+"he": "שעה"
+},
+{
+"pt": "Horizonte",
+"tr": "Ofek",
+"he": "אופק"
+},
+{
+"pt": "Hormônio",
+"tr": "Hormon",
+"he": "הורמון"
+},
+{
+"pt": "Horror",
+"tr": "Páchad",
+"he": "פחד"
+},
+{
+"pt": "Horrível",
+"tr": "Zvaáti",
+"he": "זוועתי"
+},
+{
+"pt": "Hortaliça",
+"tr": "",
+"he": "ירק"
+},
+{
+"pt": "Hortelã",
+"tr": "Nana",
+"he": "נענ"
+},
+{
+"pt": "Hospital",
+"tr": "Beit Cholim",
+"he": "בית;חולים"
+},
+{
+"pt": "Hospício",
+"tr": "Beit Mêshugaim",
+"he": "בית;משוגעים"
+},
+{
+"pt": "Hotel",
+"tr": "Malon",
+"he": "מלון"
+},
+{
+"pt": "Humano",
+"tr": "Enoshí",
+"he": "אנושי"
+},
+{
+"pt": "Humilde",
+"tr": "Anav",
+"he": "ענו"
+},
+{
+"pt": "Humor",
+"tr": "Humor",
+"he": "הומור"
+},
+{
+"pt": "Há",
+"tr": "Iesh",
+"he": "יש"
+},
+{
+"pt": "Hábito",
+"tr": "Min´Hag",
+"he": "מנהג"
+},
+{
+"pt": "Hálito",
+"tr": "Hevel pê",
+"he": "הבל;פה"
+},
+{
+"pt": "Hímen",
+"tr": "Krum Betulim",
+"he": "קרום;בתולים"
+},
+{
+"pt": "Hóspede",
+"tr": "Oreach",
+"he": "אורת"
+},
+{
+"pt": "Idade",
+"tr": "Guil",
+"he": "גיל"
+},
+{
+"pt": "Identidade",
+"tr": "Zehút",
+"he": "זהות"
+},
+{
+"pt": "Idioma",
+"tr": "Safá",
+"he": "שפה"
+},
+{
+"pt": "Idiota",
+"tr": "Tipesh",
+"he": "טיפש"
+},
+{
+"pt": "Idéia",
+"tr": "Raion",
+"he": "רעיון"
+},
+{
+"pt": "Idôneo",
+"tr": "Iashar",
+"he": "ישר"
+},
+{
+"pt": "Ignorante",
+"tr": "Baar",
+"he": "בער"
+},
+{
+"pt": "Igual",
+"tr": "Shavê",
+"he": "שוה"
+},
+{
+"pt": "Igualdade",
+"tr": "Shivyon",
+"he": "שוויון"
+},
+{
+"pt": "Ilha",
+"tr": "Í",
+"he": "אי"
+},
+{
+"pt": "Ilustre",
+"tr": "Dagul",
+"he": "דגול"
+},
+{
+"pt": "Imagem",
+"tr": "Tmuná",
+"he": "תמונה"
+},
+{
+"pt": "Imbecil",
+"tr": "Shotê",
+"he": "שוטה"
+},
+{
+"pt": "Impedir",
+"tr": "Maná",
+"he": "מנע"
+},
+{
+"pt": "Impossível",
+"tr": "Hí Efshar",
+"he": "אי אפשר"
+},
+{
+"pt": "Incêndio",
+"tr": "Dleiká",
+"he": "דליקה"
+},
+{
+"pt": "Indivíduo",
+"tr": "Prat",
+"he": "פרט"
+},
+{
+"pt": "Inspetor",
+"tr": "Mefakeach",
+"he": "מפקח"
+},
+{
+"pt": "Instrumento",
+"tr": "Kli",
+"he": "כלי"
+},
+{
+"pt": "Insígnia",
+"tr": "Semel",
+"he": "סמל"
+},
+{
+"pt": "Inteligência",
+"tr": "Sechel",
+"he": "שכל"
+},
+{
+"pt": "Interno",
+"tr": "Pnimí",
+"he": "פנימי"
+},
+{
+"pt": "Invasor",
+"tr": "Pôlesh",
+"he": "פלש"
+},
+{
+"pt": "Inverno",
+"tr": "Choref",
+"he": "חורף"
+},
+{
+"pt": "Iodo",
+"tr": "Iod",
+"he": "יוד"
+},
+{
+"pt": "Ir",
+"tr": "Halach",
+"he": "הלך"
+},
+{
+"pt": "Irmã",
+"tr": "Achot",
+"he": "אחות"
+},
+{
+"pt": "Irmão",
+"tr": "Ach",
+"he": "אח"
+},
+{
+"pt": "Isca",
+"tr": "Pitaion",
+"he": "פתיון"
+},
+{
+"pt": "Isento",
+"tr": "Patur",
+"he": "פטור"
+},
+{
+"pt": "Isso",
+"tr": "Zé",
+"he": "זה"
+},
+{
+"pt": "Jacaré",
+"tr": "Tanin",
+"he": "תנין"
+},
+{
+"pt": "Janeiro",
+"tr": "Iánuar",
+"he": "ינואר"
+},
+{
+"pt": "Janela",
+"tr": "Chalon",
+"he": "חלון"
+},
+{
+"pt": "Jardim",
+"tr": "Gan",
+"he": "גן"
+},
+{
+"pt": "Jardineiro",
+"tr": "Ganan",
+"he": "גנן"
+},
+{
+"pt": "Jarra",
+"tr": "Kad",
+"he": "כד"
+},
+{
+"pt": "Jaula",
+"tr": "Kluv",
+"he": "כלוב"
+},
+{
+"pt": "Jejum",
+"tr": "Tzom",
+"he": "צום"
+},
+{
+"pt": "Jesuíta",
+"tr": "Ieshuí",
+"he": "ישועי"
+},
+{
+"pt": "Joelho",
+"tr": "Bérech",
+"he": "ברך"
+},
+{
+"pt": "Jogo",
+"tr": "Mischak",
+"he": "משחק"
+},
+{
+"pt": "Jogou",
+"tr": "Sichek",
+"he": "שחק"
+},
+{
+"pt": "Jornal",
+"tr": "Iton",
+"he": "עתון"
+},
+{
+"pt": "Jovem",
+"tr": "Tzaír",
+"he": "צעיר"
+},
+{
+"pt": "Jovens",
+"tr": "Neurim",
+"he": "נעורים"
+},
+{
+"pt": "Judeu",
+"tr": "Iehudí",
+"he": "יהודי"
+},
+{
+"pt": "Jugo",
+"tr": "Ol",
+"he": "ערל"
+},
+{
+"pt": "Juiz",
+"tr": "Shofêt",
+"he": "שופט"
+},
+{
+"pt": "Jumento",
+"tr": "Chamor",
+"he": "חמור"
+},
+{
+"pt": "Junho",
+"tr": "Iuní",
+"he": "יוני"
+},
+{
+"pt": "Junto",
+"tr": "Beiachad",
+"he": "ביחד"
+},
+{
+"pt": "Justiça",
+"tr": "Tzédek",
+"he": "צדק"
+},
+{
+"pt": "Justo",
+"tr": "Tzadik",
+"he": "צדיק"
+},
+{
+"pt": "Já",
+"tr": "Kvar",
+"he": "כבר"
+},
+{
+"pt": "Jóia",
+"tr": "Tachsit",
+"he": "תכשיט"
+},
+{
+"pt": "Labirinto",
+"tr": "Mavoch",
+"he": "מבון"
+},
+{
+"pt": "Lacrimejar",
+"tr": "Dama",
+"he": "דמע"
+},
+{
+"pt": "Ladeira",
+"tr": "Midron",
+"he": "מדרון"
+},
+{
+"pt": "Lado",
+"tr": "Tzad",
+"he": "צד"
+},
+{
+"pt": "Ladrão",
+"tr": "Ganáv",
+"he": "גנב"
+},
+{
+"pt": "Lagarta",
+"tr": "Záchal",
+"he": "זחל"
+},
+{
+"pt": "Lago",
+"tr": "Agam",
+"he": "אגם"
+},
+{
+"pt": "Lama",
+"tr": "Botz",
+"he": "בוץ"
+},
+{
+"pt": "Lança",
+"tr": "Romach",
+"he": "רומח"
+},
+{
+"pt": "Lar",
+"tr": "Bait",
+"he": "בית"
+},
+{
+"pt": "Laranja",
+"tr": "Tapuz",
+"he": "תפוז"
+},
+{
+"pt": "Largo",
+"tr": "Rachav",
+"he": "רחב"
+},
+{
+"pt": "Larva",
+"tr": "Zachal",
+"he": "זחל"
+},
+{
+"pt": "Lata",
+"tr": "Pach",
+"he": "פח"
+},
+{
+"pt": "Latejar",
+"tr": "Dafák",
+"he": "דפק"
+},
+{
+"pt": "Latir",
+"tr": "Navách",
+"he": "נבח"
+},
+{
+"pt": "Lavrador",
+"tr": "Falach",
+"he": "פלח"
+},
+{
+"pt": "Lazer",
+"tr": "Penai",
+"he": "ףנאי"
+},
+{
+"pt": "Leal",
+"tr": "Neeman",
+"he": "נאמן"
+},
+{
+"pt": "Lebre",
+"tr": "Arnevet",
+"he": "ארנבת"
+},
+{
+"pt": "Legião",
+"tr": "Gdud",
+"he": "גדוד"
+},
+{
+"pt": "Legítimo",
+"tr": "Kasher",
+"he": "כשר"
+},
+{
+"pt": "Lei",
+"tr": "Din",
+"he": "דין"
+},
+{
+"pt": "Leite",
+"tr": "Chalav",
+"he": "חלב"
+},
+{
+"pt": "Leito",
+"tr": "Mitah",
+"he": "מטה"
+},
+{
+"pt": "Leitor",
+"tr": "Koré",
+"he": "קורא"
+},
+{
+"pt": "Leitão",
+"tr": "Chaziron",
+"he": "חזירון"
+},
+{
+"pt": "Lembranças",
+"tr": "Brachót",
+"he": "ברכות"
+},
+{
+"pt": "Lenha",
+"tr": "Hetza",
+"he": "עצה"
+},
+{
+"pt": "Lento",
+"tr": "Iti",
+"he": "אטי"
+},
+{
+"pt": "Lençol",
+"tr": "Sadin",
+"he": "סדין"
+},
+{
+"pt": "Leste",
+"tr": "Mizrach",
+"he": "מזרח"
+},
+{
+"pt": "Letra",
+"tr": "Ot",
+"he": "אות"
+},
+{
+"pt": "Levou",
+"tr": "Lakach",
+"he": "לקח"
+},
+{
+"pt": "Leão",
+"tr": "Arie",
+"he": "אריה"
+},
+{
+"pt": "Libertou",
+"tr": "Shichrer",
+"he": "שיחרר"
+},
+{
+"pt": "Limite",
+"tr": "Gvul",
+"he": "גבול"
+},
+{
+"pt": "Limpo",
+"tr": "Naki",
+"he": "נקי"
+},
+{
+"pt": "Limpou",
+"tr": "Niká",
+"he": "נקה"
+},
+{
+"pt": "Limão",
+"tr": "Limón",
+"he": "לימון"
+},
+{
+"pt": "Linha",
+"tr": "Chut",
+"he": "חות"
+},
+{
+"pt": "Linho",
+"tr": "Pishtan",
+"he": "פישתן"
+},
+{
+"pt": "Liso",
+"tr": "Chalak",
+"he": "חלק"
+},
+{
+"pt": "Literal",
+"tr": "Meduiak",
+"he": "מדויק"
+},
+{
+"pt": "Litoral",
+"tr": "Chof",
+"he": "חוף"
+},
+{
+"pt": "Livro",
+"tr": "Sêfer",
+"he": "ספר"
+},
+{
+"pt": "Lixo",
+"tr": "Zevel",
+"he": "זבל"
+},
+{
+"pt": "Lobo",
+"tr": "Zeev",
+"he": "זאב"
+},
+{
+"pt": "Locomotiva",
+"tr": "Katar",
+"he": "קתר"
+},
+{
+"pt": "Lodo",
+"tr": "Botz",
+"he": "בוץ"
+},
+{
+"pt": "Logo",
+"tr": "Bekarov",
+"he": "בקרוב"
+},
+{
+"pt": "Loja",
+"tr": "Chanut",
+"he": "חנות"
+},
+{
+"pt": "Lombo",
+"tr": "Gav",
+"he": "גב"
+},
+{
+"pt": "Longe",
+"tr": "Rachok",
+"he": "רחוק"
+},
+{
+"pt": "Longo",
+"tr": "Aroch",
+"he": "ארוך"
+},
+{
+"pt": "Lotação",
+"tr": "Sheirut",
+"he": "שירות"
+},
+{
+"pt": "Louco",
+"tr": "Meshugá",
+"he": "משוגוע"
+},
+{
+"pt": "Loucura",
+"tr": "Shigaon",
+"he": "שגעון"
+},
+{
+"pt": "Louro(pássaro)",
+"tr": "Tuki",
+"he": "תכי"
+},
+{
+"pt": "Lousa",
+"tr": "Luach",
+"he": "לוח"
+},
+{
+"pt": "Louvor",
+"tr": "Shevach",
+"he": "שבח"
+},
+{
+"pt": "Lua",
+"tr": "Iareach",
+"he": "ירח"
+},
+{
+"pt": "Lua",
+"tr": "Levaná",
+"he": "לבנה"
+},
+{
+"pt": "Lubrificante",
+"tr": "Shemen",
+"he": "שמן"
+},
+{
+"pt": "Lucro",
+"tr": "Révach",
+"he": "רווח"
+},
+{
+"pt": "Lugar",
+"tr": "Makom",
+"he": "מקום"
+},
+{
+"pt": "Luneta",
+"tr": "Mishkefet",
+"he": "משקפת"
+},
+{
+"pt": "Luta",
+"tr": "Maavak",
+"he": "מאבק"
+},
+{
+"pt": "Lutador",
+"tr": "Mit’abek",
+"he": "מתאבק"
+},
+{
+"pt": "Luto",
+"tr": "Evel",
+"he": "אבל"
+},
+{
+"pt": "Lutou",
+"tr": "Neevak",
+"he": "נאבק"
+},
+{
+"pt": "Luvas",
+"tr": "Kfafot",
+"he": "כפפות"
+},
+{
+"pt": "Luz",
+"tr": "Or",
+"he": "אור"
+},
+{
+"pt": "Lá",
+"tr": "Sham",
+"he": "שם"
+},
+{
+"pt": "Lábios",
+"tr": "Sfataim",
+"he": "שפתיים"
+},
+{
+"pt": "Lágrima",
+"tr": "Dimá",
+"he": "דמעה"
+},
+{
+"pt": "Lápis",
+"tr": "Iparon",
+"he": "עפרון"
+},
+{
+"pt": "Lâmina",
+"tr": "Luach",
+"he": "לוח"
+},
+{
+"pt": "Lâmpada",
+"tr": "Menorá",
+"he": "מנורה"
+},
+{
+"pt": "Língua",
+"tr": "Lashón",
+"he": "לשון"
+},
+{
+"pt": "Lírio",
+"tr": "Chavatzelet",
+"he": "חבצלת"
+},
+{
+"pt": "Lógica",
+"tr": "Higaion",
+"he": "הגיון"
+},
+{
+"pt": "Lúcido",
+"tr": "Pikeach",
+"he": "פיקח"
+},
+{
+"pt": "Maca",
+"tr": "Alunká",
+"he": "אלונקה"
+},
+{
+"pt": "Macabeu",
+"tr": "Maccabi",
+"he": "מכבי"
+},
+{
+"pt": "Macaco",
+"tr": "Kof",
+"he": "קוף"
+},
+{
+"pt": "Macaco",
+"tr": "Kof",
+"he": "קוף"
+},
+{
+"pt": "Machado",
+"tr": "Garzen",
+"he": "גרזן"
+},
+{
+"pt": "Maciez",
+"tr": "Rakut",
+"he": "רכות"
+},
+{
+"pt": "Macio",
+"tr": "Rach",
+"he": "רך"
+},
+{
+"pt": "Magia",
+"tr": "Kishuf",
+"he": "כשוף"
+},
+{
+"pt": "Magnificência",
+"tr": "Tiferet",
+"he": "תפארח"
+},
+{
+"pt": "Magnífico",
+"tr": "Niflá",
+"he": "נפלא"
+},
+{
+"pt": "Magro",
+"tr": "Razé",
+"he": "רזה"
+},
+{
+"pt": "Maioria",
+"tr": "Rov",
+"he": "רב"
+},
+{
+"pt": "Mais",
+"tr": "Yoter",
+"he": "יותר"
+},
+{
+"pt": "Mais",
+"tr": "Od",
+"he": "עוד"
+},
+{
+"pt": "Mal",
+"tr": "Ra",
+"he": "רע"
+},
+{
+"pt": "Mala",
+"tr": "Mizvadá",
+"he": "מזודה"
+},
+{
+"pt": "Maldade",
+"tr": "Rishut",
+"he": "רשעות"
+},
+{
+"pt": "Maldição",
+"tr": "Klalá",
+"he": "קללה"
+},
+{
+"pt": "Maldoso",
+"tr": "Rashá",
+"he": "רשע"
+},
+{
+"pt": "Mamífero",
+"tr": "Ionek",
+"he": "יונק"
+},
+{
+"pt": "Manancial",
+"tr": "Makor",
+"he": "מקור"
+},
+{
+"pt": "Mandamento",
+"tr": "Mitzvá",
+"he": "מצוה"
+},
+{
+"pt": "Manga (camisa)",
+"tr": "Sharvul",
+"he": "שרוול"
+},
+{
+"pt": "Manhoso",
+"tr": "Arom",
+"he": "ערום"
+},
+{
+"pt": "Manhã",
+"tr": "Boker",
+"he": "בוקר"
+},
+{
+"pt": "Manteiga",
+"tr": "Chemá",
+"he": "חמאה"
+},
+{
+"pt": "Mar",
+"tr": "Iam",
+"he": "ים"
+},
+{
+"pt": "Mariposa",
+"tr": "Parpar Laila",
+"he": "פרפר;לילה"
+},
+{
+"pt": "Marmelada",
+"tr": "Ribá",
+"he": "רבה"
+},
+{
+"pt": "Marrom",
+"tr": "Rum",
+"he": "חום"
+},
+{
+"pt": "Massa",
+"tr": "Itriá",
+"he": "אטריה"
+},
+{
+"pt": "Massacre",
+"tr": "Tevach",
+"he": "טבח"
+},
+{
+"pt": "Matriarca",
+"tr": "Em",
+"he": "אם"
+},
+{
+"pt": "Maçã",
+"tr": "Tapuach",
+"he": "תפוח"
+},
+{
+"pt": "Medroso",
+"tr": "Pachdan",
+"he": "פחדן"
+},
+{
+"pt": "Medula",
+"tr": "Leshed",
+"he": "לשד"
+},
+{
+"pt": "Meia-Noite",
+"tr": "Chatzot",
+"he": "חצות"
+},
+{
+"pt": "Meias",
+"tr": "Garbáim",
+"he": "גרבים"
+},
+{
+"pt": "Meio",
+"tr": "Emtza",
+"he": "אמצע"
+},
+{
+"pt": "Meio-Dia",
+"tr": "Tzohoraim",
+"he": "צוהורים"
+},
+{
+"pt": "Mel",
+"tr": "Dvash",
+"he": "רבש"
+},
+{
+"pt": "Melancia",
+"tr": "Avatíach",
+"he": "אבטיח"
+},
+{
+"pt": "Membro",
+"tr": "Gaf",
+"he": "גף"
+},
+{
+"pt": "Memorial",
+"tr": "Tazkir",
+"he": "תזכיר"
+},
+{
+"pt": "Memória",
+"tr": "Zikaron",
+"he": "זכרון"
+},
+{
+"pt": "Mendigo",
+"tr": "Kabtzan",
+"he": "קבצן"
+},
+{
+"pt": "Menina",
+"tr": "Ialdá",
+"he": "ילדה"
+},
+{
+"pt": "Menino",
+"tr": "Iéled",
+"he": "ילד"
+},
+{
+"pt": "Menos",
+"tr": "Pachot",
+"he": "פחות"
+},
+{
+"pt": "Menosprezo",
+"tr": "Zilzul",
+"he": "זילזול"
+},
+{
+"pt": "Mensagem",
+"tr": "Hodaá",
+"he": "הודעה"
+},
+{
+"pt": "Menstruação",
+"tr": "Vésset",
+"he": "ווסת"
+},
+{
+"pt": "Mensurável",
+"tr": "Madid",
+"he": "מדיד"
+},
+{
+"pt": "Mental",
+"tr": "Sichli",
+"he": "שכלי"
+},
+{
+"pt": "Mentira",
+"tr": "Sheker",
+"he": "שקר"
+},
+{
+"pt": "Mentiroso",
+"tr": "Shakran",
+"he": "שקרן"
+},
+{
+"pt": "Mentiu",
+"tr": "Shiker",
+"he": "שיקר"
+},
+{
+"pt": "Menu",
+"tr": "Tafrit",
+"he": "תפריט"
+},
+{
+"pt": "Mercado",
+"tr": "Schuk",
+"he": "שוק"
+},
+{
+"pt": "Mercador",
+"tr": "Socher",
+"he": "סוחר"
+},
+{
+"pt": "Mercadoria",
+"tr": "Schorá",
+"he": "סחורה"
+},
+{
+"pt": "Mercante",
+"tr": "Socher",
+"he": "סוחר"
+},
+{
+"pt": "Mercantil",
+"tr": "Mischarí",
+"he": "מסחרי"
+},
+{
+"pt": "Mercearia",
+"tr": "Makolet",
+"he": "מכולת"
+},
+{
+"pt": "Merecer",
+"tr": "Zachá",
+"he": "זכה"
+},
+{
+"pt": "Mesa",
+"tr": "Shulchan",
+"he": "שולחן"
+},
+{
+"pt": "Mesmo que…/Mesmo assim",
+"tr": "Lamrot",
+"he": "למרות"
+},
+{
+"pt": "Meu",
+"tr": "Shelí",
+"he": "שלי"
+},
+{
+"pt": "Mil",
+"tr": "Elef",
+"he": "אלף"
+},
+{
+"pt": "Milagre",
+"tr": "Nes",
+"he": "נס"
+},
+{
+"pt": "Milho",
+"tr": "Tiras",
+"he": "תירס"
+},
+{
+"pt": "Mim",
+"tr": "Li",
+"he": "לי"
+},
+{
+"pt": "Minguante",
+"tr": "Pochet",
+"he": "פוחת"
+},
+{
+"pt": "Minhoca",
+"tr": "Tolaat",
+"he": "תולעת"
+},
+{
+"pt": "Minuto",
+"tr": "Daká",
+"he": "דקה"
+},
+{
+"pt": "Mira",
+"tr": "Kavenet",
+"he": "כוונת"
+},
+{
+"pt": "Missão",
+"tr": "Shlichut",
+"he": "שליחת"
+},
+{
+"pt": "Mistura",
+"tr": "Taarovet",
+"he": "תערובת"
+},
+{
+"pt": "Mochileiro",
+"tr": "Ta",
+"he": "תא"
+},
+{
+"pt": "Mocidade",
+"tr": "Neurim",
+"he": "נעורים"
+},
+{
+"pt": "Modelo",
+"tr": "Dugmá",
+"he": "דוגמא"
+},
+{
+"pt": "Momento",
+"tr": "Rega",
+"he": "רגע"
+},
+{
+"pt": "Montanha",
+"tr": "Har",
+"he": "הר"
+},
+{
+"pt": "Morango",
+"tr": "Tut",
+"he": "תות"
+},
+{
+"pt": "Moro",
+"tr": "Gar",
+"he": "גר"
+},
+{
+"pt": "Motocicleta",
+"tr": "Ofanóa",
+"he": "אופנוע"
+},
+{
+"pt": "Mudança",
+"tr": "Shinui",
+"he": "שיני"
+},
+{
+"pt": "Muito",
+"tr": "Meod",
+"he": "מאד"
+},
+{
+"pt": "Mulheres",
+"tr": "Nashim",
+"he": "נשים"
+},
+{
+"pt": "Mundial",
+"tr": "Olami",
+"he": "אולמי"
+},
+{
+"pt": "Mundo",
+"tr": "Olam",
+"he": "אולם"
+},
+{
+"pt": "Musgo",
+"tr": "Tachav",
+"he": "טחב"
+},
+{
+"pt": "Mágico",
+"tr": "Kossem",
+"he": "קוסם"
+},
+{
+"pt": "Mãe",
+"tr": "Ima",
+"he": "אמא"
+},
+{
+"pt": "Mão",
+"tr": "Iád",
+"he": "יד"
+},
+{
+"pt": "Médico",
+"tr": "Rofé",
+"he": "רופא"
+},
+{
+"pt": "Mês",
+"tr": "Chodesh",
+"he": "חודש"
+},
+{
+"pt": "Músculo",
+"tr": "Iaréch",
+"he": "ירך"
+},
+{
+"pt": "Música",
+"tr": "Shir",
+"he": "שיר"
+},
+{
+"pt": "Nabo",
+"tr": "Lefet",
+"he": "לפת"
+},
+{
+"pt": "Nacional",
+"tr": "Leumi",
+"he": "לאומי"
+},
+{
+"pt": "Nacionalidade",
+"tr": "Leom",
+"he": "לאום"
+},
+{
+"pt": "Nacionalista",
+"tr": "Leumaní",
+"he": "לאומיות"
+},
+{
+"pt": "Nada",
+"tr": "Shum Davar",
+"he": "שום;דבר"
+},
+{
+"pt": "Nadador",
+"tr": "Sachian",
+"he": "שחיין"
+},
+{
+"pt": "Nadou",
+"tr": "Sachá",
+"he": "שחה"
+},
+{
+"pt": "Namorado",
+"tr": "Chaver",
+"he": "חבר"
+},
+{
+"pt": "Namoro",
+"tr": "Chaverút",
+"he": "חברות"
+},
+{
+"pt": "Narciso",
+"tr": "Narkis",
+"he": "נרקים"
+},
+{
+"pt": "Nariz",
+"tr": "Af",
+"he": "אף"
+},
+{
+"pt": "Nasal",
+"tr": "Afí",
+"he": "אפי"
+},
+{
+"pt": "Nata",
+"tr": "Krum",
+"he": "קתום"
+},
+{
+"pt": "Natal",
+"tr": "Chag Hamolád",
+"he": "חג;המולד"
+},
+{
+"pt": "Nativo",
+"tr": "Ialid",
+"he": "יליד"
+},
+{
+"pt": "Natureza",
+"tr": "Têva",
+"he": "טבע"
+},
+{
+"pt": "Nave Espacial",
+"tr": "Chalalit",
+"he": "חללית"
+},
+{
+"pt": "Navegou",
+"tr": "Shat",
+"he": "שט"
+},
+{
+"pt": "Navio",
+"tr": "Oniá",
+"he": "אוניה"
+},
+{
+"pt": "Nação",
+"tr": "Am",
+"he": "עם"
+},
+{
+"pt": "Negro",
+"tr": "Shachor",
+"he": "שחור"
+},
+{
+"pt": "Nem",
+"tr": "Af",
+"he": "אף"
+},
+{
+"pt": "Nenê",
+"tr": "Tinok",
+"he": "תינוק"
+},
+{
+"pt": "Neve",
+"tr": "Sheleg",
+"he": "שלג"
+},
+{
+"pt": "Ninho",
+"tr": "Ken",
+"he": "קן"
+},
+{
+"pt": "Noite",
+"tr": "Laila",
+"he": "לילה"
+},
+{
+"pt": "Noiva / Nora",
+"tr": "Kalá",
+"he": "כלה"
+},
+{
+"pt": "Norma",
+"tr": "Teken",
+"he": "תקן"
+},
+{
+"pt": "Normal",
+"tr": "Takin",
+"he": "תקין"
+},
+{
+"pt": "Norte",
+"tr": "Tzafon",
+"he": "צפון"
+},
+{
+"pt": "Novamente",
+"tr": "Shuv",
+"he": "שוב"
+},
+{
+"pt": "Nove",
+"tr": "Teisha",
+"he": "תשעה"
+},
+{
+"pt": "Novo",
+"tr": "Chadash",
+"he": "חדש"
+},
+{
+"pt": "Noz",
+"tr": "Egoz",
+"he": "אגוז"
+},
+{
+"pt": "Nuvem",
+"tr": "Anan",
+"he": "ענן"
+},
+{
+"pt": "Nádega",
+"tr": "Iashvan",
+"he": "ישבן"
+},
+{
+"pt": "Não",
+"tr": "Ló",
+"he": "לא"
+},
+{
+"pt": "Nó",
+"tr": "Kesher",
+"he": "קשת"
+},
+{
+"pt": "Nós",
+"tr": "Anachnu",
+"he": "אנחנו"
+},
+{
+"pt": "Número",
+"tr": "Mispar",
+"he": "מספר"
+},
+{
+"pt": "Obedeceu",
+"tr": "Tziet",
+"he": "ציית"
+},
+{
+"pt": "Obediente",
+"tr": "Tzaitan",
+"he": "צייתן"
+},
+{
+"pt": "Obediência",
+"tr": "Tziut",
+"he": "ציות"
+},
+{
+"pt": "Objeto",
+"tr": "Etzem",
+"he": "עצם"
+},
+{
+"pt": "Objetou",
+"tr": "Hitnagued",
+"he": "התנגד"
+},
+{
+"pt": "Objeção",
+"tr": "Hitnagdut",
+"he": "התנגדות"
+},
+{
+"pt": "Obliterado",
+"tr": "Kavui",
+"he": "כבוי"
+},
+{
+"pt": "Oboé",
+"tr": "Abuv",
+"he": "אבוב"
+},
+{
+"pt": "Obra",
+"tr": "Ietzirá",
+"he": "יצירה"
+},
+{
+"pt": "Obrigado",
+"tr": "Todá",
+"he": "תודה"
+},
+{
+"pt": "Obrigatório",
+"tr": "Hechrechí",
+"he": "הכרחי"
+},
+{
+"pt": "Obrigação",
+"tr": "Chová",
+"he": "חובה"
+},
+{
+"pt": "Obscuro",
+"tr": "Chashuch",
+"he": "חשוך"
+},
+{
+"pt": "Observador",
+"tr": "Mitbonen",
+"he": "מתבנן"
+},
+{
+"pt": "Observatório",
+"tr": "Mitzpê",
+"he": "מצפה"
+},
+{
+"pt": "Observação",
+"tr": "Histaklut",
+"he": "הסתכלות"
+},
+{
+"pt": "Observou",
+"tr": "Histakel",
+"he": "הסתכל"
+},
+{
+"pt": "Observância",
+"tr": "Milui",
+"he": "מלוי"
+},
+{
+"pt": "Obstante",
+"tr": "Mafria",
+"he": "מפריע"
+},
+{
+"pt": "Obstinado",
+"tr": "Akshan",
+"he": "עקשן"
+},
+{
+"pt": "Obstruído",
+"tr": "Satum",
+"he": "סתום"
+},
+{
+"pt": "Obstáculo",
+"tr": "Michsol",
+"he": "מכשול"
+},
+{
+"pt": "Obteve",
+"tr": "Hessig",
+"he": "השיג"
+},
+{
+"pt": "Ocasião",
+"tr": "Hizdamnut",
+"he": "הזדמנות"
+},
+{
+"pt": "Ocioso",
+"tr": "Batel",
+"he": "בטל"
+},
+{
+"pt": "Oco",
+"tr": "Chalul",
+"he": "חלול"
+},
+{
+"pt": "Oculto",
+"tr": "Mistorí",
+"he": "מסתורי"
+},
+{
+"pt": "Ocupado",
+"tr": "Assúk",
+"he": "עסוק"
+},
+{
+"pt": "Oeste",
+"tr": "Maarav",
+"he": "מערב"
+},
+{
+"pt": "Ofegante",
+"tr": "Mitnashem",
+"he": "מתנשם"
+},
+{
+"pt": "Oficial",
+"tr": "Rishmí",
+"he": "רשמי"
+},
+{
+"pt": "Ogiva",
+"tr": "Kipá",
+"he": "כפה"
+},
+{
+"pt": "Olho",
+"tr": "Ain",
+"he": "עין"
+},
+{
+"pt": "Oliveira",
+"tr": "Zayit",
+"he": "זית"
+},
+{
+"pt": "Onda",
+"tr": "Gal",
+"he": "גל"
+},
+{
+"pt": "Onde",
+"tr": "Eifo",
+"he": "איפה"
+},
+{
+"pt": "Oneroso",
+"tr": "Iakar",
+"he": "יקר"
+},
+{
+"pt": "Ontem",
+"tr": "Etmol",
+"he": "אתמול"
+},
+{
+"pt": "Onça",
+"tr": "Namer",
+"he": "נמר"
+},
+{
+"pt": "Opaco",
+"tr": "Atum",
+"he": "אטום"
+},
+{
+"pt": "Operário",
+"tr": "Poel",
+"he": "פועל"
+},
+{
+"pt": "Opinião",
+"tr": "Dea",
+"he": "דעה"
+},
+{
+"pt": "Optar",
+"tr": "Bachár",
+"he": "בכר"
+},
+{
+"pt": "Opção",
+"tr": "Breirá",
+"he": "ברירה"
+},
+{
+"pt": "Oral",
+"tr": "Beal-pe – ב ע ל",
+"he": ";פה"
+},
+{
+"pt": "Ordem",
+"tr": "Sêder",
+"he": "סדר"
+},
+{
+"pt": "Ordenação",
+"tr": "Sidur",
+"he": "סידור"
+},
+{
+"pt": "Organização",
+"tr": "Irgun",
+"he": "ארגון"
+},
+{
+"pt": "Orgulho",
+"tr": "Gaavá",
+"he": "גאוה"
+},
+{
+"pt": "Oriente",
+"tr": "Mizrach",
+"he": "מזרח"
+},
+{
+"pt": "Origem",
+"tr": "Makor",
+"he": "מקור"
+},
+{
+"pt": "Ortodoxo",
+"tr": "Aduk",
+"he": "ךדוק"
+},
+{
+"pt": "Orçamento",
+"tr": "Taktziv",
+"he": "תקציב"
+},
+{
+"pt": "Osmose",
+"tr": "Diút",
+"he": "דיות"
+},
+{
+"pt": "Osso",
+"tr": "Etzem",
+"he": "עצם"
+},
+{
+"pt": "Ou",
+"tr": "O",
+"he": "ו"
+},
+{
+"pt": "Ouro",
+"tr": "Zahav",
+"he": "זהב"
+},
+{
+"pt": "Outono",
+"tr": "Stav",
+"he": "סתיב"
+},
+{
+"pt": "Outro",
+"tr": "Ácher",
+"he": "ךחר"
+},
+{
+"pt": "Ouviu",
+"tr": "Shamá",
+"he": "שמע"
+},
+{
+"pt": "Ovo",
+"tr": "Beitzá",
+"he": "ביצה"
+},
+{
+"pt": "Oxigênio",
+"tr": "Chamtzan",
+"he": "חמצן"
+},
+{
+"pt": "Oásis",
+"tr": "Navé",
+"he": "נוה"
+},
+{
+"pt": "Pacto",
+"tr": "Brit",
+"he": "ברית"
+},
+{
+"pt": "Pagou",
+"tr": "Shilem",
+"he": "שילם"
+},
+{
+"pt": "Pai",
+"tr": "Aba",
+"he": "אבא"
+},
+{
+"pt": "Palhaço",
+"tr": "Leitzán",
+"he": "ליצן"
+},
+{
+"pt": "Palmeira",
+"tr": "Tamar",
+"he": "תמר"
+},
+{
+"pt": "Palmeira",
+"tr": "Dékel",
+"he": "דקל"
+},
+{
+"pt": "Panela",
+"tr": "Sir",
+"he": "סיר"
+},
+{
+"pt": "Pano",
+"tr": "Bad",
+"he": "בד"
+},
+{
+"pt": "Pança",
+"tr": "Kéress",
+"he": "כרס"
+},
+{
+"pt": "Papagaio",
+"tr": "Tukí",
+"he": "תוכי"
+},
+{
+"pt": "Papel",
+"tr": "Niar",
+"he": "ניר"
+},
+{
+"pt": "Par",
+"tr": "Zug",
+"he": "זוג"
+},
+{
+"pt": "Para baixo",
+"tr": "Lemáta",
+"he": "למטה"
+},
+{
+"pt": "Para cima",
+"tr": "Lemála",
+"he": "למעלה"
+},
+{
+"pt": "Para eles",
+"tr": "Eleihem",
+"he": "אליהם"
+},
+{
+"pt": "Para mim",
+"tr": "Bishvilí",
+"he": "בשבלי"
+},
+{
+"pt": "Para onde?",
+"tr": "Lean",
+"he": "לאן"
+},
+{
+"pt": "Parabéns",
+"tr": "Mazal Tov",
+"he": "מזל טוב"
+},
+{
+"pt": "Pardo",
+"tr": "Afór",
+"he": "אפור"
+},
+{
+"pt": "Parou",
+"tr": "Atzar",
+"he": "עצר"
+},
+{
+"pt": "Parte da/de..",
+"tr": "Chélek m(e)…",
+"he": "חלקמ…"
+},
+{
+"pt": "Partido",
+"tr": "Miflagá",
+"he": "מפלגה"
+},
+{
+"pt": "Passarinho",
+"tr": "Tzipor",
+"he": "ציפור"
+},
+{
+"pt": "Passatempo",
+"tr": "Bilui",
+"he": "בילוי"
+},
+{
+"pt": "Passeio",
+"tr": "Tiul",
+"he": "תיול"
+},
+{
+"pt": "Pastor",
+"tr": "Roê",
+"he": "רועה"
+},
+{
+"pt": "Pato",
+"tr": "Barvaz",
+"he": "ברווז"
+},
+{
+"pt": "Pausa",
+"tr": "Hafsaká",
+"he": "הפסקה"
+},
+{
+"pt": "Pavor",
+"tr": "Pachad",
+"he": "פחד"
+},
+{
+"pt": "Paz",
+"tr": "Shalom",
+"he": "שלום"
+},
+{
+"pt": "Pegou",
+"tr": "Lakach",
+"he": "לקח"
+},
+{
+"pt": "Peixe",
+"tr": "Dag",
+"he": "דג"
+},
+{
+"pt": "Pensamento",
+"tr": "Macshavá",
+"he": "מחשבה"
+},
+{
+"pt": "Pente",
+"tr": "Masrêk",
+"he": "מסרק"
+},
+{
+"pt": "Pepino",
+"tr": "Melafefon",
+"he": "מלפפון"
+},
+{
+"pt": "Pergunta",
+"tr": "Sheelá",
+"he": "שאלה"
+},
+{
+"pt": "Perseguiu",
+"tr": "Radaf",
+"he": "רדף"
+},
+{
+"pt": "Perto",
+"tr": "Karov",
+"he": "קרוב"
+},
+{
+"pt": "Perturbação",
+"tr": "Hafraá",
+"he": "הפרעה"
+},
+{
+"pt": "Perverso",
+"tr": "Rash’á",
+"he": "רשע"
+},
+{
+"pt": "Pescador",
+"tr": "Daiag",
+"he": "דיג"
+},
+{
+"pt": "Peso",
+"tr": "Mishkal",
+"he": "משקל"
+},
+{
+"pt": "Pessoa",
+"tr": "Ben Adam",
+"he": "בן אדם"
+},
+{
+"pt": "Pessoas",
+"tr": "Anashim",
+"he": "אנשים"
+},
+{
+"pt": "Petróleo",
+"tr": "Néfet",
+"he": "נפת"
+},
+{
+"pt": "Piada",
+"tr": "Bdichá",
+"he": "בדיחה"
+},
+{
+"pt": "Pico",
+"tr": "Pisgá",
+"he": "פיסגה"
+},
+{
+"pt": "Pilha",
+"tr": "Solelá",
+"he": "סוללת"
+},
+{
+"pt": "Pingüim",
+"tr": "Pingvin",
+"he": "פינגוין"
+},
+{
+"pt": "Pinto",
+"tr": "Efroach",
+"he": "אפרוח"
+},
+{
+"pt": "Pintor",
+"tr": "Tzaiar",
+"he": "צייר"
+},
+{
+"pt": "Piolhos",
+"tr": "Kinim",
+"he": "כינים"
+},
+{
+"pt": "Pirataria",
+"tr": "Shod",
+"he": "שוד"
+},
+{
+"pt": "Piscina",
+"tr": "Brechá",
+"he": "ברכה"
+},
+{
+"pt": "Planejamento",
+"tr": "Tochnit",
+"he": "תוכנית"
+},
+{
+"pt": "Por causa",
+"tr": "Biglal",
+"he": "בגלל"
+},
+{
+"pt": "Por favor",
+"tr": "Bevakashá",
+"he": "בבקשה"
+},
+{
+"pt": "Por quê?",
+"tr": "Lama",
+"he": "למה"
+},
+{
+"pt": "Porco",
+"tr": "Chazir",
+"he": "חזיר"
+},
+{
+"pt": "Porto",
+"tr": "Namel",
+"he": "נמל"
+},
+{
+"pt": "Portão",
+"tr": "Sháar",
+"he": "שער"
+},
+{
+"pt": "Possível",
+"tr": "Efshar",
+"he": "אפשר"
+},
+{
+"pt": "Povo",
+"tr": "Am",
+"he": "עם"
+},
+{
+"pt": "Praça",
+"tr": "Kikar",
+"he": "כיכר"
+},
+{
+"pt": "Presente",
+"tr": "Mataná",
+"he": "מתנה"
+},
+{
+"pt": "Presidente",
+"tr": "Nasí",
+"he": "נשיא"
+},
+{
+"pt": "Preto",
+"tr": "Shachor",
+"he": "שחור"
+},
+{
+"pt": "Primavera",
+"tr": "Aviv",
+"he": "אביב"
+},
+{
+"pt": "Prodígio",
+"tr": "Pele",
+"he": "פלא"
+},
+{
+"pt": "Professor",
+"tr": "Moré",
+"he": "מורה"
+},
+{
+"pt": "Professora",
+"tr": "Morá",
+"he": "מורה"
+},
+{
+"pt": "Progenitor",
+"tr": "Av",
+"he": "אב"
+},
+{
+"pt": "Pronto",
+"tr": "Mahír",
+"he": "מהיר"
+},
+{
+"pt": "Propaganda",
+"tr": "Hasbará",
+"he": "הסברה"
+},
+{
+"pt": "Propina",
+"tr": "Tip",
+"he": "טחפ"
+},
+{
+"pt": "Prospecto",
+"tr": "Chovéret",
+"he": "חוברת"
+},
+{
+"pt": "Prostituta",
+"tr": "Zoná",
+"he": "זונה"
+},
+{
+"pt": "Prova",
+"tr": "Mivchan",
+"he": "מיבחן"
+},
+{
+"pt": "Psíquico",
+"tr": "Psichi",
+"he": "פסיכי"
+},
+{
+"pt": "Puberdade",
+"tr": "Bagrut",
+"he": "בגרות"
+},
+{
+"pt": "Pulmão",
+"tr": "Reá",
+"he": "ראה"
+},
+{
+"pt": "Pulso",
+"tr": "Defek",
+"he": "דפק"
+},
+{
+"pt": "Punição",
+"tr": "Ônesh",
+"he": "עונש"
+},
+{
+"pt": "Puro",
+"tr": "Tahor",
+"he": "טהור"
+},
+{
+"pt": "Pus",
+"tr": "Muglá",
+"he": "מוגלה"
+},
+{
+"pt": "Putrefação",
+"tr": "Rakav",
+"he": "רקב"
+},
+{
+"pt": "Pátria",
+"tr": "Moledet",
+"he": "מולדת"
+},
+{
+"pt": "Pão",
+"tr": "Lechem",
+"he": "לחם"
+},
+{
+"pt": "Pé",
+"tr": "Reguel",
+"he": "רגל"
+},
+{
+"pt": "Pêssegos",
+"tr": "Afarskim",
+"he": "אפרסקים"
+},
+{
+"pt": "Pôs",
+"tr": "Smá",
+"he": "שמה"
+},
+{
+"pt": "Quadra",
+"tr": "Blok",
+"he": "בלוק"
+},
+{
+"pt": "Quadrado",
+"tr": "Ribuá",
+"he": "רבוע"
+},
+{
+"pt": "Quadrangular",
+"tr": "Merubá",
+"he": "מרובע"
+},
+{
+"pt": "Quadrante",
+"tr": "Kvadrant",
+"he": "קודרנט"
+},
+{
+"pt": "Quadriculado",
+"tr": "Meshubatz",
+"he": "משבץ"
+},
+{
+"pt": "Quadrilha",
+"tr": "Kvutzá",
+"he": "קבוצה"
+},
+{
+"pt": "Quadro",
+"tr": "Tmuná",
+"he": "תמונה"
+},
+{
+"pt": "Qual",
+"tr": "Eize",
+"he": "איזה"
+},
+{
+"pt": "Qualidade",
+"tr": "Eichut",
+"he": "איכות"
+},
+{
+"pt": "Qualificado",
+"tr": "Muchshar",
+"he": "מוכשר"
+},
+{
+"pt": "Quando",
+"tr": "Kaashêr",
+"he": "כאשר"
+},
+{
+"pt": "Quando",
+"tr": "Matai",
+"he": "מתי"
+},
+{
+"pt": "Quantidade",
+"tr": "Kamut",
+"he": "כמות"
+},
+{
+"pt": "Quanto",
+"tr": "Káma",
+"he": "כמה"
+},
+{
+"pt": "Quartel",
+"tr": "Matê",
+"he": "מטה"
+},
+{
+"pt": "Quarto",
+"tr": "Chéder",
+"he": "חדר"
+},
+{
+"pt": "Quarto (1/4)",
+"tr": "Réva",
+"he": "רבע"
+},
+{
+"pt": "Quartzo",
+"tr": "Kvartz",
+"he": "קורץ"
+},
+{
+"pt": "Quase",
+"tr": "Kimat",
+"he": "כמעט"
+},
+{
+"pt": "Que",
+"tr": "Shê",
+"he": "ש"
+},
+{
+"pt": "Quebra",
+"tr": "Shvirá",
+"he": "שבירה"
+},
+{
+"pt": "Quebradiço",
+"tr": "Shavír",
+"he": "שביר"
+},
+{
+"pt": "Quebrado",
+"tr": "Shavúr",
+"he": "שבור"
+},
+{
+"pt": "Quebrou",
+"tr": "Shavár",
+"he": "שבר"
+},
+{
+"pt": "Queda",
+"tr": "Nefilá",
+"he": "נפילה"
+},
+{
+"pt": "Queima",
+"tr": "Sreifa",
+"he": "שריפה"
+},
+{
+"pt": "Queimado",
+"tr": "Saruf",
+"he": "שרוף"
+},
+{
+"pt": "Queimadura",
+"tr": "Kviiá",
+"he": "כויה"
+},
+{
+"pt": "Queimou",
+"tr": "Saraf",
+"he": "שרף"
+},
+{
+"pt": "Queixa",
+"tr": "Tluná",
+"he": "תלונה"
+},
+{
+"pt": "Queixo",
+"tr": "Santer",
+"he": "סנתר"
+},
+{
+"pt": "Quem",
+"tr": "Mí",
+"he": "מי"
+},
+{
+"pt": "Quente",
+"tr": "Cham",
+"he": "חם"
+},
+{
+"pt": "Queria",
+"tr": "Ratzá",
+"he": "רצה"
+},
+{
+"pt": "Querido",
+"tr": "Ahuv",
+"he": "אהוב"
+},
+{
+"pt": "Quero",
+"tr": "Rotze",
+"he": "רוצה"
+},
+{
+"pt": "Querosene",
+"tr": "Neft",
+"he": "נפט"
+},
+{
+"pt": "Questionou",
+"tr": "Shaal",
+"he": "שאל"
+},
+{
+"pt": "Questionário",
+"tr": "Sheelon",
+"he": "שאלון"
+},
+{
+"pt": "Quieto",
+"tr": "Shakêt",
+"he": "שקט"
+},
+{
+"pt": "Quintal",
+"tr": "Chatzer",
+"he": "חצר"
+},
+{
+"pt": "Quinteto",
+"tr": "Chamishia",
+"he": "חמישיה"
+},
+{
+"pt": "Quitação",
+"tr": "Tashlum",
+"he": "תשלום"
+},
+{
+"pt": "Quorum",
+"tr": "",
+"he": "מינין"
+},
+{
+"pt": "Quota",
+"tr": "Maná",
+"he": "מנה"
+},
+{
+"pt": "Rabanete",
+"tr": "Tzenon",
+"he": "צנון"
+},
+{
+"pt": "Rabino",
+"tr": "Rav",
+"he": "רב"
+},
+{
+"pt": "Rabiscou",
+"tr": "Kishkesh",
+"he": "קשקש"
+},
+{
+"pt": "Rabo",
+"tr": "Zanav",
+"he": "זנב"
+},
+{
+"pt": "Rachou",
+"tr": "Nisdak",
+"he": "נסדק"
+},
+{
+"pt": "Racional",
+"tr": "Ratzionali",
+"he": "רציונלי"
+},
+{
+"pt": "Racismo",
+"tr": "Guizanut",
+"he": "גזענות"
+},
+{
+"pt": "Radical",
+"tr": "Shoresh",
+"he": "שורש"
+},
+{
+"pt": "Radicalismo",
+"tr": "Kitzoniut",
+"he": "קיצוניות"
+},
+{
+"pt": "Rainha",
+"tr": "Malká",
+"he": "מלכה"
+},
+{
+"pt": "Raio",
+"tr": "Barak",
+"he": "ברק"
+},
+{
+"pt": "Raiva",
+"tr": "Siná",
+"he": "שינאה"
+},
+{
+"pt": "Ramo",
+"tr": "Zer",
+"he": "זר"
+},
+{
+"pt": "Rapaz",
+"tr": "Naar",
+"he": "נער"
+},
+{
+"pt": "Rapidez",
+"tr": "Mehirut",
+"he": "מהירות"
+},
+{
+"pt": "Raro",
+"tr": "Nadir",
+"he": "נדיר"
+},
+{
+"pt": "Rascunho",
+"tr": "Tiutá",
+"he": "טיוטה"
+},
+{
+"pt": "Raspar",
+"tr": "Guered",
+"he": "גרד"
+},
+{
+"pt": "Rastejou",
+"tr": "Zachal",
+"he": "זחל"
+},
+{
+"pt": "Rato",
+"tr": "Achbar",
+"he": "עכבר"
+},
+{
+"pt": "Razão",
+"tr": "Higaion",
+"he": "הגיון"
+},
+{
+"pt": "Raça",
+"tr": "Geza",
+"he": "גזע"
+},
+{
+"pt": "Ração",
+"tr": "Maná",
+"he": "מנה"
+},
+{
+"pt": "Real",
+"tr": "Mamashí",
+"he": "ממשי"
+},
+{
+"pt": "Reator",
+"tr": "Kur",
+"he": "כור"
+},
+{
+"pt": "Reação",
+"tr": "Tguvá",
+"he": "תגובה"
+},
+{
+"pt": "Rebanho",
+"tr": "Eder",
+"he": "עדר"
+},
+{
+"pt": "Rebelde",
+"tr": "Mored",
+"he": "מורד"
+},
+{
+"pt": "Reboque",
+"tr": "Grar",
+"he": "גרר"
+},
+{
+"pt": "Receio",
+"tr": "Chashash",
+"he": "חשש"
+},
+{
+"pt": "Receita",
+"tr": "Matkon",
+"he": "מתכון"
+},
+{
+"pt": "Recenseamento",
+"tr": "Mifkad",
+"he": "מפקד"
+},
+{
+"pt": "Recheio",
+"tr": "Milui",
+"he": "מילוי"
+},
+{
+"pt": "Recipiente",
+"tr": "Kli",
+"he": "כלי"
+},
+{
+"pt": "Recordar",
+"tr": "Zachár",
+"he": "זכר"
+},
+{
+"pt": "Recorde",
+"tr": "Si",
+"he": "שיא"
+},
+{
+"pt": "Recreio",
+"tr": "Hafssaká",
+"he": "הפסקה"
+},
+{
+"pt": "Recusar",
+"tr": "Le’sarev",
+"he": "לסרב"
+},
+{
+"pt": "Refeitório",
+"tr": "Cheder Óchel",
+"he": "חדר אוחל"
+},
+{
+"pt": "Reforma",
+"tr": "Tikun",
+"he": "תקון"
+},
+{
+"pt": "Rei",
+"tr": "Melech",
+"he": "מלך"
+},
+{
+"pt": "Religião",
+"tr": "Dat",
+"he": "דת"
+},
+{
+"pt": "Relógio",
+"tr": "Shaón",
+"he": "שצון"
+},
+{
+"pt": "Remédio",
+"tr": "Trufá",
+"he": "תרופה"
+},
+{
+"pt": "Renegado",
+"tr": "Bagad",
+"he": "בגד"
+},
+{
+"pt": "Repórter",
+"tr": "Katav",
+"he": "כתב"
+},
+{
+"pt": "Residiu",
+"tr": "Gar",
+"he": "גר"
+},
+{
+"pt": "Respirar",
+"tr": "Nasham",
+"he": "נשם"
+},
+{
+"pt": "Resultar",
+"tr": "Iatzá",
+"he": "יצא"
+},
+{
+"pt": "Resumo",
+"tr": "Sikum",
+"he": "סיכום"
+},
+{
+"pt": "Reto",
+"tr": "Iashar",
+"he": "ישר"
+},
+{
+"pt": "Retrocesso",
+"tr": "Reta",
+"he": "רתע"
+},
+{
+"pt": "Reuniu",
+"tr": "Assaf",
+"he": "אסף"
+},
+{
+"pt": "Revezamento",
+"tr": "Toranut",
+"he": "תורנות"
+},
+{
+"pt": "Revolucionário",
+"tr": "Mahapechan",
+"he": "מהפכן"
+},
+{
+"pt": "Revolver",
+"tr": "Hafach",
+"he": "הפך"
+},
+{
+"pt": "Revés",
+"tr": "Tzará",
+"he": "צרה"
+},
+{
+"pt": "Reza",
+"tr": "Tfilá",
+"he": "תפילה"
+},
+{
+"pt": "Rezou",
+"tr": "Hitpalel",
+"he": "היתפלל"
+},
+{
+"pt": "Rifa",
+"tr": "Hagralá",
+"he": "הגרלה"
+},
+{
+"pt": "Rim",
+"tr": "Kiliá",
+"he": "כליה"
+},
+{
+"pt": "Rimar",
+"tr": "Charaz",
+"he": "חרז"
+},
+{
+"pt": "Rio",
+"tr": "Nahar",
+"he": "נהר"
+},
+{
+"pt": "Risada",
+"tr": "Taltal",
+"he": "תלתל"
+},
+{
+"pt": "Risonho",
+"tr": "Tzochek",
+"he": "צוחק"
+},
+{
+"pt": "Ritmo",
+"tr": "Ketzev",
+"he": "קצב"
+},
+{
+"pt": "Rito",
+"tr": "Pulchan",
+"he": "פולחן"
+},
+{
+"pt": "Riu",
+"tr": "Tzachak",
+"he": "צחק"
+},
+{
+"pt": "Rival",
+"tr": "Iariv",
+"he": "יריב"
+},
+{
+"pt": "Rivalidade",
+"tr": "Ierivut",
+"he": "יריבות"
+},
+{
+"pt": "Rocha",
+"tr": "Séla",
+"he": "סלע"
+},
+{
+"pt": "Rolha",
+"tr": "Pkak",
+"he": "פקק"
+},
+{
+"pt": "Roncou",
+"tr": "Nachar",
+"he": "נחר"
+},
+{
+"pt": "Rosa (cor)",
+"tr": "Véred",
+"he": "ורד"
+},
+{
+"pt": "Rosa (flor)",
+"tr": "Shoshana",
+"he": "שושנה"
+},
+{
+"pt": "Roxo",
+"tr": "Sagol",
+"he": "סגל"
+},
+{
+"pt": "Rua",
+"tr": "Reechov",
+"he": "רחוב"
+},
+{
+"pt": "Rude",
+"tr": "Gas",
+"he": "גס"
+},
+{
+"pt": "Ruim",
+"tr": "Rá",
+"he": "רע"
+},
+{
+"pt": "Rápido",
+"tr": "Maher",
+"he": "מהר"
+},
+{
+"pt": "Rã",
+"tr": "Tzfardea",
+"he": "צפרדע"
+},
+{
+"pt": "Ré",
+"tr": "Neesham",
+"he": "נאשם"
+},
+{
+"pt": "Sabedoria",
+"tr": "Chochma",
+"he": "חכמה"
+},
+{
+"pt": "Sabor",
+"tr": "Taam",
+"he": "טעם"
+},
+{
+"pt": "Saco",
+"tr": "Sak",
+"he": "שק"
+},
+{
+"pt": "Sagrado",
+"tr": "Kadosh",
+"he": "קדוש"
+},
+{
+"pt": "Salgado",
+"tr": "Maluach",
+"he": "מלוח"
+},
+{
+"pt": "Saliva",
+"tr": "Rok",
+"he": "רוק"
+},
+{
+"pt": "Salvaguardar",
+"tr": "Heguen",
+"he": "הגן"
+},
+{
+"pt": "Sangue",
+"tr": "Dam",
+"he": "דם"
+},
+{
+"pt": "Sapato",
+"tr": "Náal",
+"he": "נעל"
+},
+{
+"pt": "Segundo",
+"tr": "Shniá",
+"he": "שניה"
+},
+{
+"pt": "Seio",
+"tr": "Shad",
+"he": "שד"
+},
+{
+"pt": "Semana",
+"tr": "Shavua",
+"he": "שבוע"
+},
+{
+"pt": "Semente",
+"tr": "Garín",
+"he": "גרעין"
+},
+{
+"pt": "Sempre",
+"tr": "Tamid",
+"he": "תמיד"
+},
+{
+"pt": "Senhor(possessivo)",
+"tr": "Baal",
+"he": "בעל"
+},
+{
+"pt": "Sensível",
+"tr": "Raguish",
+"he": "רגיש"
+},
+{
+"pt": "Sentiu",
+"tr": "Hirguish",
+"he": "הרגיש"
+},
+{
+"pt": "Sermão",
+"tr": "Drashá",
+"he": "דרשה"
+},
+{
+"pt": "Serpente",
+"tr": "Nachash",
+"he": "נחש"
+},
+{
+"pt": "Sexo",
+"tr": "Min",
+"he": "מין"
+},
+{
+"pt": "Significado",
+"tr": "Pésher",
+"he": "פשר"
+},
+{
+"pt": "Silêncio",
+"tr": "Has",
+"he": "הס"
+},
+{
+"pt": "Sim",
+"tr": "Ken",
+"he": "כן"
+},
+{
+"pt": "Sinagoga",
+"tr": "Beit Knesset",
+"he": "בית;כנסת"
+},
+{
+"pt": "Sinal",
+"tr": "Siman",
+"he": "סימן"
+},
+{
+"pt": "Sobre",
+"tr": "Al",
+"he": "על"
+},
+{
+"pt": "Social",
+"tr": "Chevratí",
+"he": "חברתי"
+},
+{
+"pt": "Soco",
+"tr": "Maká",
+"he": "מכה"
+},
+{
+"pt": "Sol",
+"tr": "Shémesh",
+"he": "שמש"
+},
+{
+"pt": "Sonho",
+"tr": "Chalom",
+"he": "חלום"
+},
+{
+"pt": "Sorte",
+"tr": "Mazal",
+"he": "מזל"
+},
+{
+"pt": "Suco",
+"tr": "Mitz",
+"he": "מיץ"
+},
+{
+"pt": "Suficiente",
+"tr": "Maspik",
+"he": "מספיק"
+},
+{
+"pt": "Suicida",
+"tr": "Mitabed",
+"he": "מתאבד"
+},
+{
+"pt": "Sujo",
+"tr": "Meluchlach",
+"he": "מלוכלך"
+},
+{
+"pt": "Sul",
+"tr": "Darom",
+"he": "דרום"
+},
+{
+"pt": "Suor",
+"tr": "Zeá",
+"he": "זעה"
+},
+{
+"pt": "Superaremos",
+"tr": "Nitgaber",
+"he": "נתגבר"
+},
+{
+"pt": "Superficial",
+"tr": "Shitchí",
+"he": "שטחי"
+},
+{
+"pt": "Surra",
+"tr": "Makot",
+"he": "מכות"
+},
+{
+"pt": "Suspeita",
+"tr": "Chashad",
+"he": "חשר"
+},
+{
+"pt": "Suspeito",
+"tr": "Chashud",
+"he": "חשור"
+},
+{
+"pt": "Sussurrou",
+"tr": "Lachash",
+"he": "לחש"
+},
+{
+"pt": "Susto",
+"tr": "Pachad",
+"he": "פחד"
+},
+{
+"pt": "Sutil",
+"tr": "Adin",
+"he": "עדין"
+},
+{
+"pt": "Sábado",
+"tr": "Shabat",
+"he": "שבת"
+},
+{
+"pt": "Sábio",
+"tr": "Chacham",
+"he": "חכם"
+},
+{
+"pt": "Só",
+"tr": "Rak",
+"he": "רק"
+},
+{
+"pt": "Súdito",
+"tr": "Natin",
+"he": "נתין"
+},
+{
+"pt": "Tabela",
+"tr": "Tabela",
+"he": "טבלה"
+},
+{
+"pt": "Taco",
+"tr": "Noaz",
+"he": "נועז"
+},
+{
+"pt": "Talento",
+"tr": "Kishron",
+"he": "כשרון"
+},
+{
+"pt": "Talvez",
+"tr": "Ulái",
+"he": "אולי"
+},
+{
+"pt": "Tambor",
+"tr": "Tof",
+"he": "תף"
+},
+{
+"pt": "Também",
+"tr": "Gam",
+"he": "גם"
+},
+{
+"pt": "Tango",
+"tr": "Tango",
+"he": "טנגו"
+},
+{
+"pt": "Tartaruga",
+"tr": "Tzav",
+"he": "צב"
+},
+{
+"pt": "Tempo",
+"tr": "Zman",
+"he": "זמן"
+},
+{
+"pt": "Tenda",
+"tr": "Chanut",
+"he": "חנות"
+},
+{
+"pt": "Teto",
+"tr": "Gag",
+"he": "גג"
+},
+{
+"pt": "Tigre",
+"tr": "Namer",
+"he": "נמר"
+},
+{
+"pt": "Tio",
+"tr": "Dod",
+"he": "דוד"
+},
+{
+"pt": "Tirano",
+"tr": "Rodan",
+"he": "רודן"
+},
+{
+"pt": "Tocha",
+"tr": "Lapid",
+"he": "לפי וד"
+},
+{
+"pt": "Trabalho",
+"tr": "Avodá",
+"he": "עבודה"
+},
+{
+"pt": "Trampolim",
+"tr": "Kéresh",
+"he": "קרש"
+},
+{
+"pt": "Transfusão",
+"tr": "Eruí",
+"he": "ערוי"
+},
+{
+"pt": "Transmissor",
+"tr": "Mashader",
+"he": "משדר"
+},
+{
+"pt": "Tranças",
+"tr": "Tzamot",
+"he": "צמות"
+},
+{
+"pt": "Traseiro",
+"tr": "Achorí",
+"he": "אחורי"
+},
+{
+"pt": "Tratado",
+"tr": "Heskem",
+"he": "הסכם"
+},
+{
+"pt": "Trauma",
+"tr": "Trauma",
+"he": "טרךומה"
+},
+{
+"pt": "Trave",
+"tr": "Korá",
+"he": "קורה"
+},
+{
+"pt": "Trem",
+"tr": "Rakévet",
+"he": "רכבת"
+},
+{
+"pt": "Tremer",
+"tr": "Raad",
+"he": "רעד"
+},
+{
+"pt": "Tremor",
+"tr": "Readá",
+"he": "רעדה"
+},
+{
+"pt": "Tribo",
+"tr": "Shevet",
+"he": "שבט"
+},
+{
+"pt": "Tribuna",
+"tr": "Duchan",
+"he": "דוכן"
+},
+{
+"pt": "Tributo",
+"tr": "Mas",
+"he": "מס"
+},
+{
+"pt": "Trigo",
+"tr": "Chitá",
+"he": "חיטה"
+},
+{
+"pt": "Triste",
+"tr": "Atzuv",
+"he": "עצוב"
+},
+{
+"pt": "Triturador",
+"tr": "Kotesh",
+"he": "כותש"
+},
+{
+"pt": "Triunfo",
+"tr": "Nitzachon",
+"he": "נצחון"
+},
+{
+"pt": "Tropa",
+"tr": "Chail",
+"he": "חייל"
+},
+{
+"pt": "Tropical",
+"tr": "Tropi",
+"he": "טרופי"
+},
+{
+"pt": "Trova",
+"tr": "Shir",
+"he": "שיר"
+},
+{
+"pt": "Trovão",
+"tr": "Raam",
+"he": "רעם"
+},
+{
+"pt": "Truque",
+"tr": "Tachbulá",
+"he": "תחבולה"
+},
+{
+"pt": "Trânsito",
+"tr": "Tnuá",
+"he": "תנועה"
+},
+{
+"pt": "Tsé-tsé",
+"tr": "Zevuv Tse-tsé",
+"he": "זבוב טסטסה"
+},
+{
+"pt": "Tu (feminino)",
+"tr": "At",
+"he": "את"
+},
+{
+"pt": "Tu (masculino)",
+"tr": "Ata",
+"he": "אתא"
+},
+{
+"pt": "Tubarão",
+"tr": "Carish",
+"he": "כריש"
+},
+{
+"pt": "Tucano",
+"tr": "Tucan",
+"he": "טוקן"
+},
+{
+"pt": "Tudo",
+"tr": "Kol",
+"he": "כל"
+},
+{
+"pt": "Tumba",
+"tr": "Kever",
+"he": "קבר"
+},
+{
+"pt": "Turco",
+"tr": "Turki",
+"he": "טורקי"
+},
+{
+"pt": "Turista",
+"tr": "Tayar",
+"he": "תיר"
+},
+{
+"pt": "Turno",
+"tr": "Mishmeret",
+"he": "משמרת"
+},
+{
+"pt": "Tábua",
+"tr": "Luchá",
+"he": "לוחה"
+},
+{
+"pt": "Tâmara",
+"tr": "Tamar",
+"he": "תמר"
+},
+{
+"pt": "Uivo",
+"tr": "Ielalá",
+"he": "יללה"
+},
+{
+"pt": "Uivou",
+"tr": "Ilel",
+"he": "ילל"
+},
+{
+"pt": "Ultraje",
+"tr": "Elbon",
+"he": "עלבון"
+},
+{
+"pt": "Um",
+"tr": "Echad",
+"he": "אחד"
+},
+{
+"pt": "Uma",
+"tr": "Achat",
+"he": "אחת"
+},
+{
+"pt": "Umbigo",
+"tr": "Tabur",
+"he": "טבור"
+},
+{
+"pt": "Ungiu",
+"tr": "Mashach",
+"he": "משח"
+},
+{
+"pt": "Unicamente",
+"tr": "Bilvad",
+"he": "בילבד"
+},
+{
+"pt": "Unido",
+"tr": "Meuchad",
+"he": "מאוחד"
+},
+{
+"pt": "Uniforme",
+"tr": "Achid",
+"he": "אחיד"
+},
+{
+"pt": "Uniu",
+"tr": "Chibêr",
+"he": "חיבר"
+},
+{
+"pt": "Universidade",
+"tr": "Michlalá",
+"he": "מכללה"
+},
+{
+"pt": "Universo",
+"tr": "Tevel",
+"he": "תבל"
+},
+{
+"pt": "União",
+"tr": "Ichud",
+"he": "איחוד"
+},
+{
+"pt": "Urbano",
+"tr": "Ironí",
+"he": "עירוני"
+},
+{
+"pt": "Urina",
+"tr": "Sheten",
+"he": "שחן"
+},
+{
+"pt": "Urso",
+"tr": "Dov",
+"he": "דב"
+},
+{
+"pt": "Urubú",
+"tr": "Ôrev",
+"he": "עורב"
+},
+{
+"pt": "Usual",
+"tr": "Raguil",
+"he": "רגיל"
+},
+{
+"pt": "Usura",
+"tr": "Néshech",
+"he": "נשך"
+},
+{
+"pt": "Utilidade",
+"tr": "Toélet",
+"he": "תועלת"
+},
+{
+"pt": "Utilizou",
+"tr": "Shimesh",
+"he": "שימש"
+},
+{
+"pt": "Uva",
+"tr": "Anav",
+"he": "ענב"
+},
+{
+"pt": "Vaca",
+"tr": "Pará",
+"he": "פרה"
+},
+{
+"pt": "Vagabundo",
+"tr": "Nodêd",
+"he": "נודד"
+},
+{
+"pt": "Vagina",
+"tr": "Nartiká",
+"he": "נרתיקה"
+},
+{
+"pt": "Vaia",
+"tr": "Shrika",
+"he": "שריקה"
+},
+{
+"pt": "Vale (geo.)",
+"tr": "Êmek",
+"he": "עמק"
+},
+{
+"pt": "Vampiro",
+"tr": "Arpad",
+"he": "ערפד"
+},
+{
+"pt": "Vapor",
+"tr": "Ed",
+"he": "אד"
+},
+{
+"pt": "Vassalo",
+"tr": "Vassal",
+"he": "וסל"
+},
+{
+"pt": "Vassoura",
+"tr": "Matatê",
+"he": "מטאטא"
+},
+{
+"pt": "Veia",
+"tr": "Varid",
+"he": "וריד"
+},
+{
+"pt": "Vela",
+"tr": "Ner",
+"he": "נר"
+},
+{
+"pt": "Vento",
+"tr": "Ruach",
+"he": "רוח"
+},
+{
+"pt": "Veraneio",
+"tr": "Kaít",
+"he": "קיט"
+},
+{
+"pt": "Verdade",
+"tr": "Emet",
+"he": "אמת"
+},
+{
+"pt": "Verde",
+"tr": "Iarók",
+"he": "ירק"
+},
+{
+"pt": "Verdura",
+"tr": "Ierek",
+"he": "ירק"
+},
+{
+"pt": "Vermelho",
+"tr": "Adom",
+"he": "אדם"
+},
+{
+"pt": "Verão",
+"tr": "Kaitz",
+"he": "קיץ"
+},
+{
+"pt": "Vestido",
+"tr": "Simlá",
+"he": "שמלה"
+},
+{
+"pt": "Vetar",
+"tr": "Ikev",
+"he": "עכב"
+},
+{
+"pt": "Vibrador",
+"tr": "Ratat",
+"he": "רטט"
+},
+{
+"pt": "Vida",
+"tr": "Chayim",
+"he": "חיים"
+},
+{
+"pt": "Vinho",
+"tr": "Iain",
+"he": "יין"
+},
+{
+"pt": "Vitela",
+"tr": "Êguel",
+"he": "עגל"
+},
+{
+"pt": "Vitorioso",
+"tr": "Menatzeach",
+"he": "מנצח"
+},
+{
+"pt": "Vitória",
+"tr": "Nitzachon",
+"he": "נצחון"
+},
+{
+"pt": "Viu",
+"tr": "Raá",
+"he": "ראה"
+},
+{
+"pt": "Vive",
+"tr": "Chai",
+"he": "חי"
+},
+{
+"pt": "Vivência",
+"tr": "Chavaiá",
+"he": "חוויה"
+},
+{
+"pt": "Vizinho",
+"tr": "Shachen",
+"he": "שכן"
+},
+{
+"pt": "Viúvo",
+"tr": "Alman",
+"he": "אלמן"
+},
+{
+"pt": "Vocês (feminino)",
+"tr": "Aten",
+"he": "אתן"
+},
+{
+"pt": "Vocês (masculino)",
+"tr": "Atem",
+"he": "אתם"
+},
+{
+"pt": "Voltou",
+"tr": "Chazar",
+"he": "חזר"
+},
+{
+"pt": "Vontade",
+"tr": "Ratzon",
+"he": "רצון"
+},
+{
+"pt": "Votação",
+"tr": "Hatzbaá",
+"he": "הצבעה"
+},
+{
+"pt": "Vácuo",
+"tr": "Chalal",
+"he": "חלל"
+},
+{
+"pt": "Vício",
+"tr": "Hitmakrut",
+"he": "התמכרות"
+},
+{
+"pt": "Vírgula",
+"tr": "Pssik",
+"he": "פסיק"
+},
+{
+"pt": "Vítima",
+"tr": "Karban",
+"he": "קרבן"
+},
+{
+"pt": "Xadrez",
+"tr": "Shachmat",
+"he": "שחמט"
+},
+{
+"pt": "Xampu",
+"tr": "Shámpu",
+"he": "שמפו"
+},
+{
+"pt": "Xarope",
+"tr": "Sirop",
+"he": "סירופ"
+},
+{
+"pt": "Xerife",
+"tr": "Xerif",
+"he": "שריף"
+},
+{
+"pt": "Xingar",
+"tr": "Kilel",
+"he": "קילל"
+},
+{
+"pt": "Xícara",
+"tr": "Sefel",
+"he": "ספל"
+},
+{
+"pt": "Zaga",
+"tr": "Achór",
+"he": "אחור"
+},
+{
+"pt": "Zebra",
+"tr": "Zebra",
+"he": "זברה"
+},
+{
+"pt": "Zelo",
+"tr": "Shmirá",
+"he": "שמירה"
+},
+{
+"pt": "Zero",
+"tr": "Efes",
+"he": "אפס"
+},
+{
+"pt": "Zinco",
+"tr": "Avatz",
+"he": "אבץ"
+},
+{
+"pt": "Zona",
+"tr": "Ezor",
+"he": "אזור"
+},
+{
+"pt": "Zonzo",
+"tr": "Messachrer",
+"he": "מסחרר"
+},
+{
+"pt": "Zoólogo",
+"tr": "",
+"he": "זאולוג"
+},
+{
+"pt": "Zumbido",
+"tr": "Zimzum",
+"he": "זמזום"
+},
+{
+"pt": "Zumbir",
+"tr": "Zimzem",
+"he": "זימזם"
+},
+{
+"pt": "À Vista",
+"tr": "Bemzuman",
+"he": "במזומן"
+},
+{
+"pt": "Às Vezes",
+"tr": "Lifamim",
+"he": "ליפמים"
+},
+{
+"pt": "Ácido",
+"tr": "Chamutz",
+"he": "חמוץ"
+},
+{
+"pt": "Água",
+"tr": "Maim",
+"he": "מים"
+},
+{
+"pt": "Águia",
+"tr": "Nésher",
+"he": "נשר"
+},
+{
+"pt": "Área",
+"tr": "Shetar",
+"he": "שטר"
+},
+{
+"pt": "Árvore",
+"tr": "Etz",
+"he": "עץ"
+},
+{
+"pt": "Árvore",
+"tr": "Ilán",
+"he": "אילן"
+},
+{
+"pt": "Átomo",
+"tr": "Atom",
+"he": "אטום"
+},
+{
+"pt": "Égua",
+"tr": "Sussá",
+"he": "סוסה"
+},
+{
+"pt": "Épico",
+"tr": "Epi",
+"he": "אפי"
+},
+{
+"pt": "Época",
+"tr": "Tkufá",
+"he": "תקופה"
+},
+{
+"pt": "Ênfase",
+"tr": "Daguesh",
+"he": "דגש"
+},
+{
+"pt": "Ídolo",
+"tr": "Elil",
+"he": "אליל"
+},
+{
+"pt": "Íntegro",
+"tr": "Shalem",
+"he": "שלם"
+},
+{
+"pt": "Íon",
+"tr": "Íon",
+"he": "יון"
+},
+{
+"pt": "Óbito",
+"tr": "Ptirá",
+"he": "פטירה"
+},
+{
+"pt": "Óbvio",
+"tr": "Barur",
+"he": "ברור"
+},
+{
+"pt": "Ócio",
+"tr": "Pnaí",
+"he": "פנאי"
+},
+{
+"pt": "Óculos",
+"tr": "Mishkafáim",
+"he": "משקפים"
+},
+{
+"pt": "Óleo",
+"tr": "Shemém",
+"he": "שמן"
+},
+{
+"pt": "Órfão",
+"tr": "Iatom",
+"he": "יתום"
+},
+{
+"pt": "Órgão",
+"tr": "Ever",
+"he": "אבר"
+},
+{
+"pt": "Ótimo",
+"tr": "Metzuian",
+"he": "מצוין"
+},
+{
+"pt": "Último",
+"tr": "Acharon",
+"he": "אחרון"
+},
+{
+"pt": "Único",
+"tr": "Iachid",
+"he": "יחיד"
+},
+{
+"pt": "Útero",
+"tr": "Réchem",
+"he": "רחם"
+},
+{
+"pt": "Útil",
+"tr": "Shimushí",
+"he": "שימושי"
+}
+]

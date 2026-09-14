@@ -123,8 +123,11 @@ segundo plano e ela aparece na abertura seguinte.
 
 ---
 
-## Outro projeto neste repositório
+## Outros projetos neste repositório
 
 `machanot/` guarda a plataforma de precificação de machanot da Chazit Hanoar —
 um app Next.js independente deste diário, com o seu próprio `package.json`.
 Veja `machanot/README.md`.
+
+`site-chazit/` é o site público da Chazit Hanoar São Paulo: uma versão estática e gratuita
+do chazit.org.br, gerada por um script sem dependências. Veja `site-chazit/README.md`.
