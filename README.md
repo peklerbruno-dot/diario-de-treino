@@ -3,8 +3,22 @@
 App pessoal de treinos (musculação, pilates e natação) para iPhone. PWA em React + Vite,
 sem servidor e sem login: os dados ficam no aparelho.
 
-Etapas 1 e 2 de [`BRIEFING-diario-de-treino.md`](BRIEFING-diario-de-treino.md): projeto, PWA
-instalável e banco de dados no aparelho. O protótipo aprovado está em `diario-de-treino-v5.jsx`.
+Etapas 1 a 3 de [`BRIEFING-diario-de-treino.md`](BRIEFING-diario-de-treino.md): projeto, PWA
+instalável, banco de dados no aparelho e as seis telas do protótipo ligadas a ele. O protótipo
+aprovado está em `diario-de-treino-v5.jsx`.
+
+## Como o código está organizado
+
+    src/App.jsx          navegação, sessão em registro, aviso e ficha do exercício
+    src/telas/           uma tela por arquivo: Inicio, Registro, Treinos, Biblioteca,
+                         Historico, Exportar
+    src/componentes/     Pict (pictograma), Icone, Ficha do exercício
+    src/dados/           bd.js (Dexie), biblioteca.js, constantes.js, calculos.js
+    src/estilo.css       o visual da seção 7, com os ajustes de iPhone
+
+As telas não falam com o IndexedDB por conta própria: leem as listas que o `App` traz pelo
+`useLiveQuery` e escrevem pelo `db`, de modo que qualquer gravação se reflete na hora em todas
+as telas.
 
 ## Onde ficam os dados
 

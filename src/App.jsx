@@ -1,19 +1,32 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, semear } from "./dados/bd.js";
-import { MOD, ORDEM } from "./dados/constantes.js";
+import { hojeISO, agoraISO } from "./dados/constantes.js";
+import { ultimaSerieDe, nnum } from "./dados/calculos.js";
+import { Icone, Lixo } from "./componentes/Icone.jsx";
+import Ficha from "./componentes/Ficha.jsx";
+import Inicio from "./telas/Inicio.jsx";
+import Registro from "./telas/Registro.jsx";
+import Treinos from "./telas/Treinos.jsx";
+import Biblioteca from "./telas/Biblioteca.jsx";
+// Os gráficos carregam à parte: é o pedaço mais pesado e não é preciso na abertura.
+const Historico = lazy(() => import("./telas/Historico.jsx"));
+import Exportar from "./telas/Exportar.jsx";
 
-const hojeISO = () => new Date().toISOString().slice(0, 10);
-const fmtLonga = (iso) =>
-  new Date(iso + "T12:00:00").toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
-
-// Na tela de início do iPhone o app abre fora do Safari, em janela própria.
-const naTelaDeInicio = () =>
-  window.navigator.standalone === true || window.matchMedia("(display-mode: standalone)").matches;
+const ABAS = [
+  ["hoje", "Início"],
+  ["treinos", "Treinos"],
+  ["biblioteca", "Biblioteca"],
+  ["historico", "Histórico"],
+  ["exportar", "Exportar"],
+];
 
 export default function App() {
-  const [instalado, setInstalado] = useState(naTelaDeInicio);
-  const [offline, setOffline] = useState(() => Boolean(navigator.serviceWorker?.controller));
+  const [aba, setAba] = useState("hoje");
+  const [ativa, setAtiva] = useState(null); // sessão sendo registrada
+  const [detalheId, setDetalheId] = useState(null);
+  const [toast, setToast] = useState("");
+  const [confirmar, setConfirmar] = useState(null);
   const [erroBanco, setErroBanco] = useState(null);
 
   // Primeira abertura no aparelho: carrega a biblioteca de exercícios.
@@ -21,89 +34,165 @@ export default function App() {
     semear().catch((e) => setErroBanco(e.message || String(e)));
   }, []);
 
-  const porModalidade = useLiveQuery(async () => {
-    const contas = {};
-    for (const m of ORDEM) contas[m] = await db.exercicios.where("mod").equals(m).count();
-    return contas;
-  }, []);
-  const totalExercicios = useLiveQuery(() => db.exercicios.count(), []);
-  const totalTreinos = useLiveQuery(() => db.treinos.count(), []);
-  const totalSessoes = useLiveQuery(() => db.sessoes.count(), []);
+  const exercicios = useLiveQuery(() => db.exercicios.toArray(), [], null);
+  const treinos = useLiveQuery(() => db.treinos.toArray(), [], null);
+  const sessoes = useLiveQuery(() => db.sessoes.toArray(), [], null);
 
-  useEffect(() => {
-    if (!("serviceWorker" in navigator)) return;
-    let ativo = true;
-    // Na primeira visita o service worker ainda está instalando; avisa quando assumir o controle.
-    navigator.serviceWorker.ready.then(() => ativo && setOffline(true));
-    const aoTrocar = () => ativo && setOffline(true);
-    navigator.serviceWorker.addEventListener("controllerchange", aoTrocar);
-    return () => {
-      ativo = false;
-      navigator.serviceWorker.removeEventListener("controllerchange", aoTrocar);
-    };
-  }, []);
+  const avisar = (m) => {
+    setToast(m);
+    setTimeout(() => setToast(""), 2200);
+  };
 
-  useEffect(() => {
-    const tela = window.matchMedia("(display-mode: standalone)");
-    const aoMudar = () => setInstalado(naTelaDeInicio());
-    tela.addEventListener("change", aoMudar);
-    return () => tela.removeEventListener("change", aoMudar);
-  }, []);
+  const Excluir = useCallback(
+    ({ id, onConfirm }) =>
+      confirmar === id ? (
+        <button className="x conf" onClick={(ev) => { ev.stopPropagation(); onConfirm(); }}>Excluir</button>
+      ) : (
+        <button
+          className="x"
+          aria-label="Excluir"
+          onClick={(ev) => {
+            ev.stopPropagation();
+            setConfirmar(id);
+          }}
+        >
+          <Lixo />
+        </button>
+      ),
+    [confirmar]
+  );
 
-  const num = (n) => (n === undefined ? "…" : n.toLocaleString("pt-BR"));
+  if (erroBanco) {
+    return (
+      <div className="dt">
+        <div className="top"><h1>Diário de treino</h1></div>
+        <div className="sec">
+          <div className="vazio">Não consegui abrir o banco de dados neste aparelho: {erroBanco}</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!exercicios || !treinos || !sessoes) {
+    return (
+      <div className="dt">
+        <div className="top"><h1>Diário de treino</h1><div className="sub">abrindo o caderno…</div></div>
+      </div>
+    );
+  }
+
+  const ex = (id) => exercicios.find((e) => e.id === id) || { nome: "?", cat: "", mod: "musc" };
+
+  /** Monta a sessão a partir de um modelo, já com as cargas do último treino. */
+  const iniciar = (t) => {
+    const base = { data: hojeISO(), mod: t.mod, nome: t.nome, treinoId: t.id };
+    if (t.mod === "musc") {
+      base.itens = t.itens.map((i) => {
+        const u = ultimaSerieDe(sessoes, i.exId);
+        return {
+          exId: i.exId,
+          series: Array.from({ length: i.series || 1 }, () => ({ carga: u ? u.carga : "", reps: i.reps ?? "" })),
+        };
+      });
+    } else if (t.mod === "natacao") {
+      base.itens = t.itens.map((i) => ({ exId: i.exId, metros: "", tempoMin: "" }));
+    } else {
+      base.duracaoMin = "";
+      base.obs = "";
+    }
+    setAtiva(base);
+    setAba("hoje");
+  };
+
+  /** Grava a sessão. Exercícios que ainda não existem (vindos de texto livre) entram na biblioteca. */
+  const salvarSessao = async () => {
+    const s = structuredClone(ativa);
+    delete s.origem;
+    delete s.id;
+    await db.transaction("rw", db.exercicios, db.sessoes, async () => {
+      for (const it of s.itens || []) {
+        if (!it.exId && it.nome) {
+          it.exId = await db.exercicios.add({
+            mod: s.mod,
+            nome: it.nome,
+            cat: it.cat || (s.mod === "musc" ? "Abdômen" : "Estilo"),
+            criadoEm: agoraISO(),
+          });
+        }
+        delete it.nome;
+        delete it.cat;
+      }
+      // Campos numéricos viram número na hora de gravar; vazio conta como zero.
+      if (s.mod === "musc") {
+        s.itens = (s.itens || []).map((it) => ({
+          exId: it.exId,
+          series: (it.series || []).map((r) => ({ carga: nnum(r.carga), reps: nnum(r.reps) })),
+        }));
+      } else if (s.mod === "natacao") {
+        s.itens = (s.itens || []).map((it) => ({ exId: it.exId, metros: nnum(it.metros), tempoMin: nnum(it.tempoMin) }));
+      } else {
+        delete s.itens;
+        s.duracaoMin = nnum(s.duracaoMin);
+        s.obs = s.obs || "";
+      }
+      s.criadoEm = agoraISO();
+      await db.sessoes.add(s);
+    });
+    setAtiva(null);
+    setAba("hoje");
+    avisar("Treino salvo");
+  };
+
+  const comuns = {
+    exercicios,
+    treinos,
+    sessoes,
+    ex,
+    avisar,
+    Excluir,
+    limparConfirmacao: () => setConfirmar(null),
+    setDetalhe: (e) => setDetalheId(e.id),
+  };
+  const detalhe = detalheId ? exercicios.find((e) => e.id === detalheId) : null;
 
   return (
-    <div className="dt">
-      <div className="top">
-        <h1>Diário de treino</h1>
-        <div className="sub">{fmtLonga(hojeISO())}</div>
-      </div>
+    <div className="dt" onClick={() => confirmar && setConfirmar(null)}>
+      {aba === "hoje" && !ativa && <Inicio {...comuns} iniciar={iniciar} />}
 
-      <div className="sec">
-        <p className="texto">
-          Musculação, pilates e natação em um só caderno. Os dados ficam neste aparelho — sem conta, sem servidor.
-        </p>
+      {ativa && <Registro {...comuns} ativa={ativa} setAtiva={setAtiva} salvar={salvarSessao} />}
 
-        <h2>Biblioteca</h2>
-        <div className="li">
-          <span>Exercícios</span>
-          <em>{num(totalExercicios)}</em>
-        </div>
-        <div className="mods">
-          {ORDEM.map((m) => (
-            <span key={m} style={{ "--c": MOD[m].cor }}>
-              {num(porModalidade?.[m])} {MOD[m].nome.toLowerCase()}
-            </span>
+      {aba === "treinos" && !ativa && <Treinos {...comuns} />}
+      {aba === "biblioteca" && !ativa && <Biblioteca {...comuns} />}
+      {aba === "historico" && !ativa && (
+        <Suspense fallback={<div className="top"><h1>Histórico</h1><div className="sub">desenhando os gráficos…</div></div>}>
+          <Historico {...comuns} />
+        </Suspense>
+      )}
+      {aba === "exportar" && !ativa && <Exportar {...comuns} />}
+
+      {detalhe && <Ficha exercicio={detalhe} sessoes={sessoes} fechar={() => setDetalheId(null)} />}
+
+      {toast && <div className="toast">{toast}</div>}
+
+      <nav className="nav">
+        <div>
+          {ABAS.map(([k, l]) => (
+            <button
+              key={k}
+              className={aba === k ? "on" : ""}
+              onClick={() => {
+                setAba(k);
+                setAtiva(null);
+                setConfirmar(null);
+                setDetalheId(null);
+              }}
+            >
+              <Icone k={k} />
+              {l}
+            </button>
           ))}
         </div>
-        <div className="li" style={{ marginTop: 10 }}>
-          <span>Modelos de treino</span>
-          <em>{num(totalTreinos)}</em>
-        </div>
-        <div className="li">
-          <span>Treinos registrados</span>
-          <em>{num(totalSessoes)}</em>
-        </div>
-
-        {erroBanco && <p className="rodape">Não consegui abrir o banco de dados neste aparelho: {erroBanco}</p>}
-
-        <h2>Instalação</h2>
-        <div className="li">
-          <span>Na tela de início</span>
-          <em>{instalado ? "sim" : "ainda no Safari"}</em>
-        </div>
-        <div className="li">
-          <span>Funciona offline</span>
-          <em>{offline ? "sim" : "preparando…"}</em>
-        </div>
-
-        {!instalado && (
-          <p className="rodape">
-            No Safari do iPhone, toque em Compartilhar e escolha “Adicionar à Tela de Início”. O app passa a abrir em
-            janela própria, sem barra de endereço.
-          </p>
-        )}
-      </div>
+      </nav>
     </div>
   );
 }
