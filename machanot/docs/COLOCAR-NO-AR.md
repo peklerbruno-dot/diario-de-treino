@@ -106,3 +106,30 @@ semanas intensas por machané, meses parado.
 
 Toda vez que uma mudança entrar no `main`, a Vercel republica sozinha em um ou
 dois minutos. Não precisa repetir nada disto.
+
+---
+
+## Se o site mostrar uma tela de erro
+
+Primeiro: **recarregue a página**. A causa mais comum é o banco de dados
+demorando para acordar depois de um tempo parado — o plano gratuito do Neon
+adormece quando ninguém usa. Recarregar resolve.
+
+Se insistir por mais de alguns minutos, olhe a aba **Deployments** do projeto
+`precificacao` na Vercel. Se o deploy mais recente estiver vermelho, o site
+está servindo a versão anterior e o erro veio de uma mudança que não subiu
+direito; abra o log do deploy vermelho e mostre a quem cuida da parte técnica.
+
+## Sobre pré-visualizações e o banco
+
+Cada pull request no GitHub cria um site de pré-visualização na Vercel, e ele
+usa o **mesmo banco** do site de verdade. Por isso a publicação de
+pré-visualização **não aplica mudanças na estrutura do banco** — só a
+publicação de produção faz isso (ver `scripts/build-vercel.mjs`).
+
+Isso não é frescura: da primeira vez que não era assim, a pré-visualização
+alterou o banco antes de o código novo estar no ar, e o site de verdade, ainda
+rodando o código velho, quebrou por alguns minutos.
+
+Se um dia vocês quiserem testar mudanças sem tocar nos dados reais, crie um
+segundo banco no Neon e ligue-o só ao ambiente **Preview**.

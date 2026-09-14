@@ -41,6 +41,7 @@ Outros comandos:
 | `npm test` | testes do motor de cálculo (o que trava a planilha ao centavo) |
 | `npm run typecheck` | TypeScript strict, sem emitir |
 | `npm run build` | build de produção |
+| `npm run vercel-build` | o que a Vercel roda: migra o banco **só em produção**, depois compila |
 | `npm run db:studio` | Prisma Studio |
 
 ## Regra de ouro do dinheiro
