@@ -1,0 +1,90 @@
+/* Visual da seção 7 do briefing. As cores e a tipografia valem para o app inteiro. */
+:root {
+  --papel: #F6F3EC;
+  --tinta: #2B2A26;
+  --cinza: #7A7468;
+  --regua: #D8D2C4;
+  --fina: #EAE5D9;
+  --branco: #FFFDF8;
+  --musc: #9A5A22;
+  --pilates: #4C7F5C;
+  --natacao: #33619C;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--papel);
+}
+
+body {
+  color: var(--tinta);
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  /* Sem realce azul ao tocar e sem seleção acidental de texto em botões */
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dt {
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+.top { padding: 24px 22px 4px; }
+.sec { padding: 0 22px; }
+
+h1 { font-size: 28px; font-weight: 400; letter-spacing: -.01em; margin: 0; }
+
+h2 {
+  font-size: 13px;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--cinza);
+  margin: 28px 0 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--tinta);
+}
+
+.sub { color: var(--cinza); font-size: 14px; font-style: italic; margin-top: 2px; }
+
+.texto { font-size: 16px; line-height: 1.5; margin: 18px 0 0; }
+
+/* Linha de lista: rótulo à esquerda, valor à direita, separada por régua fina */
+.li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--fina);
+  font-size: 16px;
+}
+.li:last-child { border-bottom: 0; }
+.li em { font-style: italic; font-size: 14px; color: var(--cinza); text-align: right; }
+
+.mods { display: flex; gap: 18px; margin: 16px 0 0; font-size: 15px; color: var(--cinza); }
+.mods span::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--c);
+  margin-right: 6px;
+  vertical-align: 1px;
+}
+
+.rodape {
+  margin: 34px 0 28px;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--cinza);
+  line-height: 1.5;
+}
