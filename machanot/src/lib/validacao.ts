@@ -50,7 +50,6 @@ export const zPatchMachane = z
     diariaObservacao: z.string().trim().max(500).nullable(),
     diasGrandes: dias,
     diasPequenos: dias,
-    receitaMadrichimRealCents: centavos.nullable(),
   })
   .partial();
 
@@ -117,25 +116,6 @@ export const zPeso = z
     message: "Para ajustar o peso à mão é obrigatório escrever a justificativa (mín. 10 letras).",
     path: ["justificativa"],
   });
-
-export const zPatchMadrich = z
-  .object({
-    nome: textoCurto.min(1, "O madrich precisa de um nome."),
-    telefone: z.string().trim().max(40).nullable(),
-    kvutza: z.string().trim().max(60).nullable(),
-    turma: zTurma,
-    valorDevidoCents: centavosNaoNegativos,
-    bolsaCents: centavosNaoNegativos,
-    parcelas: z.number().int().min(1).max(24),
-  })
-  .partial();
-
-export const zPagamento = z.object({
-  madrichId: z.string().min(1),
-  valorCents: centavos.refine((v) => v !== 0, "O pagamento não pode ser zero."),
-  data: dataOpcional,
-  observacao: z.string().trim().max(200).nullable().optional(),
-});
 
 export const zDuplicar = z.object({
   origemId: z.string().min(1),

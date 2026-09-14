@@ -17,6 +17,7 @@ import {
   TIPO_GASTO_FORMULA,
 } from "@/lib/textos";
 import type { CategoriaGasto, GastoEstado } from "@/lib/estado";
+import { GASTOS_PADRAO } from "@/lib/modelo";
 import { marcarRevisado } from "@/app/actions";
 
 function Composicao({
@@ -58,6 +59,14 @@ function Composicao({
       </ul>
     </div>
   );
+}
+
+/** Dica de preenchimento das linhas que já vêm no modelo padrão. */
+function dicaDe(descricao: string): string | null {
+  const achado = GASTOS_PADRAO.find(
+    (p) => p.descricao.toLowerCase() === descricao.trim().toLowerCase(),
+  );
+  return achado?.ajuda ?? null;
 }
 
 function LinhaGasto({ g }: { g: GastoEstado }) {
@@ -160,13 +169,23 @@ function LinhaGasto({ g }: { g: GastoEstado }) {
             className="min-h-[38px] text-xs"
             value={g.observacao}
             disabled={somenteLeitura}
-            placeholder="De onde veio este número? (orçamento, contrato, e-mail de quem, quando)"
+            placeholder={
+              dicaDe(g.descricao)
+                ? `${dicaDe(g.descricao)} — depois anote de onde veio o valor`
+                : "De onde veio este número? (orçamento, contrato, e-mail de quem, quando)"
+            }
             onChange={(e) => editarGasto(g.id, { observacao: e.target.value })}
           />
-          {!g.observacao.trim() ? (
+          {!g.observacao.trim() && g.valorCents !== 0 ? (
             <p className="mt-1 text-[11px] text-erro">
               Sem observação. Em seis meses ninguém vai lembrar de onde saiu este valor — e a
               machané não pode ser publicada assim.
+            </p>
+          ) : null}
+          {g.valorCents === 0 ? (
+            <p className="mt-1 text-[11px] text-suave">
+              Linha ainda em branco. Preencha o valor, ou apague se esta machané não tiver este
+              gasto.
             </p>
           ) : null}
           <p className="mt-1 text-[11px] text-suave">{TIPO_GASTO_FORMULA[g.tipo]}</p>
@@ -230,8 +249,9 @@ export function TelaCustos() {
             <div>
               <CartaoTitulo>Gastos fixos</CartaoTitulo>
               <CartaoDescricao>
-                Tudo que não é diária de participante. A soma percorre a lista inteira — não há
-                intervalo de linhas para errar.
+                As linhas que se repetem a cada machané já vêm listadas, com valor zero. Preencha o
+                que houver, apague o que não houver e acrescente o que faltar. A soma percorre a
+                lista inteira — não há intervalo de linhas para errar.
               </CartaoDescricao>
             </div>
             <Botao onClick={() => void adicionarGasto()} disabled={somenteLeitura}>

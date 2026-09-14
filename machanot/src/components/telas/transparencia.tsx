@@ -92,11 +92,7 @@ export function TelaTransparencia() {
           formula={[
             `custo da liderança = Σ (quantidade × dias × diária), só MADRICH e PT`,
             `                   = ${brl(r.custoDosNaoChanichimCents)}`,
-            `receita             = ${brl(r.receitaMadrichimCents)}${
-              estado.receitaMadrichimRealCents !== null
-                ? "  (total real do cadastro de madrichim)"
-                : "  (soma das contribuições das categorias)"
-            }`,
+            `receita             = ${brl(r.receitaMadrichimCents)}  (quantidade × contribuição, na tela de Pessoas)`,
             `subsídio            = ${brl(r.custoDosNaoChanichimCents)} − ${brl(r.receitaMadrichimCents)} = ${brl(r.subsidioMadrichimCents)}`,
             `por chanich grande  = ${brl(r.subsidioMadrichimCents)} × ${pct(r.pesoAplicado, 4)} ÷ ${r.chanichimGrandes}`,
             `                    = ${brl(r.impactoSubsidioPorChanichGrandeCents)}`,

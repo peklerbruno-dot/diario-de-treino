@@ -124,7 +124,6 @@ async function main() {
       categorias: true,
       gastos: true,
       politica: true,
-      madrichim: { include: { pagamentos: true } },
       duplicadaDe: { select: { id: true, nome: true } },
     },
   });

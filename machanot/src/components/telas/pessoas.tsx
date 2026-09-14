@@ -31,8 +31,10 @@ export function TelaPessoas() {
           <div>
             <CartaoTitulo>Quem vai à machané</CartaoTitulo>
             <CartaoDescricao>
-              Uma linha por categoria. O papel decide o que o sistema faz com ela: chanichim recebem
-              o rateio, madrichim e peilim são subsidiados, equipe e prestadores não pagam.
+              Uma linha por categoria: quantos são e quanto cada um paga. O papel decide o que o
+              sistema faz com a linha — chanichim recebem o rateio, madrichim e peilim são
+              subsidiados, equipe e prestadores não pagam. Não há cadastro de nomes em lugar nenhum
+              desta plataforma.
             </CartaoDescricao>
           </div>
           <Botao onClick={() => void adicionarCategoria()} disabled={somenteLeitura}>
@@ -50,7 +52,7 @@ export function TelaPessoas() {
                 <Th className="w-20 text-right">Dias</Th>
                 <Th className="w-24 text-right">Qtd.</Th>
                 <Th className="w-28 text-right">Pessoa-dia</Th>
-                <Th className="w-32 text-right">Contribuição</Th>
+                <Th className="w-32 text-right">Cada um paga</Th>
                 <Th className="w-28 text-center">Hospedagem</Th>
                 <Th className="w-10" />
               </tr>
