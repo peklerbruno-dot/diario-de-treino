@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { MOD, ORDEM, hojeISO } from "../dados/constantes.js";
 import { fmt, fmtLonga, mesNome, volume, metros, semanaDe, mesAnteriorDe, ultimaSerieDe } from "../dados/calculos.js";
 
-export default function Inicio({ exercicios, treinos, sessoes, iniciar }) {
+export default function Inicio({ exercicios, treinos, sessoes, iniciar, escrever }) {
+  const [modo, setModo] = useState("escolher");
+  const [texto, setTexto] = useState("");
   const hoje = hojeISO();
   const mesAtual = hoje.slice(0, 7);
   const mesAnt = mesAnteriorDe(mesAtual);
@@ -143,20 +146,50 @@ export default function Inicio({ exercicios, treinos, sessoes, iniciar }) {
         )}
 
         <h2>Registrar treino</h2>
-        {treinos.length ? (
-          treinos.map((t) => (
-            <button key={t.id} className="lin" onClick={() => iniciar(t)}>
-              <span className="mk" style={{ "--c": MOD[t.mod].cor }} />
-              <span className="t">
-                {t.nome}
-                <small>
-                  {MOD[t.mod].nome} · {t.itens.length} {t.itens.length === 1 ? "exercício" : "exercícios"}
-                </small>
-              </span>
+        <div className="seg" style={{ marginTop: 10 }}>
+          <button className={modo === "escolher" ? "on" : ""} onClick={() => setModo("escolher")}>
+            Meus treinos
+          </button>
+          <button className={modo === "escrever" ? "on" : ""} onClick={() => setModo("escrever")}>
+            Escrever o que fiz
+          </button>
+        </div>
+
+        {modo === "escolher" &&
+          (treinos.length ? (
+            treinos.map((t) => (
+              <button key={t.id} className="lin" onClick={() => iniciar(t)}>
+                <span className="mk" style={{ "--c": MOD[t.mod].cor }} />
+                <span className="t">
+                  {t.nome}
+                  <small>
+                    {MOD[t.mod].nome} · {t.itens.length} {t.itens.length === 1 ? "exercício" : "exercícios"}
+                  </small>
+                </span>
+              </button>
+            ))
+          ) : (
+            <div className="vazio">
+              Os treinos que você montar na aba Treinos aparecem aqui. Toque em um para registrar.
+            </div>
+          ))}
+
+        {modo === "escrever" && (
+          <>
+            <textarea
+              rows={4}
+              value={texto}
+              onChange={(e) => setTexto(e.target.value)}
+              placeholder={
+                "hoje fiz supino reto 3 de 10 com 50 kg, puxada 3x12 com 45 e rosca direta 3 de 10 com 20" +
+                "\n\nnadei 1000 m de crawl em 25 min\n\npilates de aparelho, 50 min"
+              }
+            />
+            <button className="btn" disabled={!texto.trim()} onClick={() => escrever(texto) && setTexto("")}>
+              Converter em treino
             </button>
-          ))
-        ) : (
-          <div className="vazio">Os treinos que você montar na aba Treinos aparecem aqui. Toque em um para registrar.</div>
+            <div className="sub" style={{ marginTop: 8 }}>Você confere tudo antes de salvar.</div>
+          </>
         )}
       </div>
     </>

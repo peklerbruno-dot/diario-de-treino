@@ -3,6 +3,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db, semear } from "./dados/bd.js";
 import { hojeISO, agoraISO } from "./dados/constantes.js";
 import { ultimaSerieDe, nnum } from "./dados/calculos.js";
+import { interpretar } from "./dados/interpretar.js";
 import { Icone, Lixo } from "./componentes/Icone.jsx";
 import Ficha from "./componentes/Ficha.jsx";
 import Inicio from "./telas/Inicio.jsx";
@@ -105,6 +106,17 @@ export default function App() {
     setAba("hoje");
   };
 
+  /** Lê o treino escrito à mão e abre a tela de conferência. */
+  const escrever = (texto) => {
+    const rascunho = interpretar(texto, exercicios, hojeISO());
+    if (!rascunho) {
+      avisar("Não entendi. Tente: supino 3 de 10 com 50 kg");
+      return false;
+    }
+    setAtiva(rascunho);
+    return true;
+  };
+
   /** Abre uma sessão já registrada para conferir e corrigir. */
   const abrirSessao = (s) => {
     const c = structuredClone(s);
@@ -120,6 +132,8 @@ export default function App() {
     const s = structuredClone(ativa);
     const editando = Boolean(s.id);
     delete s.origem;
+    delete s.naoEntendi;
+    delete s.novos;
     await db.transaction("rw", db.exercicios, db.sessoes, async () => {
       for (const it of s.itens || []) {
         if (!it.exId && it.nome) {
@@ -175,7 +189,7 @@ export default function App() {
 
   return (
     <div className="dt" onClick={() => confirmar && setConfirmar(null)}>
-      {aba === "hoje" && !ativa && <Inicio {...comuns} iniciar={iniciar} />}
+      {aba === "hoje" && !ativa && <Inicio {...comuns} iniciar={iniciar} escrever={escrever} />}
 
       {ativa && <Registro {...comuns} ativa={ativa} setAtiva={setAtiva} salvar={salvarSessao} />}
 

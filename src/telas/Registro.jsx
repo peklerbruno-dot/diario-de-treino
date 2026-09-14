@@ -15,7 +15,25 @@ export default function Registro({ ativa, setAtiva, sessoes, ex, setDetalhe, sal
     <div className="sec" style={{ paddingTop: 24 }}>
       <div className="sub" style={{ color: MOD[ativa.mod].cor, fontStyle: "normal" }}>{MOD[ativa.mod].nome}</div>
       <h1>{ativa.nome}</h1>
-      {ativa.origem === "texto" && <div className="aviso">Foi isso que entendi do seu texto. Corrija o que precisar e salve.</div>}
+      {ativa.origem === "texto" && (
+        <div className="aviso">
+          Foi isso que entendi do seu texto. Corrija o que precisar e salve.
+          {ativa.novos?.length > 0 && (
+            <>
+              <br />
+              {ativa.novos.length === 1 ? "Não achei " : "Não achei "}
+              {ativa.novos.join(", ")} na biblioteca — {ativa.novos.length === 1 ? "ele entra" : "eles entram"} ao
+              salvar, e dá para arrumar o grupo muscular depois na Biblioteca.
+            </>
+          )}
+          {ativa.naoEntendi?.length > 0 && (
+            <>
+              <br />
+              Não entendi: “{ativa.naoEntendi.join("”, “")}”.
+            </>
+          )}
+        </div>
+      )}
       {ativa.id && <div className="aviso">Treino já registrado. O que você mudar aqui substitui o que estava salvo.</div>}
       <div className="campo" style={{ marginTop: 14 }}>
         Data

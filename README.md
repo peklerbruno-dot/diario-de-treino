@@ -3,10 +3,25 @@
 App pessoal de treinos (musculação, pilates e natação) para iPhone. PWA em React + Vite,
 sem servidor e sem login: os dados ficam no aparelho.
 
-Etapas 1 a 3 de [`BRIEFING-diario-de-treino.md`](BRIEFING-diario-de-treino.md): projeto, PWA
+Etapas 1 a 4 de [`BRIEFING-diario-de-treino.md`](BRIEFING-diario-de-treino.md): projeto, PWA
 instalável, banco de dados no aparelho e as seis telas do protótipo ligadas a ele, incluindo os
-refinamentos que o briefing marca como "no app final" para essas telas. O protótipo aprovado está
-em `diario-de-treino-v5.jsx`.
+refinamentos que o briefing marca como "no app final" para essas telas, e o registro por texto
+livre. O protótipo aprovado está em `diario-de-treino-v5.jsx`.
+
+## Escrever o treino em vez de preencher
+
+Em Início → "Escrever o que fiz" dá para digitar o treino e o app monta o registro para você
+conferir. A leitura é feita no próprio aparelho por `src/dados/interpretar.js` — sem chamada a
+serviço nenhum, sem chave e sem custo, e funciona offline.
+
+Entende, entre outras formas: `supino reto 3 de 10 com 50 kg`, `puxada 3x12 45`,
+`4 séries de 8 a 60 quilos`, `supino 3x10 50/55/60` (uma carga por série),
+`nadei 1000 m de crawl em 25 min`, `nadei 1,5 km`, `pilates de aparelho, 50 min`, `pilates 1h30`,
+e datas como `ontem`, `sábado`, `dia 3`, `10/09`. Exercícios fora da biblioteca entram ao salvar,
+com um palpite de grupo muscular que dá para corrigir depois na Biblioteca.
+
+`npm test` roda as verificações dessa leitura — `testes/interpretar.test.mjs` serve também como
+lista do que o app entende.
 
 ## Como o código está organizado
 
@@ -14,7 +29,8 @@ em `diario-de-treino-v5.jsx`.
     src/telas/           uma tela por arquivo: Inicio, Registro, Treinos, Biblioteca,
                          Historico, Exportar
     src/componentes/     Pict (pictograma), Icone, Ficha do exercício
-    src/dados/           bd.js (Dexie), biblioteca.js, constantes.js, calculos.js
+    src/dados/           bd.js (Dexie), biblioteca.js, constantes.js, calculos.js,
+                         interpretar.js (texto livre → registro)
     src/estilo.css       o visual da seção 7, com os ajustes de iPhone
 
 As telas não falam com o IndexedDB por conta própria: leem as listas que o `App` traz pelo
@@ -35,6 +51,7 @@ npm install
 npm run dev      # http://localhost:5173
 npm run build    # gera dist/
 npm run preview  # serve dist/ — é aqui que o service worker funciona
+npm test         # verifica a leitura do texto livre
 ```
 
 O service worker só é gerado no `build`, então o teste de offline se faz com `npm run preview`,
