@@ -30,16 +30,11 @@ model Machane {
   pesoOverridePor   String?
   pesoOverrideEm    DateTime?
 
-  /// Total real arrecadado dos madrichim (devido − bolsa), quando a coordenação
-  /// manda usar o cadastro nominal em vez da soma das contribuições (tela 4).
-  receitaMadrichimRealCents Int?
-
   status StatusMachane @default(RASCUNHO)
 
   categorias    Categoria[]
   gastos        GastoFixo[]
   politica      PoliticaPreco?
-  madrichim     Madrich[]
   alteracoes    RegistroAlteracao[]
   duplicadaDeId String?
   duplicadaDe   Machane?            @relation("Duplicacao", fields: [duplicadaDeId], references: [id])
@@ -175,35 +170,6 @@ enum Arredondamento {
   DEZ
   CINQUENTA
   CEM
-}
-
-model Madrich {
-  id        String  @id @default(cuid())
-  machaneId String
-  machane   Machane @relation(fields: [machaneId], references: [id], onDelete: Cascade)
-
-  nome     String
-  telefone String?
-  kvutza   String?
-  turma    Turma
-
-  valorDevidoCents Int
-  bolsaCents       Int                @default(0)
-  parcelas         Int                @default(1)
-  pagamentos       PagamentoMadrich[]
-
-  @@index([machaneId])
-}
-
-model PagamentoMadrich {
-  id         String   @id @default(cuid())
-  madrichId  String
-  madrich    Madrich  @relation(fields: [madrichId], references: [id], onDelete: Cascade)
-  valorCents Int
-  data       DateTime @default(now())
-  observacao String?
-
-  @@index([madrichId])
 }
 
 // ===== Acesso e auditoria (§11) =====

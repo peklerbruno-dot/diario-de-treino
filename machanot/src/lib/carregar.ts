@@ -29,10 +29,6 @@ export async function carregarMachane(id: string): Promise<EstadoMachane | null>
       categorias: { orderBy: [{ ordem: "asc" }, { nome: "asc" }] },
       gastos: { orderBy: [{ ordem: "asc" }, { descricao: "asc" }] },
       politica: true,
-      madrichim: {
-        orderBy: { nome: "asc" },
-        include: { pagamentos: { orderBy: { data: "asc" } } },
-      },
       duplicadaDe: { select: { id: true, nome: true } },
     },
   });
@@ -45,7 +41,7 @@ export async function listarMachanot() {
   return prisma.machane.findMany({
     orderBy: [{ ano: "desc" }, { criadoEm: "desc" }],
     include: {
-      _count: { select: { gastos: true, categorias: true, madrichim: true } },
+      _count: { select: { gastos: true, categorias: true } },
       duplicadaDe: { select: { id: true, nome: true } },
     },
   });

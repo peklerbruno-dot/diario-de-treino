@@ -5,16 +5,15 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { exigirSessao } from "@/lib/auth";
 import { registrar, descreverPatch } from "@/lib/auditoria";
-import type { CategoriaEstado, GastoEstado, MadrichEstado, PagamentoEstado } from "@/lib/estado";
+import { CATEGORIAS_PADRAO, GASTOS_PADRAO } from "@/lib/modelo";
+import type { CategoriaEstado, GastoEstado } from "@/lib/estado";
 import {
   primeiroErro,
   zCriarMachane,
   zDuplicar,
-  zPagamento,
   zPatchCategoria,
   zPatchGasto,
   zPatchMachane,
-  zPatchMadrich,
   zPatchPolitica,
   zPeso,
   zStatus,
@@ -58,12 +57,27 @@ export async function criarMachane(entrada: unknown): Promise<Resposta<{ id: str
           },
         },
         categorias: {
-          create: [
-            { nome: "chanichim grandes", papel: "CHANICH", turma: "GRANDES", dias: 6, quantidade: 0, ordem: 0 },
-            { nome: "chanichim pequenos", papel: "CHANICH", turma: "PEQUENOS", dias: 4, quantidade: 0, ordem: 1 },
-            { nome: "madrichim grandes", papel: "MADRICH", turma: "GRANDES", dias: 6, quantidade: 0, ordem: 2 },
-            { nome: "madrichim pequenos", papel: "MADRICH", turma: "PEQUENOS", dias: 4, quantidade: 0, ordem: 3 },
-          ],
+          create: CATEGORIAS_PADRAO.map((c, ordem) => ({
+            ...c,
+            dias: c.turma === "GRANDES" ? 6 : 4,
+            quantidade: 0,
+            geraHospedagem: true,
+            contribuicaoCents: 0,
+            ordem,
+          })),
+        },
+        // As linhas de custo que se repetem a cada machané, zeradas.
+        gastos: {
+          create: GASTOS_PADRAO.map((g, ordem) => ({
+            descricao: g.descricao,
+            categoria: g.categoria,
+            tipo: g.tipo,
+            valorCents: 0,
+            ...(g.tipo === "CACHE_DIARIO" ? { pessoas: 1, dias: 6 } : {}),
+            observacao: "",
+            revisado: true,
+            ordem,
+          })),
         },
       },
     });
@@ -385,145 +399,6 @@ export async function salvarPeso(machaneId: string, entrada: unknown): Promise<R
       valorAntes: antes.pesoOverride === null ? "calculado" : String(antes.pesoOverride),
       valorDepois: dados.pesoOverride === null ? "calculado" : String(dados.pesoOverride),
       justificativa: dados.pesoOverride === null ? null : dados.justificativa,
-    });
-    return sucesso(undefined);
-  } catch (e) {
-    return tratar(e);
-  }
-}
-
-// ===== Madrichim =====
-
-export async function criarMadrich(machaneId: string): Promise<Resposta<MadrichEstado>> {
-  await exigirSessao();
-  try {
-    const machane = await prisma.machane.findUnique({
-      where: { id: machaneId },
-      include: { categorias: true },
-    });
-    if (!machane) return falha("Machané não encontrada.");
-    const padrao = machane.categorias.find((c) => c.papel === "MADRICH" && c.turma === "GRANDES");
-    const d = await prisma.madrich.create({
-      data: {
-        machaneId,
-        nome: "",
-        turma: "GRANDES",
-        valorDevidoCents: padrao?.contribuicaoCents ?? 0,
-        bolsaCents: 0,
-        parcelas: 1,
-      },
-    });
-    return sucesso({
-      id: d.id,
-      nome: d.nome,
-      telefone: d.telefone,
-      kvutza: d.kvutza,
-      turma: d.turma,
-      valorDevidoCents: d.valorDevidoCents,
-      bolsaCents: d.bolsaCents,
-      parcelas: d.parcelas,
-      pagamentos: [],
-    });
-  } catch (e) {
-    return tratar(e);
-  }
-}
-
-export async function salvarMadrich(id: string, patch: unknown): Promise<Resposta> {
-  await exigirSessao();
-  try {
-    const dados = zPatchMadrich.parse(patch);
-    await prisma.madrich.update({ where: { id }, data: dados });
-    return sucesso(undefined);
-  } catch (e) {
-    return tratar(e);
-  }
-}
-
-export async function apagarMadrich(id: string): Promise<Resposta> {
-  const sessao = await exigirSessao();
-  try {
-    const antes = await prisma.madrich.findUnique({ where: { id } });
-    if (!antes) return falha("Madrich não encontrado.");
-    await prisma.madrich.delete({ where: { id } });
-    await registrar({
-      machaneId: antes.machaneId,
-      email: sessao.email,
-      alvo: "MADRICH",
-      descricao: `Madrich "${antes.nome}" removido do cadastro`,
-    });
-    return sucesso(undefined);
-  } catch (e) {
-    return tratar(e);
-  }
-}
-
-export async function registrarPagamento(entrada: unknown): Promise<Resposta<PagamentoEstado>> {
-  const sessao = await exigirSessao();
-  try {
-    const dados = zPagamento.parse(entrada);
-    const madrich = await prisma.madrich.findUnique({ where: { id: dados.madrichId } });
-    if (!madrich) return falha("Madrich não encontrado.");
-    const p = await prisma.pagamentoMadrich.create({
-      data: {
-        madrichId: dados.madrichId,
-        valorCents: dados.valorCents,
-        data: dataOuNull(dados.data ?? null) ?? new Date(),
-        observacao: dados.observacao ?? null,
-      },
-    });
-    await registrar({
-      machaneId: madrich.machaneId,
-      email: sessao.email,
-      alvo: "PAGAMENTO",
-      descricao: `Pagamento de ${madrich.nome}`,
-      valorDepois: String(dados.valorCents),
-    });
-    return sucesso({
-      id: p.id,
-      valorCents: p.valorCents,
-      data: p.data.toISOString(),
-      observacao: p.observacao,
-    });
-  } catch (e) {
-    return tratar(e);
-  }
-}
-
-export async function apagarPagamento(id: string): Promise<Resposta> {
-  await exigirSessao();
-  try {
-    await prisma.pagamentoMadrich.delete({ where: { id } });
-    return sucesso(undefined);
-  } catch (e) {
-    return tratar(e);
-  }
-}
-
-/** Tela 4: "usar este total no cálculo" — liga o cadastro nominal ao motor. */
-export async function usarTotalRealMadrichim(
-  machaneId: string,
-  valorCents: number | null,
-): Promise<Resposta> {
-  const sessao = await exigirSessao();
-  try {
-    const valor = valorCents === null ? null : z.number().int().parse(valorCents);
-    const antes = await prisma.machane.findUnique({ where: { id: machaneId } });
-    if (!antes) return falha("Machané não encontrada.");
-    await prisma.machane.update({
-      where: { id: machaneId },
-      data: { receitaMadrichimRealCents: valor },
-    });
-    await registrar({
-      machaneId,
-      email: sessao.email,
-      alvo: "MADRICH",
-      descricao:
-        valor === null
-          ? "Voltou a usar a soma das contribuições das categorias"
-          : "Passou a usar o total real do cadastro de madrichim",
-      valorAntes: antes.receitaMadrichimRealCents === null ? "categorias" : String(antes.receitaMadrichimRealCents),
-      valorDepois: valor === null ? "categorias" : String(valor),
     });
     return sucesso(undefined);
   } catch (e) {

@@ -1,18 +1,19 @@
 # O que esta plataforma não coleta
 
-A planilha original guardava CPF e RG dos madrichim. Este sistema não guarda, e
-o schema não tem esses campos. Se alguém pedir para adicioná-los, a resposta
-padrão é não: para cobrar, prestar contas e achar a pessoa bastam **nome,
-telefone e kvutzá**.
+A planilha original guardava CPF e RG dos madrichim. Este sistema não guarda
+nem isso nem os nomes: para calcular preço, basta saber **quantos são e quanto
+cada um paga**. Se alguém pedir para adicionar cadastro de pessoas, a resposta
+padrão é não — e a pergunta de volta é para que serviria, já que o cálculo não
+precisa.
 
 ## Regras
 
-1. **Nada de documento.** Sem CPF, RG, foto de documento, endereço ou dado de
-   saúde. `Madrich` tem nome, telefone, kvutzá, turma e valores — só.
-2. **Chanichim não são cadastrados.** Boa parte dos madrichim e **todos** os
-   chanichim são menores de idade. O cálculo precisa de quantidades, não de
-   crianças identificadas. Não existe tabela de chanich nominal, e não deve
-   passar a existir.
+1. **Nada de documento, nada de nome.** Sem CPF, RG, endereço, telefone ou dado
+   de saúde. Não existe tabela de pessoas nesta plataforma.
+2. **Ninguém é cadastrado individualmente.** Boa parte dos madrichim e **todos**
+   os chanichim são menores de idade. O cálculo precisa de quantidades por
+   categoria, não de gente identificada. Controle de quem pagou o quê, se a
+   coordenação precisar, é assunto da tesouraria — não deste sistema.
 3. **Tudo atrás de autenticação.** Não há rota pública com dado nenhum. O
    `middleware.ts` barra qualquer caminho sem cookie de sessão; a conferência da
    assinatura acontece no servidor.
@@ -34,9 +35,10 @@ telefone e kvutzá**.
 
 ## O que fazer quando alguém pede os dados de volta
 
-O cadastro de madrichim é apagável pela própria tela (Madrichim → ×), e o
-apagamento é definitivo, em cascata com os pagamentos. Apagar a machané inteira
-apaga tudo que pende dela.
+Não há o que devolver nem o que apagar: a plataforma não guarda dado pessoal de
+ninguém. O que existe são quantidades, valores e o registro de quais e-mails da
+coordenação alteraram o quê — este último é prestação de contas do próprio uso
+do sistema, e some junto com a machané quando ela é apagada.
 
 ## Divulgação
 

@@ -8,7 +8,6 @@ const TELAS = [
   { slug: "parametros", nome: "Parâmetros", dica: "diária, dias, datas" },
   { slug: "pessoas", nome: "Pessoas", dica: "quantidades por categoria" },
   { slug: "custos", nome: "Custos", dica: "gastos fixos" },
-  { slug: "madrichim", nome: "Madrichim", dica: "cadastro e pagamentos" },
   { slug: "rateio", nome: "Rateio", dica: "peso grandes/pequenos" },
   { slug: "precos", nome: "Preços", dica: "a grade divulgada" },
   { slug: "transparencia", nome: "Transparência", dica: "por que este preço" },

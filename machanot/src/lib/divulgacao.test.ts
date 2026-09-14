@@ -20,7 +20,6 @@ const machane: EstadoMachane = {
   pesoJustificativa: "histórico",
   pesoOverridePor: null,
   pesoOverrideEm: null,
-  receitaMadrichimRealCents: null,
   status: "PUBLICADA",
   duplicadaDe: null,
   categorias: [
@@ -43,7 +42,6 @@ const machane: EstadoMachane = {
     superavitAlvoCents: 0,
     arredondamento: "NENHUM",
   },
-  madrichim: [],
 };
 
 const resultado = calcular(paraInput(machane));

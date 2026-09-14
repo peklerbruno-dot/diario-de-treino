@@ -15,26 +15,18 @@ import {
   type CategoriaEstado,
   type EstadoMachane,
   type GastoEstado,
-  type MadrichEstado,
-  type PagamentoEstado,
   type PoliticaEstado,
 } from "@/lib/estado";
 import {
   apagarCategoria,
   apagarGasto,
-  apagarMadrich,
-  apagarPagamento,
   criarCategoria,
   criarGasto,
-  criarMadrich,
-  registrarPagamento,
   salvarCategoria,
   salvarGasto,
   salvarMachane,
-  salvarMadrich,
   salvarPeso,
   salvarPolitica,
-  usarTotalRealMadrichim,
   type Resposta,
 } from "@/app/actions";
 
@@ -66,17 +58,6 @@ interface Contexto {
   removerGasto: (id: string) => Promise<void>;
   editarPolitica: (patch: Partial<PoliticaEstado>) => void;
   definirPeso: (peso: number | null, justificativa: string) => Promise<Resposta>;
-  editarMadrich: (id: string, patch: Partial<MadrichEstado>) => void;
-  adicionarMadrich: () => Promise<void>;
-  removerMadrich: (id: string) => Promise<void>;
-  adicionarPagamento: (
-    madrichId: string,
-    valorCents: number,
-    data: string | null,
-    observacao: string | null,
-  ) => Promise<Resposta<PagamentoEstado>>;
-  removerPagamento: (madrichId: string, pagamentoId: string) => Promise<void>;
-  usarTotalReal: (valorCents: number | null) => Promise<void>;
 }
 
 const Ctx = createContext<Contexto | null>(null);
@@ -112,7 +93,6 @@ export function ProvedorMachane({
       else if (tipo === "politica") r = await salvarPolitica(inicial.id, patch);
       else if (tipo === "categoria") r = await salvarCategoria(id!, patch);
       else if (tipo === "gasto") r = await salvarGasto(id!, patch);
-      else if (tipo === "madrich") r = await salvarMadrich(id!, patch);
       else continue;
 
       if (!r.ok) {
@@ -177,18 +157,6 @@ export function ProvedorMachane({
     [agendar],
   );
 
-  const editarMadrich = useCallback(
-    (id: string, patch: Partial<MadrichEstado>) => {
-      setEstado((e) => ({
-        ...e,
-        madrichim: e.madrichim.map((m) => (m.id === id ? { ...m, ...patch } : m)),
-      }));
-      const { pagamentos: _ignora, ...resto } = patch as Record<string, unknown>;
-      agendar(`madrich:${id}`, resto);
-    },
-    [agendar],
-  );
-
   const comEstrutura = useCallback(async <T,>(tarefa: () => Promise<Resposta<T>>) => {
     setSituacao("salvando");
     const r = await tarefa();
@@ -240,57 +208,6 @@ export function ProvedorMachane({
     [estado.gastos],
   );
 
-  const adicionarMadrich = useCallback(async () => {
-    const novo = await comEstrutura(() => criarMadrich(inicial.id));
-    if (novo) setEstado((e) => ({ ...e, madrichim: [...e.madrichim, novo] }));
-  }, [comEstrutura, inicial.id]);
-
-  const removerMadrich = useCallback(
-    async (id: string) => {
-      const antes = estado.madrichim;
-      setEstado((e) => ({ ...e, madrichim: e.madrichim.filter((m) => m.id !== id) }));
-      const r = await apagarMadrich(id);
-      if (!r.ok) {
-        setEstado((e) => ({ ...e, madrichim: antes }));
-        setSituacao("erro");
-        setErro(r.erro);
-      }
-    },
-    [estado.madrichim],
-  );
-
-  const adicionarPagamento = useCallback(
-    async (madrichId: string, valorCents: number, data: string | null, observacao: string | null) => {
-      const r = await registrarPagamento({ madrichId, valorCents, data, observacao });
-      if (r.ok) {
-        setEstado((e) => ({
-          ...e,
-          madrichim: e.madrichim.map((m) =>
-            m.id === madrichId ? { ...m, pagamentos: [...m.pagamentos, r.dado] } : m,
-          ),
-        }));
-        setSituacao("salvo");
-      } else {
-        setSituacao("erro");
-        setErro(r.erro);
-      }
-      return r;
-    },
-    [],
-  );
-
-  const removerPagamento = useCallback(async (madrichId: string, pagamentoId: string) => {
-    setEstado((e) => ({
-      ...e,
-      madrichim: e.madrichim.map((m) =>
-        m.id === madrichId
-          ? { ...m, pagamentos: m.pagamentos.filter((p) => p.id !== pagamentoId) }
-          : m,
-      ),
-    }));
-    await apagarPagamento(pagamentoId);
-  }, []);
-
   const definirPeso = useCallback(
     async (peso: number | null, justificativa: string) => {
       const r = await salvarPeso(inicial.id, { pesoOverride: peso, justificativa });
@@ -308,20 +225,6 @@ export function ProvedorMachane({
         setErro(r.erro);
       }
       return r;
-    },
-    [inicial.id],
-  );
-
-  const usarTotalReal = useCallback(
-    async (valorCents: number | null) => {
-      setEstado((e) => ({ ...e, receitaMadrichimRealCents: valorCents }));
-      const r = await usarTotalRealMadrichim(inicial.id, valorCents);
-      if (!r.ok) {
-        setSituacao("erro");
-        setErro(r.erro);
-      } else {
-        setSituacao("salvo");
-      }
     },
     [inicial.id],
   );
@@ -344,12 +247,6 @@ export function ProvedorMachane({
     removerGasto,
     editarPolitica,
     definirPeso,
-    editarMadrich,
-    adicionarMadrich,
-    removerMadrich,
-    adicionarPagamento,
-    removerPagamento,
-    usarTotalReal,
   };
 
   return <Ctx.Provider value={valor}>{children}</Ctx.Provider>;

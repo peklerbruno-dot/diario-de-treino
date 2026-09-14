@@ -5,13 +5,7 @@
  * o painel lateral recalcula na hora e o salvamento acontece em paralelo.
  * Nenhum campo de dinheiro aqui é Float — tudo em centavos.
  */
-import type {
-  CategoriaInput,
-  GastoInput,
-  MachaneInput,
-  PoliticaInput,
-  Turma,
-} from "@/lib/calculo";
+import type { CategoriaInput, GastoInput, MachaneInput, PoliticaInput } from "@/lib/calculo";
 
 export type TipoMachane = "KAITZ" | "CHOREF";
 export type Arredondamento = PoliticaInput["arredondamento"];
@@ -42,25 +36,6 @@ export interface PoliticaEstado extends PoliticaInput {
   id: string;
 }
 
-export interface PagamentoEstado {
-  id: string;
-  valorCents: number;
-  data: string;
-  observacao: string | null;
-}
-
-export interface MadrichEstado {
-  id: string;
-  nome: string;
-  telefone: string | null;
-  kvutza: string | null;
-  turma: Turma;
-  valorDevidoCents: number;
-  bolsaCents: number;
-  parcelas: number;
-  pagamentos: PagamentoEstado[];
-}
-
 export interface EstadoMachane {
   id: string;
   nome: string;
@@ -81,15 +56,12 @@ export interface EstadoMachane {
   pesoOverridePor: string | null;
   pesoOverrideEm: string | null;
 
-  receitaMadrichimRealCents: number | null;
-
   status: StatusMachane;
   duplicadaDe: { id: string; nome: string } | null;
 
   categorias: CategoriaEstado[];
   gastos: GastoEstado[];
   politica: PoliticaEstado;
-  madrichim: MadrichEstado[];
 }
 
 /** O recorte que o motor de cálculo enxerga. */
@@ -102,26 +74,8 @@ export function paraInput(e: EstadoMachane): MachaneInput {
     categorias: e.categorias,
     gastos: e.gastos,
     politica: e.politica,
-    receitaMadrichimRealCents: e.receitaMadrichimRealCents,
   };
 }
-
-export const totalPago = (m: MadrichEstado): number =>
-  m.pagamentos.reduce((s, p) => s + p.valorCents, 0);
-
-/** O que este madrich ainda deve: devido − bolsa − pago. */
-export const saldoMadrich = (m: MadrichEstado): number =>
-  m.valorDevidoCents - m.bolsaCents - totalPago(m);
-
-/** Receita esperada do cadastro nominal: devido − bolsa. */
-export const receitaEsperadaMadrichim = (lista: MadrichEstado[]): number =>
-  lista.reduce((s, m) => s + m.valorDevidoCents - m.bolsaCents, 0);
-
-export const totalArrecadadoMadrichim = (lista: MadrichEstado[]): number =>
-  lista.reduce((s, m) => s + totalPago(m), 0);
-
-export const totalBolsaMadrichim = (lista: MadrichEstado[]): number =>
-  lista.reduce((s, m) => s + m.bolsaCents, 0);
 
 /** Gastos herdados de uma duplicação que ninguém conferiu ainda (§12, fase 4). */
 export const gastosNaoRevisados = (e: EstadoMachane): GastoEstado[] =>
@@ -139,7 +93,9 @@ export function podePublicar(e: EstadoMachane): { pode: boolean; motivos: string
     motivos.push("Nenhum chanich cadastrado — não há para quem ratear o custo.");
   }
   if (e.diariaCents <= 0) motivos.push("A diária ainda está zerada.");
-  const semObservacao = e.gastos.filter((g) => !g.observacao.trim());
+  // Linha zerada é rascunho do modelo padrão: não faz sentido exigir a origem
+  // de um número que ainda não existe.
+  const semObservacao = e.gastos.filter((g) => g.valorCents !== 0 && !g.observacao.trim());
   if (semObservacao.length > 0) {
     motivos.push(
       `${semObservacao.length} gasto(s) sem observação — é preciso dizer de onde veio o número.`,

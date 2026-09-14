@@ -55,6 +55,7 @@ Percentuais e pesos são frações: 0,03 = 3%.
 src/lib/calculo.ts       o motor: função pura, sem I/O. É a única fonte de preço.
 src/lib/calculo.test.ts  a planilha de 2026 reproduzida ao centavo
 src/lib/estado.ts        o estado da machané como ele viaja até o navegador
+src/lib/modelo.ts        as categorias e os gastos que toda machané nova já traz
 src/lib/divulgacao.ts    texto para o grupo de pais e CSV do orçamento
 src/lib/pdf.ts           PDF da tabela de preços
 src/app/actions.ts       toda escrita passa por aqui: Zod + registro de alteração
@@ -118,17 +119,31 @@ acusa o risco em amarelo no painel. O cadastro histórico de 2026 usa
 | 1 | Parâmetros | diária negociada, valor de tabela, dias, datas |
 | 2 | Pessoas | quantidades por categoria; total de pessoas e pessoa-dia |
 | 3 | Custos | gastos por categoria, observação obrigatória, composição |
-| 4 | Madrichim | cadastro nominal, bolsas, pagamentos, arrecadação |
-| 5 | Rateio | peso calculado × aplicado, com o deslocamento em reais |
-| 6 | Preços | a grade 4×2, segunda leva, texto de divulgação, PDF e CSV |
-| 7 | Transparência | por que este preço: subsídio, bolsas, rateio, margem |
-| 8 | Cenários | e se… três colunas lado a lado |
-| 9 | Comparativo | esta machané contra a anterior, em R$ e em % |
-| 10 | Registro | quem mudou o quê, quando, e o valor de antes |
+
+| 4 | Rateio | peso calculado × aplicado, com o deslocamento em reais |
+| 5 | Preços | como o preço se monta, a grade 4×2, texto de divulgação, PDF e CSV |
+| 6 | Transparência | por que este preço: subsídio, bolsas, rateio, margem |
+| 7 | Cenários | e se… três colunas lado a lado |
+| 8 | Comparativo | esta machané contra a anterior, em R$ e em % |
+| 9 | Registro | quem mudou o quê, quando, e o valor de antes |
 
 Nenhuma tela tem botão "calcular": o painel lateral recalcula a cada tecla e o
 salvamento acontece sozinho, meio segundo depois da última alteração. Dá para
 pular de tela em tela fora de ordem — não existe wizard.
+
+## Machané nova já vem com o esqueleto
+
+Criar uma machané do zero não abre uma tela em branco: as categorias de pessoas
+(chanichim, madrichim, PTs, equipe, seguranças) e as linhas de custo que se
+repetem a cada edição (ônibus, enfermeira, seguro, bolsas…) já vêm listadas com
+quantidade e valor zero, em `src/lib/modelo.ts`. Preenche-se o que houver,
+apaga-se o que não houver. Linha zerada não cobra observação nem trava a
+publicação — só a que tem valor.
+
+Os gastos do modelo nunca são do tipo "por diária": numa machané nova, a
+hospedagem de equipe e prestadores entra pela tela de Pessoas, com a coluna
+"gera hospedagem" marcada. Misturar os dois modelos é o que fazia a diária ser
+contada duas vezes na planilha.
 
 ## Duplicar a machané anterior
 
@@ -139,6 +154,7 @@ três erros mais caros da planilha vieram de copiar uma aba e esquecer de revisa
 
 ## Proteção de dados
 
-Sem CPF e sem RG. Sem cadastro nominal de chanichim — o sistema trabalha com
-quantidades, não com crianças identificadas. Tudo atrás de autenticação, nenhuma
+Sem CPF, sem RG e sem nome de ninguém. O sistema trabalha com quantidades por
+categoria — quantos madrichim grandes, quantos babys — e com quanto cada um
+paga. Nem chanichim nem madrichim são cadastrados nominalmente. Tudo atrás de autenticação, nenhuma
 rota pública com dados. Ver `docs/LGPD.md`.

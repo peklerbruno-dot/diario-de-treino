@@ -4,14 +4,13 @@
  * roda fora do Next.
  */
 import type { Prisma } from "@prisma/client";
-import type { EstadoMachane, GastoEstado, CategoriaEstado, MadrichEstado } from "@/lib/estado";
+import type { EstadoMachane, GastoEstado, CategoriaEstado } from "@/lib/estado";
 
 export type MachaneComRelacoes = Prisma.MachaneGetPayload<{
   include: {
     categorias: true;
     gastos: true;
     politica: true;
-    madrichim: { include: { pagamentos: true } };
     duplicadaDe: { select: { id: true; nome: true } };
   };
 }>;
@@ -47,23 +46,6 @@ export function paraEstado(
     ordem: g.ordem,
   }));
 
-  const madrichim: MadrichEstado[] = m.madrichim.map((d) => ({
-    id: d.id,
-    nome: d.nome,
-    telefone: d.telefone,
-    kvutza: d.kvutza,
-    turma: d.turma,
-    valorDevidoCents: d.valorDevidoCents,
-    bolsaCents: d.bolsaCents,
-    parcelas: d.parcelas,
-    pagamentos: d.pagamentos.map((p) => ({
-      id: p.id,
-      valorCents: p.valorCents,
-      data: p.data.toISOString(),
-      observacao: p.observacao,
-    })),
-  }));
-
   return {
     id: m.id,
     nome: m.nome,
@@ -80,7 +62,6 @@ export function paraEstado(
     pesoJustificativa: m.pesoJustificativa,
     pesoOverridePor: m.pesoOverridePor,
     pesoOverrideEm: m.pesoOverrideEm?.toISOString() ?? null,
-    receitaMadrichimRealCents: m.receitaMadrichimRealCents,
     status: m.status,
     duplicadaDe: m.duplicadaDe,
     categorias,
@@ -103,6 +84,5 @@ export function paraEstado(
       superavitAlvoCents: politica.superavitAlvoCents,
       arredondamento: politica.arredondamento,
     },
-    madrichim,
   };
 }
