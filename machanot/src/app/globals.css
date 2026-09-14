@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --fundo: 40 24% 97%;
+  --papel: 0 0% 100%;
+  --texto: 222 22% 16%;
+  --suave: 220 9% 46%;
+  --borda: 220 14% 88%;
+  --acento: 205 72% 34%;
+  --acento-texto: 0 0% 100%;
+  --atencao: 35 88% 32%;
+  --atencao-fundo: 45 94% 93%;
+  --erro: 0 66% 40%;
+  --erro-fundo: 0 82% 96%;
+  --ok: 152 52% 28%;
+  --ok-fundo: 150 60% 95%;
+}
+
+body {
+  background-color: hsl(var(--fundo));
+  color: hsl(var(--texto));
+  font-feature-settings: "tnum" 0;
+}
+
+/* Números de dinheiro sempre alinhados na coluna. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+input[type="range"] {
+  accent-color: hsl(var(--acento));
+}
+
+@media print {
+  .sem-impressao { display: none !important; }
+}
