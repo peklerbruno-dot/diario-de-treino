@@ -44,23 +44,17 @@ Se preferir, me peça: eu abro o pull request para você e você só clica em
 3. **Atenção, este é o passo que mais confunde:** em *Root Directory*, clique em
    **Edit** e escolha a pasta **`machanot`**. Sem isso a Vercel publica o diário
    de treino de novo, não a plataforma.
-4. Abra **Environment Variables** e cadastre quatro valores:
+4. Abra **Environment Variables** e cadastre três valores:
 
    | Nome | Valor |
    |---|---|
    | `DATABASE_URL` | o endereço que você copiou no passo 2 |
    | `AUTH_SECRET` | qualquer texto longo e aleatório (pelo menos 32 letras) |
-   | `EMAILS_AUTORIZADOS` | os e-mails que podem entrar, separados por vírgula |
-   | `CODIGO_DE_ACESSO` | a senha combinada da coordenação (mínimo 12 letras) |
+   | `CODIGO_DE_ACESSO` | a senha combinada da coordenação |
 
-   `EMAILS_AUTORIZADOS` é a porta da plataforma: só quem estiver nessa lista
-   consegue entrar. Comece pelo seu e depois acrescente o resto da coordenação,
-   assim: `voce@email.com,fulano@email.com,ciclana@email.com`
-
-   `CODIGO_DE_ACESSO` é a senha que vocês combinam entre si. Para entrar, a
-   pessoa precisa das duas coisas: estar na lista de e-mails **e** saber o
-   código. Escolha algo que não se adivinhe (`kaitz-2026-verao-sao-paulo` serve;
-   `123456` não) e mande pelo grupo da coordenação, não por e-mail aberto.
+   `CODIGO_DE_ACESSO` é a porta da plataforma: quem sabe entra. Escolha algo que
+   não se adivinhe (`kaitz-2026-verao-sao-paulo` serve; `123456` não) e mande
+   pelo grupo da coordenação, não por e-mail aberto.
 
    `AUTH_SECRET` é diferente: ninguém digita, é o sistema que usa por dentro
    para assinar quem está logado. Invente um texto comprido e esqueça.
@@ -71,21 +65,14 @@ Se preferir, me peça: eu abro o pull request para você e você só clica em
 ## Passo 4 — Entrar
 
 1. Abra o endereço que a Vercel deu e acrescente `/login` no fim.
-2. Digite o seu e-mail e o código de acesso. Pronto.
+2. Digite o código de acesso. Pronto.
 
-Cada pessoa nova da coordenação: acrescente o e-mail dela em
-`EMAILS_AUTORIZADOS` (na Vercel, em **Settings** → **Environment Variables**,
-depois **Redeploy**) e passe o código. Ninguém depende de programador para isso.
+O navegador lembra por seis meses, então na prática vocês digitam isso uma vez
+por temporada.
 
-Quando alguém sair do movimento, tire o e-mail da lista — e, se for alguém que
-sabia o código, troque o código.
-
-### E o link por e-mail?
-
-A entrada por link mágico (sem senha) já está pronta no código, mas o envio de
-e-mail depende de contratar um serviço de envio. Enquanto isso não acontece, o
-código de acesso é o caminho. Quando quiser ligar o e-mail, é um arquivo só:
-`src/lib/email.ts`.
+Pessoa nova na coordenação: passe o código, e acabou. Pessoa que sai: troque o
+código (Vercel → **Settings** → **Environment Variables** → editar
+`CODIGO_DE_ACESSO` → **Redeploy**) e mande o novo para quem fica.
 
 ## Passo 5 — Carregar a Kaitz 2026
 

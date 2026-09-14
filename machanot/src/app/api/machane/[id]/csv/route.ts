@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { sessaoAtual } from "@/lib/auth";
+import { temSessao } from "@/lib/auth";
 import { carregarMachane } from "@/lib/carregar";
 import { calcular } from "@/lib/calculo";
 import { paraInput } from "@/lib/estado";
@@ -7,8 +7,7 @@ import { csvOrcamento } from "@/lib/divulgacao";
 
 /** Fase 5 — CSV do orçamento, para consolidar no orçamento anual do movimento. */
 export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
-  const sessao = await sessaoAtual();
-  if (!sessao) return new NextResponse("Sem sessão.", { status: 401 });
+  if (!(await temSessao())) return new NextResponse("Sem sessão.", { status: 401 });
 
   const { id } = await ctx.params;
   const estado = await carregarMachane(id);

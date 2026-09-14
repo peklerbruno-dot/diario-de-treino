@@ -18,21 +18,14 @@ npm run db:seed               # carrega a Machané Kaitz 2026 real e confere os 
 npm run dev
 ```
 
-Entrada em `/login`. Há dois caminhos:
+Entrada em `/login`: **um campo só**, o código de acesso. Não há contas, nem
+e-mail, nem senha por pessoa — quem sabe o código entra, e o navegador lembra
+por seis meses. O código vive em `CODIGO_DE_ACESSO`; trocá-lo é trocar essa
+variável de ambiente, sem mexer em código.
 
-- **Código de acesso** — defina `CODIGO_DE_ACESSO` (mínimo 12 caracteres) e a
-  pessoa entra com e-mail + código. O e-mail ainda precisa estar em
-  `EMAILS_AUTORIZADOS`: o código sozinho não abre nada. É o caminho enquanto o
-  envio de e-mail não estiver ligado. Com a variável vazia, esta porta não existe.
-- **Link mágico** — sem senha, vale 15 minutos e serve uma vez. Precisa de um
-  provedor de e-mail configurado em `src/lib/email.ts`; em desenvolvimento o
-  link aparece na tela e no terminal.
-
-Para gerar um link pela linha de comando (primeiro acesso, e-mail fora do ar):
-
-```bash
-npx tsx scripts/link-de-entrada.ts coordenacao@chazit.org.br http://localhost:3000
-```
+É pouca porta, e de propósito: a plataforma não guarda dado pessoal de ninguém,
+e o que ela protege é o orçamento do movimento contra quem esbarrasse no
+endereço. Sem porta nenhuma, qualquer um poderia apagar as machanot.
 
 Outros comandos:
 
@@ -43,6 +36,10 @@ Outros comandos:
 | `npm run build` | build de produção |
 | `npm run vercel-build` | o que a Vercel roda: migra o banco **só em produção**, depois compila |
 | `npm run db:studio` | Prisma Studio |
+
+O registro de alterações assina tudo como "coordenação": com um código
+compartilhado não há como saber qual pessoa foi, e inventar um nome seria pior
+do que admitir.
 
 ## Regra de ouro do dinheiro
 
@@ -60,6 +57,7 @@ src/lib/modelo.ts        as categorias e os gastos que toda machané nova já tr
 src/lib/divulgacao.ts    texto para o grupo de pais e CSV do orçamento
 src/lib/pdf.ts           PDF da tabela de preços
 src/app/actions.ts       toda escrita passa por aqui: Zod + registro de alteração
+src/lib/auth.ts          a porta: um código, um cookie assinado, nada de contas
 src/components/machane/  provedor de estado, painel ao vivo, navegação
 src/components/telas/    as nove telas
 prisma/schema.prisma     o modelo de dados

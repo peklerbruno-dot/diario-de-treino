@@ -124,8 +124,6 @@ export const zDuplicar = z.object({
   ano: z.number().int().min(2000).max(2100),
 });
 
-export const zEmail = z.string().trim().toLowerCase().email("E-mail inválido.");
-
 /** Mensagem curta de erro, do jeito que a tela mostra. */
 export function primeiroErro(erro: z.ZodError): string {
   return erro.issues[0]?.message ?? "Dados inválidos.";

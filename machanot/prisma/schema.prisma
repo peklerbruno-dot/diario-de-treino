@@ -174,36 +174,14 @@ enum Arredondamento {
 
 // ===== Acesso e auditoria (§11) =====
 
-model Usuario {
-  id             String    @id @default(cuid())
-  email          String    @unique
-  nome           String?
-  criadoEm       DateTime  @default(now())
-  ultimoAcessoEm DateTime?
-
-  tokens TokenAcesso[]
-}
-
-/// Link mágico de entrada. Token guardado como hash; uso único.
-model TokenAcesso {
-  id        String    @id @default(cuid())
-  usuarioId String
-  usuario   Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  tokenHash String    @unique
-  expiraEm  DateTime
-  usadoEm   DateTime?
-  criadoEm  DateTime  @default(now())
-
-  @@index([usuarioId])
-}
-
-/// Quem mexeu em peso, preço e gasto — e o que o número era antes.
+/// O que mexeu em peso, preço e gasto — e o que o número era antes.
 model RegistroAlteracao {
-  id        String  @id @default(cuid())
-  machaneId String
-  machane   Machane @relation(fields: [machaneId], references: [id], onDelete: Cascade)
-
-  email         String
+  id            String        @id @default(cuid())
+  machaneId     String
+  machane       Machane       @relation(fields: [machaneId], references: [id], onDelete: Cascade)
+  /// Com código compartilhado não dá para saber qual pessoa foi; guardamos
+  /// "coordenação". A coluna mantém o nome antigo para não perder histórico.
+  autor         String        @map("email")
   alvo          AlvoAlteracao
   descricao     String
   valorAntes    String?

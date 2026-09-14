@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { exigirSessao } from "@/lib/auth";
+import { AUTOR, exigirSessao } from "@/lib/auth";
 import { registrar, descreverPatch } from "@/lib/auditoria";
 import { CATEGORIAS_PADRAO, GASTOS_PADRAO } from "@/lib/modelo";
 import type { CategoriaEstado, GastoEstado } from "@/lib/estado";
@@ -35,7 +35,7 @@ const dataOuNull = (v: string | null | undefined) => (v ? new Date(`${v}T12:00:0
 // ===== Machané =====
 
 export async function criarMachane(entrada: unknown): Promise<Resposta<{ id: string }>> {
-  const sessao = await exigirSessao();
+  await exigirSessao();
   try {
     const dados = zCriarMachane.parse(entrada);
     const machane = await prisma.machane.create({
@@ -83,7 +83,7 @@ export async function criarMachane(entrada: unknown): Promise<Resposta<{ id: str
     });
     await registrar({
       machaneId: machane.id,
-      email: sessao.email,
+      autor: AUTOR,
       alvo: "MACHANE",
       descricao: `Machané criada: ${machane.nome}`,
     });
@@ -95,7 +95,7 @@ export async function criarMachane(entrada: unknown): Promise<Resposta<{ id: str
 }
 
 export async function salvarMachane(id: string, patch: unknown): Promise<Resposta> {
-  const sessao = await exigirSessao();
+  await exigirSessao();
   try {
     const dados = zPatchMachane.parse(patch);
     const antes = await prisma.machane.findUnique({ where: { id } });
@@ -114,7 +114,7 @@ export async function salvarMachane(id: string, patch: unknown): Promise<Respost
     if (dados.diariaCents !== undefined && dados.diariaCents !== antes.diariaCents) {
       await registrar({
         machaneId: id,
-        email: sessao.email,
+        autor: AUTOR,
         alvo: "MACHANE",
         descricao: "Diária alterada",
         valorAntes: String(antes.diariaCents),
@@ -129,7 +129,7 @@ export async function salvarMachane(id: string, patch: unknown): Promise<Respost
 }
 
 export async function mudarStatus(id: string, status: unknown): Promise<Resposta> {
-  const sessao = await exigirSessao();
+  await exigirSessao();
   try {
     const novo = zStatus.parse(status);
     const antes = await prisma.machane.findUnique({
@@ -148,7 +148,7 @@ export async function mudarStatus(id: string, status: unknown): Promise<Resposta
     await prisma.machane.update({ where: { id }, data: { status: novo } });
     await registrar({
       machaneId: id,
-      email: sessao.email,
+      autor: AUTOR,
       alvo: "STATUS",
       descricao: "Status alterado",
       valorAntes: antes.status,
@@ -213,7 +213,7 @@ export async function criarCategoria(machaneId: string): Promise<Resposta<Catego
 }
 
 export async function salvarCategoria(id: string, patch: unknown): Promise<Resposta> {
-  const sessao = await exigirSessao();
+  await exigirSessao();
   try {
     const dados = zPatchCategoria.parse(patch);
     const antes = await prisma.categoria.findUnique({ where: { id } });
@@ -221,7 +221,7 @@ export async function salvarCategoria(id: string, patch: unknown): Promise<Respo
     await prisma.categoria.update({ where: { id }, data: dados });
     await registrar({
       machaneId: antes.machaneId,
-      email: sessao.email,
+      autor: AUTOR,
       alvo: "CATEGORIA",
       descricao: `Categoria "${antes.nome}" alterada`,
       valorAntes: descreverPatch(
@@ -238,14 +238,14 @@ export async function salvarCategoria(id: string, patch: unknown): Promise<Respo
 }
 
 export async function apagarCategoria(id: string): Promise<Resposta> {
-  const sessao = await exigirSessao();
+  await exigirSessao();
   try {
     const antes = await prisma.categoria.findUnique({ where: { id } });
     if (!antes) return falha("Categoria não encontrada.");
     await prisma.categoria.delete({ where: { id } });
     await registrar({
       machaneId: antes.machaneId,
-      email: sessao.email,
+      autor: AUTOR,
       alvo: "CATEGORIA",
       descricao: `Categoria "${antes.nome}" apagada`,
       valorAntes: `${antes.quantidade} pessoa(s) × ${antes.dias} dia(s)`,
@@ -295,7 +295,7 @@ export async function criarGasto(machaneId: string): Promise<Resposta<GastoEstad
 }
 
 export async function salvarGasto(id: string, patch: unknown): Promise<Resposta> {
-  const sessao = await exigirSessao();
+  await exigirSessao();
   try {
     const dados = zPatchGasto.parse(patch);
     const antes = await prisma.gastoFixo.findUnique({ where: { id } });
@@ -311,7 +311,7 @@ export async function salvarGasto(id: string, patch: unknown): Promise<Resposta>
     if (mexeuNoValor) {
       await registrar({
         machaneId: antes.machaneId,
-        email: sessao.email,
+        autor: AUTOR,
         alvo: "GASTO",
         descricao: `Gasto "${antes.descricao}" alterado`,
         valorAntes: `${antes.tipo} ${antes.valorCents} pessoas=${antes.pessoas ?? "—"} dias=${antes.dias ?? "—"}`,
@@ -325,14 +325,14 @@ export async function salvarGasto(id: string, patch: unknown): Promise<Resposta>
 }
 
 export async function apagarGasto(id: string): Promise<Resposta> {
-  const sessao = await exigirSessao();
+  await exigirSessao();
   try {
     const antes = await prisma.gastoFixo.findUnique({ where: { id } });
     if (!antes) return falha("Gasto não encontrado.");
     await prisma.gastoFixo.delete({ where: { id } });
     await registrar({
       machaneId: antes.machaneId,
-      email: sessao.email,
+      autor: AUTOR,
       alvo: "GASTO",
       descricao: `Gasto "${antes.descricao}" apagado`,
       valorAntes: String(antes.valorCents),
@@ -346,7 +346,7 @@ export async function apagarGasto(id: string): Promise<Resposta> {
 // ===== Política de preço =====
 
 export async function salvarPolitica(machaneId: string, patch: unknown): Promise<Resposta> {
-  const sessao = await exigirSessao();
+  await exigirSessao();
   try {
     const dados = zPatchPolitica.parse(patch);
     const antes = await prisma.politicaPreco.findUnique({ where: { machaneId } });
@@ -354,7 +354,7 @@ export async function salvarPolitica(machaneId: string, patch: unknown): Promise
     await prisma.politicaPreco.update({ where: { machaneId }, data: dados });
     await registrar({
       machaneId,
-      email: sessao.email,
+      autor: AUTOR,
       alvo: "POLITICA",
       descricao: "Política de preço alterada",
       valorAntes: descreverPatch(
@@ -373,7 +373,7 @@ export async function salvarPolitica(machaneId: string, patch: unknown): Promise
 // ===== Peso do rateio =====
 
 export async function salvarPeso(machaneId: string, entrada: unknown): Promise<Resposta> {
-  const sessao = await exigirSessao();
+  await exigirSessao();
   try {
     const dados = zPeso.parse(entrada);
     const antes = await prisma.machane.findUnique({ where: { id: machaneId } });
@@ -384,13 +384,13 @@ export async function salvarPeso(machaneId: string, entrada: unknown): Promise<R
       data: {
         pesoOverride: dados.pesoOverride,
         pesoJustificativa: dados.pesoOverride === null ? null : dados.justificativa,
-        pesoOverridePor: dados.pesoOverride === null ? null : sessao.email,
+        pesoOverridePor: dados.pesoOverride === null ? null : AUTOR,
         pesoOverrideEm: dados.pesoOverride === null ? null : new Date(),
       },
     });
     await registrar({
       machaneId,
-      email: sessao.email,
+      autor: AUTOR,
       alvo: "PESO",
       descricao:
         dados.pesoOverride === null
@@ -414,7 +414,7 @@ export async function salvarPeso(machaneId: string, entrada: unknown): Promise<R
  * os três erros mais caros da planilha vieram de copiar uma aba sem conferir.
  */
 export async function duplicarMachane(entrada: unknown): Promise<Resposta<{ id: string }>> {
-  const sessao = await exigirSessao();
+  await exigirSessao();
   try {
     const dados = zDuplicar.parse(entrada);
     const origem = await prisma.machane.findUnique({
@@ -490,7 +490,7 @@ export async function duplicarMachane(entrada: unknown): Promise<Resposta<{ id: 
 
     await registrar({
       machaneId: nova.id,
-      email: sessao.email,
+      autor: AUTOR,
       alvo: "DUPLICACAO",
       descricao: `Duplicada de "${origem.nome}". Quantidades zeradas, ${origem.gastos.length} gasto(s) marcado(s) como não revisado(s).`,
     });
@@ -502,7 +502,7 @@ export async function duplicarMachane(entrada: unknown): Promise<Resposta<{ id: 
 }
 
 export async function marcarRevisado(id: string, revisado: boolean): Promise<Resposta> {
-  const sessao = await exigirSessao();
+  await exigirSessao();
   try {
     const antes = await prisma.gastoFixo.findUnique({ where: { id } });
     if (!antes) return falha("Gasto não encontrado.");
@@ -510,7 +510,7 @@ export async function marcarRevisado(id: string, revisado: boolean): Promise<Res
     if (revisado) {
       await registrar({
         machaneId: antes.machaneId,
-        email: sessao.email,
+        autor: AUTOR,
         alvo: "GASTO",
         descricao: `Gasto "${antes.descricao}" revisado`,
         valorDepois: String(antes.valorCents),

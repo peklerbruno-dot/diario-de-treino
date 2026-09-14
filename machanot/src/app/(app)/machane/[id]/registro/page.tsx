@@ -29,7 +29,7 @@ export default async function Pagina({ params }: { params: Promise<{ id: string 
                 </Selo>
                 <span className="font-medium">{r.descricao}</span>
                 <span className="text-xs text-suave">
-                  {r.email} · {dataHora(r.em.toISOString())}
+                  {r.autor} · {dataHora(r.em.toISOString())}
                 </span>
               </div>
               {r.valorAntes || r.valorDepois ? (
