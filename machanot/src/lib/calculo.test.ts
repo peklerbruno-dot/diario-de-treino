@@ -64,7 +64,10 @@ describe('Machané Kaitz 2026 — reprodução da planilha', () => {
 
   it('peso calculado é 89,63%', () => expect(r.pesoCalculado).toBeCloseTo(0.896341, 5));
   it('peso aplicado (histórico) é 89%', () => expect(r.pesoAplicado).toBe(0.89));
-  it('o arredondamento desloca R$ 1.664,33 dos pequenos para os grandes', () =>
+  // Atenção à direção: 89% é MENOS que os 89,6341% calculados, então a fatia dos
+  // grandes encolhe e a dos pequenos cresce. O arredondamento à mão tirou custo
+  // dos grandes e jogou nos babys — o contrário do que "aliviar os babys" sugere.
+  it('o arredondamento desloca R$ 1.664,33 dos grandes para os pequenos', () =>
     expect(r.deslocamentoPorOverrideCents).toBe(-166433));
 
   it('custo por chanich grande = R$ 2.383,49', () =>

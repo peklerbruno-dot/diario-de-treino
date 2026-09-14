@@ -48,8 +48,10 @@ Os dois testes ficam em `src/lib/calculo.test.ts`:
 
 O coeficiente não era arbitrário: é a participação de cada turma no total de
 pessoa-dia. O valor matemático de 2026 é **89,6341%**, arredondado à mão para
-89%. O arredondamento desloca **R$ 1.664,33** dos pequenos para os grandes —
+89%. O arredondamento desloca **R$ 1.664,33** dos grandes para os pequenos:
 R$ 97,90 a mais no bolso de cada baby, R$ 16,98 a menos em cada chanich grande.
+A direção costuma ser lida ao contrário — 89% é *menos* que 89,63%, então a
+fatia dos grandes encolheu e a dos babys cresceu.
 
 A plataforma calcula o peso. O override continua possível (é decisão política
 legítima), mas exige justificativa e mostra o deslocamento em reais antes de
