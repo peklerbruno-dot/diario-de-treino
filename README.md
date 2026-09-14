@@ -3,10 +3,21 @@
 App pessoal de treinos (musculação, pilates e natação) para iPhone. PWA em React + Vite,
 sem servidor e sem login: os dados ficam no aparelho.
 
-Etapas 1 a 6 de [`BRIEFING-diario-de-treino.md`](BRIEFING-diario-de-treino.md): projeto, PWA
-instalável, banco de dados no aparelho e as seis telas do protótipo ligadas a ele, incluindo os
-refinamentos que o briefing marca como "no app final" para essas telas, e o registro por texto
-livre, PDF, planilha, backup e as fotos de execução. O protótipo aprovado está em `diario-de-treino-v5.jsx`.
+As sete etapas de [`BRIEFING-diario-de-treino.md`](BRIEFING-diario-de-treino.md) estão prontas. O
+protótipo aprovado está em `diario-de-treino-v5.jsx`.
+
+## Detalhes de iPhone que o código já resolve
+
+- Os campos de kg e reps **não** são `type="number"`: no teclado em português a tecla decimal é a
+  vírgula, e um campo `number` descarta o que se digita com ela — "52,5" viraria vazio. São campos
+  de texto com `inputMode`, que abrem o mesmo teclado numérico, aceitam a vírgula e a convertem em
+  ponto só na hora de gravar.
+- Áreas seguras respeitadas: entalhe, laterais e a faixa do gesto, incluindo o aviso flutuante e a
+  folha da ficha.
+- Campos com 17 px, para o Safari não dar zoom ao focar. `touch-action: manipulation` nos botões,
+  para não haver atraso de duplo toque nem seleção de texto ao segurar.
+- Ao voltar para o app ele procura uma versão nova em segundo plano, mas **não** recarrega a página
+  sozinho: um treino em preenchimento não pode se perder. A versão nova entra na abertura seguinte.
 
 ## Escrever o treino em vez de preencher
 
