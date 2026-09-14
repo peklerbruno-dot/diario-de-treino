@@ -2,7 +2,7 @@ import Link from "next/link";
 import { exigirSessao } from "@/lib/auth";
 
 export default async function LayoutApp({ children }: { children: React.ReactNode }) {
-  const sessao = await exigirSessao();
+  await exigirSessao();
   return (
     <div className="min-h-screen">
       <header className="sem-impressao border-b border-borda bg-papel">
@@ -12,7 +12,6 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
             <span className="hidden text-xs text-suave sm:inline">Chazit Hanoar</span>
           </Link>
           <div className="flex items-center gap-3">
-            <span className="hidden text-xs text-suave sm:inline">{sessao.email}</span>
             <form action="/sair" method="post">
               <button className="text-xs text-suave underline hover:text-texto" type="submit">
                 sair

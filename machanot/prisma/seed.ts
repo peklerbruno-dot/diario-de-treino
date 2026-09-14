@@ -55,15 +55,6 @@ const gastos: Prisma.GastoFixoCreateWithoutMachaneInput[] = [
 ];
 
 async function main() {
-  const emails = (process.env.EMAILS_AUTORIZADOS ?? "coordenacao@chazit.org.br")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
-  for (const email of emails) {
-    await prisma.usuario.upsert({ where: { email }, update: {}, create: { email } });
-  }
-  console.log(`usuários autorizados: ${emails.join(", ")}`);
-
   const existente = await prisma.machane.findFirst({ where: { nome: "Machané Kaitz 2026" } });
   if (existente) {
     console.log("Machané Kaitz 2026 já está no banco; nada a fazer.");
@@ -111,7 +102,7 @@ async function main() {
   await prisma.registroAlteracao.create({
     data: {
       machaneId: kaitz.id,
-      email: emails[0] ?? "sistema",
+      autor: "importação da planilha",
       alvo: "MACHANE",
       descricao: "Dados importados da planilha original da Kaitz 2026",
     },

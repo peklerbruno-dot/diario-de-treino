@@ -8,7 +8,7 @@ import type { AlvoAlteracao } from "@prisma/client";
  */
 export async function registrar(entrada: {
   machaneId: string;
-  email: string;
+  autor: string;
   alvo: AlvoAlteracao;
   descricao: string;
   valorAntes?: string | null;
@@ -18,7 +18,7 @@ export async function registrar(entrada: {
   await prisma.registroAlteracao.create({
     data: {
       machaneId: entrada.machaneId,
-      email: entrada.email,
+      autor: entrada.autor,
       alvo: entrada.alvo,
       descricao: entrada.descricao,
       valorAntes: entrada.valorAntes ?? null,

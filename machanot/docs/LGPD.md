@@ -21,17 +21,14 @@ precisa.
    status ficam em `RegistroAlteracao`, com autor, data, valor de antes e
    justificativa. É prestação de contas, não vigilância: nada de rastrear
    navegação.
-5. **Entrada controlada.** A lista `EMAILS_AUTORIZADOS` decide quem entra, nos
-   dois caminhos. No link mágico, o token vale 15 minutos, serve uma vez e fica
-   guardado como hash. No código de acesso, o código é comparado em tempo
-   constante e a recusa é a mesma frase para e-mail errado e para código errado,
-   para não revelar qual dos dois falhou — nem quem está na lista.
+5. **Entrada por um código só.** Não há contas, e-mails nem tokens: um código
+   compartilhado, comparado em tempo constante, e um cookie assinado que vale
+   seis meses. A plataforma não sabe quem é quem — e, como não guarda dado
+   pessoal nenhum, não precisa saber.
 
-   O código de acesso é senha compartilhada, com o defeito que toda senha
-   compartilhada tem: quem sai do movimento continua sabendo. Troque o código
-   quando a coordenação mudar, e prefira ligar o envio de e-mail assim que
-   possível — aí cada pessoa passa a entrar pelo próprio e-mail, sem senha
-   nenhuma circulando.
+   Senha compartilhada tem o defeito de toda senha compartilhada: quem sai do
+   movimento continua sabendo. Troque o código quando a coordenação mudar; é
+   uma variável de ambiente, leva um minuto.
 
 ## O que fazer quando alguém pede os dados de volta
 

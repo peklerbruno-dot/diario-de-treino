@@ -9,8 +9,7 @@ export function middleware(req: NextRequest) {
   const temCookie = req.cookies.has("machanot_sessao");
   const { pathname } = req.nextUrl;
 
-  const publica =
-    pathname === "/login" || pathname.startsWith("/entrar/") || pathname.startsWith("/_next");
+  const publica = pathname === "/login" || pathname.startsWith("/_next");
 
   if (!temCookie && !publica) {
     const url = req.nextUrl.clone();

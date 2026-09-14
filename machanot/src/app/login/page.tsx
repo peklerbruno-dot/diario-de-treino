@@ -1,13 +1,12 @@
 import { Suspense } from "react";
-import { codigoDeAcessoLigado } from "@/lib/auth";
 import { FormularioLogin } from "./formulario";
 
 export default async function PaginaLogin({
   searchParams,
 }: {
-  searchParams: Promise<{ erro?: string; de?: string }>;
+  searchParams: Promise<{ de?: string }>;
 }) {
-  const { erro, de } = await searchParams;
+  const { de } = await searchParams;
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-5">
       <div className="mb-7">
@@ -18,11 +17,11 @@ export default async function PaginaLogin({
         </p>
       </div>
       <Suspense>
-        <FormularioLogin erroDeEntrada={erro} de={de} comCodigo={codigoDeAcessoLigado()} />
+        <FormularioLogin de={de} />
       </Suspense>
       <p className="mt-8 text-xs leading-relaxed text-suave">
-        A plataforma trabalha com quantidades, não com crianças identificadas: não há cadastro
-        nominal de chanichim, nem CPF ou RG de ninguém.
+        A plataforma trabalha com quantidades, não com pessoas identificadas: não há cadastro de
+        chanichim nem de madrichim, e nenhum documento de ninguém.
       </p>
     </main>
   );
