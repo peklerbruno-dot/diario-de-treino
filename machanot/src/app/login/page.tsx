@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
+import { temSessao } from "@/lib/auth";
 import { FormularioLogin } from "./formulario";
 
 export default async function PaginaLogin({
@@ -7,6 +9,7 @@ export default async function PaginaLogin({
   searchParams: Promise<{ de?: string }>;
 }) {
   const { de } = await searchParams;
+  if (await temSessao()) redirect("/");
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-5">
       <div className="mb-7">
