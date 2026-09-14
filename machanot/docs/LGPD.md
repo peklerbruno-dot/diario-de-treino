@@ -20,10 +20,17 @@ telefone e kvutzá**.
    status ficam em `RegistroAlteracao`, com autor, data, valor de antes e
    justificativa. É prestação de contas, não vigilância: nada de rastrear
    navegação.
-5. **Entrada por link mágico.** Sem senha para vazar. O token vale 15 minutos, é
-   de uso único e fica guardado como hash. A lista `EMAILS_AUTORIZADOS` decide
-   quem entra; quem não está nela recebe a mesma resposta de quem está, para não
-   revelar a lista.
+5. **Entrada controlada.** A lista `EMAILS_AUTORIZADOS` decide quem entra, nos
+   dois caminhos. No link mágico, o token vale 15 minutos, serve uma vez e fica
+   guardado como hash. No código de acesso, o código é comparado em tempo
+   constante e a recusa é a mesma frase para e-mail errado e para código errado,
+   para não revelar qual dos dois falhou — nem quem está na lista.
+
+   O código de acesso é senha compartilhada, com o defeito que toda senha
+   compartilhada tem: quem sai do movimento continua sabendo. Troque o código
+   quando a coordenação mudar, e prefira ligar o envio de e-mail assim que
+   possível — aí cada pessoa passa a entrar pelo próprio e-mail, sem senha
+   nenhuma circulando.
 
 ## O que fazer quando alguém pede os dados de volta
 

@@ -86,8 +86,14 @@ export async function consumirToken(token: string): Promise<{ ok: boolean; motiv
     data: { ultimoAcessoEm: new Date() },
   });
 
+  await abrirSessao(registro.usuarioId);
+  return { ok: true };
+}
+
+/** Grava o cookie assinado. É o único lugar que cria sessão. */
+async function abrirSessao(usuarioId: string): Promise<void> {
   const expira = Date.now() + DURACAO_SESSAO_MS;
-  const carga = `${registro.usuarioId}.${expira}`;
+  const carga = `${usuarioId}.${expira}`;
   const jar = await cookies();
   jar.set(COOKIE, `${carga}.${assinar(carga)}`, {
     httpOnly: true,
@@ -96,6 +102,49 @@ export async function consumirToken(token: string): Promise<{ ok: boolean; motiv
     path: "/",
     expires: new Date(expira),
   });
+}
+
+/**
+ * Entrada por código de acesso: uma senha só, combinada entre a coordenação,
+ * guardada em CODIGO_DE_ACESSO.
+ *
+ * Existe porque enquanto o envio de e-mail não estiver ligado, o link mágico
+ * não chega a ninguém — e uma plataforma em que só o programador consegue
+ * entrar não serve para a coordenação. Continua valendo a lista de e-mails
+ * autorizados: o código sozinho não abre nada.
+ *
+ * Quando CODIGO_DE_ACESSO estiver vazio, esta porta não existe.
+ */
+export function codigoDeAcessoLigado(): boolean {
+  return (process.env.CODIGO_DE_ACESSO ?? "").trim().length >= 12;
+}
+
+export async function entrarComCodigo(
+  email: string,
+  codigo: string,
+): Promise<{ ok: boolean; motivo?: string }> {
+  if (!codigoDeAcessoLigado()) {
+    return { ok: false, motivo: "A entrada por código não está ligada nesta instalação." };
+  }
+
+  const esperado = Buffer.from((process.env.CODIGO_DE_ACESSO ?? "").trim());
+  const recebido = Buffer.from(codigo.trim());
+  const confere =
+    esperado.length === recebido.length && timingSafeEqual(esperado, recebido);
+
+  const normalizado = email.trim().toLowerCase();
+  if (!confere || !emailAutorizado(normalizado)) {
+    // Uma resposta só para os dois casos: não contamos qual dos dois falhou.
+    return { ok: false, motivo: "E-mail ou código não conferem." };
+  }
+
+  const usuario = await prisma.usuario.upsert({
+    where: { email: normalizado },
+    update: { ultimoAcessoEm: new Date() },
+    create: { email: normalizado, ultimoAcessoEm: new Date() },
+  });
+
+  await abrirSessao(usuario.id);
   return { ok: true };
 }
 
