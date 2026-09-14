@@ -2,7 +2,15 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
+import { fileURLToPath } from "node:url";
+
+const semUso = fileURLToPath(new URL("./scripts/sem-html2canvas.js", import.meta.url));
+
 export default defineConfig({
+  resolve: {
+    // O jsPDF só usa estes dois no método .html(); sem isso eles entrariam no cache à toa.
+    alias: { html2canvas: semUso, dompurify: semUso, canvg: semUso },
+  },
   plugins: [
     react(),
     VitePWA({

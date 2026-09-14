@@ -18,6 +18,9 @@ export const volume = (s) =>
     0
   );
 
+/** Número no jeito brasileiro: 57.5 vira "57,5" e 1200 vira "1.200". */
+export const numBR = (v) => (Number(v) || 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 });
+
 export const metros = (s) => (s.itens || []).reduce((t, it) => t + (Number(it.metros) || 0), 0);
 
 /** Uma linha curta com o que a sessão rendeu, conforme a modalidade. */
@@ -25,7 +28,7 @@ export const resumo = (s) =>
   s.mod === "musc"
     ? `${volume(s).toLocaleString("pt-BR")} kg`
     : s.mod === "natacao"
-      ? `${metros(s)} m`
+      ? `${numBR(metros(s))} m`
       : `${s.duracaoMin || 0} min`;
 
 /** Segunda-feira da semana daquela data. */

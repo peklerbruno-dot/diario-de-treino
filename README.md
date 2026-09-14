@@ -3,10 +3,10 @@
 App pessoal de treinos (musculação, pilates e natação) para iPhone. PWA em React + Vite,
 sem servidor e sem login: os dados ficam no aparelho.
 
-Etapas 1 a 4 de [`BRIEFING-diario-de-treino.md`](BRIEFING-diario-de-treino.md): projeto, PWA
+Etapas 1 a 5 de [`BRIEFING-diario-de-treino.md`](BRIEFING-diario-de-treino.md): projeto, PWA
 instalável, banco de dados no aparelho e as seis telas do protótipo ligadas a ele, incluindo os
 refinamentos que o briefing marca como "no app final" para essas telas, e o registro por texto
-livre. O protótipo aprovado está em `diario-de-treino-v5.jsx`.
+livre, PDF, planilha e backup. O protótipo aprovado está em `diario-de-treino-v5.jsx`.
 
 ## Escrever o treino em vez de preencher
 
@@ -23,6 +23,19 @@ com um palpite de grupo muscular que dá para corrigir depois na Biblioteca.
 `npm test` roda as verificações dessa leitura — `testes/interpretar.test.mjs` serve também como
 lista do que o app entende.
 
+## Exportar e proteger os dados
+
+Na tela Exportar, tudo é gerado no aparelho e entregue pelo share sheet do iOS (salvar nos
+Arquivos, mandar por e-mail, abrir no Numbers):
+
+- **PDF do mês** — cabeçalho com os totais, uma linha por treino com o detalhe, e uma seção por
+  exercício de musculação com a evolução de carga. Feito com jsPDF, que é carregado assim que a
+  tela abre para que o compartilhamento ainda conte como parte do seu toque (exigência do iOS).
+- **Planilha CSV** — uma linha por série, com `;` e vírgula decimal, que é como o Excel e o
+  Numbers em português esperam.
+- **Backup JSON** — as quatro coleções inteiras. Restaurar mostra o que há no arquivo e só troca
+  depois de confirmado. Vale o hábito: o Safari apaga dados de sites pouco usados.
+
 ## Como o código está organizado
 
     src/App.jsx          navegação, sessão em registro, aviso e ficha do exercício
@@ -30,7 +43,8 @@ lista do que o app entende.
                          Historico, Exportar
     src/componentes/     Pict (pictograma), Icone, Ficha do exercício
     src/dados/           bd.js (Dexie), biblioteca.js, constantes.js, calculos.js,
-                         interpretar.js (texto livre → registro)
+                         interpretar.js (texto livre → registro),
+                         relatorio.js (PDF, planilha, backup)
     src/estilo.css       o visual da seção 7, com os ajustes de iPhone
 
 As telas não falam com o IndexedDB por conta própria: leem as listas que o `App` traz pelo
@@ -51,7 +65,7 @@ npm install
 npm run dev      # http://localhost:5173
 npm run build    # gera dist/
 npm run preview  # serve dist/ — é aqui que o service worker funciona
-npm test         # verifica a leitura do texto livre
+npm test         # verifica a leitura do texto livre, o relatório e o backup
 ```
 
 O service worker só é gerado no `build`, então o teste de offline se faz com `npm run preview`,

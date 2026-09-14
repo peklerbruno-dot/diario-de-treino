@@ -39,6 +39,7 @@ export default function App() {
   const exercicios = useLiveQuery(() => db.exercicios.toArray(), [], null);
   const treinos = useLiveQuery(() => db.treinos.toArray(), [], null);
   const sessoes = useLiveQuery(() => db.sessoes.toArray(), [], null);
+  const ajustes = useLiveQuery(() => db.ajustes.toArray(), [], null);
 
   const avisar = (m) => {
     setToast(m);
@@ -200,7 +201,7 @@ export default function App() {
           <Historico {...comuns} abrirSessao={abrirSessao} />
         </Suspense>
       )}
-      {aba === "exportar" && !ativa && <Exportar {...comuns} />}
+      {aba === "exportar" && !ativa && <Exportar {...comuns} ajustes={ajustes} />}
 
       {detalhe && (
         <Ficha
