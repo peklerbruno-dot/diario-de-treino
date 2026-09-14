@@ -3,8 +3,15 @@
 App pessoal de treinos (musculação, pilates e natação) para iPhone. PWA em React + Vite,
 sem servidor e sem login: os dados ficam no aparelho.
 
-Etapa 1 de [`BRIEFING-diario-de-treino.md`](BRIEFING-diario-de-treino.md): projeto, PWA instalável
-e tela inicial. O protótipo aprovado está em `diario-de-treino-v5.jsx`.
+Etapas 1 e 2 de [`BRIEFING-diario-de-treino.md`](BRIEFING-diario-de-treino.md): projeto, PWA
+instalável e banco de dados no aparelho. O protótipo aprovado está em `diario-de-treino-v5.jsx`.
+
+## Onde ficam os dados
+
+Tudo em IndexedDB, no próprio aparelho, pelo Dexie (`src/dados/bd.js`). Quatro coleções:
+`exercicios`, `treinos` (modelos), `sessoes` (registros) e `ajustes`. A biblioteca inicial de 76
+exercícios (`src/dados/biblioteca.js`, a mesma do protótipo) é carregada na primeira abertura; uma
+marca em `ajustes` impede que exercícios apagados voltem sozinhos.
 
 ## Rodar no computador
 
