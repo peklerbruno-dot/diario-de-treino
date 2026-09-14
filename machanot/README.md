@@ -18,9 +18,17 @@ npm run db:seed               # carrega a Machané Kaitz 2026 real e confere os 
 npm run dev
 ```
 
-Primeiro acesso: peça o link em `/login`. Em desenvolvimento o link aparece na
-própria tela e no terminal. Sem provedor de e-mail configurado, gere o link pela
-linha de comando:
+Entrada em `/login`. Há dois caminhos:
+
+- **Código de acesso** — defina `CODIGO_DE_ACESSO` (mínimo 12 caracteres) e a
+  pessoa entra com e-mail + código. O e-mail ainda precisa estar em
+  `EMAILS_AUTORIZADOS`: o código sozinho não abre nada. É o caminho enquanto o
+  envio de e-mail não estiver ligado. Com a variável vazia, esta porta não existe.
+- **Link mágico** — sem senha, vale 15 minutos e serve uma vez. Precisa de um
+  provedor de e-mail configurado em `src/lib/email.ts`; em desenvolvimento o
+  link aparece na tela e no terminal.
+
+Para gerar um link pela linha de comando (primeiro acesso, e-mail fora do ar):
 
 ```bash
 npx tsx scripts/link-de-entrada.ts coordenacao@chazit.org.br http://localhost:3000

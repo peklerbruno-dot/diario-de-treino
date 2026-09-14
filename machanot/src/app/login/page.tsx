@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { codigoDeAcessoLigado } from "@/lib/auth";
 import { FormularioLogin } from "./formulario";
 
 export default async function PaginaLogin({
@@ -6,7 +7,7 @@ export default async function PaginaLogin({
 }: {
   searchParams: Promise<{ erro?: string; de?: string }>;
 }) {
-  const { erro } = await searchParams;
+  const { erro, de } = await searchParams;
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-5">
       <div className="mb-7">
@@ -17,7 +18,7 @@ export default async function PaginaLogin({
         </p>
       </div>
       <Suspense>
-        <FormularioLogin erroDeEntrada={erro} />
+        <FormularioLogin erroDeEntrada={erro} de={de} comCodigo={codigoDeAcessoLigado()} />
       </Suspense>
       <p className="mt-8 text-xs leading-relaxed text-suave">
         A plataforma trabalha com quantidades, não com crianças identificadas: não há cadastro
