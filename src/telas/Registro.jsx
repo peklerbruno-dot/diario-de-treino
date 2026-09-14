@@ -16,6 +16,7 @@ export default function Registro({ ativa, setAtiva, sessoes, ex, setDetalhe, sal
       <div className="sub" style={{ color: MOD[ativa.mod].cor, fontStyle: "normal" }}>{MOD[ativa.mod].nome}</div>
       <h1>{ativa.nome}</h1>
       {ativa.origem === "texto" && <div className="aviso">Foi isso que entendi do seu texto. Corrija o que precisar e salve.</div>}
+      {ativa.id && <div className="aviso">Treino já registrado. O que você mudar aqui substitui o que estava salvo.</div>}
       <div className="campo" style={{ marginTop: 14 }}>
         Data
         <input type="date" value={ativa.data} onChange={(e) => setAtiva({ ...ativa, data: e.target.value })} />
@@ -153,8 +154,8 @@ export default function Registro({ ativa, setAtiva, sessoes, ex, setDetalhe, sal
         </>
       )}
 
-      <button className="btn" onClick={salvar}>Salvar treino</button>
-      <button className="btn q" onClick={() => setAtiva(null)}>Descartar</button>
+      <button className="btn" onClick={salvar}>{ativa.id ? "Salvar alterações" : "Salvar treino"}</button>
+      <button className="btn q" onClick={() => setAtiva(null)}>{ativa.id ? "Cancelar" : "Descartar"}</button>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { db } from "../dados/bd.js";
 import { MOD, ORDEM } from "../dados/constantes.js";
 import { fmt, fmtLonga, resumo } from "../dados/calculos.js";
 
-export default function Historico({ exercicios, sessoes, avisar, Excluir, limparConfirmacao }) {
+export default function Historico({ exercicios, sessoes, avisar, Excluir, limparConfirmacao, abrirSessao }) {
   const [grafico, setGrafico] = useState("semana");
   const [exGraf, setExGraf] = useState(1);
 
@@ -60,7 +60,8 @@ export default function Historico({ exercicios, sessoes, avisar, Excluir, limpar
         {vazio ? (
           <div className="vazio" style={{ paddingTop: 30 }}>
             Aqui ficam todos os treinos que você registrou, com gráficos de frequência por semana e evolução de carga
-            por exercício. Registre o primeiro na tela Início.
+            por exercício. Registre o primeiro na tela Início; depois, um toque em qualquer treino abre para conferir e
+            corrigir.
           </div>
         ) : (
           <>
@@ -120,13 +121,15 @@ export default function Historico({ exercicios, sessoes, avisar, Excluir, limpar
             {[...sessoes]
               .sort((a, b) => b.data.localeCompare(a.data))
               .map((s) => (
-                <div key={s.id} className="lin" style={{ cursor: "default" }}>
-                  <span className="mk" style={{ "--c": MOD[s.mod].cor }} />
-                  <span className="t">
-                    {s.nome}
-                    <small>{fmtLonga(s.data)}</small>
-                  </span>
-                  <span className="num">{resumo(s)}</span>
+                <div key={s.id} className="cabx">
+                  <button className="lin" onClick={() => abrirSessao(s)}>
+                    <span className="mk" style={{ "--c": MOD[s.mod].cor }} />
+                    <span className="t">
+                      {s.nome}
+                      <small>{fmtLonga(s.data)}</small>
+                    </span>
+                    <span className="num">{resumo(s)}</span>
+                  </button>
                   <Excluir id={`s-${s.id}`} onConfirm={() => excluirSessao(s.id)} />
                 </div>
               ))}

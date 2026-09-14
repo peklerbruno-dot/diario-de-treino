@@ -99,3 +99,16 @@ body {
    (e não dentro do botão, senão um toque na lixeira também abriria a ficha). */
 .dt .cabx { display: flex; align-items: center; gap: 4px; margin-bottom: 10px; }
 .dt .cabx .cab { margin-bottom: 0; }
+
+/* Ações da ficha do exercício, lado a lado sob a régua. */
+.dt .acoes { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-top: 4px; }
+
+/* Lista ordenada dos exercícios de um treino, com as setas de reordenar. */
+.dt .ordem { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--fina); font-size: 16px; }
+.dt .ordem .n { width: 18px; color: var(--cinza); font-size: 14px; font-variant-numeric: tabular-nums; }
+.dt .ordem .t { flex: 1; min-width: 0; }
+.dt .ordem .x { font-size: 19px; line-height: 1; padding: 6px 10px; }
+.dt .ordem .x:disabled { opacity: .25; }
+.dt .cabx .lin { border-bottom: 0; }
+.dt .cabx { border-bottom: 1px solid var(--fina); }
+.dt .exer .cabx { border-bottom: 0; }

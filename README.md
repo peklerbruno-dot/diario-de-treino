@@ -4,8 +4,9 @@ App pessoal de treinos (musculação, pilates e natação) para iPhone. PWA em R
 sem servidor e sem login: os dados ficam no aparelho.
 
 Etapas 1 a 3 de [`BRIEFING-diario-de-treino.md`](BRIEFING-diario-de-treino.md): projeto, PWA
-instalável, banco de dados no aparelho e as seis telas do protótipo ligadas a ele. O protótipo
-aprovado está em `diario-de-treino-v5.jsx`.
+instalável, banco de dados no aparelho e as seis telas do protótipo ligadas a ele, incluindo os
+refinamentos que o briefing marca como "no app final" para essas telas. O protótipo aprovado está
+em `diario-de-treino-v5.jsx`.
 
 ## Como o código está organizado
 

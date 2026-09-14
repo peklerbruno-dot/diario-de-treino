@@ -25,6 +25,7 @@ export default function App() {
   const [aba, setAba] = useState("hoje");
   const [ativa, setAtiva] = useState(null); // sessão sendo registrada
   const [detalheId, setDetalheId] = useState(null);
+  const [fichaGerenciavel, setFichaGerenciavel] = useState(false);
   const [toast, setToast] = useState("");
   const [confirmar, setConfirmar] = useState(null);
   const [erroBanco, setErroBanco] = useState(null);
@@ -104,11 +105,21 @@ export default function App() {
     setAba("hoje");
   };
 
+  /** Abre uma sessão já registrada para conferir e corrigir. */
+  const abrirSessao = (s) => {
+    const c = structuredClone(s);
+    if (c.mod === "pilates") {
+      c.duracaoMin = c.duracaoMin ?? "";
+      c.obs = c.obs ?? "";
+    }
+    setAtiva(c);
+  };
+
   /** Grava a sessão. Exercícios que ainda não existem (vindos de texto livre) entram na biblioteca. */
   const salvarSessao = async () => {
     const s = structuredClone(ativa);
+    const editando = Boolean(s.id);
     delete s.origem;
-    delete s.id;
     await db.transaction("rw", db.exercicios, db.sessoes, async () => {
       for (const it of s.itens || []) {
         if (!it.exId && it.nome) {
@@ -135,12 +146,16 @@ export default function App() {
         s.duracaoMin = nnum(s.duracaoMin);
         s.obs = s.obs || "";
       }
-      s.criadoEm = agoraISO();
-      await db.sessoes.add(s);
+      if (editando) {
+        await db.sessoes.put(s);
+      } else {
+        s.criadoEm = agoraISO();
+        await db.sessoes.add(s);
+      }
     });
     setAtiva(null);
-    setAba("hoje");
-    avisar("Treino salvo");
+    setAba(editando ? "historico" : "hoje");
+    avisar(editando ? "Treino atualizado" : "Treino salvo");
   };
 
   const comuns = {
@@ -151,7 +166,10 @@ export default function App() {
     avisar,
     Excluir,
     limparConfirmacao: () => setConfirmar(null),
-    setDetalhe: (e) => setDetalheId(e.id),
+    setDetalhe: (e, gerenciar = false) => {
+      setDetalheId(e.id);
+      setFichaGerenciavel(gerenciar);
+    },
   };
   const detalhe = detalheId ? exercicios.find((e) => e.id === detalheId) : null;
 
@@ -165,12 +183,20 @@ export default function App() {
       {aba === "biblioteca" && !ativa && <Biblioteca {...comuns} />}
       {aba === "historico" && !ativa && (
         <Suspense fallback={<div className="top"><h1>Histórico</h1><div className="sub">desenhando os gráficos…</div></div>}>
-          <Historico {...comuns} />
+          <Historico {...comuns} abrirSessao={abrirSessao} />
         </Suspense>
       )}
       {aba === "exportar" && !ativa && <Exportar {...comuns} />}
 
-      {detalhe && <Ficha exercicio={detalhe} sessoes={sessoes} fechar={() => setDetalheId(null)} />}
+      {detalhe && (
+        <Ficha
+          exercicio={detalhe}
+          sessoes={sessoes}
+          gerenciar={fichaGerenciavel}
+          avisar={avisar}
+          fechar={() => setDetalheId(null)}
+        />
+      )}
 
       {toast && <div className="toast">{toast}</div>}
 

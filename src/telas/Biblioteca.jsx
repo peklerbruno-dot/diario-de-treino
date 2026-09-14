@@ -9,9 +9,10 @@ export default function Biblioteca({ exercicios, setDetalhe, avisar }) {
   const [novoEx, setNovoEx] = useState({ nome: "", cat: "Peito" });
 
   // Sem reordenar: a ordem dentro de cada grupo é a da lista do protótipo.
-  const lista = exercicios.filter(
-    (e) => e.mod === bib && (!busca || norm(e.nome).includes(norm(busca)) || norm(e.cat).includes(norm(busca)))
-  );
+  const daMod = exercicios.filter((e) => e.mod === bib);
+  const combina = (e) => !busca || norm(e.nome).includes(norm(busca)) || norm(e.cat).includes(norm(busca));
+  const lista = daMod.filter((e) => !e.arquivado && combina(e));
+  const arquivados = daMod.filter((e) => e.arquivado);
   const cats = bib === "musc" ? GRUPOS : [...new Set(lista.map((e) => e.cat))];
 
   const adicionar = async () => {
@@ -24,7 +25,7 @@ export default function Biblioteca({ exercicios, setDetalhe, avisar }) {
     <>
       <div className="top">
         <h1>Biblioteca</h1>
-        <div className="sub">{exercicios.filter((e) => e.mod === bib).length} exercícios · toque para ver a execução</div>
+        <div className="sub">{daMod.filter((e) => !e.arquivado).length} exercícios · toque para ver a execução</div>
       </div>
       <div className="sec">
         <div className="busca">
@@ -52,7 +53,7 @@ export default function Biblioteca({ exercicios, setDetalhe, avisar }) {
             <div key={c}>
               <h2 className="grupo" style={{ "--c": MOD[bib].cor, borderBottomColor: MOD[bib].cor, marginTop: 18 }}>{c}</h2>
               {doGrupo.map((e) => (
-                <button key={e.id} className="lin" onClick={() => setDetalhe(e)}>
+                <button key={e.id} className="lin" onClick={() => setDetalhe(e, true)}>
                   <Pict cat={e.cat} cor={MOD[bib].cor} tam={26} />
                   <span className="t">{e.nome}</span>
                   <span className="ver">ver</span>
@@ -62,6 +63,20 @@ export default function Biblioteca({ exercicios, setDetalhe, avisar }) {
           );
         })}
         {!lista.length && <div className="vazio">Nenhum exercício com esse nome. Adicione abaixo.</div>}
+
+        {arquivados.length > 0 && !busca && (
+          <>
+            <h2>Arquivados</h2>
+            <div className="sub">Fora das listas, mas os treinos antigos continuam mostrando o nome.</div>
+            {arquivados.map((e) => (
+              <button key={e.id} className="lin" onClick={() => setDetalhe(e, true)}>
+                <Pict cat={e.cat} cor="#BDB6A6" tam={26} />
+                <span className="t">{e.nome}</span>
+                <span className="ver">ver</span>
+              </button>
+            ))}
+          </>
+        )}
 
         <h2>Novo exercício</h2>
         <div className="campo" style={{ marginTop: 10 }}>
