@@ -17,12 +17,11 @@ export function middleware(req: NextRequest) {
     url.search = `?de=${encodeURIComponent(pathname)}`;
     return NextResponse.redirect(url);
   }
-  if (temCookie && pathname === "/login") {
-    const url = req.nextUrl.clone();
-    url.pathname = "/";
-    url.search = "";
-    return NextResponse.redirect(url);
-  }
+  // Quem já entrou é mandado de volta para a lista pela própria página de
+  // entrada, que confere a assinatura do cookie. Fazer isso aqui, olhando só
+  // se o cookie existe, criava um vaivém sem fim para quem carregasse um
+  // cookie velho ou inválido: o /login mandava para "/", que não aceitava a
+  // sessão e mandava de volta para /login.
   return NextResponse.next();
 }
 
