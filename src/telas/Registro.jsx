@@ -1,6 +1,7 @@
 import { MOD } from "../dados/constantes.js";
 import { fmt, ultimaSerieDe } from "../dados/calculos.js";
 import Figura from "../componentes/Figura.jsx";
+import CampoNumero from "../componentes/CampoNumero.jsx";
 
 export default function Registro({ ativa, setAtiva, sessoes, ex, setDetalhe, salvar, Excluir, limparConfirmacao }) {
   const ultimaSerie = (exId, antesDe) => ultimaSerieDe(sessoes, exId, antesDe);
@@ -77,17 +78,16 @@ export default function Registro({ ativa, setAtiva, sessoes, ex, setDetalhe, sal
               {it.series.map((r, ri) => (
                 <div className="serie" key={ri}>
                   <span>{ri + 1}</span>
-                  <input
-                    type="number"
-                    inputMode="decimal"
-                    value={r.carga}
-                    onChange={(ev) => mexer((c) => (c.itens[ii].series[ri].carga = ev.target.value))}
+                  <CampoNumero
+                    decimal
+                    valor={r.carga}
+                    aoMudar={(v) => mexer((c) => (c.itens[ii].series[ri].carga = v))}
+                    aria-label={`Carga da série ${ri + 1}`}
                   />
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    value={r.reps}
-                    onChange={(ev) => mexer((c) => (c.itens[ii].series[ri].reps = ev.target.value))}
+                  <CampoNumero
+                    valor={r.reps}
+                    aoMudar={(v) => mexer((c) => (c.itens[ii].series[ri].reps = v))}
+                    aria-label={`Repetições da série ${ri + 1}`}
                   />
                   <button
                     className="x"
@@ -129,21 +129,11 @@ export default function Registro({ ativa, setAtiva, sessoes, ex, setDetalhe, sal
             <div className="serie" style={{ gridTemplateColumns: "1fr 1fr", fontStyle: "italic" }}>
               <label>
                 Metros
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  value={it.metros}
-                  onChange={(e) => mexer((c) => (c.itens[ii].metros = e.target.value))}
-                />
+                <CampoNumero valor={it.metros} aoMudar={(v) => mexer((c) => (c.itens[ii].metros = v))} />
               </label>
               <label>
                 Minutos
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  value={it.tempoMin}
-                  onChange={(e) => mexer((c) => (c.itens[ii].tempoMin = e.target.value))}
-                />
+                <CampoNumero valor={it.tempoMin} aoMudar={(v) => mexer((c) => (c.itens[ii].tempoMin = v))} />
               </label>
             </div>
           </div>
@@ -153,12 +143,7 @@ export default function Registro({ ativa, setAtiva, sessoes, ex, setDetalhe, sal
         <>
           <div className="campo">
             Duração (min)
-            <input
-              type="number"
-              inputMode="numeric"
-              value={ativa.duracaoMin}
-              onChange={(e) => setAtiva({ ...ativa, duracaoMin: e.target.value })}
-            />
+            <CampoNumero valor={ativa.duracaoMin} aoMudar={(v) => setAtiva({ ...ativa, duracaoMin: v })} />
           </div>
           <div className="campo">
             Observações

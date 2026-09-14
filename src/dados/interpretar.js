@@ -328,8 +328,10 @@ export function interpretar(texto, exercicios, hoje) {
 /** Monta as séries: uma carga por série, repetindo a última quando faltar. */
 function montarSeries(series, reps, cargas) {
   const n = series || cargas.length || 1;
+  // a carga volta para o campo como se escreve aqui: 52,5 e não 52.5
+  const escrita = (v) => String(v).replace(".", ",");
   return Array.from({ length: n }, (_, k) => ({
-    carga: cargas.length ? (cargas[k] ?? cargas[cargas.length - 1]) : "",
+    carga: cargas.length ? escrita(cargas[k] ?? cargas[cargas.length - 1]) : "",
     reps: reps ?? "",
   }));
 }

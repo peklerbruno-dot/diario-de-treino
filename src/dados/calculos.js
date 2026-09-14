@@ -60,5 +60,6 @@ export const ultimaSerieDe = (sessoes, exId, antesDe) => {
   return { data: s.data, carga: best.carga, reps: best.reps };
 };
 
-/** Números limpos na hora de gravar: o campo vazio vira 0. */
-export const nnum = (v) => (v === "" || v === null || v === undefined ? 0 : Number(v) || 0);
+/** Números limpos na hora de gravar: o campo vazio vira 0 e "52,5" vira 52.5. */
+export const nnum = (v) =>
+  v === "" || v === null || v === undefined ? 0 : Number(String(v).replace(",", ".")) || 0;

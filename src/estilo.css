@@ -121,3 +121,23 @@ body {
 .dt .fotos figcaption { font-size: 12px; font-style: italic; color: var(--cinza); margin-top: 4px; text-align: center; }
 .dt .tocador { aspect-ratio: 16 / 9; width: 100%; border: 0; border-radius: 8px; background: var(--tinta); margin: 6px 0 2px; display: block; }
 .dt .credito { font-size: 11px; font-style: italic; color: var(--cinza); margin-top: 10px; line-height: 1.4; }
+
+/* Últimos acertos de iPhone. */
+/* O aviso flutuante fica acima da barra de gestos, não atrás dela. */
+.dt .toast { bottom: calc(88px + env(safe-area-inset-bottom)); }
+
+/* Toque de app, não de página: sem atraso do duplo toque e sem seleção de texto
+   ao segurar um botão (o que atrapalhava a confirmação em dois toques). */
+.dt button, .dt .nav button, .dt a.btn {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Alvos de toque maiores para a lixeira e o × das séries. */
+.dt .x { min-width: 40px; min-height: 36px; align-items: center; justify-content: center; }
+.dt .serie { grid-template-columns: 22px 1fr 1fr 40px; }
+.dt .ordem .x { min-height: 40px; }
+
+/* A folha rola sozinha, sem arrastar a tela de trás junto. */
+.dt .folha { overscroll-behavior: contain; }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { db } from "../dados/bd.js";
 import { MOD, ORDEM, norm, agoraISO } from "../dados/constantes.js";
 import Figura from "../componentes/Figura.jsx";
+import CampoNumero from "../componentes/CampoNumero.jsx";
 
 export default function Treinos({ exercicios, treinos, ex, avisar, Excluir, limparConfirmacao }) {
   const [novoTr, setNovoTr] = useState(null);
@@ -167,30 +168,28 @@ export default function Treinos({ exercicios, treinos, ex, avisar, Excluir, limp
                   </span>
                   {it && novoTr.mod === "musc" && (
                     <span style={{ display: "flex", gap: 4, alignItems: "center", fontSize: 14 }}>
-                      <input
-                        type="number"
-                        inputMode="numeric"
+                      <CampoNumero
                         style={{ width: 46, padding: 6 }}
-                        value={it.series}
-                        onChange={(ev) =>
+                        valor={it.series}
+                        aoMudar={(v) =>
                           setNovoTr({
                             ...novoTr,
-                            itens: novoTr.itens.map((i) => (i.exId === e.id ? { ...i, series: Number(ev.target.value) } : i)),
+                            itens: novoTr.itens.map((i) => (i.exId === e.id ? { ...i, series: Number(v) || "" } : i)),
                           })
                         }
+                        aria-label="Séries"
                       />
                       ×
-                      <input
-                        type="number"
-                        inputMode="numeric"
+                      <CampoNumero
                         style={{ width: 46, padding: 6 }}
-                        value={it.reps}
-                        onChange={(ev) =>
+                        valor={it.reps}
+                        aoMudar={(v) =>
                           setNovoTr({
                             ...novoTr,
-                            itens: novoTr.itens.map((i) => (i.exId === e.id ? { ...i, reps: Number(ev.target.value) } : i)),
+                            itens: novoTr.itens.map((i) => (i.exId === e.id ? { ...i, reps: Number(v) || "" } : i)),
                           })
                         }
+                        aria-label="Repetições"
                       />
                     </span>
                   )}

@@ -36,7 +36,7 @@ caso("supino 3x10 50", "Supino reto com barra 3x10 50");
 caso("supino 3 x 10 50kg", "Supino reto com barra 3x10 50");
 caso("supino 3 séries de 10 com 50 kg", "Supino reto com barra 3x10 50");
 caso("supino 3 de 10 a 50", "Supino reto com barra 3x10 50");
-caso("supino 3x10 com 52,5 kg", "Supino reto com barra 3x10 52.5");
+caso("supino 3x10 com 52,5 kg", "Supino reto com barra 3x10 52,5");
 caso("supino 3x10 @ 50", "Supino reto com barra 3x10 50");
 caso("supino 3x10 50/55/60", "Supino reto com barra 3x10 50/55/60");
 caso("supino 10 reps com 50 kg", "Supino reto com barra 1x10 50");
