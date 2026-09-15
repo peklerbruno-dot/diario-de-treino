@@ -177,5 +177,11 @@ npm run dev              # http://localhost:3000
 | `npm run build` | build de produção |
 | `npm run vercel-build` | o que a Vercel roda: migra o banco **só em produção**, depois compila |
 
+A migração usa a conexão sem intermediário quando existe uma (`DATABASE_URL_UNPOOLED`,
+que o Neon entrega no mesmo snippet). A conexão do dia a dia passa por um
+pgbouncer, que aguenta muitos acessos curtos mas recusa os comandos de sessão
+que criar e alterar tabela exige — e o erro que aparece não diz isso. Num
+Postgres comum, sem essa segunda variável, tudo corre pela conexão única.
+
 Os ícones em `public/` são gerados por `python3 scripts/gerar-icones.py` (pede
 `pillow`). Já estão versionados; só rode de novo se mudar o desenho.
