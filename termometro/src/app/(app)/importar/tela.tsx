@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Aviso, Botao, Dinheiro } from "@/componentes/pecas";
+import { Aviso, Botao } from "@/componentes/pecas";
 import { useEstado } from "@/componentes/usar-loja";
 import { MESES_CURTOS, hoje } from "@/lib/datas";
-import { comCifrao } from "@/lib/dinheiro";
+import { comCifrao, emReais } from "@/lib/dinheiro";
 import { guardarSaldoInicial, lancamentosVivos, loja } from "@/lib/loja";
 import { abasDeAno, lerPlanilha, type ResultadoImportacao } from "@/lib/planilha";
 
@@ -22,6 +22,7 @@ export function TelaDeImportacao() {
   const [lido, setLido] = useState<ResultadoImportacao | null>(null);
   const [abas, setAbas] = useState<string[]>([]);
   const [arquivo, setArquivo] = useState<ArrayBuffer | null>(null);
+  const [nomeDoArquivo, setNomeDoArquivo] = useState<string | null>(null);
   const [substituir, setSubstituir] = useState(true);
   const [pronto, setPronto] = useState<string | null>(null);
 
@@ -33,6 +34,7 @@ export function TelaDeImportacao() {
     setLendo(true);
     setErro(null);
     try {
+      setNomeDoArquivo(entrada.name);
       const bytes = await entrada.arrayBuffer();
       // O SheetJS só é baixado quando alguém importa de verdade — são umas
       // centenas de kB que não fazem falta no dia a dia do app.
@@ -87,8 +89,11 @@ export function TelaDeImportacao() {
         lançamento e traz junto os comentários das células.
       </p>
 
-      <label className="mt-4 block">
-        <span className="sr-only">Arquivo da planilha</span>
+      {/* O botão nativo de arquivo escreve "Choose File" em inglês em boa parte
+          dos navegadores. Aqui ele fica escondido atrás de um rótulo que diz, em
+          português, o que vai acontecer. */}
+      <label className="mt-4 flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-folha border border-tinta bg-tinta px-4 py-2.5 text-[17px] text-papel">
+        Escolher o arquivo da planilha
         <input
           type="file"
           accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -96,9 +101,12 @@ export function TelaDeImportacao() {
             const f = e.target.files?.[0];
             if (f) void abrirArquivo(f);
           }}
-          className="w-full rounded-folha border border-regua bg-cartao p-3 text-[15px] file:mr-3 file:rounded-full file:border-0 file:bg-tinta file:px-4 file:py-2 file:text-papel"
+          className="sr-only"
         />
       </label>
+      {nomeDoArquivo && (
+        <p className="mt-2 text-[13px] text-fosco">Arquivo escolhido: {nomeDoArquivo}</p>
+      )}
 
       {lendo && <p className="mt-3 text-[15px] text-grafite">Lendo a planilha…</p>}
 
@@ -144,7 +152,7 @@ export function TelaDeImportacao() {
             </p>
 
             <div className="mt-3 overflow-x-auto">
-              <table className="w-full min-w-[420px] border-collapse text-[15px]">
+              <table className="w-full border-collapse whitespace-nowrap text-[15px]">
                 <thead>
                   <tr className="border-b border-regua text-[13px] text-fosco">
                     <th scope="col" className="py-2 text-left font-normal">
@@ -167,20 +175,21 @@ export function TelaDeImportacao() {
                       <th scope="row" className="py-1.5 text-left font-normal">
                         {MESES_CURTOS[m.mes - 1]}
                       </th>
-                      <td className="py-1.5 text-right">
-                        <Dinheiro cents={m.entradasCents} papel="entrada" />
+                      <td className="py-1.5 text-right tabular text-entrada">
+                        {emReais(m.entradasCents)}
                       </td>
-                      <td className="py-1.5 text-right">
-                        <Dinheiro cents={m.saidasCents} papel="saida" />
+                      <td className="py-1.5 text-right tabular text-saida">
+                        {emReais(m.saidasCents)}
                       </td>
                       <td className="py-1.5 text-right tabular text-grafite">
-                        {comCifrao(m.diarioCents)}
+                        {emReais(m.diarioCents)}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+            <p className="mt-2 text-[13px] text-fosco">Valores em reais.</p>
           </div>
 
           {lido.avisos.length > 0 && (
