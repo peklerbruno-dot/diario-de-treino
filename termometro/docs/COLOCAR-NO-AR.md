@@ -102,12 +102,18 @@ aluguel, a fatura, a parcela, o investimento, e o gasto de todo dia (esse com
 "Todo dia" no lugar do dia do mês). Depois toque em **Preencher previsão até
 dezembro**.
 
+## Passo 7 — Lançar sem abrir o app (opcional)
+
+Dá para registrar um gasto com dois toques na traseira do iPhone, ou pedindo à
+Siri. O passo a passo está em [`ATALHO-DO-IPHONE.md`](ATALHO-DO-IPHONE.md), e o
+endereço que ele pede aparece no app em **Ajustes → Atalho do iPhone**.
+
 ---
 
 ## O dia a dia
 
 - **Gastou alguma coisa?** Abra o app, toque em **Lançar**, digite o valor e
-  pronto. Ele já vem no dia de hoje e na coluna "Diário", que é o caso de quase
+  pronto. (Ou, com o atalho montado, nem abra o app.) Ele já vem no dia de hoje e na coluna "Diário", que é o caso de quase
   sempre. Nota é opcional.
 - **Foram três compras?** Digite `195+15+83` no valor. Viram três lançamentos.
 - **Quer ver um dia específico?** Toque na linha dele na lista do mês.
