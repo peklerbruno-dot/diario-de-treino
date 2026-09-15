@@ -1,0 +1,97 @@
+// Termômetro — o caderno de contas da planilha, virado app.
+//
+// Regra de ouro: todo dinheiro é inteiro em centavos (Int). Nunca Float.
+// A planilha guardava 87,36866667 numa célula de média; aqui a conta fecha.
+//
+// Toda tabela carrega `atualizadoEm` e `apagadoEm`: é o que permite o celular e
+// o computador trocarem só o que mudou, e apagar em um aparelho valer no outro.
+// Apagar é marcar a data, nunca sumir com a linha — uma linha que some não tem
+// como ser propagada para o outro aparelho.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Tipo {
+  ENTRADA
+  SAIDA
+  DIARIO
+}
+
+/// Uma linha do caderno: um valor, num dia, numa das três colunas.
+/// Vários lançamentos no mesmo dia e na mesma coluna somam — é o que a planilha
+/// fazia escrevendo "=195+15+83" dentro da célula.
+model Lancamento {
+  id         String  @id
+  data       String // "2026-01-14". Texto, não DateTime: dia de caderno não tem fuso.
+  tipo       Tipo
+  valorCents Int
+  nota       String?
+
+  /// Ainda não aconteceu: é a previsão que faz o termômetro medir o futuro.
+  previsto Boolean @default(false)
+
+  /// Entrada que é dinheiro seu (salário, trabalho), e não repasse de terceiro.
+  /// É a linha "ENTRADA S/ $PAI" / "Entrada S/Apto" da planilha.
+  rendaPropria Boolean @default(false)
+
+  /// Saída que foi para investimento — alimenta o "INVESTIDO %".
+  investimento Boolean @default(false)
+
+  /// Saída do apartamento, que é rateada com outra pessoa.
+  apartamento Boolean @default(false)
+
+  /// De qual lançamento fixo esta linha nasceu, quando nasceu de um.
+  fixoId String?
+
+  criadoEm     DateTime
+  /// Relógio de quem escreveu. É o que decide quem ganha quando os dois
+  /// aparelhos mexeram na mesma linha: vence a alteração mais nova.
+  atualizadoEm DateTime
+  apagadoEm    DateTime?
+  /// Relógio do servidor. É só por ele que um aparelho pergunta "o que mudou
+  /// desde a última vez?" — usar o relógio do celular aqui faria um aparelho
+  /// adiantado esconder do outro tudo o que escreveu.
+  servidorEm DateTime @default(now()) @updatedAt
+
+  @@index([servidorEm])
+  @@index([data])
+}
+
+/// O que se repete todo mês. É daqui que sai a previsão dos dias que ainda não
+/// chegaram: salário no dia 5, fatura no dia 10, gasto do dia todo santo dia.
+model Fixo {
+  id         String  @id
+  tipo       Tipo
+  /// 1 a 31; 0 quer dizer "todo dia" (o gasto do dia a dia).
+  dia        Int
+  valorCents Int
+  nota       String?
+
+  rendaPropria Boolean @default(false)
+  investimento Boolean @default(false)
+  apartamento  Boolean @default(false)
+  ativo        Boolean @default(true)
+
+  criadoEm     DateTime
+  atualizadoEm DateTime
+  apagadoEm    DateTime?
+  servidorEm   DateTime @default(now()) @updatedAt
+
+  @@index([servidorEm])
+}
+
+/// Ajustes soltos (saldo de abertura do ano, rateio do apartamento…).
+model Ajuste {
+  chave        String   @id
+  valor        String
+  atualizadoEm DateTime
+  servidorEm   DateTime @default(now()) @updatedAt
+
+  @@index([servidorEm])
+}

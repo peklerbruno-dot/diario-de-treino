@@ -123,8 +123,15 @@ segundo plano e ela aparece na abertura seguinte.
 
 ---
 
-## Outro projeto neste repositório
+## Outros projetos neste repositório
 
-`machanot/` guarda a plataforma de precificação de machanot da Chazit Hanoar —
-um app Next.js independente deste diário, com o seu próprio `package.json`.
-Veja `machanot/README.md`.
+Cada um é um app independente deste diário, com o seu próprio `package.json` e
+o seu próprio deploy na Vercel (pasta escolhida em *Root Directory*).
+
+- `machanot/` — a plataforma de precificação de machanot da Chazit Hanoar.
+  Veja [`machanot/README.md`](machanot/README.md).
+- `termometro/` — o controle de entradas, saídas e saldo diário, que substitui a
+  aba de um ano da planilha "Termômetro". PWA com banco próprio, para o iPhone e
+  o computador mostrarem sempre a mesma coisa.
+  Veja [`termometro/README.md`](termometro/README.md) e, para publicar,
+  [`termometro/docs/COLOCAR-NO-AR.md`](termometro/docs/COLOCAR-NO-AR.md).
