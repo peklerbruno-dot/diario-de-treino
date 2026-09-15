@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * A paleta. Os valores passaram pelo validador de daltonismo e de contraste
+ * contra estas mesmas superfícies; trocar um hex aqui pede rodar de novo.
+ *
+ * Verde e vermelho nunca carregam sentido sozinhos: o número de entrada vem com
+ * "+", o de saída com "−", e cada coluna tem título. Quem não distingue as duas
+ * cores continua lendo a tela.
+ */
+:root {
+  color-scheme: light;
+  --papel: #f7f5f0;
+  --cartao: #fffefb;
+  --tinta: #0b0b0b;
+  --grafite: #52514e;
+  --fosco: #898781;
+  --regua: #c3c2b7;
+  --reguafina: #e1e0d9;
+  --entrada: #006300;
+  --saida: #d03b3b;
+  --saldo: #2a78d6;
+  --atencao: #d03b3b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --papel: #121211;
+    --cartao: #1a1a19;
+    --tinta: #ffffff;
+    --grafite: #c3c2b7;
+    --fosco: #898781;
+    --regua: #383835;
+    --reguafina: #2c2c2a;
+    --entrada: #0ca30c;
+    --saida: #e66767;
+    --saldo: #3987e5;
+    --atencao: #e66767;
+  }
+}
+
+html {
+  /* O Safari não dá zoom ao focar um campo quando ele tem 17px ou mais. */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--papel);
+  color: var(--tinta);
+  /* O entalhe, as laterais e a faixa do gesto do iPhone. */
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) 0
+    env(safe-area-inset-left, 0px);
+  margin: 0;
+  overscroll-behavior-y: none;
+}
+
+/* Sem atraso de duplo toque e sem seleção de texto ao segurar um botão. */
+button,
+a,
+[role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+input,
+select,
+textarea {
+  font-size: 17px; /* abaixo disso o Safari dá zoom ao focar */
+  font-family: inherit;
+  color: inherit;
+}
+
+/* Números em coluna precisam alinhar; números soltos ficam melhores proporcionais. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
