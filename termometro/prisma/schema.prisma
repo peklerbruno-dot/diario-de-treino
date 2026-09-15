@@ -12,6 +12,12 @@ generator client {
   provider = "prisma-client-js"
 }
 
+/// Uma variável só, `DATABASE_URL`, e o app não precisa saber de mais nada.
+///
+/// A conexão sem intermediário, que a criação de tabelas exige, é trocada na
+/// hora da migração por `scripts/build-vercel.mjs` — ver o comentário lá.
+/// Declarar um `directUrl` aqui obrigaria toda máquina, inclusive a de
+/// desenvolvimento com um Postgres comum, a cadastrar uma segunda variável.
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")

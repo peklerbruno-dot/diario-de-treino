@@ -11,20 +11,12 @@ de treino, que roda inteiro dentro do celular.
 
 ---
 
-## Passo 1 — Juntar o código ao projeto principal
+## Passo 1 — Juntar o código ao projeto principal ✅
 
-O código está numa "gaveta" chamada `claude/practical-curie-55zjag`. Antes de
-publicar, ele precisa entrar no projeto principal (`main`).
-
-1. Abra https://github.com/peklerbruno-dot/diario-de-treino
-2. Deve aparecer uma faixa amarela com o nome da gaveta e um botão
-   **Compare & pull request**. Clique nele.
-   (Se não aparecer: aba **Pull requests** → **New pull request** → escolha a
-   gaveta na lista.)
-3. Clique em **Create pull request** e depois em **Merge pull request** →
-   **Confirm merge**.
-
-Se preferir, me peça: eu abro o pull request e você só clica em "Merge".
+Já está feito: o código foi revisado e juntado ao `main` pelos pull requests
+[#7](https://github.com/peklerbruno-dot/diario-de-treino/pull/7) e
+[#8](https://github.com/peklerbruno-dot/diario-de-treino/pull/8). Não há nada a
+fazer aqui.
 
 ## Passo 2 — Criar o banco de dados
 
@@ -35,8 +27,11 @@ diferentes; um não deve poder mexer nos dados do outro.
 2. No menu de cima: **Storage** → **Create Database** → **Postgres** (o plano
    gratuito serve) → dê o nome `termometro` → **Create**.
 3. Abra o banco criado, vá na aba **.env.local** e clique em **Copy Snippet**.
-   Dentro tem uma linha começando com `DATABASE_URL=`. É o endereço que o app
-   usa para achar o banco. Guarde.
+   Guarde (é o que você vai colar no passo 3). Não mande esse texto por
+   WhatsApp, e-mail ou chat nenhum: ele é a chave do banco.
+
+O nome que a Vercel deu ao banco pode sair sorteado (`neon-amber-school` e
+coisas assim). Não faz diferença nenhuma.
 
 ## Passo 3 — Publicar o app
 
@@ -45,11 +40,16 @@ diferentes; um não deve poder mexer nos dados do outro.
 3. **Este é o passo que mais confunde:** em *Root Directory*, clique em **Edit**
    e escolha a pasta **`termometro`**. Sem isso a Vercel publica o diário de
    treino de novo, não o Termômetro.
-4. Abra **Environment Variables** e cadastre três valores:
+4. Abra **Environment Variables** e:
+
+   - **cole o snippet inteiro** do passo 2 dentro do campo de valor. A Vercel
+     entende que são várias linhas e cria todas as variáveis de uma vez. Uma
+     delas é a `DATABASE_URL_UNPOOLED`, que o app usa só na hora de criar as
+     tabelas — sem ela o primeiro deploy falha com um erro que não explica nada;
+   - depois cadastre mais duas, uma a uma:
 
    | Nome | Valor |
    |---|---|
-   | `DATABASE_URL` | o endereço que você copiou no passo 2 |
    | `AUTH_SECRET` | qualquer texto longo e aleatório (pelo menos 32 letras) |
    | `CODIGO_DE_ACESSO` | a senha que você vai digitar para entrar |
 
