@@ -89,6 +89,33 @@ fazia ao já trazer outubro, novembro e dezembro preenchidos), e aparece
 marcado como "previsto". Quando acontece de verdade, um toque em **Aconteceu**
 confirma o valor.
 
+## Lançar sem abrir o app
+
+`POST /api/lancar`, com o código de acesso no cabeçalho `x-codigo` e o corpo
+mínimo `{"valor":"38,50"}` — sem tipo é gasto do dia a dia, sem data é hoje. A
+resposta traz o saldo do dia já calculado, para a notificação do atalho dizer o
+que aconteceu sem abrir nada.
+
+É a porta que o app Atalhos do iPhone usa: dois toques na traseira do aparelho,
+o valor, e pronto. O passo a passo para montar está em
+[`docs/ATALHO-DO-IPHONE.md`](docs/ATALHO-DO-IPHONE.md); o endereço aparece
+dentro do app, em Ajustes.
+
+Três decisões que essa porta carrega:
+
+- **O código vai no cabeçalho, nunca no endereço.** Endereço fica gravado em
+  registro de servidor e em histórico de navegador, e esse código é a chave do
+  dinheiro de alguém.
+- **"Hoje" é o dia no fuso de quem usa, não no do servidor.** A Vercel roda em
+  UTC; sem isso um gasto lançado às dez da noite em São Paulo nasceria no dia
+  seguinte, e o saldo do dia sairia errado bem na hora em que mais se olha para
+  ele.
+- **Um tipo que não existe é recusado, não adivinhado.** Silenciar o erro
+  colocaria dinheiro na coluna errada sem ninguém ficar sabendo.
+
+A leitura do pedido é pura e vive em [`src/lib/atalho.ts`](src/lib/atalho.ts),
+separada do banco, para caber em teste.
+
 ## Sincronizar entre o iPhone e o computador
 
 O app tem o ano inteiro dentro do aparelho e faz as contas ali mesmo — por isso
@@ -152,6 +179,7 @@ cor. A tabela dos doze meses logo abaixo é o mesmo dado em números.
     src/lib/planilha.ts      .xlsx → lançamentos (roda no navegador)
     src/lib/dinheiro.ts      centavos, vírgula decimal, "195+15+83"
     src/lib/datas.ts         dia de caderno: texto, sem fuso
+    src/lib/atalho.ts        o que o atalho do iPhone manda → lançamentos
     src/lib/loja.ts          o estado no aparelho, a fila e a sincronização
     src/lib/auth.ts          a porta: um código, um cookie assinado
     src/app/api/sync         o único endereço que o app chama

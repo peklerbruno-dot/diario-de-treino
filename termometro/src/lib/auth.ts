@@ -43,6 +43,19 @@ export function codigoConfigurado(): boolean {
   return (process.env.CODIGO_DE_ACESSO ?? "").trim().length >= 4;
 }
 
+/**
+ * O código confere?
+ *
+ * Usado pela porta de trás, a que o atalho do iPhone bate: lá não há navegador
+ * nem cookie, só o código viajando num cabeçalho. A comparação é a mesma da
+ * entrada pela tela — em tempo constante, para o relógio não contar quantas
+ * letras estavam certas.
+ */
+export function codigoConfere(codigo: string | null | undefined): boolean {
+  if (!codigoConfigurado() || !codigo) return false;
+  return iguais((process.env.CODIGO_DE_ACESSO ?? "").trim(), codigo.trim());
+}
+
 export async function entrar(codigo: string): Promise<{ ok: boolean; motivo?: string }> {
   if (!codigoConfigurado()) {
     return {

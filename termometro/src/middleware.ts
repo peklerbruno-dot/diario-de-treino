@@ -35,5 +35,8 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api/saude|favicon.ico).*)"],
+  // /api/lancar fica de fora: o atalho do iPhone não tem cookie nenhum, e o
+  // desvio para /entrar transformaria o lançamento numa página de login que
+  // ninguém vê.
+  matcher: ["/((?!api/saude|api/lancar|favicon.ico).*)"],
 };
