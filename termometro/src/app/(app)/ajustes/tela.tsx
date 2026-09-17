@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Aviso,
   Botao,
@@ -137,10 +137,16 @@ export function TelaDeAjustes() {
       <section className="mt-6">
         <Subtitulo>Atalho do iPhone</Subtitulo>
         <p className="mt-1 text-[15px] leading-relaxed text-grafite">
-          Dá para lançar um gasto sem abrir o app — por um ícone na tela, por dois toques na
-          traseira do aparelho ou pedindo à Siri. O app Atalhos precisa deste endereço:
+          Dá para lançar um gasto sem abrir o app — por dois toques na traseira do aparelho, por um
+          ícone na tela ou pedindo à Siri. O passo a passo inteiro, com o endereço já preenchido,
+          está aqui dentro:
         </p>
-        <EnderecoDoAtalho />
+        <Link
+          href="/atalho"
+          className="mt-2 inline-flex min-h-[46px] items-center rounded-folha bg-cartao px-4 text-[16px] shadow-baixa"
+        >
+          Como montar o atalho
+        </Link>
       </section>
 
       <section className="mt-6">
@@ -213,44 +219,6 @@ export function TelaDeAjustes() {
           Compartilhar e escolha <strong>Adicionar à Tela de Início</strong>. O app passa a abrir em
           janela própria e continua funcionando sem internet.
         </Aviso>
-      </div>
-    </div>
-  );
-}
-
-/**
- * O endereço que o atalho chama, com um botão de copiar.
- *
- * Ele é montado a partir de onde o app está sendo servido, e não escrito à mão:
- * assim continua certo se um dia o endereço do site mudar.
- */
-function EnderecoDoAtalho() {
-  const [copiado, setCopiado] = useState(false);
-  const [endereco, setEndereco] = useState("");
-
-  useEffect(() => setEndereco(`${window.location.origin}/api/lancar`), []);
-
-  async function copiar() {
-    try {
-      await navigator.clipboard.writeText(endereco);
-      setCopiado(true);
-      setTimeout(() => setCopiado(false), 2000);
-    } catch {
-      // Sem permissão para a área de transferência: o endereço está à vista e
-      // dá para selecionar com o dedo.
-    }
-  }
-
-  return (
-    <div className="mt-2">
-      <p className="select-all break-all rounded-folha bg-cartao p-3 text-[15px] shadow-baixa">
-        {endereco || "…"}
-      </p>
-      <div className="mt-2 flex flex-wrap items-center gap-2">
-        <Botao onClick={copiar}>{copiado ? "Copiado" : "Copiar endereço"}</Botao>
-        <span className="text-[13px] text-fosco">
-          O passo a passo de como montar o atalho está em docs/ATALHO-DO-IPHONE.md
-        </span>
       </div>
     </div>
   );

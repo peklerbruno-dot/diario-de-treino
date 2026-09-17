@@ -7,6 +7,11 @@ toque e o valor.
 Dá para disparar de três jeitos, e você escolhe depois qual prefere: um ícone na
 tela de início, **dois toques na traseira do iPhone**, ou falando com a Siri.
 
+> **Este passo a passo também está dentro do app**, em **Ajustes → Atalho do
+> iPhone → Como montar o atalho**, com o endereço já preenchido e botão de
+> copiar em cada palavra que precisa ser digitada sem erro. Abrir por lá é mais
+> prático: você monta o atalho no mesmo aparelho em que está lendo.
+
 > **O que isto não é.** O iPhone não deixa nenhum app ler os seus pagamentos por
 > Apple Pay, nem as notificações do banco, nem o Pix que caiu. Isso é uma porta
 > fechada pela Apple, igual para todo aplicativo de finanças. O atalho não
