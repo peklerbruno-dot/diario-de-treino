@@ -6,14 +6,22 @@ import { useEffect, useState } from "react";
 import { hoje } from "@/lib/datas";
 import { loja, RECADO_DA_SITUACAO } from "@/lib/loja";
 import { FolhaDeLancamento } from "./folha-de-lancamento";
+import {
+  IconeAjustes,
+  IconeAno,
+  IconeFixos,
+  IconeHoje,
+  IconeMes,
+} from "./icones";
 import { Botao } from "./pecas";
 import { useEstado, useIniciarLoja } from "./usar-loja";
 
 const ABAS = [
-  { href: "/", rotulo: "Mês" },
-  { href: "/ano", rotulo: "Ano" },
-  { href: "/fixos", rotulo: "Fixos" },
-  { href: "/ajustes", rotulo: "Ajustes" },
+  { href: "/", rotulo: "Hoje", Icone: IconeHoje },
+  { href: "/mes", rotulo: "Mês", Icone: IconeMes },
+  { href: "/ano", rotulo: "Ano", Icone: IconeAno },
+  { href: "/fixos", rotulo: "Fixos", Icone: IconeFixos },
+  { href: "/ajustes", rotulo: "Ajustes", Icone: IconeAjustes },
 ];
 
 export function Casca({ children }: { children: React.ReactNode }) {
@@ -21,41 +29,49 @@ export function Casca({ children }: { children: React.ReactNode }) {
   useRegistrarServiceWorker();
   const montado = useMontado();
   const caminho = usePathname();
-  // Lançar faz sentido nas telas de leitura; em Ajustes e na importação a barra
-  // só tomaria espaço.
-  const temBarraDeLancar = caminho === "/" || caminho === "/ano";
+
+  // A aba Hoje tem os próprios botões de lançar; nas telas de leitura, a barra.
+  const temBarraDeLancar = caminho === "/mes" || caminho === "/ano";
 
   return (
     <div className="mx-auto flex min-h-[100svh] w-full max-w-2xl flex-col">
-      <div className={`flex-1 px-4 pt-3 ${temBarraDeLancar ? "pb-40" : "pb-24"}`}>
+      <div className={`flex-1 px-4 pt-4 ${temBarraDeLancar ? "pb-44" : "pb-28"}`}>
         {montado ? children : <Esqueleto />}
       </div>
       {temBarraDeLancar && <BarraDeLancar />}
       <Situacao acimaDaBarra={temBarraDeLancar} />
-      <nav
-        className="fixed inset-x-0 bottom-0 border-t border-reguafina bg-papel/95 backdrop-blur"
-        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
-      >
-        <ul className="mx-auto flex max-w-2xl">
-          {ABAS.map((aba) => {
-            const aqui = aba.href === "/" ? caminho === "/" : caminho.startsWith(aba.href);
-            return (
-              <li key={aba.href} className="flex-1">
-                <Link
-                  href={aba.href}
-                  aria-current={aqui ? "page" : undefined}
-                  className={`flex h-14 items-center justify-center text-[15px] ${
-                    aqui ? "font-semibold text-tinta" : "text-fosco"
-                  }`}
-                >
-                  {aba.rotulo}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+      <Navegacao caminho={caminho} />
     </div>
+  );
+}
+
+/** A barra flutuante de baixo, com ícone e nome em cada aba. */
+function Navegacao({ caminho }: { caminho: string }) {
+  return (
+    <nav
+      className="fixed inset-x-0 bottom-0 z-20 px-3 pt-2"
+      style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 8px)" }}
+    >
+      <ul className="mx-auto flex max-w-2xl rounded-[26px] bg-cartao px-1.5 py-1.5 shadow-cartao">
+        {ABAS.map(({ href, rotulo, Icone }) => {
+          const aqui = href === "/" ? caminho === "/" : caminho.startsWith(href);
+          return (
+            <li key={href} className="flex-1">
+              <Link
+                href={href}
+                aria-current={aqui ? "page" : undefined}
+                className={`flex flex-col items-center gap-0.5 rounded-[20px] py-2 text-[10.5px] ${
+                  aqui ? "font-semibold text-tinta" : "text-fosco"
+                }`}
+              >
+                <Icone />
+                {rotulo}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
   );
 }
 
@@ -79,19 +95,15 @@ function useMontado(): boolean {
 function Esqueleto() {
   return (
     <div aria-hidden className="animate-pulse space-y-3 pt-2">
-      <div className="h-8 w-40 rounded-folha bg-reguafina" />
-      <div className="h-40 rounded-folha bg-reguafina" />
-      <div className="h-64 rounded-folha bg-reguafina" />
+      <div className="h-8 w-40 rounded-folha bg-linha" />
+      <div className="h-36 rounded-cartao bg-linha" />
+      <div className="h-64 rounded-cartao bg-linha" />
     </div>
   );
 }
 
 /**
- * O aviso de sincronização só aparece quando há o que dizer. Um selo permanente
- * de "tudo certo" vira ruído: o normal não precisa de aviso.
- */
-/**
- * O botão que abre o lançamento, numa barra opaca acima da navegação.
+ * O botão que abre o lançamento, numa barra acima da navegação.
  *
  * Não é um botão redondo flutuando: o redondo pousava justamente sobre a coluna
  * do saldo — o número que a tela existe para mostrar.
@@ -100,10 +112,7 @@ function BarraDeLancar() {
   const [lancando, setLancando] = useState(false);
   return (
     <>
-      <div
-        className="fixed inset-x-0 bottom-14 z-20 border-t border-reguafina bg-papel px-4 py-2"
-        style={{ marginBottom: "env(safe-area-inset-bottom, 0px)" }}
-      >
+      <div className="fixed inset-x-0 bottom-[76px] z-20 px-4">
         <div className="mx-auto max-w-2xl">
           <Botao tipo="primario" onClick={() => setLancando(true)} className="w-full">
             Lançar
@@ -115,20 +124,22 @@ function BarraDeLancar() {
   );
 }
 
+/**
+ * O aviso de sincronização só aparece quando há o que dizer. Um selo permanente
+ * de "tudo certo" vira ruído: o normal não precisa de aviso.
+ */
 function Situacao({ acimaDaBarra }: { acimaDaBarra: boolean }) {
   const { situacao, pendentes } = useEstado();
   if (situacao === "guardado") return null;
 
-  const cor = situacao === "erro" ? "text-atencao" : "text-grafite";
   const quantos = pendentes.length;
 
   return (
     <div
-      className={`fixed inset-x-0 z-30 px-4 pb-1 ${acimaDaBarra ? "bottom-[7.5rem]" : "bottom-14"}`}
-      style={{ marginBottom: "env(safe-area-inset-bottom, 0px)" }}
+      className={`fixed inset-x-0 z-30 px-4 ${acimaDaBarra ? "bottom-[134px]" : "bottom-[76px]"}`}
     >
-      <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 rounded-folha border border-reguafina bg-cartao px-3 py-2 text-[13px]">
-        <span className={cor}>
+      <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 rounded-folha bg-cartao px-3.5 py-2.5 text-[12.5px] shadow-cartao">
+        <span className={situacao === "erro" ? "text-atencao" : "text-grafite"}>
           {RECADO_DA_SITUACAO[situacao]}
           {quantos > 0 && situacao !== "enviando" ? ` · ${quantos} para enviar` : ""}
         </span>
@@ -136,7 +147,7 @@ function Situacao({ acimaDaBarra }: { acimaDaBarra: boolean }) {
           <button
             type="button"
             onClick={() => void loja.sincronizar()}
-            className="rounded-full border border-regua px-3 py-1 text-tinta"
+            className="rounded-full bg-linha px-3 py-1 font-medium text-tinta"
           >
             Tentar agora
           </button>

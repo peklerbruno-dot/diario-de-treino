@@ -2,7 +2,17 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Aviso, Botao, Campo, CampoDeValor, Linha } from "@/componentes/pecas";
+import {
+  Aviso,
+  Botao,
+  Campo,
+  CampoDeValor,
+  Cartao,
+  Linha,
+  Sobrescrito,
+  Subtitulo,
+  Titulo,
+} from "@/componentes/pecas";
 import { useEstado } from "@/componentes/usar-loja";
 import { hoje, partesDaData } from "@/lib/datas";
 import { paraCentavos } from "@/lib/dinheiro";
@@ -34,23 +44,24 @@ export function TelaDeAjustes() {
 
   return (
     <div className="pb-6">
-      <h1 className="text-[22px] font-semibold tracking-tight">Ajustes</h1>
+      <Sobrescrito>O app</Sobrescrito>
+      <Titulo className="mt-0.5">Ajustes</Titulo>
 
       <section className="mt-5">
-        <h2 className="text-[17px] font-semibold tracking-tight">Trazer a planilha</h2>
+        <Subtitulo>Trazer a planilha</Subtitulo>
         <p className="mt-1 text-[15px] leading-relaxed text-grafite">
           Importa um ano inteiro de uma vez, direto do arquivo do Excel.
         </p>
         <Link
           href="/importar"
-          className="mt-2 inline-flex min-h-[44px] items-center rounded-folha border border-regua bg-cartao px-4 text-[17px]"
+          className="mt-2 inline-flex min-h-[46px] items-center rounded-folha bg-cartao px-4 text-[16px] shadow-baixa"
         >
           Importar planilha
         </Link>
       </section>
 
       <section className="mt-6">
-        <h2 className="text-[17px] font-semibold tracking-tight">Saldo de abertura</h2>
+        <Subtitulo>Saldo de abertura</Subtitulo>
         <p className="mt-1 text-[15px] leading-relaxed text-grafite">
           Com quanto o ano começou — o número que na planilha vinha da última célula de dezembro do
           ano anterior. Tudo o mais é somado a partir daqui.
@@ -63,7 +74,9 @@ export function TelaDeAjustes() {
             onChange={(e) => {
               const novo = Number(e.target.value);
               setAno(novo);
-              setSaldo((ajustesDoAno(estado, novo).saldoInicialCents / 100).toFixed(2).replace(".", ","));
+              setSaldo(
+                (ajustesDoAno(estado, novo).saldoInicialCents / 100).toFixed(2).replace(".", ","),
+              );
             }}
             className="ml-2 rounded-folha border border-regua bg-cartao px-3 py-2"
           >
@@ -92,7 +105,7 @@ export function TelaDeAjustes() {
       </section>
 
       <section className="mt-6">
-        <h2 className="text-[17px] font-semibold tracking-tight">Rateio do apartamento</h2>
+        <Subtitulo>Rateio do apartamento</Subtitulo>
         <p className="mt-1 text-[15px] leading-relaxed text-grafite">
           Quanto das saídas marcadas como “do apartamento” é da outra pessoa. A planilha usava 40%.
         </p>
@@ -110,7 +123,7 @@ export function TelaDeAjustes() {
       </section>
 
       <section className="mt-6">
-        <h2 className="text-[17px] font-semibold tracking-tight">Levar os dados embora</h2>
+        <Subtitulo>Levar os dados embora</Subtitulo>
         <p className="mt-1 text-[15px] leading-relaxed text-grafite">
           Tudo o que está aqui sai em arquivo, a qualquer momento. A planilha abre no Excel e no
           Numbers; o backup serve para guardar ou para voltar atrás.
@@ -122,7 +135,7 @@ export function TelaDeAjustes() {
       </section>
 
       <section className="mt-6">
-        <h2 className="text-[17px] font-semibold tracking-tight">Atalho do iPhone</h2>
+        <Subtitulo>Atalho do iPhone</Subtitulo>
         <p className="mt-1 text-[15px] leading-relaxed text-grafite">
           Dá para lançar um gasto sem abrir o app — por um ícone na tela, por dois toques na
           traseira do aparelho ou pedindo à Siri. O app Atalhos precisa deste endereço:
@@ -131,8 +144,8 @@ export function TelaDeAjustes() {
       </section>
 
       <section className="mt-6">
-        <h2 className="text-[17px] font-semibold tracking-tight">Sincronização</h2>
-        <div className="mt-2 rounded-folha border border-reguafina bg-cartao px-4 py-1">
+        <Subtitulo>Sincronização</Subtitulo>
+        <Cartao className="mt-2 px-4 py-1">
           <Linha rotulo="Situação">
             <span className="text-[15px]">{RECADO_DA_SITUACAO[estado.situacao]}</span>
           </Linha>
@@ -152,7 +165,7 @@ export function TelaDeAjustes() {
                 : "ainda não"}
             </span>
           </Linha>
-        </div>
+        </Cartao>
         {estado.recadoDeErro && (
           <p className="mt-2 text-[13px] leading-snug text-fosco">{estado.recadoDeErro}</p>
         )}
@@ -162,14 +175,14 @@ export function TelaDeAjustes() {
       </section>
 
       <section className="mt-6">
-        <h2 className="text-[17px] font-semibold tracking-tight">Sair</h2>
+        <Subtitulo>Sair</Subtitulo>
         <form action="/sair" method="post" className="mt-2">
           <Botao submit>Sair deste aparelho</Botao>
         </form>
       </section>
 
-      <section className="mt-8 border-t border-reguafina pt-5">
-        <h2 className="text-[17px] font-semibold tracking-tight text-atencao">Apagar tudo</h2>
+      <section className="mt-8 border-t border-regua pt-5">
+        <Subtitulo className="text-atencao">Apagar tudo</Subtitulo>
         <p className="mt-1 text-[15px] leading-relaxed text-grafite">
           Apaga todos os lançamentos e fixos, aqui e no servidor. Não tem volta — baixe o backup
           antes.
@@ -230,7 +243,7 @@ function EnderecoDoAtalho() {
 
   return (
     <div className="mt-2">
-      <p className="select-all break-all rounded-folha border border-reguafina bg-cartao p-3 text-[15px]">
+      <p className="select-all break-all rounded-folha bg-cartao p-3 text-[15px] shadow-baixa">
         {endereco || "…"}
       </p>
       <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -247,7 +260,9 @@ type EstadoDoApp = ReturnType<typeof useEstado>;
 
 /** Uma linha por lançamento, com ";" e vírgula decimal: é como o Excel em português espera. */
 function baixarPlanilha(estado: EstadoDoApp) {
-  const linhas = [["Data", "Tipo", "Valor", "Nota", "Previsto", "Dinheiro seu", "Investimento", "Apartamento"]];
+  const linhas = [
+    ["Data", "Tipo", "Valor", "Nota", "Previsto", "Dinheiro seu", "Investimento", "Apartamento"],
+  ];
   for (const l of lancamentosVivos(estado).sort((a, b) => a.data.localeCompare(b.data))) {
     linhas.push([
       l.data,

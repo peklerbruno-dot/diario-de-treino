@@ -44,6 +44,53 @@ coisa.
    entrava na conta do ano, mas ficava fora do último dia do mês. Na importação
    ele desce para o dia 30, e o app avisa que fez isso.
 
+## As cinco abas
+
+**Hoje** é onde o app abre. Responde as duas perguntas de quem está com o
+celular na mão depois de gastar algo: quanto eu tenho, e quanto ainda posso
+gastar. A segunda é uma conta de verdade, não um palpite:
+
+    dá por dia = (saldo de ontem + o que ainda entra − o que ainda sai
+                  − o que já gastei hoje) ÷ dias que faltam no mês
+
+As contas que ainda vêm entram na conta; o gasto do dia a dia *previsto* não —
+é justamente ele que está sendo calculado. Arredonda para baixo, porque é melhor
+sobrar do que faltar. Está em `sobraPorDia`, em
+[`src/lib/calculo.ts`](src/lib/calculo.ts), com os testes em
+[`src/lib/sobra.test.ts`](src/lib/sobra.test.ts).
+
+**Mês** é a planilha: cinco colunas — dia, entrada, saída, diário, saldo — uma
+cor por coluna, e o dia de hoje marcado com uma barra azul, para o qual a lista
+já abre rolada. O mesmo mês também se vê em **calendário**, ocupando a largura
+inteira, com os três valores e o saldo dentro de cada célula: a lista responde
+como o saldo chegou até aqui, o calendário responde qual é a forma deste mês.
+
+**Ano**, **Fixos** e **Ajustes** continuam onde estavam.
+
+O ano vira sozinho. Um ano começa onde o anterior terminou, e o app encadeia os
+anos que tem em vez de esperar alguém digitar o saldo de abertura em 1º de
+janeiro. Um saldo digitado à mão continua valendo e interrompe a corrente — é
+como se conserta uma diferença sem mexer no passado.
+
+## O teclado é do app, não do iPhone
+
+O teclado numérico do iOS **não tem a tecla de mais**. Enquanto o valor era um
+campo de texto comum, a soma que a planilha ensinou — `195+15+83` — só
+funcionava em computador.
+
+Por isso o lançamento tem teclado próprio, com `+ − × ÷` e um visor que mostra o
+resultado enquanto se digita. Os dois tipos de sinal fazem coisas diferentes, de
+propósito:
+
+- **`+` separa em vários lançamentos**, como a planilha fazia dentro da célula:
+  `195 + 15 + 83` vira três linhas, cada uma com sua nota, que dá para apagar
+  sozinha.
+- **`× − ÷` são conta dentro de um valor só**: `3 × 50` é um lançamento de 150.
+
+O leitor da conta é puro e vive em
+[`src/lib/calculadora.ts`](src/lib/calculadora.ts) — ele recusa valor negativo e
+divisão por zero, e o teclado nunca deixa digitar dois operadores seguidos.
+
 ## Trazer a planilha para dentro
 
 Em **Ajustes → Importar planilha**, escolhendo o `.xlsx`. O arquivo é lido no
@@ -145,11 +192,16 @@ nem uma gravação perdida deixa algo para trás.
 
 ## Detalhes de iPhone que o código resolve
 
-- Os campos de dinheiro **não** são `type="number"`: no teclado em português a
-  tecla decimal é a vírgula, e um campo numérico descarta o que se digita com
-  ela — "52,5" viraria vazio. São campos de texto com `inputMode`, que abrem o
-  mesmo teclado numérico e aceitam a vírgula. E aceitam a soma — `195+15+83` —
-  que é como se fazia dentro da célula.
+- O valor do lançamento tem **teclado próprio**, porque o do iPhone não tem a
+  tecla de mais. De quebra ele não come metade da tela, não dá zoom ao focar e
+  não tem tecla de letra para errar.
+- Os campos de dinheiro que restam **não** são `type="number"`: no teclado em
+  português a tecla decimal é a vírgula, e um campo numérico descarta o que se
+  digita com ela — "52,5" viraria vazio. São campos de texto com `inputMode`.
+- O manifesto declara `scope: "/"`. Sem isso o iPhone trata como "fora do app"
+  todo endereço que não seja exatamente o de abertura, e abre a barra do
+  navegador por cima ao entrar em Mês, Ano ou Ajustes — o app parecia escapar
+  para o Safari sozinho.
 - Campos com 17 px, para o Safari não dar zoom ao focar. `touch-action:
   manipulation` nos botões, sem atraso de duplo toque.
 - Áreas seguras respeitadas: entalhe, laterais e a faixa do gesto.
@@ -164,8 +216,17 @@ nem uma gravação perdida deixa algo para trás.
 
 ## Cores
 
+O fundo é cinza frio e os cartões são brancos de verdade, com sombra. O arranjo
+anterior — papel bege e cartão quase da mesma cor, separados por um fiozinho —
+deixava tudo com cara de documento velho, e nada parecia um cartão. Em cada tela
+há um cartão preto, e um só: o número que a tela existe para mostrar.
+
+A serifa titula, a sans conta — e **nenhum número de dinheiro é serifado**. Numa
+coluna a gente compara valores pela forma dos dígitos, e a serifa tira a
+regularidade que essa comparação usa.
+
 A paleta passou pelo validador de daltonismo e de contraste contra as duas
-superfícies do app, a de papel e a escura. Verde e vermelho nunca carregam
+superfícies do app, a clara e a escura. Verde e vermelho nunca carregam
 sentido sozinhos: entrada vem com "+", saída com "−", e cada coluna tem título —
 quem não distingue as duas cores continua lendo a tela.
 
@@ -178,13 +239,14 @@ cor. A tabela dos doze meses logo abaixo é o mesmo dado em números.
     src/lib/calculo.ts       o motor: o saldo, o rodapé do mês, a previsão
     src/lib/planilha.ts      .xlsx → lançamentos (roda no navegador)
     src/lib/dinheiro.ts      centavos, vírgula decimal, "195+15+83"
+    src/lib/calculadora.ts   o que o teclado do app digita → conta e parcelas
     src/lib/datas.ts         dia de caderno: texto, sem fuso
     src/lib/atalho.ts        o que o atalho do iPhone manda → lançamentos
     src/lib/loja.ts          o estado no aparelho, a fila e a sincronização
     src/lib/auth.ts          a porta: um código, um cookie assinado
     src/app/api/sync         o único endereço que o app chama
-    src/app/(app)/           uma tela por pasta: mês, ano, fixos, ajustes, importar
-    src/componentes/         as peças e as folhas que sobem de baixo
+    src/app/(app)/           uma tela por pasta: hoje, mês, ano, fixos, ajustes
+    src/componentes/         as peças, o teclado, o calendário e as folhas
 
 Todo dinheiro é inteiro em centavos (`valorCents`). Nunca `Float`: a planilha
 guardava 87,36866667 numa célula de média, e aqui a conta fecha.

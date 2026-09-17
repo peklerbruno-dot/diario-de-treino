@@ -15,11 +15,7 @@ export function FolhaDoDia({ dia, aoFechar }: { dia: DiaCalculado; aoFechar: () 
 
   if (editando) {
     return (
-      <FolhaDeLancamento
-        data={dia.data}
-        lancamento={editando}
-        aoFechar={() => setEditando(null)}
-      />
+      <FolhaDeLancamento data={dia.data} lancamento={editando} aoFechar={() => setEditando(null)} />
     );
   }
   if (novo) {
@@ -35,7 +31,7 @@ export function FolhaDoDia({ dia, aoFechar }: { dia: DiaCalculado; aoFechar: () 
       ) : (
         <ul className="mb-2">
           {dia.lancamentos.map((l) => (
-            <li key={l.id} className="border-b border-reguafina">
+            <li key={l.id} className="border-b border-linha last:border-b-0">
               <div className="py-2.5">
                 <div className="flex items-center gap-3">
                   <button

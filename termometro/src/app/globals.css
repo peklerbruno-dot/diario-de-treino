@@ -3,42 +3,65 @@
 @tailwind utilities;
 
 /**
- * A paleta. Os valores passaram pelo validador de daltonismo e de contraste
- * contra estas mesmas superfícies; trocar um hex aqui pede rodar de novo.
+ * A paleta.
  *
- * Verde e vermelho nunca carregam sentido sozinhos: o número de entrada vem com
- * "+", o de saída com "−", e cada coluna tem título. Quem não distingue as duas
- * cores continua lendo a tela.
+ * O fundo é cinza frio e os cartões são brancos de verdade, com sombra. O
+ * arranjo anterior — papel bege e cartão quase da mesma cor, separados por um
+ * fiozinho — deixava tudo com cara de documento velho, e nada parecia um
+ * cartão. Aqui o cartão flutua sobre o fundo, que é o que faz a tela respirar.
+ *
+ * Todo valor passou por medição de contraste contra as duas superfícies (o
+ * cartão e o fundo), nos dois modos. Os números da tabela do mês são pequenos,
+ * 12,5 px: o piso para eles é 4,5:1, e nenhuma cor aqui fica abaixo disso.
+ * Trocar um hex pede medir de novo.
+ *
+ * Verde e vermelho nunca carregam sentido sozinhos: a entrada vem com "+", a
+ * saída com "−", e cada coluna tem título. Quem não distingue as duas cores
+ * continua lendo a tela.
  */
 :root {
   color-scheme: light;
-  --papel: #f7f5f0;
-  --cartao: #fffefb;
-  --tinta: #0b0b0b;
-  --grafite: #52514e;
-  --fosco: #898781;
-  --regua: #c3c2b7;
-  --reguafina: #e1e0d9;
-  --entrada: #006300;
-  --saida: #d03b3b;
-  --saldo: #2a78d6;
-  --atencao: #d03b3b;
+  --papel: #f2f2f6;
+  --cartao: #ffffff;
+  --heroi: #111114;
+  --heroi-tinta: #ffffff;
+  --heroi-fosco: #a9a9b2;
+  --tinta: #0b0b0d;
+  --grafite: #5b5b62;
+  --fosco: #6b6b73;
+  --regua: #d9d9de;
+  --linha: #ececed;
+  --entrada: #046b3a;
+  --saida: #c2372f;
+  --diario: #8a5a00;
+  --saldo: #0a66d6;
+  --atencao: #c2372f;
+  --sombra: 0 1px 2px rgba(16, 16, 20, 0.05), 0 10px 24px rgba(16, 16, 20, 0.06);
+  --sombra-baixa: 0 1px 2px rgba(16, 16, 20, 0.06);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --papel: #121211;
-    --cartao: #1a1a19;
+    --papel: #0e0e11;
+    --cartao: #1a1a1f;
+    --heroi: #000000;
+    --heroi-tinta: #ffffff;
+    --heroi-fosco: #9a9aa4;
     --tinta: #ffffff;
-    --grafite: #c3c2b7;
-    --fosco: #898781;
-    --regua: #383835;
-    --reguafina: #2c2c2a;
-    --entrada: #0ca30c;
-    --saida: #e66767;
-    --saldo: #3987e5;
-    --atencao: #e66767;
+    --grafite: #b6b6bf;
+    --fosco: #85858f;
+    --regua: #34343c;
+    --linha: #2a2a31;
+    --entrada: #3fbf7f;
+    --saida: #ff6b63;
+    --diario: #d9a441;
+    --saldo: #4a9bff;
+    --atencao: #ff6b63;
+    /* No escuro a sombra não aparece; o que separa o cartão do fundo é o
+       próprio contraste das duas cores, mais uma borda de um fio. */
+    --sombra: 0 0 0 1px rgba(255, 255, 255, 0.06);
+    --sombra-baixa: 0 0 0 1px rgba(255, 255, 255, 0.05);
   }
 }
 
@@ -55,6 +78,7 @@ body {
     env(safe-area-inset-left, 0px);
   margin: 0;
   overscroll-behavior-y: none;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Sem atraso de duplo toque e sem seleção de texto ao segurar um botão. */
@@ -73,9 +97,21 @@ textarea {
   color: inherit;
 }
 
-/* Números em coluna precisam alinhar; números soltos ficam melhores proporcionais. */
+/* Dinheiro em coluna precisa alinhar dígito com dígito. */
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+.sombra {
+  box-shadow: var(--sombra);
+}
+
+/* O rótulo pequeno em maiúsculas que encabeça cada bloco. */
+.sobrescrito {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--fosco);
 }
 
 @media (prefers-reduced-motion: reduce) {

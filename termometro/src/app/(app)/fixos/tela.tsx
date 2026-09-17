@@ -1,7 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Aviso, Botao, Campo, CampoDeTexto, CampoDeValor, Dinheiro, Folha } from "@/componentes/pecas";
+import {
+  Aviso,
+  Botao,
+  Campo,
+  CampoDeTexto,
+  CampoDeValor,
+  Cartao,
+  Dinheiro,
+  Folha,
+  Sobrescrito,
+  Titulo,
+} from "@/componentes/pecas";
 import { useEstado } from "@/componentes/usar-loja";
 import { gerarPrevisao } from "@/lib/calculo";
 import { hoje, partesDaData } from "@/lib/datas";
@@ -40,7 +51,10 @@ export function TelaDosFixos() {
   return (
     <div>
       <header className="flex items-center justify-between gap-3">
-        <h1 className="text-[22px] font-semibold tracking-tight">Fixos</h1>
+        <div>
+          <Sobrescrito>Todo mês</Sobrescrito>
+          <Titulo className="mt-0.5">Fixos</Titulo>
+        </div>
         <Botao onClick={() => setEditando("novo")}>Novo</Botao>
       </header>
 
@@ -56,41 +70,45 @@ export function TelaDosFixos() {
           </Aviso>
         </div>
       ) : (
-        <ul className="mt-4 overflow-hidden rounded-folha border border-reguafina bg-cartao">
-          {fixos.map((f) => (
-            <li key={f.id} className="border-b border-reguafina last:border-b-0">
-              <button
-                type="button"
-                onClick={() => setEditando(f)}
-                className="flex w-full items-center gap-3 px-3 py-3 text-left"
-              >
-                <span className="w-[74px] shrink-0 text-[13px] text-fosco">
-                  {f.dia === 0 ? "todo dia" : `dia ${f.dia}`}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[15px]">
-                    {f.nota || NOME_DO_TIPO[f.tipo]}
+        <Cartao className="mt-4 overflow-hidden">
+          <ul>
+            {fixos.map((f) => (
+              <li key={f.id} className="border-b border-linha last:border-b-0">
+                <button
+                  type="button"
+                  onClick={() => setEditando(f)}
+                  className="flex w-full items-center gap-3 px-3 py-3 text-left"
+                >
+                  <span className="w-[62px] shrink-0 text-[12.5px] text-fosco">
+                    {f.dia === 0 ? "todo dia" : `dia ${f.dia}`}
                   </span>
-                  <span className="block text-[13px] text-fosco">
-                    {[
-                      NOME_DO_TIPO[f.tipo],
-                      f.ativo === false ? "desligado" : null,
-                      f.rendaPropria ? "dinheiro seu" : null,
-                      f.investimento ? "investimento" : null,
-                      f.apartamento ? "apartamento" : null,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[15px]">
+                      {f.nota || NOME_DO_TIPO[f.tipo]}
+                    </span>
+                    <span className="block text-[13px] text-fosco">
+                      {[
+                        NOME_DO_TIPO[f.tipo],
+                        f.ativo === false ? "desligado" : null,
+                        f.rendaPropria ? "dinheiro seu" : null,
+                        f.investimento ? "investimento" : null,
+                        f.apartamento ? "apartamento" : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </span>
                   </span>
-                </span>
-                <Dinheiro
-                  cents={f.valorCents}
-                  papel={f.tipo === "ENTRADA" ? "entrada" : "saida"}
-                />
-              </button>
-            </li>
-          ))}
-        </ul>
+                  <Dinheiro
+                    cents={f.valorCents}
+                    papel={
+                      f.tipo === "ENTRADA" ? "entrada" : f.tipo === "SAIDA" ? "saida" : "diario"
+                    }
+                  />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </Cartao>
       )}
 
       {fixos.length > 0 && (
@@ -167,10 +185,8 @@ function FolhaDeFixo({ fixo, aoFechar }: { fixo?: Fixo; aoFechar: () => void }) 
                 type="button"
                 onClick={() => setTipo(t)}
                 aria-pressed={tipo === t}
-                className={`min-h-[44px] flex-1 rounded-folha border px-2 text-[17px] ${
-                  tipo === t
-                    ? "border-tinta bg-tinta text-papel"
-                    : "border-regua bg-cartao text-tinta"
+                className={`min-h-[44px] flex-1 rounded-folha px-2 text-[17px] ${
+                  tipo === t ? "bg-heroi text-heroi-tinta" : "bg-cartao text-tinta shadow-baixa"
                 }`}
               >
                 {NOME_DO_TIPO[t]}
@@ -212,7 +228,7 @@ function FolhaDeFixo({ fixo, aoFechar }: { fixo?: Fixo; aoFechar: () => void }) 
           <CampoDeTexto valor={nota} aoMudar={setNota} placeholder="salário" />
         </Campo>
 
-        <label className="flex items-center gap-3 rounded-folha border border-reguafina p-3">
+        <label className="flex items-center gap-3 rounded-folha bg-cartao p-3 shadow-baixa">
           <input
             type="checkbox"
             checked={ativo}
@@ -223,7 +239,7 @@ function FolhaDeFixo({ fixo, aoFechar }: { fixo?: Fixo; aoFechar: () => void }) 
         </label>
 
         {tipo === "ENTRADA" && (
-          <label className="flex items-center gap-3 rounded-folha border border-reguafina p-3">
+          <label className="flex items-center gap-3 rounded-folha bg-cartao p-3 shadow-baixa">
             <input
               type="checkbox"
               checked={rendaPropria}
@@ -236,7 +252,7 @@ function FolhaDeFixo({ fixo, aoFechar }: { fixo?: Fixo; aoFechar: () => void }) 
 
         {tipo === "SAIDA" && (
           <>
-            <label className="flex items-center gap-3 rounded-folha border border-reguafina p-3">
+            <label className="flex items-center gap-3 rounded-folha bg-cartao p-3 shadow-baixa">
               <input
                 type="checkbox"
                 checked={investimento}
@@ -245,7 +261,7 @@ function FolhaDeFixo({ fixo, aoFechar }: { fixo?: Fixo; aoFechar: () => void }) 
               />
               <span className="text-[17px]">Foi para investimento</span>
             </label>
-            <label className="flex items-center gap-3 rounded-folha border border-reguafina p-3">
+            <label className="flex items-center gap-3 rounded-folha bg-cartao p-3 shadow-baixa">
               <input
                 type="checkbox"
                 checked={apartamento}
