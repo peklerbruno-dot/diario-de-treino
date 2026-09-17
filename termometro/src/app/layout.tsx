@@ -23,8 +23,8 @@ export const viewport: Viewport = {
   // A faixa do entalhe precisa disso para o app ocupar a tela toda.
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f7f5f0" },
-    { media: "(prefers-color-scheme: dark)", color: "#121211" },
+    { media: "(prefers-color-scheme: light)", color: "#f2f2f6" },
+    { media: "(prefers-color-scheme: dark)", color: "#0e0e11" },
   ],
 };
 

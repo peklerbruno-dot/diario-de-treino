@@ -1,16 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { porExtenso } from "@/lib/datas";
-import { comCifrao, parcelas } from "@/lib/dinheiro";
+import { avaliar } from "@/lib/calculadora";
+import { curta, porExtenso } from "@/lib/datas";
 import { loja } from "@/lib/loja";
 import { EXPLICACAO_DO_TIPO, NOME_DO_TIPO, TIPOS, type Lancamento, type Tipo } from "@/lib/tipos";
-import { Botao, Campo, CampoDeTexto, CampoDeValor, Folha } from "./pecas";
+import { Botao, CampoDeTexto, Folha } from "./pecas";
+import { ComoAsTeclasFuncionam, Teclado } from "./teclado";
 
 /**
- * Lançar é uma tela só: valor, em qual das três colunas, e pronto. Tudo o mais
- * — nota, data, as marcações do rodapé — está ali, mas fora do caminho de quem
- * só quer registrar os 38 reais do almoço antes de guardar o celular.
+ * Lançar é uma tela só: a coluna, o valor, e pronto. A nota, a data e as
+ * marcações estão ali, mas fora do caminho de quem só quer registrar os 38
+ * reais do almoço antes de guardar o celular.
  */
 export function FolhaDeLancamento({
   data,
@@ -31,17 +32,17 @@ export function FolhaDeLancamento({
   );
   const [quando, setQuando] = useState(lancamento?.data ?? data);
   const [nota, setNota] = useState(lancamento?.nota ?? "");
-  const [rendaPropria, setRendaPropria] = useState(!!lancamento?.rendaPropria);
-  const [investimento, setInvestimento] = useState(!!lancamento?.investimento);
-  const [apartamento, setApartamento] = useState(!!lancamento?.apartamento);
+  const [marcado, setMarcado] = useState({
+    rendaPropria: !!lancamento?.rendaPropria,
+    investimento: !!lancamento?.investimento,
+    apartamento: !!lancamento?.apartamento,
+  });
   const [erro, setErro] = useState<string | null>(null);
 
-  const valores = parcelas(valor);
-  const total = valores?.reduce((t, v) => t + v, 0) ?? 0;
-  const virariaVarios = !editando && (valores?.length ?? 0) > 1;
+  const conta = avaliar(valor);
 
   function salvar() {
-    if (!valores || total === 0) {
+    if (!conta) {
       setErro("Digite um valor.");
       return;
     }
@@ -51,17 +52,17 @@ export function FolhaDeLancamento({
       tipo,
       nota: nota.trim() || null,
       previsto: false,
-      rendaPropria: tipo === "ENTRADA" && rendaPropria,
-      investimento: tipo === "SAIDA" && investimento,
-      apartamento: tipo === "SAIDA" && apartamento,
+      rendaPropria: tipo === "ENTRADA" && marcado.rendaPropria,
+      investimento: tipo === "SAIDA" && marcado.investimento,
+      apartamento: tipo === "SAIDA" && marcado.apartamento,
       fixoId: lancamento?.fixoId ?? null,
     };
 
     if (editando) {
-      loja.salvarLancamento({ ...comum, id: lancamento.id, valorCents: total });
+      loja.salvarLancamento({ ...comum, id: lancamento.id, valorCents: conta.totalCents });
     } else {
       // "195+15+83" eram três gastos, e viram três lançamentos.
-      for (const parcela of valores) {
+      for (const parcela of conta.parcelas) {
         loja.salvarLancamento({ ...comum, valorCents: parcela });
       }
     }
@@ -70,88 +71,80 @@ export function FolhaDeLancamento({
 
   return (
     <Folha titulo={editando ? "Editar lançamento" : "Novo lançamento"} aoFechar={aoFechar}>
-      <div className="space-y-4">
-        <div>
-          <span className="block text-[15px] text-grafite">Em qual coluna</span>
-          <div className="mt-1 flex gap-2">
-            {TIPOS.map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => setTipo(t)}
-                aria-pressed={tipo === t}
-                className={`min-h-[44px] flex-1 rounded-folha border px-2 text-[17px] ${
-                  tipo === t
-                    ? "border-tinta bg-tinta text-papel"
-                    : "border-regua bg-cartao text-tinta"
-                }`}
-              >
-                {NOME_DO_TIPO[t]}
-              </button>
-            ))}
-          </div>
-          <p className="mt-1 text-[13px] leading-snug text-fosco">{EXPLICACAO_DO_TIPO[tipo]}</p>
+      <div className="space-y-3">
+        <div className="flex gap-2">
+          {TIPOS.map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setTipo(t)}
+              aria-pressed={tipo === t}
+              className={`min-h-[44px] flex-1 rounded-folha text-[16px] shadow-baixa ${
+                tipo === t ? "bg-heroi font-semibold text-heroi-tinta" : "bg-cartao text-tinta"
+              }`}
+            >
+              {NOME_DO_TIPO[t]}
+            </button>
+          ))}
         </div>
+        <p className="!mt-2 text-[12.5px] leading-snug text-fosco">{EXPLICACAO_DO_TIPO[tipo]}</p>
 
-        <Campo
-          rotulo="Valor"
-          dica={
-            virariaVarios
-              ? `${valores!.length} lançamentos, ${comCifrao(total)} no total`
-              : "Dá para somar na hora: 195+15+83"
-          }
-        >
-          <CampoDeValor valor={valor} aoMudar={setValor} autoFocus={!editando} />
-        </Campo>
+        <Teclado valor={valor} aoMudar={setValor} />
 
-        <Campo rotulo="Dia" dica={porExtenso(quando)}>
+        <div className="flex gap-2">
+          <CampoDeTexto valor={nota} aoMudar={setNota} placeholder="Nota (opcional)" />
           <input
             type="date"
             value={quando}
             onChange={(e) => setQuando(e.target.value)}
-            className="mt-1 w-full rounded-folha border border-regua bg-cartao px-4 py-3 outline-none focus:border-saldo"
+            aria-label="Dia do lançamento"
+            className="tabular mt-1.5 w-[150px] shrink-0 rounded-folha border border-regua bg-cartao px-3 py-3 text-[15px] outline-none focus:border-saldo"
           />
-        </Campo>
-
-        <Campo rotulo="Nota" dica="Opcional — o que era esse valor.">
-          <CampoDeTexto valor={nota} aoMudar={setNota} placeholder="fatura do cartão" />
-        </Campo>
+        </div>
+        {quando !== data && (
+          <p className="!mt-1.5 text-[12.5px] text-fosco">{porExtenso(quando)}</p>
+        )}
 
         {tipo === "ENTRADA" && (
-          <Marcacao
-            ligado={rendaPropria}
-            aoMudar={setRendaPropria}
-            titulo="É dinheiro seu"
-            explicacao="Salário, freela, trabalho. Repasse de terceiros e resgate não contam — é o que a planilha chamava de entrada sem o dinheiro de fora."
-          />
+          <Marcacoes>
+            <Chip
+              ligado={marcado.rendaPropria}
+              aoTocar={() => setMarcado((m) => ({ ...m, rendaPropria: !m.rendaPropria }))}
+            >
+              Dinheiro seu
+            </Chip>
+            <span className="text-[12.5px] leading-snug text-fosco">
+              Salário, freela, trabalho. Repasse de fora e resgate não contam.
+            </span>
+          </Marcacoes>
         )}
 
         {tipo === "SAIDA" && (
-          <>
-            <Marcacao
-              ligado={investimento}
-              aoMudar={setInvestimento}
-              titulo="Foi para investimento"
-              explicacao="Entra no “investido %” do mês."
-            />
-            <Marcacao
-              ligado={apartamento}
-              aoMudar={setApartamento}
-              titulo="É do apartamento"
-              explicacao="Entra no rateio com a outra pessoa."
-            />
-          </>
+          <Marcacoes>
+            <Chip
+              ligado={marcado.investimento}
+              aoTocar={() => setMarcado((m) => ({ ...m, investimento: !m.investimento }))}
+            >
+              Investimento
+            </Chip>
+            <Chip
+              ligado={marcado.apartamento}
+              aoTocar={() => setMarcado((m) => ({ ...m, apartamento: !m.apartamento }))}
+            >
+              Apartamento
+            </Chip>
+          </Marcacoes>
         )}
 
         {erro && (
-          <p role="alert" className="text-[15px] text-atencao">
+          <p role="alert" className="text-[14px] text-atencao">
             {erro}
           </p>
         )}
 
         <div className="flex gap-2 pt-1">
           <Botao tipo="primario" onClick={salvar} className="flex-1">
-            {editando ? "Salvar" : "Lançar"}
+            {editando ? "Salvar" : `Lançar em ${curta(quando)}`}
           </Botao>
           {editando && (
             <Botao
@@ -165,34 +158,37 @@ export function FolhaDeLancamento({
             </Botao>
           )}
         </div>
+
+        <ComoAsTeclasFuncionam />
       </div>
     </Folha>
   );
 }
 
-function Marcacao({
+function Marcacoes({ children }: { children: React.ReactNode }) {
+  return <div className="flex flex-wrap items-center gap-2">{children}</div>;
+}
+
+function Chip({
   ligado,
-  aoMudar,
-  titulo,
-  explicacao,
+  aoTocar,
+  children,
 }: {
   ligado: boolean;
-  aoMudar: (v: boolean) => void;
-  titulo: string;
-  explicacao: string;
+  aoTocar: () => void;
+  children: React.ReactNode;
 }) {
   return (
-    <label className="flex items-start gap-3 rounded-folha border border-reguafina p-3">
-      <input
-        type="checkbox"
-        checked={ligado}
-        onChange={(e) => aoMudar(e.target.checked)}
-        className="mt-1 h-5 w-5 shrink-0 accent-[var(--saldo)]"
-      />
-      <span>
-        <span className="block text-[17px]">{titulo}</span>
-        <span className="block text-[13px] leading-snug text-fosco">{explicacao}</span>
-      </span>
-    </label>
+    <button
+      type="button"
+      onClick={aoTocar}
+      aria-pressed={ligado}
+      className={`min-h-[38px] rounded-full px-4 text-[14px] shadow-baixa ${
+        ligado ? "bg-saldo font-semibold text-white" : "bg-cartao text-grafite"
+      }`}
+    >
+      {ligado ? "✓ " : ""}
+      {children}
+    </button>
   );
 }

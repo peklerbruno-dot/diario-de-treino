@@ -1,5 +1,5 @@
-import { TelaDoMes } from "./mes";
+import { TelaDeHoje } from "./hoje";
 
 export default function Pagina() {
-  return <TelaDoMes />;
+  return <TelaDeHoje />;
 }

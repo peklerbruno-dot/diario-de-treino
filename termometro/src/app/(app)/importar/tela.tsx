@@ -141,10 +141,8 @@ export function TelaDeImportacao() {
             </label>
           )}
 
-          <h2 className="text-[17px] font-semibold tracking-tight">
-            Confira antes de trazer
-          </h2>
-          <div className="mt-2 rounded-folha border border-reguafina bg-cartao p-4">
+          <h2 className="text-[17px] font-semibold tracking-tight">Confira antes de trazer</h2>
+          <div className="mt-2 rounded-folha bg-cartao shadow-baixa p-4">
             <p className="text-[15px]">
               <strong>{lido.lancamentos.length}</strong> lançamentos da aba{" "}
               <strong>{lido.aba}</strong>, começando com{" "}
@@ -171,7 +169,7 @@ export function TelaDeImportacao() {
                 </thead>
                 <tbody>
                   {lido.resumoPorMes.map((m) => (
-                    <tr key={m.mes} className="border-b border-reguafina last:border-b-0">
+                    <tr key={m.mes} className="border-b border-linha last:border-b-0">
                       <th scope="row" className="py-1.5 text-left font-normal">
                         {MESES_CURTOS[m.mes - 1]}
                       </th>

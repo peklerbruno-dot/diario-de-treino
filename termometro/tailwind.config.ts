@@ -1,11 +1,13 @@
 import type { Config } from "tailwindcss";
 
 /**
- * As cores vivem em variáveis CSS (src/app/globals.css), e o Tailwind só dá
- * nome a elas. É o que faz o modo escuro trocar tudo num lugar só.
+ * As cores vivem em variáveis CSS (src/app/globals.css) e o Tailwind só lhes dá
+ * nome. É o que faz o modo escuro trocar tudo num lugar só.
  *
- * Os valores vêm de uma paleta conferida com validador de daltonismo e de
- * contraste contra estas duas superfícies — a de papel e a escura.
+ * Duas famílias de letra, com papéis separados: a serifa titula, a sans conta.
+ * Número de dinheiro em serifa fica bonito e atrapalha — numa coluna, a gente
+ * compara valores pela forma dos dígitos, e a serifa tira a regularidade que
+ * essa comparação usa.
  */
 export default {
   content: ["./src/**/*.{ts,tsx}"],
@@ -14,13 +16,17 @@ export default {
       colors: {
         papel: "var(--papel)",
         cartao: "var(--cartao)",
+        heroi: "var(--heroi)",
+        "heroi-tinta": "var(--heroi-tinta)",
+        "heroi-fosco": "var(--heroi-fosco)",
         tinta: "var(--tinta)",
         grafite: "var(--grafite)",
         fosco: "var(--fosco)",
         regua: "var(--regua)",
-        reguafina: "var(--reguafina)",
+        linha: "var(--linha)",
         entrada: "var(--entrada)",
         saida: "var(--saida)",
+        diario: "var(--diario)",
         saldo: "var(--saldo)",
         atencao: "var(--atencao)",
       },
@@ -33,8 +39,13 @@ export default {
           "system-ui",
           "sans-serif",
         ],
+        titulo: ["ui-serif", "New York", "Charter", "Georgia", "serif"],
       },
-      borderRadius: { folha: "18px" },
+      borderRadius: { cartao: "22px", folha: "18px", tecla: "14px" },
+      boxShadow: {
+        cartao: "var(--sombra)",
+        baixa: "var(--sombra-baixa)",
+      },
     },
   },
   plugins: [],

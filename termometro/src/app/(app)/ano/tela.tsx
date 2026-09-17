@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { GraficoDoSaldo } from "@/componentes/grafico-do-saldo";
-import { Dinheiro, Linha } from "@/componentes/pecas";
+import { Cartao, Dinheiro, Linha, Sobrescrito, Subtitulo, Titulo } from "@/componentes/pecas";
 import { useAnoCalculado, useEstado } from "@/componentes/usar-loja";
 import { MESES_CURTOS, hoje, partesDaData } from "@/lib/datas";
 import { comCifrao, emReais } from "@/lib/dinheiro";
@@ -21,9 +21,10 @@ export function TelaDoAno() {
   return (
     <div>
       <header className="flex items-center justify-between gap-3">
-        <h1 className="text-[22px] font-semibold tracking-tight">
-          {anos.length > 1 ? "O ano" : ano}
-        </h1>
+        <div>
+          <Sobrescrito>O ano</Sobrescrito>
+          <Titulo className="mt-0.5">{ano}</Titulo>
+        </div>
         <label hidden={anos.length < 2} className="text-[15px] text-grafite">
           <span className="sr-only">Ano</span>
           <select
@@ -40,16 +41,27 @@ export function TelaDoAno() {
         </label>
       </header>
 
-      <section className="mt-4 rounded-folha border border-reguafina bg-cartao p-4">
-        <GraficoDoSaldo ano={calculado} hoje={agora} />
-      </section>
+      <Cartao escuro className="mt-4 px-5 py-4">
+        <Sobrescrito escuro>Termina o ano com</Sobrescrito>
+        <p className="mt-1">
+          <Dinheiro cents={calculado.saldoFinalCents} tamanho="gigante" />
+        </p>
+        <p className="mt-2 text-[13px] text-heroi-fosco">
+          Começou com {comCifrao(calculado.saldoInicialCents)} · sobrou{" "}
+          {comCifrao(t.performanceCents)} no ano
+        </p>
+      </Cartao>
 
-      <section className="mt-5">
-        <h2 className="mb-1 text-[17px] font-semibold tracking-tight">Mês a mês</h2>
-        <div className="overflow-x-auto rounded-folha border border-reguafina bg-cartao">
+      <Cartao className="mt-3 p-4">
+        <GraficoDoSaldo ano={calculado} hoje={agora} />
+      </Cartao>
+
+      <section className="mt-6">
+        <Subtitulo className="mb-2">Mês a mês</Subtitulo>
+        <Cartao className="overflow-hidden">
           <table className="w-full border-collapse whitespace-nowrap text-[15px]">
             <thead>
-              <tr className="border-b border-regua text-[13px] text-fosco">
+              <tr className="border-b border-linha text-[11px] uppercase tracking-wide text-fosco">
                 <th scope="col" className="px-3 py-2 text-left font-normal">
                   Mês
                 </th>
@@ -66,19 +78,19 @@ export function TelaDoAno() {
             </thead>
             <tbody>
               {calculado.meses.map((mes) => (
-                <tr key={mes.mes} className="border-b border-reguafina last:border-b-0">
+                <tr key={mes.mes} className="border-b border-linha last:border-b-0">
                   <th scope="row" className="px-3 py-2 text-left font-normal">
                     {MESES_CURTOS[mes.mes - 1]}
                   </th>
-                  <td className="px-3 py-2 text-right tabular text-entrada">
+                  <td className="tabular px-3 py-2 text-right text-entrada">
                     {emReais(mes.totais.entradasCents)}
                   </td>
-                  <td className="px-3 py-2 text-right tabular text-saida">
+                  <td className="tabular px-3 py-2 text-right text-saida">
                     {emReais(mes.totais.saidaTotalCents)}
                   </td>
                   <td
-                    className={`px-3 py-2 text-right tabular ${
-                      mes.totais.saldoFechamentoCents < 0 ? "text-atencao" : ""
+                    className={`tabular px-3 py-2 text-right font-medium ${
+                      mes.totais.saldoFechamentoCents < 0 ? "text-atencao" : "text-saldo"
                     }`}
                   >
                     {emReais(mes.totais.saldoFechamentoCents)}
@@ -87,15 +99,15 @@ export function TelaDoAno() {
               ))}
             </tbody>
           </table>
-        </div>
-        <p className="mt-1 px-1 text-[13px] text-fosco">
+        </Cartao>
+        <p className="mt-1.5 px-1 text-[12.5px] text-fosco">
           Valores em reais. “Saiu” é saídas mais o diário; “Saldo” é como o mês terminou.
         </p>
       </section>
 
       <section className="mt-6">
-        <h2 className="mb-1 text-[17px] font-semibold tracking-tight">O ano inteiro</h2>
-        <div className="rounded-folha border border-reguafina bg-cartao px-4 py-1">
+        <Subtitulo className="mb-2">O ano inteiro</Subtitulo>
+        <Cartao className="px-4 py-1">
           <Linha rotulo="Começou com">
             <span className="tabular text-[15px]">{comCifrao(calculado.saldoInicialCents)}</span>
           </Linha>
@@ -127,7 +139,7 @@ export function TelaDoAno() {
           <Linha rotulo="Termina com" forte>
             <Dinheiro cents={calculado.saldoFinalCents} papel="saldo" />
           </Linha>
-        </div>
+        </Cartao>
       </section>
     </div>
   );

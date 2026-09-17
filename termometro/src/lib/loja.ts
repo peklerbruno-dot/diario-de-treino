@@ -398,6 +398,19 @@ export function fixosVivos(estado: Estado): Fixo[] {
 const CHAVE_DO_RATEIO = "rateioApto";
 const chaveDoSaldo = (ano: number) => `saldoInicial:${ano}`;
 
+/** O saldo de abertura que a pessoa digitou para este ano, se digitou algum. */
+export function saldoInicialExplicito(estado: Estado, ano: number): number | null {
+  const bruto = estado.ajustes[chaveDoSaldo(ano)]?.valor;
+  if (bruto === undefined) return null;
+  const n = Number(bruto);
+  return Number.isFinite(n) ? n : null;
+}
+
+export function rateioApto(estado: Estado): number {
+  const n = Number(estado.ajustes[CHAVE_DO_RATEIO]?.valor);
+  return Number.isFinite(n) ? n : AJUSTES_PADRAO.rateioAptoPercent;
+}
+
 export function ajustesDoAno(estado: Estado, ano: number): Ajustes {
   const rateio = Number(estado.ajustes[CHAVE_DO_RATEIO]?.valor);
   const saldo = Number(estado.ajustes[chaveDoSaldo(ano)]?.valor);

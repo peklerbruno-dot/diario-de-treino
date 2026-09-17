@@ -50,7 +50,9 @@ export function GraficoDoSaldo({ ano, hoje }: { ano: AnoCalculado; hoje: string 
       MARGEM.topo + ((topo - cents) / Math.max(topo - base, 1)) * alturaUtil;
 
     const caminho = pontos
-      .map((p, i) => `${i === 0 ? "M" : "L"}${paraX(i).toFixed(2)},${paraY(p.saldoCents).toFixed(2)}`)
+      .map(
+        (p, i) => `${i === 0 ? "M" : "L"}${paraX(i).toFixed(2)},${paraY(p.saldoCents).toFixed(2)}`,
+      )
       .join(" ");
 
     return { paraX, paraY, caminho, yDoZero: paraY(0), topo, base };
@@ -64,8 +66,7 @@ export function GraficoDoSaldo({ ano, hoje }: { ano: AnoCalculado; hoje: string 
     const caixa = svg.current?.getBoundingClientRect();
     if (!caixa) return;
     const x = ((e.clientX - caixa.left) / caixa.width) * LARGURA;
-    const proporcao =
-      (x - MARGEM.esquerda) / (LARGURA - MARGEM.esquerda - MARGEM.direita);
+    const proporcao = (x - MARGEM.esquerda) / (LARGURA - MARGEM.esquerda - MARGEM.direita);
     const i = Math.round(proporcao * (pontos.length - 1));
     setIndiceSobOToque(Math.min(Math.max(i, 0), pontos.length - 1));
   }
@@ -73,7 +74,9 @@ export function GraficoDoSaldo({ ano, hoje }: { ano: AnoCalculado; hoje: string 
   return (
     <figure className="m-0">
       <figcaption className="flex items-baseline justify-between gap-3">
-        <span className="text-[17px] font-semibold tracking-tight">Saldo, dia a dia</span>
+        <span className="font-titulo text-[19px] font-semibold tracking-tight">
+          Saldo, dia a dia
+        </span>
         {ponto && (
           <span className="text-[13px] text-grafite">
             <span className="tabular">{curta(ponto.data)}</span>
@@ -111,7 +114,7 @@ export function GraficoDoSaldo({ ano, hoje }: { ano: AnoCalculado; hoje: string 
           x2={LARGURA - MARGEM.direita}
           y1={paraY(topo)}
           y2={paraY(topo)}
-          stroke="var(--reguafina)"
+          stroke="var(--linha)"
           strokeWidth={1}
         />
         {Math.abs(paraY(topo) - yDoZero) > 16 && (
@@ -152,22 +155,23 @@ export function GraficoDoSaldo({ ano, hoje }: { ano: AnoCalculado; hoje: string 
                 x2={paraX(i)}
                 y1={MARGEM.topo}
                 y2={ALTURA - MARGEM.baixo}
-                stroke="var(--reguafina)"
+                stroke="var(--linha)"
                 strokeWidth={1}
               />
-              <text
-                x={paraX(i) + 3}
-                y={ALTURA - 6}
-                fontSize={11}
-                fill="var(--fosco)"
-              >
+              <text x={paraX(i) + 3} y={ALTURA - 6} fontSize={11} fill="var(--fosco)">
                 {MESES_CURTOS[mes.mes - 1]}
               </text>
             </g>
           );
         })}
 
-        <path d={caminho} fill="none" stroke="var(--saldo)" strokeWidth={2} strokeLinejoin="round" />
+        <path
+          d={caminho}
+          fill="none"
+          stroke="var(--saldo)"
+          strokeWidth={2}
+          strokeLinejoin="round"
+        />
         <path
           d={caminho}
           fill="none"
