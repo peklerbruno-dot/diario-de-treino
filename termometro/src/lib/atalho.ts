@@ -10,7 +10,7 @@
  * mandou e montar os lançamentos. É o que dá para testar sem servidor nenhum.
  */
 import { diasNoMes, partesDaData } from "./datas";
-import { comCifrao, parcelas } from "./dinheiro";
+import { comCifrao, paraCentavos, parcelas } from "./dinheiro";
 import type { Lancamento, Tipo } from "./tipos";
 
 const TIPOS_ACEITOS: Record<string, Tipo> = {
@@ -48,12 +48,9 @@ export interface PedidoDoAtalho {
   apartamento?: unknown;
 }
 
-export type LeituraDoPedido =
-  | { ok: true; lancamentos: Lancamento[] }
-  | { ok: false; erro: string };
+export type LeituraDoPedido = { ok: true; lancamentos: Lancamento[] } | { ok: false; erro: string };
 
-const ehData = (v: unknown): v is string =>
-  typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);
+const ehData = (v: unknown): v is string => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);
 
 function comoTexto(v: unknown): string | null {
   if (typeof v === "string") return v;
@@ -82,10 +79,9 @@ export function lerPedidoDoAtalho(
     return { ok: false, erro: "Faltou o valor." };
   }
 
-  const valores = parcelas(texto);
-  if (!valores || valores.every((v) => v === 0)) {
-    return { ok: false, erro: `Não entendi o valor "${texto}".` };
-  }
+  const leitura = lerValor(texto);
+  if (!leitura.ok) return leitura;
+  const valores = leitura.valores;
   if (valores.some((v) => v < 0)) {
     return {
       ok: false,
@@ -131,6 +127,65 @@ export function lerPedidoDoAtalho(
     }));
 
   return { ok: true, lancamentos };
+}
+
+/** "R$ 38,50" e "38,50 reais" — o cifrão e a palavra saem, o número fica. */
+const CIFRAO_NA_FRENTE = /^r\$\s*/;
+const REAIS_NO_FIM = /^([0-9.,]+)\s*(?:reais|real)$/;
+/** O sinal passa por aqui de propósito: quem recusa valor negativo, com uma
+ *  frase que ensina a escolher a coluna, é a leitura do pedido, logo adiante. */
+const SO_NUMERO = /^-?[0-9.,]+$/;
+/** "38 reais e 50", "38 reais e 50 centavos", "38 reais 50". */
+const REAIS_E_CENTAVOS = /^(\d+)\s*(?:reais|real)\s*(?:e\s*)?(\d{1,2})\s*(?:centavos?)?$/;
+/** "38 reais", "1 real". */
+const SO_REAIS = /^(\d+)\s*(?:reais|real)$/;
+
+const NAO_ENTENDI = (texto: string) =>
+  `Não entendi o valor "${texto}". Diga só o número — "38,50" — ou por extenso, ` +
+  `"38 reais e 50 centavos".`;
+
+/**
+ * O valor, lido do jeito que ele chega.
+ *
+ * Digitado ele vem limpo. Ditado à Siri ele vem com palavra no meio, e aqui
+ * mora o motivo de esta função existir: a leitura antiga apagava tudo o que não
+ * fosse dígito, então **"38 reais e 50" virava R$ 3.850,00** — o valor errado,
+ * em silêncio, no saldo. Um erro que ninguém percebe é pior do que uma recusa.
+ *
+ * Então: as formas faladas que não têm outra leitura possível são entendidas
+ * ("38 reais e 50 centavos" só pode ser R$ 38,50), e o resto é recusado com uma
+ * frase que diz como falar. "38 e 50" fica de fora de propósito — pode ser
+ * trinta e oito e cinquenta centavos, pode ser dois valores, e adivinhar aqui é
+ * colocar dinheiro errado na conta de alguém.
+ */
+function lerValor(texto: string): { ok: true; valores: number[] } | { ok: false; erro: string } {
+  const limpo = texto.trim().toLowerCase().replace(CIFRAO_NA_FRENTE, "").trim();
+
+  // A soma da planilha continua valendo, e ela só existe digitada.
+  if (limpo.includes("+")) {
+    const partes = limpo.split("+").map((p) => p.trim().replace(CIFRAO_NA_FRENTE, "").trim());
+    if (!partes.every((p) => SO_NUMERO.test(p))) return { ok: false, erro: NAO_ENTENDI(texto) };
+    const valores = parcelas(partes.join("+"));
+    if (!valores || valores.every((v) => v === 0)) return { ok: false, erro: NAO_ENTENDI(texto) };
+    return { ok: true, valores };
+  }
+
+  const comCentavos = REAIS_E_CENTAVOS.exec(limpo);
+  if (comCentavos) {
+    const reais = Number(comCentavos[1]);
+    const centavos = Number((comCentavos[2] + "0").slice(0, 2));
+    return { ok: true, valores: [reais * 100 + centavos] };
+  }
+
+  const redondos = SO_REAIS.exec(limpo);
+  if (redondos) return { ok: true, valores: [Number(redondos[1]) * 100] };
+
+  const numero = REAIS_NO_FIM.exec(limpo)?.[1] ?? (SO_NUMERO.test(limpo) ? limpo : null);
+  if (numero === null) return { ok: false, erro: NAO_ENTENDI(texto) };
+
+  const cents = paraCentavos(numero);
+  if (cents === null || cents === 0) return { ok: false, erro: NAO_ENTENDI(texto) };
+  return { ok: true, valores: [cents] };
 }
 
 const COMO_SE_DIZ: Record<Tipo, string> = {

@@ -70,6 +70,37 @@ describe("o que o atalho manda errado", () => {
     expect(r.ok).toBe(false);
   });
 
+  it("entende o valor ditado à Siri, com a palavra no meio", () => {
+    expect(ler({ valor: "38 reais e 50" }).ok && ler({ valor: "38 reais e 50" })).toMatchObject({
+      lancamentos: [{ valorCents: 3850 }],
+    });
+    const casos: [string, number][] = [
+      ["38 reais e 50 centavos", 3850],
+      ["38 reais 50", 3850],
+      ["38 reais", 3800],
+      ["1 real", 100],
+      ["38,50 reais", 3850],
+      ["R$ 38,50", 3850],
+      ["r$ 1.234,56", 123456],
+      ["38 reais e 5", 3850],
+    ];
+    for (const [dito, cents] of casos) {
+      const r = ler({ valor: dito });
+      expect(r.ok && r.lancamentos[0].valorCents, dito).toBe(cents);
+    }
+  });
+
+  // Este é o teste que existe por causa de um erro de verdade: a leitura antiga
+  // apagava tudo o que não fosse dígito, e "38 reais e 50" virava R$ 3.850,00 —
+  // dez vezes o valor, calado, dentro do saldo.
+  it("não cola os dígitos de um ditado que tem mais de uma leitura", () => {
+    for (const dito of ["38 e 50", "2 cafés de 5", "38 50"]) {
+      const r = ler({ valor: dito });
+      expect(r.ok, dito).toBe(false);
+      if (!r.ok) expect(r.erro).toContain("38 reais e 50 centavos");
+    }
+  });
+
   it("recusa o que não é número", () => {
     const r = ler({ valor: "muito caro" });
     expect(r).toMatchObject({ ok: false });

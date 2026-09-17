@@ -4,8 +4,10 @@ O problema não é o app estar longe. É que quinze segundos bastam para a gente
 deixar para depois — e depois não anota. Com o atalho, lançar o almoço é um
 toque e o valor.
 
-Dá para disparar de três jeitos, e você escolhe depois qual prefere: um ícone na
-tela de início, **dois toques na traseira do iPhone**, ou falando com a Siri.
+O jeito principal é **falando com a Siri**: *"E aí Siri, Gastei"*, ela pergunta
+quanto, você fala o valor, e ela responde com o saldo. Também dá por dois toques
+na traseira do iPhone e por um ícone na tela de início, para quando não dá para
+falar.
 
 > **Este passo a passo também está dentro do app**, em **Ajustes → Atalho do
 > iPhone → Como montar o atalho**, com o endereço já preenchido e botão de
@@ -71,6 +73,9 @@ corpo da notificação, escolha a variável **Valor do dicionário**.
 **6.** Toque no nome do atalho, lá em cima, e chame de **Gastei**. Escolha um
 ícone e uma cor se quiser.
 
+   > Este é o passo mais importante para quem vai usar a voz: **o nome é a frase
+   > que a Siri escuta**. Chamou de "Gastei", você diz *"E aí Siri, Gastei"*.
+
 **7.** Toque em **OK** / **Concluído**.
 
 ### Na primeira vez que rodar
@@ -81,18 +86,52 @@ de novo toda vez.
 
 ---
 
-## Como disparar
+## Falando com a Siri
+
+Não precisa configurar nada a mais: todo atalho já vira comando de voz sozinho,
+com o próprio nome. Por isso o passo 6 — o nome — é o mais importante de todos
+para quem vai usar a voz.
+
+> — **você:** E aí Siri, Gastei
+> — **Siri:** Quanto?
+> — **você:** trinta e oito e cinquenta
+> — **Siri:** R$ 38,50 no diário. Saldo de hoje: R$ 1.497,43.
+
+A pergunta *"Quanto?"* é o passo 2: quando o atalho roda pela voz, a Siri fala a
+pergunta e escuta a resposta. A última frase é a confirmação — ela diz o valor
+que entrou e o saldo que sobrou, que é como se percebe na hora se ela ouviu
+errado.
+
+Nos iPhones mais novos basta *"Siri, Gastei"*, sem o "E aí".
+
+### Para ela entender o valor
+
+- **Diga o número, e só ele.** As formas mais seguras são *"trinta e oito reais
+  e cinquenta centavos"* e *"trinta e oito vírgula cinquenta"*; valor redondo
+  pode ser só *"trinta e oito"*. Se a Siri entender alguma coisa com duas
+  leituras possíveis, o app **recusa e explica**, em vez de chutar — e a
+  confirmação no fim lê o valor de volta, então o erro aparece na hora. Um valor
+  errado no saldo é bem pior do que uma pergunta repetida.
+- **Se ela escrever o número errado**, confira o *Tipo de entrada* do passo 2:
+  precisa estar em **Número**. Em **Texto** a Siri manda a frase inteira.
+- **Se ela não achar o atalho**, dê um nome de duas palavras, como
+  **Gastei agora**. Nome curto demais ela às vezes confunde com comando do
+  sistema.
+- **Para ela dizer o saldo em voz alta**, acrescente no fim do atalho a ação
+  **Falar texto**, com a variável **Valor do dicionário** — a mesma do passo 5.
+  Aí dá para lançar de mãos ocupadas. Só lembre que ela vai dizer o seu saldo em
+  voz alta, onde você estiver.
+
+## Sem falar, quando não dá
+
+**Dois toques na traseira do iPhone.** Ajustes → **Acessibilidade** → **Toque** →
+role até o fim → **Toque na parte traseira** → **Toque duplo** → escolha
+**Gastei**. Para reunião, cinema, fila.
 
 **Ícone na tela de início.** No atalho, toque nos três pontinhos → botão de
 compartilhar → **Adicionar à Tela de Início**.
 
-**Dois toques na traseira do iPhone.** Ajustes → **Acessibilidade** → **Toque** →
-role até o fim → **Toque na parte traseira** → **Toque duplo** → escolha
-**Gastei**. Este é o mais rápido de todos: você bate duas vezes atrás do
-aparelho e já digita o valor.
-
-**Siri.** Diga *"E aí Siri, Gastei"*. O nome do atalho é a frase — se você
-chamou de "Gastei", é isso que você fala.
+Os três jeitos disparam o mesmo atalho. Ligar um não desliga os outros.
 
 ---
 
@@ -101,11 +140,13 @@ chamou de "Gastei", é isso que você fala.
 Vale ter três, para não precisar escolher o tipo toda vez. Duplique o atalho
 (três pontinhos → **Duplicar**) e mude só uma coisa:
 
-| Atalho | O que acrescentar |
+Por voz, cada um vira uma frase diferente.
+
+| Frase | O que acrescentar |
 |---|---|
-| **Gastei** | nada — sem tipo, é gasto do dia a dia |
-| **Recebi** | mais um campo no JSON: chave `tipo`, texto `entrada` |
-| **Paguei conta** | mais um campo no JSON: chave `tipo`, texto `saída` |
+| *"E aí Siri, Gastei"* | nada — sem tipo, é gasto do dia a dia |
+| *"E aí Siri, Recebi"* | mais um campo no JSON: chave `tipo`, texto `entrada` |
+| *"E aí Siri, Paguei conta"* | mais um campo no JSON: chave `tipo`, texto `saída` |
 
 Outros campos que o atalho pode mandar, todos opcionais:
 
@@ -129,6 +170,11 @@ mais comum.
 **Apareceu "Código de acesso inválido".** O cabeçalho precisa se chamar
 exatamente `x-codigo`, tudo minúsculo, e o texto precisa ser o mesmo código que
 você digita para entrar no app.
+
+**Apareceu "Não entendi o valor".** A Siri ouviu uma forma com mais de uma
+leitura possível — "38 e 50" pode ser trinta e oito e cinquenta centavos, pode
+ser dois valores. Repita dizendo *"trinta e oito reais e cinquenta centavos"*, ou
+confira se o *Tipo de entrada* do passo 2 está em **Número**.
 
 **Apareceu "Faltou o valor".** O campo do JSON precisa se chamar `valor`, e o
 conteúdo dele precisa ser a variável **Entrada fornecida**, não um texto fixo.

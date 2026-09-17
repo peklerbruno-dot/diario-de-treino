@@ -22,8 +22,8 @@ export function TelaDoAtalho() {
 
       <p className="mt-2 text-[15px] leading-relaxed text-grafite">
         O problema nunca foi o app estar longe. É que quinze segundos bastam para deixar para depois
-        — e depois ninguém anota. Com o atalho, lançar o almoço é bater duas vezes na traseira do
-        iPhone e digitar o valor.
+        — e depois ninguém anota. Com o atalho, lançar o almoço é dizer <i>“E aí Siri, Gastei”</i> e
+        falar o valor, sem tirar o celular do bolso.
       </p>
 
       <div className="mt-4">
@@ -129,7 +129,9 @@ export function TelaDoAtalho() {
           </Passo>
 
           <Passo n={6}>
-            Toque no nome do atalho, lá em cima, e chame de <b>Gastei</b>. Depois <b>OK</b> /{" "}
+            Toque no nome do atalho, lá em cima, e chame de <b>Gastei</b>. Este é o passo mais
+            importante para quem vai usar a voz: <b>o nome é a frase que a Siri escuta</b>. Se você
+            chamar de “Gastei”, você diz <i>“E aí Siri, Gastei”</i>. Depois <b>OK</b> /{" "}
             <b>Concluído</b>.
           </Passo>
 
@@ -141,35 +143,91 @@ export function TelaDoAtalho() {
       </section>
 
       <section className="mt-6">
-        <Subtitulo className="mb-2">Como disparar</Subtitulo>
+        <Subtitulo className="mb-2">Falando com a Siri</Subtitulo>
+        <p className="mb-3 text-[14.5px] leading-relaxed text-grafite">
+          Não precisa configurar nada a mais: todo atalho já vira comando de voz sozinho, com o
+          próprio nome. A conversa é esta, e são dois tempos.
+        </p>
+
+        <Cartao className="px-4 py-4">
+          <Fala quem="você">E aí Siri, Gastei</Fala>
+          <Fala quem="siri">Quanto?</Fala>
+          <Fala quem="você">trinta e oito e cinquenta</Fala>
+          <Fala quem="siri">R$ 38,50 no diário. Saldo de hoje: R$ 1.497,43.</Fala>
+        </Cartao>
+
+        <p className="mt-3 text-[14px] leading-relaxed text-grafite">
+          A pergunta <i>“Quanto?”</i> é o passo 2 do atalho: quando ele roda pela voz, a Siri fala a
+          pergunta e escuta a resposta. E a última frase é a confirmação — ela diz o valor que
+          entrou e o saldo que sobrou, que é como você percebe na hora se ela ouviu errado.
+        </p>
+
+        <div className="mt-3">
+          <Aviso>
+            <b>Nos iPhones mais novos</b> basta dizer <i>“Siri, Gastei”</i>, sem o “E aí”. Se ela
+            não responder ao chamado, veja em Ajustes do iPhone → <b>Siri</b> se a escuta por voz
+            está ligada.
+          </Aviso>
+        </div>
+      </section>
+
+      <section className="mt-6">
+        <Subtitulo className="mb-2">Para ela entender o valor</Subtitulo>
         <Cartao className="px-4 py-1">
-          <Jeito titulo="Dois toques na traseira" destaque>
-            Ajustes do iPhone → <b>Acessibilidade</b> → <b>Toque</b> → role até o fim →{" "}
-            <b>Toque na parte traseira</b> → <b>Toque duplo</b> → escolha <b>Gastei</b>. É o mais
-            rápido de todos, e o único que funciona com o celular ainda no bolso do outro.
+          <Jeito titulo="Diga o número, e só ele">
+            As formas mais seguras são <i>“trinta e oito reais e cinquenta centavos”</i> e{" "}
+            <i>“trinta e oito vírgula cinquenta”</i>. Valor redondo pode ser só{" "}
+            <i>“trinta e oito”</i>. Se a Siri entender alguma coisa com duas leituras possíveis, o
+            app <b>recusa e explica</b>, em vez de chutar e colocar dinheiro errado no seu saldo — e
+            de todo jeito a confirmação no fim lê o valor de volta, então o erro aparece na hora.
           </Jeito>
-          <Jeito titulo="Ícone na tela de início">
-            No atalho, três pontinhos → botão de compartilhar → <b>Adicionar à Tela de Início</b>.
+          <Jeito titulo="Se ela escrever o número errado">
+            Confira o <i>Tipo de entrada</i> do passo 2: precisa estar em <b>Número</b>. Em{" "}
+            <b>Texto</b> a Siri manda a frase inteira, e a chance de confusão é maior.
           </Jeito>
-          <Jeito titulo="Siri">
-            Diga <i>“E aí Siri, Gastei”</i>. O nome do atalho é a frase.
+          <Jeito titulo="Se ela não achar o atalho">
+            Dê um nome de duas palavras, como <b>Gastei agora</b>: nome curto demais ela às vezes
+            confunde com comando do sistema. O nome novo passa a ser a frase nova.
+          </Jeito>
+          <Jeito titulo="Para ela dizer o saldo em voz alta">
+            Acrescente no fim do atalho a ação <b>Falar texto</b>, com a variável{" "}
+            <b>Valor do dicionário</b> — a mesma do passo 5. Aí dá para lançar de mãos ocupadas, sem
+            olhar a tela. Só lembre que ela vai dizer o seu saldo em voz alta, onde você estiver.
           </Jeito>
         </Cartao>
       </section>
 
       <section className="mt-6">
+        <Subtitulo className="mb-2">Sem falar, quando não dá</Subtitulo>
+        <Cartao className="px-4 py-1">
+          <Jeito titulo="Dois toques na traseira">
+            Ajustes do iPhone → <b>Acessibilidade</b> → <b>Toque</b> → role até o fim →{" "}
+            <b>Toque na parte traseira</b> → <b>Toque duplo</b> → escolha <b>Gastei</b>. Para
+            reunião, cinema, fila.
+          </Jeito>
+          <Jeito titulo="Ícone na tela de início">
+            No atalho, três pontinhos → botão de compartilhar → <b>Adicionar à Tela de Início</b>.
+          </Jeito>
+        </Cartao>
+        <p className="mt-2 px-1 text-[12.5px] leading-snug text-fosco">
+          Os três jeitos disparam o mesmo atalho. Ligar um não desliga os outros.
+        </p>
+      </section>
+
+      <section className="mt-6">
         <Subtitulo className="mb-2">Fazer mais de um</Subtitulo>
         <p className="mb-2 text-[14.5px] leading-relaxed text-grafite">
-          Vale ter três, para não escolher o tipo toda vez. Duplique o atalho (três pontinhos →{" "}
-          <b>Duplicar</b>) e acrescente um campo no JSON, com a chave <Palavra>tipo</Palavra>:
+          Vale ter três, para não escolher o tipo toda vez — e, por voz, cada um vira uma frase
+          diferente. Duplique o atalho (três pontinhos → <b>Duplicar</b>), mude o nome e acrescente
+          um campo no JSON, com a chave <Palavra>tipo</Palavra>:
         </p>
         <Cartao className="px-4 py-1">
-          <Jeito titulo="Gastei">nada a mudar — sem tipo, é gasto do dia a dia.</Jeito>
-          <Jeito titulo="Recebi">
-            texto <Palavra>entrada</Palavra>.
+          <Jeito titulo="“E aí Siri, Gastei”">nada a mudar — sem tipo, é gasto do dia a dia.</Jeito>
+          <Jeito titulo="“E aí Siri, Recebi”">
+            campo <Palavra>tipo</Palavra>, texto <Palavra>entrada</Palavra>.
           </Jeito>
-          <Jeito titulo="Paguei conta">
-            texto <Palavra>saída</Palavra>.
+          <Jeito titulo="“E aí Siri, Paguei conta”">
+            campo <Palavra>tipo</Palavra>, texto <Palavra>saída</Palavra>.
           </Jeito>
         </Cartao>
         <p className="mt-2 px-1 text-[12.5px] leading-snug text-fosco">
@@ -189,6 +247,12 @@ export function TelaDoAtalho() {
           <Jeito titulo="“Código de acesso inválido”">
             O cabeçalho precisa se chamar <Palavra>x-codigo</Palavra>, tudo minúsculo, e o texto
             precisa ser o mesmo código com que você entra no app.
+          </Jeito>
+          <Jeito titulo="“Não entendi o valor”">
+            A Siri ouviu uma forma com mais de uma leitura possível. Repita dizendo{" "}
+            <i>“trinta e oito reais e cinquenta centavos”</i>, ou confira se o{" "}
+            <i>Tipo de entrada</i> do passo 2 está em <b>Número</b>. O app prefere recusar a
+            adivinhar: valor errado no saldo é bem pior do que uma pergunta repetida.
           </Jeito>
           <Jeito titulo="“Faltou o valor”">
             O campo do JSON precisa se chamar <Palavra>valor</Palavra>, e o conteúdo dele precisa
@@ -274,25 +338,25 @@ function Passo({ n, children }: { n: number; children: React.ReactNode }) {
   );
 }
 
-function Jeito({
-  titulo,
-  destaque,
-  children,
-}: {
-  titulo: string;
-  destaque?: boolean;
-  children: React.ReactNode;
-}) {
+/** Uma linha do diálogo com a Siri, para a conversa caber na cabeça de uma vez. */
+function Fala({ quem, children }: { quem: "você" | "siri"; children: React.ReactNode }) {
+  const seu = quem === "você";
+  return (
+    <p className={`flex gap-2 py-1.5 ${seu ? "" : "pl-5"}`}>
+      <span className={`sobrescrito mt-[3px] w-[34px] shrink-0 ${seu ? "" : "!text-saldo"}`}>
+        {seu ? "você" : "Siri"}
+      </span>
+      <span className={`text-[14.5px] leading-snug ${seu ? "font-medium" : "text-grafite"}`}>
+        {children}
+      </span>
+    </p>
+  );
+}
+
+function Jeito({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
     <div className="border-b border-linha py-3 last:border-b-0">
-      <p className="text-[14.5px] font-semibold">
-        {titulo}
-        {destaque && (
-          <span className="ml-2 rounded-full bg-saldo px-[7px] py-[2px] align-[1px] text-[9.5px] font-bold uppercase tracking-wide text-white">
-            o mais rápido
-          </span>
-        )}
-      </p>
+      <p className="text-[14.5px] font-semibold">{titulo}</p>
       <p className="mt-1 text-[14px] leading-relaxed text-grafite">{children}</p>
     </div>
   );
