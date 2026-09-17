@@ -144,9 +144,16 @@ resposta traz o saldo do dia já calculado, para a notificação do atalho dizer
 que aconteceu sem abrir nada.
 
 É a porta que o app Atalhos do iPhone usa: dois toques na traseira do aparelho,
-o valor, e pronto. O passo a passo para montar está em
-[`docs/ATALHO-DO-IPHONE.md`](docs/ATALHO-DO-IPHONE.md); o endereço aparece
-dentro do app, em Ajustes.
+o valor, e pronto. O passo a passo mora **dentro do app**, em Ajustes → Atalho
+do iPhone, com o endereço já preenchido e botão de copiar em cada palavra que
+precisa ser digitada sem erro — um guia num arquivo do repositório é o mesmo que
+nenhum guia para quem nunca vai abrir o GitHub. A mesma coisa em texto está em
+[`docs/ATALHO-DO-IPHONE.md`](docs/ATALHO-DO-IPHONE.md).
+
+O que essa porta **não** faz, e nenhum app de finanças faz no iPhone: ler os
+seus pagamentos por Apple Pay, as notificações do banco ou o Pix que caiu. A
+Apple não expõe isso a app nenhum. O atalho não adivinha o valor — ele encurta a
+distância entre gastar e anotar.
 
 Três decisões que essa porta carrega:
 
@@ -245,7 +252,7 @@ cor. A tabela dos doze meses logo abaixo é o mesmo dado em números.
     src/lib/loja.ts          o estado no aparelho, a fila e a sincronização
     src/lib/auth.ts          a porta: um código, um cookie assinado
     src/app/api/sync         o único endereço que o app chama
-    src/app/(app)/           uma tela por pasta: hoje, mês, ano, fixos, ajustes
+    src/app/(app)/           uma tela por pasta: hoje, mês, ano, fixos, ajustes, atalho
     src/componentes/         as peças, o teclado, o calendário e as folhas
 
 Todo dinheiro é inteiro em centavos (`valorCents`). Nunca `Float`: a planilha
