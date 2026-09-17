@@ -143,8 +143,8 @@ mínimo `{"valor":"38,50"}` — sem tipo é gasto do dia a dia, sem data é hoje
 resposta traz o saldo do dia já calculado, para a notificação do atalho dizer o
 que aconteceu sem abrir nada.
 
-É a porta que o app Atalhos do iPhone usa: dois toques na traseira do aparelho,
-o valor, e pronto. O passo a passo mora **dentro do app**, em Ajustes → Atalho
+É a porta que o app Atalhos do iPhone usa, e o disparo principal é a voz:
+*"E aí Siri, Gastei"*, ela pergunta quanto, você fala, ela responde com o saldo. O passo a passo mora **dentro do app**, em Ajustes → Atalho
 do iPhone, com o endereço já preenchido e botão de copiar em cada palavra que
 precisa ser digitada sem erro — um guia num arquivo do repositório é o mesmo que
 nenhum guia para quem nunca vai abrir o GitHub. A mesma coisa em texto está em
@@ -166,6 +166,12 @@ Três decisões que essa porta carrega:
   ele.
 - **Um tipo que não existe é recusado, não adivinhado.** Silenciar o erro
   colocaria dinheiro na coluna errada sem ninguém ficar sabendo.
+- **O valor ditado é lido como fala, e o ambíguo é recusado.** A leitura antiga
+  apagava tudo o que não fosse dígito, e por voz isso mordia: *"38 reais e 50"*
+  virava **R$ 3.850,00** — dez vezes o valor, calado, dentro do saldo. Hoje as
+  formas faladas que só têm uma leitura são entendidas ("38 reais e 50 centavos"
+  só pode ser R$ 38,50) e o resto é recusado com uma frase que ensina a falar.
+  "38 e 50" fica de fora de propósito: pode ser um valor, podem ser dois.
 
 A leitura do pedido é pura e vive em [`src/lib/atalho.ts`](src/lib/atalho.ts),
 separada do banco, para caber em teste.
