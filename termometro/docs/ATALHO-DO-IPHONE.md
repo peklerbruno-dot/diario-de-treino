@@ -24,8 +24,9 @@ falar.
 ## Antes de começar, tenha à mão
 
 1. **O endereço do atalho.** Está no próprio app, em **Ajustes → Atalho do
-   iPhone**, com um botão de copiar. É o endereço do seu site com `/api/lancar`
-   no fim.
+   iPhone**, com um botão de copiar. É o endereço do seu site com
+   `/api/lancar?valor=` no fim — e termina no sinal de igual mesmo, sem nada
+   depois.
 2. **O seu código de acesso**, o mesmo que você digita para entrar no app.
 
 ---
@@ -45,18 +46,21 @@ na App Store).
 URL**. Toque nela. Agora preencha com cuidado:
 
    - No campo do endereço, **cole o endereço** que você copiou do app.
+   - Ainda no mesmo campo, toque logo depois do sinal de igual e escolha a
+     variável **Entrada fornecida** (é o resultado do "Pedir entrada" do passo
+     2). Ela aparece na barrinha de sugestões acima do teclado, e vira uma
+     etiqueta azul grudada no fim do endereço.
    - Toque na setinha **Mostrar mais** (ou no `>` ao lado do endereço) para
      abrir o resto das opções.
    - **Método**: troque de `GET` para **POST**.
    - **Cabeçalhos**: toque em **Adicionar novo cabeçalho**.
      - *Chave*: `x-codigo`
      - *Texto*: o seu código de acesso
-   - **Corpo da solicitação**: escolha **JSON**.
-   - Toque em **Adicionar novo campo** → **Texto**.
-     - *Chave*: `valor`
-     - No campo do valor, toque uma vez e escolha a variável **Entrada
-       fornecida** (é o resultado do "Pedir entrada" do passo 2). Ela aparece na
-       barrinha de sugestões acima do teclado.
+   - **Corpo da solicitação** pode ficar em **Nenhum**.
+
+   > O código é a única coisa que vai no cabeçalho, e não no endereço: endereço
+   > fica gravado em registro de servidor e em histórico, e o código abre o
+   > dinheiro inteiro. O valor não é segredo do mesmo tamanho.
 
 **4.** (Opcional, mas vale.) Toque em **Adicionar ação** e busque por **Obter
 valor do dicionário**.
@@ -168,22 +172,26 @@ Vale ter três, para não precisar escolher o tipo toda vez. Duplique o atalho
 
 Por voz, cada um vira uma frase diferente.
 
-| Frase | O que acrescentar |
+Duplique o atalho, mude o nome e acrescente um pedaço ao fim do endereço,
+**depois** da etiqueta azul.
+
+| Frase | O que acrescentar no fim do endereço |
 |---|---|
 | *"E aí Siri, Lançar gasto"* | nada — sem tipo, é gasto do dia a dia |
-| *"E aí Siri, Lançar entrada"* | mais um campo no JSON: chave `tipo`, texto `entrada` |
-| *"E aí Siri, Lançar conta"* | mais um campo no JSON: chave `tipo`, texto `saída` |
+| *"E aí Siri, Lançar entrada"* | `&tipo=entrada` |
+| *"E aí Siri, Lançar conta"* | `&tipo=saida` |
 
-Outros campos que o atalho pode mandar, todos opcionais:
+Outros pedaços, todos opcionais e todos no fim do endereço:
 
-| Chave | Para que serve |
+| Pedaço | Para que serve |
 |---|---|
-| `tipo` | `entrada`, `saída` ou `diário` (sem ele, é diário) |
-| `nota` | o que era o valor — vira a nota do lançamento |
-| `data` | `2026-09-15`, se for lançar um dia que já passou |
-| `rendaPropria` | `sim`, numa entrada que é dinheiro seu (salário, freela) |
+| `&tipo=` | `entrada`, `saida` ou `diario` (sem ele, é diário) |
+| `&nota=` | o que era o valor — vira a nota do lançamento |
+| `&data=` | `2026-09-15`, se for lançar um dia que já passou |
+| `&rendaPropria=sim` | numa entrada que é dinheiro seu (salário, freela) |
 
 E o valor aceita soma, igual ao app: mandar `195+15+83` cria três lançamentos.
+O mesmo continua valendo em corpo JSON, para quem já montou o atalho assim.
 
 ---
 
@@ -202,8 +210,10 @@ leitura possível — "38 e 50" pode ser trinta e oito e cinquenta centavos, pod
 ser dois valores. Repita dizendo *"trinta e oito reais e cinquenta centavos"*, ou
 confira se o *Tipo de entrada* do passo 2 está em **Número**.
 
-**Apareceu "Faltou o valor".** O campo do JSON precisa se chamar `valor`, e o
-conteúdo dele precisa ser a variável **Entrada fornecida**, não um texto fixo.
+**Apareceu "Faltou o valor".** A variável **Entrada fornecida** não ficou colada
+no fim do endereço. Toque no campo do endereço e confira: depois do `?valor=`
+tem de haver uma etiqueta azul, e não um espaço vazio nem um número digitado à
+mão.
 
 **Lançou, mas não aparece no app.** Ele aparece na próxima sincronização — abra
 o app e espere um ou dois segundos. Se quiser forçar: **Ajustes → Sincronizar

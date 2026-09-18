@@ -138,10 +138,10 @@ confirma o valor.
 
 ## Lançar sem abrir o app
 
-`POST /api/lancar`, com o código de acesso no cabeçalho `x-codigo` e o corpo
-mínimo `{"valor":"38,50"}` — sem tipo é gasto do dia a dia, sem data é hoje. A
-resposta traz o saldo do dia já calculado, para a notificação do atalho dizer o
-que aconteceu sem abrir nada.
+`POST /api/lancar?valor=38,50`, com o código de acesso no cabeçalho `x-codigo` —
+sem tipo é gasto do dia a dia, sem data é hoje. A resposta traz o saldo do dia já
+calculado, para a notificação do atalho dizer o que aconteceu sem abrir nada. O
+mesmo vale em corpo JSON, `{"valor":"38,50"}`, para quem montou o atalho assim.
 
 É a porta que o app Atalhos do iPhone usa, e o disparo principal é a voz:
 *"E aí Siri, Lançar gasto"*, ela pergunta quanto, você fala, ela responde com o saldo.
@@ -162,7 +162,11 @@ Três decisões que essa porta carrega:
 
 - **O código vai no cabeçalho, nunca no endereço.** Endereço fica gravado em
   registro de servidor e em histórico de navegador, e esse código é a chave do
-  dinheiro de alguém.
+  dinheiro de alguém. O valor, sim, pode ir no endereço: são segredos de
+  tamanhos diferentes, e é essa diferença que deixa o atalho ter quatro ajustes
+  em vez de sete — montar o corpo JSON dentro do app Atalhos é o passo em que
+  todo mundo trava. `camposDoEndereco` lê valor, tipo, data e nota da busca, e
+  **nunca** o código, nem quando alguém o escreve lá.
 - **"Hoje" é o dia no fuso de quem usa, não no do servidor.** A Vercel roda em
   UTC; sem isso um gasto lançado às dez da noite em São Paulo nasceria no dia
   seguinte, e o saldo do dia sairia errado bem na hora em que mais se olha para

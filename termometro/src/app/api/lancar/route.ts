@@ -2,20 +2,23 @@ import { NextResponse } from "next/server";
 import { codigoConfere, temSessao } from "@/lib/auth";
 import { bd } from "@/lib/bd";
 import { calcularAno } from "@/lib/calculo";
-import { hojeNoFuso, lerPedidoDoAtalho, recadoDoAtalho } from "@/lib/atalho";
+import { camposDoEndereco, hojeNoFuso, lerPedidoDoAtalho, recadoDoAtalho } from "@/lib/atalho";
 import { partesDaData } from "@/lib/datas";
 
 /**
  * A porta de trás: um lançamento, sem abrir o app.
  *
- * É por aqui que entra o atalho do iPhone — aquele que você dispara com dois
- * toques na traseira do aparelho, ou pedindo à Siri. O corpo mínimo é
- * `{"valor": "38,50"}`; sem tipo é gasto do dia a dia, sem data é hoje.
+ * É por aqui que entra o atalho do iPhone — aquele que você dispara pedindo à
+ * Siri, ou com dois toques na traseira do aparelho. O pedido mínimo é
+ * `POST /api/lancar?valor=38,50`; sem tipo é gasto do dia a dia, sem data é
+ * hoje. O mesmo vale em corpo JSON, `{"valor": "38,50"}`, para quem já montou o
+ * atalho assim.
  *
  * A porta não tem cookie: quem bate manda o código de acesso no cabeçalho
  * `x-codigo`. Vai no cabeçalho, e não no endereço, de propósito — endereço fica
  * gravado em registro de servidor e em histórico de navegador, e o código é a
- * chave do seu dinheiro.
+ * chave do seu dinheiro. Por isso o valor pode vir no endereço e o código não:
+ * são segredos de tamanhos diferentes.
  *
  * A resposta traz o saldo do dia já calculado, para a notificação do atalho
  * dizer o que aconteceu sem você precisar conferir em lugar nenhum.
@@ -30,11 +33,17 @@ const naoAutorizado = () =>
 export async function POST(pedido: Request) {
   const doCabecalho = pedido.headers.get("x-codigo");
 
-  let corpo: Record<string, unknown>;
-  try {
-    corpo = (await pedido.json()) as Record<string, unknown>;
-  } catch {
-    return NextResponse.json({ erro: "O corpo do pedido não é JSON." }, { status: 400 });
+  // O valor pode vir no endereço ("?valor=38,50") ou no corpo JSON. O endereço é
+  // o caminho curto, que deixa o atalho com quatro ajustes em vez de sete; o
+  // corpo continua valendo para quem já montou assim. Corpo ganha do endereço.
+  let corpo: Record<string, unknown> = camposDoEndereco(pedido.url);
+  const texto = await pedido.text();
+  if (texto.trim()) {
+    try {
+      corpo = { ...corpo, ...(JSON.parse(texto) as Record<string, unknown>) };
+    } catch {
+      return NextResponse.json({ erro: "O corpo do pedido não é JSON." }, { status: 400 });
+    }
   }
 
   // O código pode vir no cabeçalho ou no corpo: o app Atalhos preenche os dois
@@ -109,7 +118,9 @@ export async function POST(pedido: Request) {
 export function GET() {
   return NextResponse.json({
     comoUsar:
-      'POST com o cabeçalho "x-codigo" e o corpo {"valor":"38,50"}. ' +
-      'Opcionais: "tipo" (entrada, saída ou diário), "data" (AAAA-MM-DD) e "nota".',
+      'POST em /api/lancar?valor=38,50 com o cabeçalho "x-codigo". ' +
+      'O mesmo vale em corpo JSON: {"valor":"38,50"}. ' +
+      'Opcionais: "tipo" (entrada, saída ou diário), "data" (AAAA-MM-DD) e "nota". ' +
+      "O código só é lido do cabeçalho ou do corpo, nunca do endereço.",
   });
 }
