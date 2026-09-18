@@ -36,14 +36,19 @@ falar.
 No iPhone, abra o app **Atalhos** (vem instalado; se você apagou, está de graça
 na App Store).
 
-**1.** Na aba **Atalhos**, toque no **+** no canto superior direito.
+**1.** Na aba **Atalhos**, toque no **+** no canto superior direito. As ações se
+acrescentam pela barra **Buscar**, no rodapé da tela.
 
-**2.** Toque em **Adicionar ação** e busque por **Pedir entrada**. Toque nela.
-   - Em *Pergunta*, escreva `Quanto?`
-   - Em *Tipo de entrada*, escolha **Número**.
+**2.** Busque por **Pedir entrada** e toque nela. O cartão nasce escrito
+*"Pedir **Texto** com **Texto**"* — são duas palavras iguais que fazem coisas
+diferentes, e é aí que confunde.
+   - Toque no **segundo** "Texto", o mais clarinho, depois da palavra *com*: é a
+     pergunta. Escreva `Quanto?`
+   - Toque no **primeiro**, o azul forte: é o tipo. Escolha **Número**.
+   - No fim tem de estar: *"Pedir **Número** com **Quanto?**"*.
 
-**3.** Toque em **Adicionar ação** de novo e busque por **Obter conteúdo da
-URL**. Toque nela. Agora preencha com cuidado:
+**3.** Busque por **Obter conteúdo da URL** e toque nela. Agora preencha com
+cuidado:
 
    - No campo do endereço, **cole o endereço** que você copiou do app.
    - Ainda no mesmo campo, toque logo depois do sinal de igual e escolha a
@@ -62,20 +67,23 @@ URL**. Toque nela. Agora preencha com cuidado:
    > fica gravado em registro de servidor e em histórico, e o código abre o
    > dinheiro inteiro. O valor não é segredo do mesmo tamanho.
 
-**4.** (Opcional, mas vale.) Toque em **Adicionar ação** e busque por **Obter
-valor do dicionário**.
-   - Em *Obter*, deixe **Valor**.
-   - Em *para*, escreva `recado`.
-   - Em *em*, deve estar **Conteúdo da URL**.
+**4.** Busque por **Obter valor do dicionário**. O cartão vem escrito
+*"Obter **Valor** para **chave** em **Dicionário**"*.
+   - Toque em *chave* e escreva `recado`.
+   - O resto já vem certo: em *Dicionário* ele preenche **Conteúdo da URL**
+     sozinho.
 
-**5.** Toque em **Adicionar ação** e busque por **Mostrar notificação**. No
-corpo da notificação, escolha a variável **Valor do dicionário**.
+**5.** Busque por **Mostrar notificação**. O cartão vem com um texto de exemplo
+— **apague esse texto** e escolha, na barrinha de sugestões, a variável **Valor
+do Dicionário**.
 
    É isso que faz o celular avisar *"R$ 38,50 no diário. Saldo de hoje:
    R$ 1.497,43."* sem você abrir nada.
 
-**6.** Toque no nome do atalho, lá em cima, e chame de **Lançar gasto**. Escolha
-um ícone e uma cor se quiser.
+**6.** O iPhone batiza o atalho sozinho, com o nome da primeira ação — costuma
+ficar *"Pedir Entrada"*. Toque nesse nome lá em cima, na setinha **⌄** ao lado,
+escolha **Renomear** e chame de **Lançar gasto**. Escolha um ícone e uma cor se
+quiser.
 
    > Este é o passo mais importante para quem vai usar a voz: **o nome é a frase
    > que a Siri escuta**. Duas palavras, e nenhuma delas um comando que o iPhone
@@ -85,11 +93,18 @@ um ícone e uma cor se quiser.
 
 **7.** Toque em **OK** / **Concluído**.
 
-### Na primeira vez que rodar
+### Teste antes de chamar a Siri
 
-O iPhone vai perguntar se o atalho pode enviar dados para aquele endereço. Toque
-em **Permitir** — e, se oferecer, em **Sempre permitir**, para ele não perguntar
-de novo toda vez.
+É mais fácil de consertar se algo estiver torto. Toque no **▶** no rodapé do
+editor e digite `1` quando ele perguntar.
+
+Na primeira vez o iPhone pergunta se o atalho pode enviar dados para aquele
+endereço. Toque em **Permitir** — e, se oferecer, em **Sempre permitir**, para
+ele não perguntar de novo toda vez.
+
+Tem de aparecer a notificação *"R$ 1,00 no diário. Saldo de hoje: ..."*. Esse
+real de teste some em dois toques: no app, aba **Hoje**, toque no lançamento e
+apague.
 
 ---
 

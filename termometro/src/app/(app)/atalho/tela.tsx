@@ -60,17 +60,33 @@ export function TelaDoAtalho() {
 
         <ol className="space-y-2.5">
           <Passo n={1}>
-            Na aba <b>Atalhos</b>, toque no <b>+</b> no canto de cima, à direita.
+            Na aba <b>Atalhos</b>, toque no <b>+</b> no canto de cima, à direita. As ações se
+            acrescentam pela barra <b>Buscar</b>, no rodapé da tela.
           </Passo>
 
           <Passo n={2}>
-            Toque em <b>Adicionar ação</b> e busque por <b>Pedir entrada</b>. Em <i>Pergunta</i>,
-            escreva <Palavra>Quanto?</Palavra>. Em <i>Tipo de entrada</i>, escolha <b>Número</b>.
+            Busque por <b>Pedir entrada</b>. O cartão nasce escrito{" "}
+            <i>
+              “Pedir <b>Texto</b> com <b>Texto</b>”
+            </i>{" "}
+            — são duas palavras iguais que fazem coisas diferentes, e é aí que confunde.
+            <span className="mt-1.5 block">
+              Toque no <b>segundo</b> “Texto”, o mais clarinho, depois da palavra <i>com</i>: é a
+              pergunta. Escreva <Palavra>Quanto?</Palavra>. Depois toque no <b>primeiro</b>, o azul
+              forte: é o tipo. Escolha <b>Número</b>.
+            </span>
+            <span className="mt-1.5 block">
+              No fim tem de estar:{" "}
+              <i>
+                “Pedir <b>Número</b> com <b>Quanto?</b>”
+              </i>
+              .
+            </span>
           </Passo>
 
           <Passo n={3}>
-            <b>Adicionar ação</b> de novo, agora buscando <b>Obter conteúdo da URL</b>. Esta é a
-            ação que faz o trabalho — os quatro ajustes dela estão logo abaixo.
+            Busque por <b>Obter conteúdo da URL</b>. Esta é a ação que faz o trabalho — os quatro
+            ajustes dela estão logo abaixo.
           </Passo>
         </ol>
 
@@ -123,20 +139,26 @@ export function TelaDoAtalho() {
 
         <ol className="mt-3 space-y-2.5">
           <Passo n={4}>
-            <b>Adicionar ação</b> → <b>Obter valor do dicionário</b>. Em <i>Obter</i>, deixe{" "}
-            <b>Valor</b>; em <i>para</i>, escreva <Palavra>recado</Palavra>; em <i>em</i>, deve
-            estar <b>Conteúdo da URL</b>.
+            Busque por <b>Obter valor do dicionário</b>. O cartão vem escrito{" "}
+            <i>
+              “Obter <b>Valor</b> para <b>chave</b> em <b>Dicionário</b>”
+            </i>
+            . Toque em <i>chave</i> e escreva <Palavra>recado</Palavra>; o resto já vem certo, e em{" "}
+            <i>Dicionário</i> ele preenche <b>Conteúdo da URL</b> sozinho.
           </Passo>
 
           <Passo n={5}>
-            <b>Adicionar ação</b> → <b>Mostrar notificação</b>, e no corpo dela escolha a variável{" "}
-            <b>Valor do dicionário</b>. É isto que faz o celular avisar{" "}
+            Busque por <b>Mostrar notificação</b>. O cartão vem com um texto de exemplo —{" "}
+            <b>apague esse texto</b> e escolha, na barrinha de sugestões, a variável{" "}
+            <b>Valor do Dicionário</b>. É isto que faz o celular avisar{" "}
             <i>“R$ 38,50 no diário. Saldo de hoje: R$ 1.497,43.”</i> sem você abrir nada.
           </Passo>
 
           <Passo n={6}>
-            Toque no nome do atalho, lá em cima, e chame de <b>Lançar gasto</b>. Este é o passo mais
-            importante para quem vai usar a voz: <b>o nome é a frase que a Siri escuta</b>.
+            O iPhone batiza o atalho sozinho, com o nome da primeira ação — costuma ficar{" "}
+            <i>“Pedir Entrada”</i>. Toque nesse nome lá em cima, na setinha <b>⌄</b> ao lado,
+            escolha <b>Renomear</b> e chame de <b>Lançar gasto</b>. Este é o passo mais importante
+            para quem vai usar a voz: <b>o nome é a frase que a Siri escuta</b>.
             <br />
             <span className="mt-1.5 block">
               Duas palavras, e nenhuma delas um comando que o iPhone já conhece — é essa a regra que
@@ -147,8 +169,14 @@ export function TelaDoAtalho() {
           </Passo>
 
           <Passo n={7}>
-            Na primeira vez que rodar, o iPhone pergunta se pode enviar dados para esse endereço.
-            Toque em <b>Permitir</b> e, se oferecer, em <b>Sempre permitir</b>.
+            <b>Teste antes de chamar a Siri</b>, que é mais fácil de consertar se algo estiver
+            torto: toque no <b>▶</b> no rodapé do editor e digite <Palavra>1</Palavra> quando ele
+            perguntar. Na primeira vez o iPhone pergunta se pode enviar dados para esse endereço —
+            toque em <b>Permitir</b> e, se oferecer, em <b>Sempre permitir</b>.
+            <span className="mt-1.5 block">
+              Tem de aparecer a notificação <i>“R$ 1,00 no diário. Saldo de hoje: …”</i>. Esse real
+              de teste some em dois toques: no app, aba <b>Hoje</b>, toque no lançamento e apague.
+            </span>
           </Passo>
         </ol>
       </section>
