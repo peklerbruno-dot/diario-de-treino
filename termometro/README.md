@@ -144,7 +144,10 @@ resposta traz o saldo do dia já calculado, para a notificação do atalho dizer
 que aconteceu sem abrir nada.
 
 É a porta que o app Atalhos do iPhone usa, e o disparo principal é a voz:
-*"E aí Siri, Gastei"*, ela pergunta quanto, você fala, ela responde com o saldo. O passo a passo mora **dentro do app**, em Ajustes → Atalho
+*"E aí Siri, Lançar gasto"*, ela pergunta quanto, você fala, ela responde com o saldo.
+O nome do atalho é a frase, e por isso ele tem duas palavras: nome de uma
+palavra só, ainda mais sendo verbo comum, a Siri ouve como o começo de uma frase
+e sai procurando na internet. O passo a passo mora **dentro do app**, em Ajustes → Atalho
 do iPhone, com o endereço já preenchido e botão de copiar em cada palavra que
 precisa ser digitada sem erro — um guia num arquivo do repositório é o mesmo que
 nenhum guia para quem nunca vai abrir o GitHub. A mesma coisa em texto está em

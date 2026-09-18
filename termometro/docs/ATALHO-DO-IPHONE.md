@@ -4,7 +4,7 @@ O problema não é o app estar longe. É que quinze segundos bastam para a gente
 deixar para depois — e depois não anota. Com o atalho, lançar o almoço é um
 toque e o valor.
 
-O jeito principal é **falando com a Siri**: *"E aí Siri, Gastei"*, ela pergunta
+O jeito principal é **falando com a Siri**: *"E aí Siri, Lançar gasto"*, ela pergunta
 quanto, você fala o valor, e ela responde com o saldo. Também dá por dois toques
 na traseira do iPhone e por um ícone na tela de início, para quando não dá para
 falar.
@@ -70,11 +70,14 @@ corpo da notificação, escolha a variável **Valor do dicionário**.
    É isso que faz o celular avisar *"R$ 38,50 no diário. Saldo de hoje:
    R$ 1.497,43."* sem você abrir nada.
 
-**6.** Toque no nome do atalho, lá em cima, e chame de **Gastei**. Escolha um
-ícone e uma cor se quiser.
+**6.** Toque no nome do atalho, lá em cima, e chame de **Lançar gasto**. Escolha
+um ícone e uma cor se quiser.
 
    > Este é o passo mais importante para quem vai usar a voz: **o nome é a frase
-   > que a Siri escuta**. Chamou de "Gastei", você diz *"E aí Siri, Gastei"*.
+   > que a Siri escuta**. Duas palavras, e nenhuma delas um comando que o iPhone
+   > já conhece — é essa a regra que faz a Siri achar. Nome de uma palavra só,
+   > ainda mais sendo verbo comum ("Gastei", "Paguei", "Anotar"), ela ouve como o
+   > começo de uma frase e sai procurando na internet.
 
 **7.** Toque em **OK** / **Concluído**.
 
@@ -92,7 +95,7 @@ Não precisa configurar nada a mais: todo atalho já vira comando de voz sozinho
 com o próprio nome. Por isso o passo 6 — o nome — é o mais importante de todos
 para quem vai usar a voz.
 
-> — **você:** E aí Siri, Gastei
+> — **você:** E aí Siri, Lançar gasto
 > — **Siri:** Quanto?
 > — **você:** trinta e oito e cinquenta
 > — **Siri:** R$ 38,50 no diário. Saldo de hoje: R$ 1.497,43.
@@ -102,7 +105,7 @@ pergunta e escuta a resposta. A última frase é a confirmação — ela diz o v
 que entrou e o saldo que sobrou, que é como se percebe na hora se ela ouviu
 errado.
 
-Nos iPhones mais novos basta *"Siri, Gastei"*, sem o "E aí".
+Nos iPhones mais novos basta *"Siri, Lançar gasto"*, sem o "E aí".
 
 ### Para ela entender o valor
 
@@ -114,19 +117,42 @@ Nos iPhones mais novos basta *"Siri, Gastei"*, sem o "E aí".
   errado no saldo é bem pior do que uma pergunta repetida.
 - **Se ela escrever o número errado**, confira o *Tipo de entrada* do passo 2:
   precisa estar em **Número**. Em **Texto** a Siri manda a frase inteira.
-- **Se ela não achar o atalho**, dê um nome de duas palavras, como
-  **Gastei agora**. Nome curto demais ela às vezes confunde com comando do
-  sistema.
 - **Para ela dizer o saldo em voz alta**, acrescente no fim do atalho a ação
   **Falar texto**, com a variável **Valor do dicionário** — a mesma do passo 5.
   Aí dá para lançar de mãos ocupadas. Só lembre que ela vai dizer o seu saldo em
   voz alta, onde você estiver.
 
+## Se a Siri não achar o atalho
+
+Ela procurou na internet, disse que não conhece, ou fez outra coisa. Antes de
+mexer em qualquer ajuste, faça o teste que parte o problema no meio:
+
+> **Segure o botão lateral** do iPhone até a Siri aparecer, e diga só o nome do
+> atalho — sem "E aí Siri" na frente.
+
+**Funcionou assim.** O atalho está certo; o que não chega é o chamado por voz.
+Ajustes do iPhone → **Siri** → ligue **"Escutar 'E aí Siri'"** (ou "Ouvir 'Siri'
+ou 'E aí Siri'", conforme a versão). Enquanto isso, o botão lateral já resolve.
+
+**Também não funcionou.** O problema é o **nome**. Abra o atalho, toque no nome
+lá em cima e troque para **Lançar gasto** — duas palavras, nenhuma delas um
+comando que o iPhone já conhece. O nome novo vira a frase nova na hora, sem
+configurar mais nada.
+
+**Ela nem abriu.** Ajustes do iPhone → **Siri** → veja se o **Idioma** está em
+**Português (Brasil)**. Com a Siri em inglês, nome em português ela não
+reconhece.
+
+Ainda assim nada? Confira se o atalho está mesmo salvo: ele tem de aparecer na
+lista da aba **Atalhos**, não só na tela de edição. E, se você deu **Duplicar**,
+o iPhone costuma acrescentar um "2" no fim do nome — aí a frase mudou sem você
+notar.
+
 ## Sem falar, quando não dá
 
 **Dois toques na traseira do iPhone.** Ajustes → **Acessibilidade** → **Toque** →
 role até o fim → **Toque na parte traseira** → **Toque duplo** → escolha
-**Gastei**. Para reunião, cinema, fila.
+**Lançar gasto**. Para reunião, cinema, fila.
 
 **Ícone na tela de início.** No atalho, toque nos três pontinhos → botão de
 compartilhar → **Adicionar à Tela de Início**.
@@ -144,9 +170,9 @@ Por voz, cada um vira uma frase diferente.
 
 | Frase | O que acrescentar |
 |---|---|
-| *"E aí Siri, Gastei"* | nada — sem tipo, é gasto do dia a dia |
-| *"E aí Siri, Recebi"* | mais um campo no JSON: chave `tipo`, texto `entrada` |
-| *"E aí Siri, Paguei conta"* | mais um campo no JSON: chave `tipo`, texto `saída` |
+| *"E aí Siri, Lançar gasto"* | nada — sem tipo, é gasto do dia a dia |
+| *"E aí Siri, Lançar entrada"* | mais um campo no JSON: chave `tipo`, texto `entrada` |
+| *"E aí Siri, Lançar conta"* | mais um campo no JSON: chave `tipo`, texto `saída` |
 
 Outros campos que o atalho pode mandar, todos opcionais:
 
