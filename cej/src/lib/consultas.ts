@@ -130,6 +130,15 @@ export async function eventosDaAgenda(hojeStr = hoje()): Promise<EventoDaAgenda[
     bd.reuniao.findMany({ where: { ...VIVA, dia: { gte: de, lte: ate } } }),
   ]);
 
+  /**
+   * O `@cej.usp.br` dos identificadores é um nome, não um endereço: ninguém
+   * manda e-mail para ele, e ele não precisa existir.
+   *
+   * **Não troque.** O Google reconhece um evento pelo identificador; mudá-lo faz
+   * cada atividade virar um evento novo na agenda de todo mundo que assinou, ao
+   * lado do antigo, que fica lá para sempre. Se um dia o Centro registrar um
+   * domínio próprio para os boletins, este texto continua exatamente como está.
+   */
   const deAtividades: EventoDaAgenda[] = atividades.map((a) => ({
     uid: `atividade-${a.id}@cej.usp.br`,
     titulo: a.titulo,

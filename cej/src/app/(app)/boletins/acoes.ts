@@ -138,6 +138,66 @@ export async function enviarTeste(dados: FormData): Promise<void> {
   );
 }
 
+export type RespostaDoTeste = {
+  erro?: string;
+  pronto?: string;
+  /** O endereço usado, para o campo não voltar ao valor de antes — o React 19
+   * limpa o formulário depois de cada envio. */
+  para?: string;
+} | null;
+
+/**
+ * Um teste avulso, para um endereço qualquer.
+ *
+ * Existe separado do teste de dentro do boletim porque serve a outro momento: o
+ * de conferir se o envio **está de pé**, logo depois de cadastrar as variáveis
+ * ou de mexer no domínio — quando ainda não há boletim nenhum escrito, e criar
+ * um rascunho só para descobrir isso seria um desvio sem sentido.
+ *
+ * Manda para outro endereço de propósito: é a única forma de conferir se a
+ * mensagem chega fora da USP, que é onde a maior parte da base está.
+ */
+export async function enviarTesteDeConfiguracao(
+  _anterior: RespostaDoTeste,
+  dados: FormData,
+): Promise<RespostaDoTeste> {
+  const pessoa = await exigirPessoa();
+
+  const impedimento = porQueNaoConfigurado();
+  if (impedimento) return { erro: impedimento };
+
+  const para = texto(dados, "para").toLocaleLowerCase("pt-BR") || pessoa.email;
+  if (!para.includes("@")) {
+    return { erro: "Escreva um e-mail válido para receber o teste.", para };
+  }
+
+  const endereco = await enderecoDoSistema();
+  const { html, texto: corpoEmTexto, linkDeDescadastro } = montarBoletim({
+    assunto: "Teste de envio do sistema do Centro",
+    corpo:
+      "Se esta mensagem chegou, o envio de boletins está funcionando.\n\n" +
+      "Ela foi disparada pela tela de configuração do sistema e não foi para mais ninguém.\n\n" +
+      "Vale conferir três coisas: se ela caiu na caixa de entrada e não no spam; " +
+      "se o remetente aparece com o nome do Centro; e se responder a esta mensagem " +
+      "leva ao e-mail certo.",
+    atividades: [],
+    destinatario: { nome: pessoa.nome, email: para, chave: "teste-de-configuracao" },
+    endereco,
+  });
+
+  const resultado = await enviarUma({
+    para,
+    assunto: "[teste] O envio do Centro está funcionando",
+    html,
+    texto: corpoEmTexto,
+    linkDeDescadastro,
+  });
+
+  return resultado.ok
+    ? { pronto: `Mandei para ${para}. Confira a caixa de entrada — e o spam.`, para }
+    : { erro: resultado.erro, para };
+}
+
 /**
  * Fechar a lista e começar o envio.
  *

@@ -190,3 +190,44 @@ describe("mandar um lote", () => {
     if (!resultado.ok) expect(resultado.erro).toContain(String(MAXIMO_POR_LOTE));
   });
 });
+
+describe("o resumo que a tela mostra", () => {
+  it("diz que está pronto, e de qual domínio os e-mails saem", async () => {
+    const { resumoDaConfiguracao } = await carregar();
+    const resumo = resumoDaConfiguracao();
+
+    expect(resumo.pronto).toBe(true);
+    expect(resumo.dominio).toBe("cej.org");
+    expect(resumo.responderPara).toBe("cej@usp.br");
+    expect(resumo.impedimento).toBeNull();
+  });
+
+  it("acha o domínio também quando o remetente vem sem nome na frente", async () => {
+    vi.stubEnv("EMAIL_REMETENTE", "boletim@cej-usp.org");
+    const { resumoDaConfiguracao } = await carregar();
+    expect(resumoDaConfiguracao().dominio).toBe("cej-usp.org");
+  });
+
+  it("nunca devolve a chave, nem um pedaço dela", async () => {
+    // Um pedaço numa captura de tela mandada para alguém pedir ajuda já é
+    // mais do que deveria vazar.
+    const { resumoDaConfiguracao } = await carregar();
+    const tudo = JSON.stringify(resumoDaConfiguracao());
+
+    expect(tudo).not.toContain("re_uma_chave_de_mentira_comprida");
+    expect(tudo).not.toContain("re_uma");
+    expect(resumoDaConfiguracao().chaveCadastrada).toBe(true);
+  });
+
+  it("sem nada configurado, diz o que falta em vez de mentir que está pronto", async () => {
+    vi.stubEnv("RESEND_API_KEY", "");
+    vi.stubEnv("EMAIL_REMETENTE", "");
+    const { resumoDaConfiguracao } = await carregar();
+    const resumo = resumoDaConfiguracao();
+
+    expect(resumo.pronto).toBe(false);
+    expect(resumo.chaveCadastrada).toBe(false);
+    expect(resumo.dominio).toBeNull();
+    expect(resumo.impedimento).toContain("RESEND_API_KEY");
+  });
+});

@@ -112,7 +112,17 @@ esquecidas: só recebe quem tem **consentimento registrado**; todo e-mail sai co
 link de descadastro e com o cabeçalho `List-Unsubscribe`; e **quem sai, fica
 fora para sempre** — importar a planilha antiga não traz ninguém de volta.
 
-O passo a passo para ligar está em [`docs/BOLETIM.md`](docs/BOLETIM.md).
+O passo a passo para ligar está em [`docs/BOLETIM.md`](docs/BOLETIM.md), e a tela
+**Boletins → Como está o envio** mostra, dentro do sistema, em que pé cada passo
+dele está — com um teste para conferir no fim.
+
+O caminho escolhido é um domínio próprio do Centro, e não `@usp.br`: mandar em
+massa como `@usp.br` exige que a TI da universidade cadastre três registros de
+DNS, e isso não depende do Centro. Com domínio próprio, o `responder-para` aponta
+para a caixa `@usp.br` de sempre, e quem recebe não nota diferença. Se um dia a
+USP autorizar, passar a mandar de lá é trocar uma variável — os links de
+descadastro que já saíram continuam valendo, porque apontam para o endereço do
+sistema e não para o do e-mail.
 
 ## Duas decisões que atravessam o código inteiro
 

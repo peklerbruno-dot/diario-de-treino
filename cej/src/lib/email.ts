@@ -127,5 +127,36 @@ export async function enviarLote(mensagens: Mensagem[]): Promise<ResultadoDoLote
   }
 }
 
+/**
+ * O estado da configuração, para a tela mostrar.
+ *
+ * A chave **nunca** sai daqui, nem pela metade: o que a tela precisa saber é se
+ * ela existe, não qual é. Um pedaço dela numa captura de tela mandada para
+ * alguém pedir ajuda já é mais do que deveria vazar.
+ */
+export function resumoDaConfiguracao(): {
+  pronto: boolean;
+  chaveCadastrada: boolean;
+  remetente: string | null;
+  responderPara: string | null;
+  /** O domínio de onde os e-mails saem — o que precisa estar verificado. */
+  dominio: string | null;
+  impedimento: string | null;
+} {
+  const de = remetente();
+  const dentroDosSinais = /<([^>]+)>/.exec(de);
+  const endereco = (dentroDosSinais?.[1] ?? de).trim();
+  const dominio = endereco.includes("@") ? endereco.split("@")[1] : null;
+
+  return {
+    pronto: servicoConfigurado(),
+    chaveCadastrada: chave().length > 10,
+    remetente: de || null,
+    responderPara: responderPara() || null,
+    dominio,
+    impedimento: porQueNaoConfigurado(),
+  };
+}
+
 /** Uma mensagem só — o envio de teste, antes de disparar para a base inteira. */
 export const enviarUma = (mensagem: Mensagem) => enviarLote([mensagem]);

@@ -3,7 +3,7 @@ import { criarBoletim } from "./acoes";
 import { boletins as buscarBoletins } from "@/lib/consultas-contatos";
 import { porBarras } from "@/lib/datas";
 import { servicoConfigurado } from "@/lib/email";
-import { Aviso, Botao, Cartao, Selo, Topo, Vazio } from "@/componentes/pecas";
+import { Aviso, Botao, BotaoLink, Cartao, Selo, Topo, Vazio } from "@/componentes/pecas";
 
 export const dynamic = "force-dynamic";
 
@@ -17,9 +17,12 @@ export default async function Boletins() {
         titulo="Boletins"
         chamada="O que o Centro manda para a sua base: o que vem pela frente, escrito à mão, com as atividades montadas pelo sistema."
         acao={
-          <form action={criarBoletim}>
-            <Botao tipo="primario">Novo boletim</Botao>
-          </form>
+          <>
+            <BotaoLink href="/boletins/configuracao">Como está o envio</BotaoLink>
+            <form action={criarBoletim}>
+              <Botao tipo="primario">Novo boletim</Botao>
+            </form>
+          </>
         }
       />
 
@@ -28,10 +31,13 @@ export default async function Boletins() {
           <Aviso tom="atencao">
             <b>O envio de e-mail ainda não está ligado.</b> Você pode escrever e montar boletins
             normalmente — eles ficam guardados como rascunho —, mas o disparo só funciona depois de
-            configurar o serviço. Enquanto isso, a base de contatos continua inteira e dá para{" "}
+            configurar o serviço.{" "}
+            <Link href="/boletins/configuracao" className="text-realce underline">
+              Ver o que falta
+            </Link>
+            . Enquanto isso, dá para{" "}
             <Link href="/contatos" className="text-realce underline">baixar a lista segmentada</Link>{" "}
-            para usar onde vocês já mandam e-mail hoje. O passo a passo está em{" "}
-            <code>docs/BOLETIM.md</code>.
+            e mandar por onde vocês já mandam e-mail hoje.
           </Aviso>
         </div>
       )}

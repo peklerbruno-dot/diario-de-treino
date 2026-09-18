@@ -1,16 +1,19 @@
 # Como ligar o envio de boletins
 
-Guia para quem não programa. O sistema inteiro — a base de contatos, a
-segmentação, as inscrições, o descadastro — **funciona sem isto**. O que esta
-página liga é uma coisa só: o disparo de e-mail a partir do sistema.
+Guia para quem não programa. Uma tarde, uma vez na vida, e depois nunca mais.
 
-Enquanto não estiver ligado, você continua podendo escrever e montar boletins
-(ficam guardados como rascunho) e baixar a lista segmentada em planilha, na tela
-Contatos, para mandar por onde vocês já mandam hoje.
+O sistema inteiro — a base de contatos, a segmentação, as inscrições, a presença,
+os certificados — **funciona sem isto**. O que esta página liga é uma coisa só: o
+disparo de e-mail. Enquanto não estiver ligado, você continua podendo escrever
+boletins (ficam guardados como rascunho) e baixar a lista segmentada em planilha,
+na tela Contatos, para mandar por onde vocês já mandam hoje.
+
+Dentro do sistema, a tela **Boletins → Como está o envio** mostra em que pé cada
+passo daqui está, e tem um botão para conferir quando terminar.
 
 ---
 
-## A pergunta que decide tudo: de qual endereço os e-mails saem?
+## Por que não dá para simplesmente mandar de @usp.br
 
 Esta é a parte que não tem atalho, e é melhor entender antes de começar.
 
@@ -18,70 +21,123 @@ O Gmail e o Outlook só entregam na caixa de entrada um e-mail em massa quando o
 **dono do domínio** autorizou, por escrito, quem pode enviar em nome dele. Essa
 autorização são três registros de DNS. Para mandar como `@usp.br`, quem cadastra
 esses registros é a TI da USP — não há como contornar, e tentar mandar sem eles
-faz o boletim cair em spam ou ser recusado na porta.
+faz o boletim cair no spam ou ser recusado na porta.
 
-São dois caminhos, e os dois funcionam:
-
-### Caminho A — pedir à TI da USP
-
-O certo, se vocês conseguirem. Peça à equipe de TI da unidade o cadastro dos
-registros SPF e DKIM que o serviço de envio vai mostrar (é copiar e colar três
-linhas). Costuma ser um chamado simples; a demora é de agenda, não de trabalho.
-
-### Caminho B — um domínio do próprio Centro
-
-Registre um domínio barato — `cej-usp.org`, `estudosjudaicos.org`, algo assim —
-por volta de R$ 50 por ano, no Registro.br ou em qualquer registrador. Vocês
-mesmos cadastram os registros, em uma tarde, sem depender de ninguém.
-
-Os boletins saem de `boletim@cej-usp.org` e o **responder-para** aponta para o
-e-mail `@usp.br` do Centro: quem responder, responde para a caixa de sempre.
-Para quem recebe, a diferença é uma linha no cabeçalho que quase ninguém olha.
-
-Se estiverem em dúvida, comece pelo B: ele não depende de terceiros e não
-atrapalha o A depois.
+Por isso o caminho aqui é o domínio próprio do Centro. Ele não depende de
+ninguém, resolve-se numa tarde, e **não fecha a porta** para o caminho da USP
+depois: se um dia a TI autorizar, passar a mandar como `@usp.br` é trocar duas
+variáveis e publicar de novo. Nada mais muda — nem a base, nem os links de
+descadastro que já foram para a caixa das pessoas, nem o calendário de ninguém.
 
 ---
 
-## Passo 1 — Criar a conta no Resend
+## Passo 1 — Registrar o domínio do Centro
 
-1. Entre em https://resend.com e crie uma conta (o plano gratuito manda 3.000
-   e-mails por mês e 100 por dia — bem acima do que um centro de estudos usa).
-2. Em **Domains** → **Add Domain**, escreva o domínio de onde os boletins vão
-   sair (`cej-usp.org`, ou `usp.br` se estiverem no caminho A).
-3. A tela mostra três registros de DNS. Cadastre-os onde o domínio está
-   registrado — ou mande esta tela para a TI, se for o caminho A.
-4. Espere a verificação (costuma levar minutos; pode levar horas). Quando o
-   domínio ficar **Verified**, siga.
-5. Em **API Keys** → **Create API Key**, dê o nome `cej` e permissão de envio.
-   **Copie a chave agora** — ela aparece uma vez só.
+Escolha um nome curto e sóbrio. `cej-usp.org`, `estudosjudaicos.org`,
+`cejusp.org` — algo que caiba num cartaz e que ninguém confunda com um endereço
+oficial da universidade (evite qualquer coisa com "usp.br" dentro).
 
-## Passo 2 — Cadastrar três variáveis na Vercel
+Onde registrar, dois caminhos igualmente bons:
 
-No projeto do sistema, em **Settings** → **Environment Variables**:
+- **Registro.br** (https://registro.br) — o registrador brasileiro oficial. Um
+  `.org.br` custa por volta de R$ 40 por ano. Paga-se por boleto ou Pix, e é
+  preciso um CPF ou CNPJ.
+- **Cloudflare Registrar** (https://cloudflare.com) — para `.org` ou `.com`,
+  por volta de US$ 10 ao ano, sem margem embutida. O painel de DNS é o mais
+  simples de usar dos três passos seguintes.
 
-| Nome | Valor | Para quê |
-|---|---|---|
-| `RESEND_API_KEY` | a chave do passo 1 | a permissão de enviar |
-| `EMAIL_REMETENTE` | `Centro de Estudos Judaicos <boletim@cej-usp.org>` | de quem o e-mail vem |
-| `EMAIL_RESPONDER_PARA` | o e-mail `@usp.br` do Centro | para onde vão as respostas |
+Anote onde registrou: é lá que você vai voltar no passo 3.
 
-O endereço em `EMAIL_REMETENTE` precisa ser do domínio verificado no passo 1.
-Se não for, o Resend recusa o envio — e o sistema mostra a recusa dele na tela,
-escrita por extenso, em vez de um erro sem explicação.
+> **Guarde a renovação no calendário.** Um domínio que vence derruba o envio de
+> boletins sem aviso. Vale marcar uma atividade recorrente no próprio sistema, ou
+> deixar a renovação automática ligada no registrador.
 
-Publique de novo (**Deployments** → o mais recente → **Redeploy**).
+## Passo 2 — Criar a conta no Resend
 
-## Passo 3 — Conferir, em dois minutos
+1. Entre em https://resend.com e crie uma conta. O plano gratuito manda **3.000
+   e-mails por mês e 100 por dia** — bem acima do que um centro de estudos usa.
+   Uma base de 500 pessoas com boletim quinzenal gasta 1.000 por mês.
+2. No menu da esquerda, **Domains** → **Add Domain**. Escreva o domínio do passo
+   1 (`cej-usp.org`, sem `www` e sem `@`).
+3. A tela passa a mostrar **três linhas de registro de DNS**. Deixe essa aba
+   aberta: é o que você vai copiar no passo 3.
 
-1. No sistema, abra **Boletins** → **Novo boletim**.
-2. Escreva qualquer coisa e clique em **Guardar o rascunho**.
-3. Clique em **Mandar um teste para (o seu e-mail)**.
-4. Olhe a sua caixa — inclusive o spam. Se chegou, está pronto.
+## Passo 3 — Cadastrar os três registros no domínio
 
-Se não chegou, a tela mostra o motivo que o serviço deu. Os dois mais comuns:
-*domain is not verified* (o passo 1 não terminou) e *Invalid API key* (a chave
+Volte ao painel onde registrou o domínio, procure **DNS** (ou "Zona DNS", ou
+"Gerenciar DNS") e cadastre as três linhas que o Resend mostrou. Cada uma tem um
+**tipo** (TXT ou MX), um **nome** e um **valor** — copie exatamente, sem
+espaços a mais no fim.
+
+O que elas fazem, para você saber o que está cadastrando:
+
+| Tipo | Para quê |
+|---|---|
+| TXT (SPF) | diz quais servidores podem enviar em nome do domínio |
+| TXT (DKIM) | assina cada mensagem, provando que ela não foi forjada no caminho |
+| MX ou TXT (DMARC) | diz o que fazer com quem tentar se passar pelo domínio |
+
+Cadastradas as três, volte ao Resend e clique em **Verify**. A verificação
+costuma levar minutos; às vezes horas. Quando o domínio ficar **Verified**,
+siga.
+
+## Passo 4 — Criar a chave e cadastrar na Vercel
+
+No Resend: **API Keys** → **Create API Key**, nome `cej`, permissão de envio.
+**Copie a chave agora** — ela aparece uma vez só.
+
+Na Vercel, no projeto do sistema: **Settings** → **Environment Variables**, e
+cadastre as três:
+
+| Nome | Valor |
+|---|---|
+| `RESEND_API_KEY` | a chave que você acabou de copiar |
+| `EMAIL_REMETENTE` | `Centro de Estudos Judaicos <boletim@cej-usp.org>` |
+| `EMAIL_RESPONDER_PARA` | o e-mail `@usp.br` do Centro |
+
+O endereço dentro de `EMAIL_REMETENTE` **precisa ser do domínio verificado no
+passo 3**. Se não for, o Resend recusa — e o sistema mostra a recusa dele na
+tela, escrita por extenso.
+
+`EMAIL_RESPONDER_PARA` é o detalhe que faz o domínio novo passar despercebido:
+quem responder ao boletim responde para a caixa de sempre, não para um endereço
+que ninguém lê.
+
+Publique de novo: **Deployments** → o mais recente → **Redeploy**.
+
+## Passo 5 — Conferir, em dois minutos
+
+No sistema, abra **Boletins → Como está o envio**. Os cinco passos aparecem
+marcados. Mande o teste para você — e mande um segundo para um Gmail ou Outlook
+**pessoal**, fora da USP: é assim que se descobre se a mensagem chega onde a
+maior parte da base está.
+
+Confira três coisas na mensagem que chegar:
+
+1. caiu na **caixa de entrada**, e não no spam;
+2. o remetente aparece com o nome do Centro;
+3. responder leva ao e-mail `@usp.br` certo.
+
+Se não chegou, a tela mostra o motivo que o serviço deu. Os dois mais comuns são
+*domain is not verified* (o passo 3 não terminou) e *Invalid API key* (a chave
 foi copiada pela metade).
+
+---
+
+## Se um dia a USP autorizar
+
+Peça à TI da unidade o cadastro dos mesmos três registros, agora em `usp.br`.
+Verificado o domínio no Resend, troque uma variável na Vercel —
+`EMAIL_REMETENTE` para `Centro de Estudos Judaicos <boletim@usp.br>` — e publique
+de novo.
+
+É só isso. Os links de descadastro que já foram para a caixa das pessoas
+continuam valendo (eles apontam para o endereço do sistema, não para o do
+e-mail), a base não é tocada, e o calendário que cada um assinou no Google Agenda
+segue igual.
+
+Vale manter o domínio próprio renovado mesmo depois: dois caminhos abertos é
+melhor que um, e o custo é o de um café por mês.
 
 ---
 
@@ -105,13 +161,11 @@ do disparo não entra nele; quem se descadastrar no meio, não recebe.
 **Um boletim enviado não muda mais.** Ele já está na caixa das pessoas, e
 editá-lo aqui só criaria uma segunda versão da verdade.
 
----
-
 ## A parte legal, em três frases
 
 1. **Só recebe boletim quem tem consentimento registrado.** O sistema não
    permite outra coisa: contato sem essa marca fica fora de todos os envios,
-   mesmo que ele esteja na base e ativo.
+   mesmo estando na base e ativo.
 2. **Todo e-mail sai com link de descadastro**, e com o cabeçalho que faz o
    Gmail mostrar o botão "cancelar inscrição" no topo da mensagem. Quem usa esse
    botão não marca como spam — e é a marcação de spam que estraga a entrega de
@@ -124,9 +178,14 @@ consentimento por ser importada aqui. Disparar para uma lista assim é o jeito
 mais rápido de a conta de envio do Centro ser suspensa — e aí nem os boletins
 legítimos saem.
 
-## Quanto custa
+## Quanto custa, ao ano
 
-Nada, no plano gratuito do Resend, para o volume de um centro de estudos: 3.000
-e-mails por mês. Uma base de 500 pessoas com um boletim quinzenal usa 1.000. O
-domínio próprio, se vocês forem por esse caminho, custa por volta de R$ 50 ao
-ano.
+| | |
+|---|---|
+| Domínio `.org.br` no Registro.br | ~R$ 40 |
+| Resend, plano gratuito | R$ 0 |
+| Vercel e banco, planos gratuitos | R$ 0 |
+
+Um domínio `.org` na Cloudflare sai por volta de US$ 10. Em nenhum dos casos há
+cobrança surpresa: os planos gratuitos avisam quando o limite chega, em vez de
+faturar.
