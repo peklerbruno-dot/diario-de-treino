@@ -90,8 +90,49 @@ function Navegacao({ caminho }: { caminho: string }) {
  */
 const CHAVE_DO_CONVITE = "termometro.conviteDeInstalar";
 
+/** A etiqueta sem a qual o iPhone abre o ícone dentro do Safari. */
+const ETIQUETA_DO_MODO_APP = 'meta[name="apple-mobile-web-app-capable"]';
+
+/**
+ * Apaga tudo o que estiver guardado e busca a página de novo, do servidor.
+ *
+ * Existe porque o contrário — "apague o ícone e adicione de novo" — é um
+ * conselho que a pessoa cumpre no escuro: se a página que ela tem na tela ainda
+ * for a versão velha, o ícone novo nasce velho igual, e não há como saber antes
+ * de terminar. Este botão tira a dúvida em vez de repeti-la.
+ */
+async function buscarAVersaoNova() {
+  try {
+    if ("serviceWorker" in navigator) {
+      const registros = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registros.map((r) => r.unregister()));
+    }
+    if ("caches" in window) {
+      const nomes = await caches.keys();
+      await Promise.all(nomes.map((n) => caches.delete(n)));
+    }
+  } catch {
+    // Se não deu para limpar, a recarga abaixo ainda pode resolver.
+  }
+  window.location.reload();
+}
+
+/**
+ * O aviso de que isto aqui ainda é o navegador, e não o app.
+ *
+ * A diferença é invisível para quem não trabalha com isso: a mesma tela, os
+ * mesmos números, mas com uma barra de endereço em cima e a do Safari embaixo.
+ * Quem abre o endereço por um link cai aqui sem perceber.
+ *
+ * O cartão também confere, na própria página aberta, se a etiqueta que faz o
+ * modo app funcionar já chegou — porque o iPhone tira uma cópia dela no instante
+ * em que o ícone é criado, e um ícone feito a partir de uma página velha nasce
+ * quebrado sem dar nenhum sinal. Saber disso antes de instalar é a diferença
+ * entre consertar e tentar de novo.
+ */
 function ConviteParaInstalar() {
   const [mostrar, setMostrar] = useState(false);
+  const [paginaPronta, setPaginaPronta] = useState(true);
 
   useEffect(() => {
     const ua = navigator.userAgent;
@@ -111,6 +152,7 @@ function ConviteParaInstalar() {
       // que sumir para quem ainda precisa dele.
     }
 
+    setPaginaPronta(Boolean(document.querySelector(ETIQUETA_DO_MODO_APP)));
     setMostrar(ehIPhoneOuIPad && !comoApp && !dispensado);
   }, []);
 
@@ -140,16 +182,50 @@ function ConviteParaInstalar() {
           Dispensar
         </button>
       </div>
-      <p className="mt-1.5 text-[14px] leading-relaxed text-grafite">
-        É por isso que sobra aquela barra em cima e embaixo. Para virar app de verdade, com a tela
-        inteira: toque em <b className="text-tinta">Compartilhar</b> (o quadradinho com a seta para
-        cima, na barra de baixo) e escolha <b className="text-tinta">Adicionar à Tela de Início</b>.
-        Depois abra sempre por esse ícone.
-      </p>
-      <p className="mt-2 text-[12.5px] leading-snug text-fosco">
-        Já tem o ícone e ele ainda abre assim? Apague o ícone e adicione de novo: o iPhone guarda os
-        ajustes do app na hora em que ele é instalado, e um ícone antigo carrega os ajustes antigos.
-      </p>
+
+      {paginaPronta ? (
+        <>
+          <p className="mt-1.5 flex items-start gap-2 text-[13.5px] leading-snug text-entrada">
+            <span aria-hidden>✓</span>
+            <span>
+              <b>Esta página já está na versão nova.</b> Pode instalar agora — o ícone vai nascer
+              certo.
+            </span>
+          </p>
+          <p className="mt-2 text-[14px] leading-relaxed text-grafite">
+            Toque em <b className="text-tinta">Compartilhar</b> (o quadradinho com a seta para cima,
+            na barra de baixo) e escolha <b className="text-tinta">Adicionar à Tela de Início</b>.
+            Depois abra sempre por esse ícone.
+          </p>
+          <p className="mt-2 text-[12.5px] leading-snug text-fosco">
+            Já tem um ícone de antes? Apague ele primeiro. O iPhone copia os ajustes do app no
+            instante em que o ícone é criado, e um ícone antigo carrega os ajustes antigos para
+            sempre.
+          </p>
+        </>
+      ) : (
+        <>
+          <p className="mt-1.5 flex items-start gap-2 text-[13.5px] leading-snug text-atencao">
+            <span aria-hidden>▲</span>
+            <span>
+              <b>Esta página ainda é a versão antiga.</b> Se você instalar agora, o ícone nasce
+              quebrado de novo.
+            </span>
+          </p>
+          <p className="mt-2 text-[14px] leading-relaxed text-grafite">
+            Toque abaixo para buscar a versão nova. Quando este aviso ficar verde, aí sim:{" "}
+            <b className="text-tinta">Compartilhar</b> →{" "}
+            <b className="text-tinta">Adicionar à Tela de Início</b>.
+          </p>
+          <Botao tipo="primario" onClick={() => void buscarAVersaoNova()} className="mt-3 w-full">
+            Buscar a versão nova
+          </Botao>
+          <p className="mt-2 text-[12.5px] leading-snug text-fosco">
+            Isso só apaga o que estava guardado para abrir sem internet. Seus lançamentos não são
+            tocados — eles estão no servidor e voltam sozinhos.
+          </p>
+        </>
+      )}
     </div>
   );
 }

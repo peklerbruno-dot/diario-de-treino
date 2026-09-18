@@ -16,7 +16,12 @@
  * uma versão nova no meio.
  */
 
-const CACHE = "termometro-v1";
+// O nome carrega versão de propósito: `activate` apaga todo cache com nome
+// diferente deste, então trocar o número aqui é como se joga fora tudo o que
+// ficou guardado de antes. Foi preciso quando uma etiqueta do `<head>` mudou e
+// a página velha continuou sendo servida do cache — a correção existia no
+// servidor e não chegava no aparelho.
+const CACHE = "termometro-v2";
 
 self.addEventListener("install", (evento) => {
   evento.waitUntil(
