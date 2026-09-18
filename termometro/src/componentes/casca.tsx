@@ -6,13 +6,7 @@ import { useEffect, useState } from "react";
 import { hoje } from "@/lib/datas";
 import { loja, RECADO_DA_SITUACAO } from "@/lib/loja";
 import { FolhaDeLancamento } from "./folha-de-lancamento";
-import {
-  IconeAjustes,
-  IconeAno,
-  IconeFixos,
-  IconeHoje,
-  IconeMes,
-} from "./icones";
+import { IconeAjustes, IconeAno, IconeFixos, IconeHoje, IconeMes } from "./icones";
 import { Botao } from "./pecas";
 import { useEstado, useIniciarLoja } from "./usar-loja";
 
@@ -36,7 +30,14 @@ export function Casca({ children }: { children: React.ReactNode }) {
   return (
     <div className="mx-auto flex min-h-[100svh] w-full max-w-2xl flex-col">
       <div className={`flex-1 px-4 pt-4 ${temBarraDeLancar ? "pb-44" : "pb-28"}`}>
-        {montado ? children : <Esqueleto />}
+        {montado ? (
+          <>
+            <ConviteParaInstalar />
+            {children}
+          </>
+        ) : (
+          <Esqueleto />
+        )}
       </div>
       {temBarraDeLancar && <BarraDeLancar />}
       <Situacao acimaDaBarra={temBarraDeLancar} />
@@ -72,6 +73,84 @@ function Navegacao({ caminho }: { caminho: string }) {
         })}
       </ul>
     </nav>
+  );
+}
+
+/**
+ * O aviso de que isto aqui ainda é o navegador, e não o app.
+ *
+ * A diferença é invisível para quem não trabalha com isso: a mesma tela, os
+ * mesmos números, mas com uma barra de endereço em cima e a barra do Safari
+ * embaixo, comendo espaço e deixando cara de site. Quem abre o endereço por um
+ * link cai aqui sem perceber, e fica achando que o app é assim mesmo.
+ *
+ * Então o app diz, em vez de esperar que se adivinhe — e só enquanto for
+ * verdade: instalado, o aviso nunca mais aparece, porque `navigator.standalone`
+ * passa a ser verdadeiro. É um aviso que sabe a hora de sumir.
+ */
+const CHAVE_DO_CONVITE = "termometro.conviteDeInstalar";
+
+function ConviteParaInstalar() {
+  const [mostrar, setMostrar] = useState(false);
+
+  useEffect(() => {
+    const ua = navigator.userAgent;
+    // O iPad novo se apresenta como Mac; o toque é o que o entrega.
+    const ehIPhoneOuIPad =
+      /iphone|ipad|ipod/i.test(ua) || (/macintosh/i.test(ua) && navigator.maxTouchPoints > 1);
+
+    const comoApp =
+      ("standalone" in navigator && Boolean((navigator as { standalone?: boolean }).standalone)) ||
+      window.matchMedia("(display-mode: standalone)").matches;
+
+    let dispensado = false;
+    try {
+      dispensado = localStorage.getItem(CHAVE_DO_CONVITE) === "fechado";
+    } catch {
+      // Sem acesso ao armazenamento o aviso aparece de novo. Melhor repetir do
+      // que sumir para quem ainda precisa dele.
+    }
+
+    setMostrar(ehIPhoneOuIPad && !comoApp && !dispensado);
+  }, []);
+
+  if (!mostrar) return null;
+
+  function fechar() {
+    setMostrar(false);
+    try {
+      localStorage.setItem(CHAVE_DO_CONVITE, "fechado");
+    } catch {
+      // Sem onde guardar, ele volta na próxima abertura. Tudo bem.
+    }
+  }
+
+  return (
+    <div className="mb-4 rounded-cartao bg-cartao p-4 shadow-cartao">
+      <div className="flex items-start justify-between gap-3">
+        <p className="font-titulo text-[17px] font-semibold tracking-tight">
+          Isto ainda é o navegador
+        </p>
+        <button
+          type="button"
+          onClick={fechar}
+          aria-label="Dispensar este aviso"
+          className="-mr-1 -mt-1 shrink-0 rounded-full px-2 py-1 text-[13px] text-fosco"
+        >
+          Dispensar
+        </button>
+      </div>
+      <p className="mt-1.5 text-[14px] leading-relaxed text-grafite">
+        É por isso que sobra aquela barra em cima e embaixo. Para virar app de verdade, com a tela
+        inteira: toque em <b className="text-tinta">Compartilhar</b> (o quadradinho com a seta para
+        cima, na barra de baixo) e escolha <b className="text-tinta">Adicionar à Tela de Início</b>.
+        Depois abra sempre por esse ícone.
+      </p>
+      <p className="mt-2 text-[12.5px] leading-snug text-fosco">
+        Já tem o ícone e ele ainda abre assim? Apague o ícone e adicione de novo: o iPhone guarda os
+        ajustes do app na hora em que ele é instalado, e um ícone antigo carrega os ajustes antigos.
+      </p>
+    </div>
   );
 }
 

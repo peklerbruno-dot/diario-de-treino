@@ -217,7 +217,12 @@ export function TelaDeAjustes() {
         <Aviso>
           Para instalar no iPhone: abra este endereço no <strong>Safari</strong>, toque em
           Compartilhar e escolha <strong>Adicionar à Tela de Início</strong>. O app passa a abrir em
-          janela própria e continua funcionando sem internet.
+          janela própria, sem barra de endereço, e continua funcionando sem internet.
+          <span className="mt-2 block">
+            Se você já tem o ícone e ele ainda abre com a barra do navegador, apague o ícone e
+            adicione de novo. O iPhone guarda os ajustes do app na hora em que ele é instalado, e um
+            ícone antigo carrega os ajustes antigos — inclusive os que faziam essa barra aparecer.
+          </span>
         </Aviso>
       </div>
     </div>
