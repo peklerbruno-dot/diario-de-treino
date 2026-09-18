@@ -150,12 +150,25 @@ model Atividade {
   /// ligar a mão dupla depois não exija mexer no banco de ninguém.
   googleEventoId String?
 
+  /// A inscrição pública. Aberta, a atividade ganha um endereço que qualquer
+  /// pessoa abre sem senha, e quem se inscreve entra na base de contatos já com
+  /// o consentimento registrado.
+  inscricaoAberta Boolean @default(false)
+  vagas           Int?
+
+  /// O endereço público da inscrição. Nulo até alguém abrir a inscrição pela
+  /// primeira vez — assim nenhuma atividade nasce com um endereço adivinhável
+  /// que ninguém pediu.
+  chavePublica String? @unique
+
   criadoEm     DateTime  @default(now())
   atualizadoEm DateTime  @updatedAt
   apagadaEm    DateTime?
 
   convidados      Convidado[]
   encaminhamentos Encaminhamento[]
+  participacoes   Participacao[]
+  boletins        AtividadeNoBoletim[]
 
   @@index([dia])
   @@index([estado])
@@ -280,4 +293,182 @@ model Encaminhamento {
   @@index([responsavelId, estado])
   @@index([prazo])
   @@index([apagadoEm])
+}
+
+// ---------------------------------------------------------------------------
+// Contatos — para quem o Centro faz o que faz
+// ---------------------------------------------------------------------------
+
+enum VinculoDoContato {
+  GRADUACAO
+  POS_GRADUACAO
+  DOCENTE
+  FUNCIONARIO
+  EGRESSO
+  COMUNIDADE_EXTERNA
+  IMPRENSA
+  PARCEIRO
+  OUTRO
+}
+
+enum EstadoDoContato {
+  ATIVO
+  /// Pediu para sair. É definitivo: nenhum envio futuro o alcança, e importar a
+  /// mesma planilha de novo não o traz de volta.
+  DESCADASTRADO
+  /// O e-mail voltou. Continua na base, fora dos envios, para alguém corrigir.
+  INVALIDO
+}
+
+/// Uma pessoa da base do Centro.
+///
+/// Três campos aqui não descrevem a pessoa e sim a **relação** com ela —
+/// `origem`, `consentimentoEm` e `estado`. São eles que respondem a pergunta
+/// que a LGPD faz e que todo serviço de envio faz junto: *por que você tem o
+/// e-mail desta pessoa, e ela deixou?* Sem resposta, uma lista vira disparo, e
+/// disparo derruba a conta de envio inteira — não só aquele boletim.
+model Contato {
+  id    String @id
+  nome  String
+  email String @unique
+
+  telefone    String?
+  vinculo     VinculoDoContato @default(OUTRO)
+  instituicao String?
+
+  /// De onde veio: "inscrição na Aula inaugural", "planilha da secretaria",
+  /// "cadastro manual". Escrito pelo sistema quando ele sabe.
+  origem     String?
+  observacao String?
+
+  estado EstadoDoContato @default(ATIVO)
+
+  /// Quando a pessoa disse que sim. Nulo quer dizer que ninguém registrou
+  /// consentimento — o contato existe, mas fica de fora dos boletins.
+  consentimentoEm DateTime?
+
+  /// O segredo do link de descadastro, que viaja em todo e-mail enviado.
+  chave String @unique
+
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
+  apagadoEm    DateTime?
+
+  etiquetas     EtiquetaNoContato[]
+  participacoes Participacao[]
+  envios        EnvioDeBoletim[]
+
+  @@index([estado])
+  @@index([apagadoEm])
+}
+
+/// A segmentação. Texto livre e não uma lista fixa, porque os recortes que uma
+/// equipe usa de verdade ("hebraico 2026", "imprensa", "ex-bolsistas") não
+/// cabem numa lista que eu inventasse aqui.
+model Etiqueta {
+  id       String @id
+  nome     String @unique
+  criadoEm DateTime @default(now())
+
+  contatos EtiquetaNoContato[]
+}
+
+model EtiquetaNoContato {
+  etiquetaId String
+  etiqueta   Etiqueta @relation(fields: [etiquetaId], references: [id], onDelete: Cascade)
+  contatoId  String
+  contato    Contato  @relation(fields: [contatoId], references: [id], onDelete: Cascade)
+
+  @@id([etiquetaId, contatoId])
+  @@index([contatoId])
+}
+
+/// Quem se inscreveu e quem apareceu.
+///
+/// É a costura entre as duas metades do sistema: as atividades que o Centro faz
+/// e as pessoas para quem ele as faz. É por ela que a base cresce sozinha — a
+/// cada palestra, os inscritos entram — e é dela que sai o certificado.
+model Participacao {
+  id          String    @id
+  contatoId   String
+  contato     Contato   @relation(fields: [contatoId], references: [id], onDelete: Cascade)
+  atividadeId String
+  atividade   Atividade @relation(fields: [atividadeId], references: [id], onDelete: Cascade)
+
+  inscritoEm DateTime?
+  compareceu Boolean   @default(false)
+
+  /// O endereço público do certificado. Serve também para conferir: quem receber
+  /// o PDF pode abrir o link e ver que ele saiu daqui.
+  chaveDoCertificado String @unique
+
+  @@unique([contatoId, atividadeId])
+  @@index([atividadeId])
+}
+
+// ---------------------------------------------------------------------------
+// Boletim
+// ---------------------------------------------------------------------------
+
+enum EstadoDoBoletim {
+  RASCUNHO
+  ENVIANDO
+  ENVIADO
+}
+
+model Boletim {
+  id      String          @id
+  assunto String
+  corpo   String          @default("")
+  estado  EstadoDoBoletim @default(RASCUNHO)
+
+  /// O segmento, guardado como foi escolhido. Não basta saber a quem foi: seis
+  /// meses depois, "para quem isso foi?" é uma pergunta sobre o *critério*.
+  filtroVinculo    String?
+  filtroEtiquetaId String?
+
+  criadoEm  DateTime  @default(now())
+  enviadoEm DateTime?
+
+  atividades AtividadeNoBoletim[]
+  envios     EnvioDeBoletim[]
+}
+
+/// As atividades que o boletim anuncia. O texto do e-mail é escrito à mão; a
+/// lista de atividades o sistema monta, para ninguém redigitar data e local que
+/// já estão cadastrados — e errar um deles.
+model AtividadeNoBoletim {
+  boletimId   String
+  boletim     Boletim   @relation(fields: [boletimId], references: [id], onDelete: Cascade)
+  atividadeId String
+  atividade   Atividade @relation(fields: [atividadeId], references: [id], onDelete: Cascade)
+  ordem       Int       @default(0)
+
+  @@id([boletimId, atividadeId])
+}
+
+enum EstadoDoEnvio {
+  PENDENTE
+  ENVIADO
+  FALHOU
+}
+
+/// Uma linha por pessoa por boletim.
+///
+/// Existe para o envio poder **parar no meio e continuar**. Um servidor da
+/// Vercel tem alguns segundos para responder; mandar mil e-mails não cabe nisso.
+/// Então o envio anda em lotes, e cada lote marca aqui o que já saiu — se cair a
+/// luz no meio, ninguém recebe duas vezes e ninguém fica sem receber.
+model EnvioDeBoletim {
+  id        String        @id
+  boletimId String
+  boletim   Boletim       @relation(fields: [boletimId], references: [id], onDelete: Cascade)
+  contatoId String
+  contato   Contato       @relation(fields: [contatoId], references: [id], onDelete: Cascade)
+  estado    EstadoDoEnvio @default(PENDENTE)
+  erro      String?
+  enviadoEm DateTime?
+
+  @@unique([boletimId, contatoId])
+  @@index([boletimId, estado])
 }

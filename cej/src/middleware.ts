@@ -12,10 +12,16 @@ export function middleware(pedido: NextRequest) {
   const temCookie = pedido.cookies.has("cej_sessao");
   const { pathname } = pedido.nextUrl;
 
+  // As telas que gente de fora abre sem conta nenhuma. Cada uma se protege
+  // pela chave secreta no próprio endereço — ver `src/app/acoes-publicas.ts`.
   const publica =
     pathname === "/entrar" ||
     pathname === "/fundar" ||
+    pathname === "/agenda" ||
     pathname.startsWith("/definir-senha") ||
+    pathname.startsWith("/inscricao/") ||
+    pathname.startsWith("/descadastrar/") ||
+    pathname.startsWith("/certificado/") ||
     pathname.startsWith("/_next");
 
   if (!temCookie && !publica) {

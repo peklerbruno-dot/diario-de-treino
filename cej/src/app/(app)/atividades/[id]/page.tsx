@@ -2,6 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { adicionarConvidado, apagarAtividade, mudarEstadoDaAtividade, removerConvidado } from "../acoes";
 import { atividade as buscarAtividade, equipeAtiva } from "@/lib/consultas";
+import { inscritos as buscarInscritos } from "@/lib/consultas-contatos";
+import { bd } from "@/lib/bd";
+import { enderecoDoSistema } from "@/lib/endereco";
+import { Inscricoes } from "./inscricoes";
 import { comDiaDaSemana, comMaiuscula, porExtenso } from "@/lib/datas";
 import { linkDoGoogle } from "@/lib/agenda";
 import { ESTADOS_DA_ATIVIDADE, EXPLICACAO_DO_ESTADO, NOME_DO_ESTADO, NOME_DO_TIPO } from "@/lib/tipos";
@@ -15,7 +19,18 @@ export const dynamic = "force-dynamic";
 
 export default async function FichaDaAtividade({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [a, equipe] = await Promise.all([buscarAtividade(id), equipeAtiva()]);
+  const [a, equipe, inscritos, endereco, contatosDaBase] = await Promise.all([
+    buscarAtividade(id),
+    equipeAtiva(),
+    buscarInscritos(id),
+    enderecoDoSistema(),
+    bd.contato.findMany({
+      where: { apagadoEm: null, estado: "ATIVO" },
+      select: { id: true, nome: true },
+      orderBy: { nome: "asc" },
+      take: 500,
+    }),
+  ]);
   if (!a) notFound();
 
   const quando = a.diaFinal
@@ -117,6 +132,13 @@ export default async function FichaDaAtividade({ params }: { params: Promise<{ i
             )}
             <NovoEncaminhamento equipe={equipe} atividadeId={a.id} />
           </Cartao>
+
+          <Inscricoes
+            atividade={a}
+            inscritos={inscritos}
+            endereco={endereco}
+            contatosDaBase={contatosDaBase}
+          />
 
           {a.avaliacao && (
             <Cartao como="section" className="p-5">

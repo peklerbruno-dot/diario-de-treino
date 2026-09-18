@@ -89,11 +89,19 @@ export const SeloDaReuniao = ({ estado }: { estado: EstadoDaReuniao }) => (
   </Selo>
 );
 
+/**
+ * O botão secundário leva uma borda de um fio, e não só sombra.
+ *
+ * A sombra sozinha funcionava enquanto ele estava sobre o fundo do papel. Dentro
+ * de um cartão branco — que é onde ele acabou parando, no boletim e na ficha do
+ * contato — branco sobre branco com uma sombra de 6% de opacidade não parece um
+ * botão: parece uma frase clicável, e a pessoa não clica.
+ */
 const ESTILO_DO_BOTAO = {
   primario: "bg-heroi text-heroi-tinta font-semibold shadow-baixa hover:opacity-90",
-  secundario: "bg-cartao text-tinta shadow-baixa hover:bg-linha",
+  secundario: "bg-cartao text-tinta ring-1 ring-regua hover:bg-linha",
   discreto: "text-realce hover:underline",
-  perigo: "bg-cartao text-vermelho shadow-baixa hover:bg-linha",
+  perigo: "bg-cartao text-vermelho ring-1 ring-vermelho/40 hover:bg-linha",
 } as const;
 
 type Aparencia = keyof typeof ESTILO_DO_BOTAO;

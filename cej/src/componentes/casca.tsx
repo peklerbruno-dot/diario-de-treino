@@ -13,7 +13,7 @@ import type { PessoaNaSessao } from "@/lib/auth";
  *
  * A navegação é uma faixa horizontal que rola no celular em vez de virar um
  * menu sanfona. Um menu escondido faz a pessoa clicar duas vezes para ver as
- * opções, e são sete — cabe.
+ * opções — e uma opção que ninguém vê é uma tela que ninguém usa.
  */
 
 const ABAS = [
@@ -22,6 +22,8 @@ const ABAS = [
   { href: "/atividades", rotulo: "Atividades" },
   { href: "/reunioes", rotulo: "Reuniões" },
   { href: "/encaminhamentos", rotulo: "Encaminhamentos" },
+  { href: "/contatos", rotulo: "Contatos" },
+  { href: "/boletins", rotulo: "Boletins" },
   { href: "/relatorio", rotulo: "Relatório" },
   { href: "/equipe", rotulo: "Equipe" },
 ];

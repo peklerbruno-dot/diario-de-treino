@@ -145,6 +145,17 @@ textarea {
   a[href]::after {
     content: "";
   }
+
+  /* O certificado ocupa a folha inteira, sem sombra e sem margem do cartão. */
+  .folha-do-certificado {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+}
+
+@page {
+  margin: 18mm;
 }
 
 .so-impresso {

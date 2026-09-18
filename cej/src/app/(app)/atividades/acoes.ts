@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { bd } from "@/lib/bd";
 import { exigirPessoa } from "@/lib/auth";
 import { ehDiaValido, normalizarHora } from "@/lib/datas";
-import { novoId } from "@/lib/ids";
+import { novoId, novoSegredo } from "@/lib/ids";
 import { valoresDigitados, type ComValores } from "@/lib/formulario";
 import {
   ESTADOS_DA_ATIVIDADE, TIPOS_DE_ATIVIDADE,
@@ -165,4 +165,85 @@ export async function removerConvidado(dados: FormData): Promise<void> {
   // equipe — e quem digitou o nome errado quer o nome errado fora da lista.
   const convidado = await bd.convidado.delete({ where: { id: texto(dados, "id") } });
   revalidatePath(`/atividades/${convidado.atividadeId}`);
+}
+
+// ---------------------------------------------------------------------------
+// Inscrição pública e presença
+// ---------------------------------------------------------------------------
+
+/**
+ * Abrir a inscrição pública.
+ *
+ * O endereço secreto nasce **aqui**, e não no cadastro da atividade: uma
+ * atividade que nascesse já com um endereço público teria uma porta aberta que
+ * ninguém pediu para abrir. Uma vez criado, o endereço não muda — fechar e
+ * reabrir a inscrição não invalida o link que já foi para o cartaz.
+ */
+export async function alternarInscricao(dados: FormData): Promise<void> {
+  await exigirPessoa();
+  const id = texto(dados, "id");
+
+  const atividade = await bd.atividade.findUnique({
+    where: { id },
+    select: { inscricaoAberta: true, chavePublica: true },
+  });
+  if (!atividade) return;
+
+  await bd.atividade.update({
+    where: { id },
+    data: {
+      inscricaoAberta: !atividade.inscricaoAberta,
+      chavePublica: atividade.chavePublica ?? novoSegredo(),
+      vagas: numero(dados, "vagas"),
+    },
+  });
+  revalidatePath(`/atividades/${id}`);
+}
+
+/**
+ * Quem apareceu.
+ *
+ * É o que separa inscrito de presente — e é da presença que sai o certificado.
+ * Sem essa marcação, um certificado atestaria intenção, não participação.
+ */
+export async function marcarPresenca(dados: FormData): Promise<void> {
+  await exigirPessoa();
+  const participacaoId = texto(dados, "participacaoId");
+
+  const atual = await bd.participacao.findUnique({ where: { id: participacaoId } });
+  if (!atual) return;
+
+  await bd.participacao.update({
+    where: { id: participacaoId },
+    data: { compareceu: !atual.compareceu },
+  });
+  revalidatePath(`/atividades/${atual.atividadeId}`);
+}
+
+/** Inscrever alguém da base à mão — para quem chegou sem se inscrever. */
+export async function inscreverDaBase(dados: FormData): Promise<void> {
+  await exigirPessoa();
+  const atividadeId = texto(dados, "atividadeId");
+  const contatoId = texto(dados, "contatoId");
+  if (!contatoId) return;
+
+  await bd.participacao.upsert({
+    where: { contatoId_atividadeId: { contatoId, atividadeId } },
+    create: {
+      id: novoId(),
+      contatoId,
+      atividadeId,
+      inscritoEm: new Date(),
+      compareceu: true,
+      chaveDoCertificado: novoSegredo(),
+    },
+    update: { compareceu: true },
+  });
+  revalidatePath(`/atividades/${atividadeId}`);
+}
+
+export async function removerInscricao(dados: FormData): Promise<void> {
+  await exigirPessoa();
+  const participacao = await bd.participacao.delete({ where: { id: texto(dados, "id") } });
+  revalidatePath(`/atividades/${participacao.atividadeId}`);
 }
