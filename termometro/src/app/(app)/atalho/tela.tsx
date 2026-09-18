@@ -22,8 +22,8 @@ export function TelaDoAtalho() {
 
       <p className="mt-2 text-[15px] leading-relaxed text-grafite">
         O problema nunca foi o app estar longe. É que quinze segundos bastam para deixar para depois
-        — e depois ninguém anota. Com o atalho, lançar o almoço é dizer <i>“E aí Siri, Gastei”</i> e
-        falar o valor, sem tirar o celular do bolso.
+        — e depois ninguém anota. Com o atalho, lançar o almoço é dizer{" "}
+        <i>“E aí Siri, Lançar gasto”</i> e falar o valor, sem tirar o celular do bolso.
       </p>
 
       <div className="mt-4">
@@ -129,10 +129,15 @@ export function TelaDoAtalho() {
           </Passo>
 
           <Passo n={6}>
-            Toque no nome do atalho, lá em cima, e chame de <b>Gastei</b>. Este é o passo mais
-            importante para quem vai usar a voz: <b>o nome é a frase que a Siri escuta</b>. Se você
-            chamar de “Gastei”, você diz <i>“E aí Siri, Gastei”</i>. Depois <b>OK</b> /{" "}
-            <b>Concluído</b>.
+            Toque no nome do atalho, lá em cima, e chame de <b>Lançar gasto</b>. Este é o passo mais
+            importante para quem vai usar a voz: <b>o nome é a frase que a Siri escuta</b>.
+            <br />
+            <span className="mt-1.5 block">
+              Duas palavras, e nenhuma delas um comando que o iPhone já conhece — é essa a regra que
+              faz a Siri achar. Um nome de uma palavra só, ainda mais sendo verbo comum (“Gastei”,
+              “Paguei”, “Anotar”), ela ouve como o começo de uma frase e sai procurando na internet,
+              em vez de rodar o atalho.
+            </span>
           </Passo>
 
           <Passo n={7}>
@@ -150,7 +155,7 @@ export function TelaDoAtalho() {
         </p>
 
         <Cartao className="px-4 py-4">
-          <Fala quem="você">E aí Siri, Gastei</Fala>
+          <Fala quem="você">E aí Siri, Lançar gasto</Fala>
           <Fala quem="siri">Quanto?</Fala>
           <Fala quem="você">trinta e oito e cinquenta</Fala>
           <Fala quem="siri">R$ 38,50 no diário. Saldo de hoje: R$ 1.497,43.</Fala>
@@ -164,11 +169,52 @@ export function TelaDoAtalho() {
 
         <div className="mt-3">
           <Aviso>
-            <b>Nos iPhones mais novos</b> basta dizer <i>“Siri, Gastei”</i>, sem o “E aí”. Se ela
-            não responder ao chamado, veja em Ajustes do iPhone → <b>Siri</b> se a escuta por voz
-            está ligada.
+            <b>Nos iPhones mais novos</b> basta dizer <i>“Siri, Lançar gasto”</i>, sem o “E aí”. Se
+            ela não responder ao chamado, veja em Ajustes do iPhone → <b>Siri</b> se a escuta por
+            voz está ligada.
           </Aviso>
         </div>
+      </section>
+
+      <section className="mt-6">
+        <Subtitulo className="mb-2">Se a Siri não achar o atalho</Subtitulo>
+        <p className="mb-3 text-[14.5px] leading-relaxed text-grafite">
+          Ela procurou na internet, disse que não conhece, ou fez outra coisa. Antes de mexer em
+          qualquer ajuste, faça este teste — ele parte o problema no meio:
+        </p>
+
+        <Cartao className="px-5 py-4">
+          <Sobrescrito>O teste dos cinco segundos</Sobrescrito>
+          <p className="mt-1.5 text-[15px] leading-relaxed">
+            <b>Segure o botão lateral</b> do iPhone até a Siri aparecer, e diga só o nome do atalho
+            — sem “E aí Siri” na frente.
+          </p>
+        </Cartao>
+
+        <ol className="mt-3 space-y-2.5">
+          <Ramo resposta="Funcionou assim">
+            O atalho está certo; o que não está chegando é o chamado por voz. Vá em Ajustes do
+            iPhone → <b>Siri</b> e ligue <b>“Escutar ‘E aí Siri’”</b> (ou “Ouvir ‘Siri’ ou ‘E aí
+            Siri’”, conforme a versão). Enquanto isso, o botão lateral já resolve.
+          </Ramo>
+          <Ramo resposta="Também não funcionou">
+            O problema é o <b>nome</b>. Abra o atalho, toque no nome lá em cima e troque para{" "}
+            <b>Lançar gasto</b> — duas palavras, nenhuma delas um comando que o iPhone já conhece.
+            Nome de uma palavra só, ainda mais sendo verbo comum (“Gastei”, “Paguei”, “Anotar”), a
+            Siri ouve como o começo de uma frase e sai procurando na internet. O nome novo vira a
+            frase nova, na hora, sem configurar mais nada.
+          </Ramo>
+          <Ramo resposta="Ela nem abriu">
+            Veja em Ajustes do iPhone → <b>Siri</b> se o <b>Idioma</b> está em{" "}
+            <b>Português (Brasil)</b>. Com a Siri em inglês, nome em português ela não reconhece.
+          </Ramo>
+        </ol>
+
+        <p className="mt-3 px-1 text-[12.5px] leading-snug text-fosco">
+          Ainda assim nada? Confira se o atalho está mesmo salvo: ele tem de aparecer na lista da
+          aba <b>Atalhos</b>, não só na tela de edição. E, se você deu <b>Duplicar</b>, o iPhone
+          costuma acrescentar um “2” no fim do nome — aí a frase mudou sem você notar.
+        </p>
       </section>
 
       <section className="mt-6">
@@ -185,10 +231,7 @@ export function TelaDoAtalho() {
             Confira o <i>Tipo de entrada</i> do passo 2: precisa estar em <b>Número</b>. Em{" "}
             <b>Texto</b> a Siri manda a frase inteira, e a chance de confusão é maior.
           </Jeito>
-          <Jeito titulo="Se ela não achar o atalho">
-            Dê um nome de duas palavras, como <b>Gastei agora</b>: nome curto demais ela às vezes
-            confunde com comando do sistema. O nome novo passa a ser a frase nova.
-          </Jeito>
+
           <Jeito titulo="Para ela dizer o saldo em voz alta">
             Acrescente no fim do atalho a ação <b>Falar texto</b>, com a variável{" "}
             <b>Valor do dicionário</b> — a mesma do passo 5. Aí dá para lançar de mãos ocupadas, sem
@@ -202,7 +245,7 @@ export function TelaDoAtalho() {
         <Cartao className="px-4 py-1">
           <Jeito titulo="Dois toques na traseira">
             Ajustes do iPhone → <b>Acessibilidade</b> → <b>Toque</b> → role até o fim →{" "}
-            <b>Toque na parte traseira</b> → <b>Toque duplo</b> → escolha <b>Gastei</b>. Para
+            <b>Toque na parte traseira</b> → <b>Toque duplo</b> → escolha <b>Lançar gasto</b>. Para
             reunião, cinema, fila.
           </Jeito>
           <Jeito titulo="Ícone na tela de início">
@@ -222,11 +265,13 @@ export function TelaDoAtalho() {
           um campo no JSON, com a chave <Palavra>tipo</Palavra>:
         </p>
         <Cartao className="px-4 py-1">
-          <Jeito titulo="“E aí Siri, Gastei”">nada a mudar — sem tipo, é gasto do dia a dia.</Jeito>
-          <Jeito titulo="“E aí Siri, Recebi”">
+          <Jeito titulo="“E aí Siri, Lançar gasto”">
+            nada a mudar — sem tipo, é gasto do dia a dia.
+          </Jeito>
+          <Jeito titulo="“E aí Siri, Lançar entrada”">
             campo <Palavra>tipo</Palavra>, texto <Palavra>entrada</Palavra>.
           </Jeito>
-          <Jeito titulo="“E aí Siri, Paguei conta”">
+          <Jeito titulo="“E aí Siri, Lançar conta”">
             campo <Palavra>tipo</Palavra>, texto <Palavra>saída</Palavra>.
           </Jeito>
         </Cartao>
@@ -350,6 +395,16 @@ function Fala({ quem, children }: { quem: "você" | "siri"; children: React.Reac
         {children}
       </span>
     </p>
+  );
+}
+
+/** Um ramo do diagnóstico: a resposta que o teste deu, e o que fazer com ela. */
+function Ramo({ resposta, children }: { resposta: string; children: React.ReactNode }) {
+  return (
+    <li className="rounded-folha bg-cartao px-4 py-3 shadow-baixa">
+      <p className="text-[14.5px] font-semibold">{resposta}</p>
+      <p className="mt-1 text-[14px] leading-relaxed text-grafite">{children}</p>
+    </li>
   );
 }
 
