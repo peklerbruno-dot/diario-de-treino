@@ -218,10 +218,22 @@ nem uma gravação perdida deixa algo para trás.
 - Os campos de dinheiro que restam **não** são `type="number"`: no teclado em
   português a tecla decimal é a vírgula, e um campo numérico descarta o que se
   digita com ela — "52,5" viraria vazio. São campos de texto com `inputMode`.
-- O manifesto declara `scope: "/"`. Sem isso o iPhone trata como "fora do app"
-  todo endereço que não seja exatamente o de abertura, e abre a barra do
-  navegador por cima ao entrar em Mês, Ano ou Ajustes — o app parecia escapar
-  para o Safari sozinho.
+- `<meta name="apple-mobile-web-app-capable" content="yes">` é declarado à mão,
+  e esta linha é a que faz o ícone da tela de início abrir sem a barra do
+  Safari. O Next emitia essa etiqueta sozinho a partir de `appleWebApp.capable`;
+  da versão 15 em diante ele emite só `mobile-web-app-capable`, o nome
+  padronizado — que o iOS não conhece. A etiqueta sumiu sem ninguém mexer em
+  nada, e o sintoma é traiçoeiro: o app instala, ganha ícone, abre em janela
+  própria e ainda assim tem a barra do navegador em cima. O manifesto declara
+  `display: "standalone"`, que em tese bastaria; no iPhone, não bastou.
+  `src/app/layout.test.ts` segura a etiqueta no lugar, porque a falta dela não
+  quebra build nenhum e só se sente num aparelho de verdade.
+- O manifesto declara `scope: "/"`, para o iPhone não tratar como "fora do app"
+  um endereço que não seja o de abertura.
+- O app percebe quando está sendo aberto **no navegador** em vez de pelo ícone,
+  e diz isso num cartão — com o detalhe que ninguém adivinha: o iPhone tira uma
+  cópia do manifesto e das etiquetas na hora de instalar, então um ícone antigo
+  carrega os ajustes antigos até ser apagado e refeito.
 - Campos com 17 px, para o Safari não dar zoom ao focar. `touch-action:
   manipulation` nos botões, sem atraso de duplo toque.
 - Áreas seguras respeitadas: entalhe, laterais e a faixa do gesto.
