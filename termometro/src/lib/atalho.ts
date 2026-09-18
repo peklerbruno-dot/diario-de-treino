@@ -48,6 +48,43 @@ export interface PedidoDoAtalho {
   apartamento?: unknown;
 }
 
+/**
+ * Os campos que vierem no próprio endereço.
+ *
+ * Montar o corpo JSON dentro do app Atalhos é o passo em que todo mundo trava:
+ * é um menu dentro de outro, e a variável do valor tem de ser escolhida lá no
+ * fundo. Pelo endereço some tudo isso — o valor vai grudado no fim do endereço,
+ * e o atalho fica com quatro ajustes em vez de sete.
+ *
+ * O **código nunca é lido daqui**, e isso é regra, não descuido: endereço fica
+ * gravado em registro de servidor e em histórico, e o código é a chave do
+ * dinheiro de alguém. O valor não é segredo do mesmo tamanho; o código é.
+ */
+export function camposDoEndereco(url: string): Record<string, string> {
+  const campos: Record<string, string> = {};
+  let busca: URLSearchParams;
+  try {
+    busca = new URL(url).searchParams;
+  } catch {
+    return campos;
+  }
+  for (const nome of ACEITOS_NO_ENDERECO) {
+    const valor = busca.get(nome);
+    if (valor !== null) campos[nome] = valor;
+  }
+  return campos;
+}
+
+const ACEITOS_NO_ENDERECO = [
+  "valor",
+  "tipo",
+  "data",
+  "nota",
+  "rendaPropria",
+  "investimento",
+  "apartamento",
+] as const;
+
 export type LeituraDoPedido = { ok: true; lancamentos: Lancamento[] } | { ok: false; erro: string };
 
 const ehData = (v: unknown): v is string => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);

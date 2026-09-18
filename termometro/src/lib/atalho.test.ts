@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hojeNoFuso, lerPedidoDoAtalho, recadoDoAtalho } from "./atalho";
+import { camposDoEndereco, hojeNoFuso, lerPedidoDoAtalho, recadoDoAtalho } from "./atalho";
 import type { Lancamento } from "./tipos";
 
 let n = 0;
@@ -160,5 +160,47 @@ describe("o recado da notificação", () => {
 
   it("fala 'entrou' quando foi entrada", () => {
     expect(recadoDoAtalho([lancamento("ENTRADA", 2100)], 500000)).toContain("entrou");
+  });
+});
+
+describe("o que vem no próprio endereço", () => {
+  const url = (busca: string) => `https://exemplo.com/api/lancar?${busca}`;
+
+  it("lê o valor grudado no fim do endereço", () => {
+    expect(camposDoEndereco(url("valor=38,50"))).toEqual({ valor: "38,50" });
+  });
+
+  it("lê também o tipo, a nota e a data", () => {
+    expect(camposDoEndereco(url("valor=90&tipo=entrada&nota=freela&data=2026-09-10"))).toEqual({
+      valor: "90",
+      tipo: "entrada",
+      nota: "freela",
+      data: "2026-09-10",
+    });
+  });
+
+  // Esta é a regra que separa os dois segredos. O valor pode ficar num registro
+  // de servidor; o código de acesso, não — ele abre o dinheiro inteiro.
+  it("nunca lê o código do endereço, nem quando alguém o escreve lá", () => {
+    const campos = camposDoEndereco(url("valor=10&codigo=secreto&x-codigo=secreto"));
+    expect(campos).toEqual({ valor: "10" });
+    expect(JSON.stringify(campos)).not.toContain("secreto");
+  });
+
+  it("ignora o que não conhece", () => {
+    expect(camposDoEndereco(url("valor=10&qualquer=coisa"))).toEqual({ valor: "10" });
+  });
+
+  it("devolve vazio quando não há busca nenhuma", () => {
+    expect(camposDoEndereco("https://exemplo.com/api/lancar")).toEqual({});
+  });
+
+  it("não quebra com um endereço torto", () => {
+    expect(camposDoEndereco("nem endereço é")).toEqual({});
+  });
+
+  it("o que vem do endereço é lido igual ao que vem do corpo", () => {
+    const r = lerPedidoDoAtalho(camposDoEndereco(url("valor=38 reais e 50&tipo=saída")), opcoes);
+    expect(r.ok && r.lancamentos[0]).toMatchObject({ valorCents: 3850, tipo: "SAIDA" });
   });
 });

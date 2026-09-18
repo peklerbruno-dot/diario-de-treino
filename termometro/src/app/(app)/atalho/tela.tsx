@@ -39,7 +39,8 @@ export function TelaDoAtalho() {
         <Subtitulo className="mb-2">Antes de começar</Subtitulo>
         <Cartao className="px-4 py-4">
           <p className="text-[14.5px] text-grafite">
-            <b className="text-tinta">1. O endereço</b>, que é este aqui:
+            <b className="text-tinta">1. O endereço</b>, que é este aqui — e ele termina em{" "}
+            <Palavra>?valor=</Palavra> mesmo, sem nada depois do igual:
           </p>
           <ParaCopiar texto={endereco} />
           <p className="mt-4 text-[14.5px] leading-relaxed text-grafite">
@@ -80,6 +81,13 @@ export function TelaDoAtalho() {
             <div>
               <b className="text-tinta">No campo do endereço</b>, cole isto:
               <ParaCopiar texto={endereco} />
+              <span className="mt-2 block">
+                Depois, <b className="text-tinta">sem sair do campo</b>, toque logo depois do sinal
+                de igual e escolha a variável <b className="text-tinta">Entrada fornecida</b> — ela
+                aparece na barrinha de sugestões acima do teclado. O endereço fica com uma etiqueta
+                azul grudada no fim. É ela que carrega o valor que você vai falar; não digite um
+                número aqui.
+              </span>
             </div>
 
             <div>
@@ -98,19 +106,17 @@ export function TelaDoAtalho() {
               <b className="text-tinta">Cabeçalhos</b> → <b>Adicionar novo cabeçalho</b>. A chave se
               escreve exatamente assim, tudo em minúsculo:
               <ParaCopiar texto="x-codigo" />
-              <span className="mt-2 block">E no texto ao lado, o seu código de acesso.</span>
+              <span className="mt-2 block">
+                E no texto ao lado, o seu código de acesso. É a única coisa que vai no cabeçalho, e
+                não no endereço: endereço fica gravado em registro de servidor, e o código é a chave
+                do seu dinheiro.
+              </span>
             </div>
 
-            <div>
-              <b className="text-tinta">Corpo da solicitação</b>: escolha <b>JSON</b>. Depois{" "}
-              <b>Adicionar novo campo</b> → <b>Texto</b>, com a chave:
-              <ParaCopiar texto="valor" />
-              <span className="mt-2 block">
-                No conteúdo desse campo, toque uma vez e escolha a variável{" "}
-                <b className="text-tinta">Entrada fornecida</b> — ela aparece na barrinha de
-                sugestões logo acima do teclado. Não digite um número aqui: é essa variável que
-                carrega o que você vai digitar na hora.
-              </span>
+            <div className="text-[13.5px] text-fosco">
+              <b>Corpo da solicitação</b> pode ficar em <b>Nenhum</b>. Ele não é mais usado — o
+              valor vai no endereço agora, e era montar esse corpo que fazia o atalho ter o dobro de
+              ajustes.
             </div>
           </div>
         </Cartao>
@@ -262,24 +268,24 @@ export function TelaDoAtalho() {
         <p className="mb-2 text-[14.5px] leading-relaxed text-grafite">
           Vale ter três, para não escolher o tipo toda vez — e, por voz, cada um vira uma frase
           diferente. Duplique o atalho (três pontinhos → <b>Duplicar</b>), mude o nome e acrescente
-          um campo no JSON, com a chave <Palavra>tipo</Palavra>:
+          um pedaço ao fim do endereço, <b>depois</b> da etiqueta azul:
         </p>
         <Cartao className="px-4 py-1">
           <Jeito titulo="“E aí Siri, Lançar gasto”">
             nada a mudar — sem tipo, é gasto do dia a dia.
           </Jeito>
           <Jeito titulo="“E aí Siri, Lançar entrada”">
-            campo <Palavra>tipo</Palavra>, texto <Palavra>entrada</Palavra>.
+            acrescente <Palavra>&amp;tipo=entrada</Palavra> no fim.
           </Jeito>
           <Jeito titulo="“E aí Siri, Lançar conta”">
-            campo <Palavra>tipo</Palavra>, texto <Palavra>saída</Palavra>.
+            acrescente <Palavra>&amp;tipo=saida</Palavra> no fim.
           </Jeito>
         </Cartao>
         <p className="mt-2 px-1 text-[12.5px] leading-snug text-fosco">
-          Outros campos, todos opcionais: <b>nota</b> (o que era o valor), <b>data</b> no formato
-          2026-09-15 para lançar um dia que já passou, e <b>rendaPropria</b> com o texto <b>sim</b>{" "}
-          numa entrada que é dinheiro seu. O valor aceita soma igual ao app: mandar 195+15+83 cria
-          três lançamentos.
+          Do mesmo jeito, no fim do endereço: <Palavra>&amp;nota=almoço</Palavra> para nomear o
+          lançamento, <Palavra>&amp;data=2026-09-15</Palavra> para um dia que já passou, e{" "}
+          <Palavra>&amp;rendaPropria=sim</Palavra> numa entrada que é dinheiro seu. O valor aceita
+          soma igual ao app: 195+15+83 cria três lançamentos.
         </p>
       </section>
 
@@ -300,8 +306,9 @@ export function TelaDoAtalho() {
             adivinhar: valor errado no saldo é bem pior do que uma pergunta repetida.
           </Jeito>
           <Jeito titulo="“Faltou o valor”">
-            O campo do JSON precisa se chamar <Palavra>valor</Palavra>, e o conteúdo dele precisa
-            ser a variável <b>Entrada fornecida</b> — não um número digitado.
+            A variável <b>Entrada fornecida</b> não ficou colada no fim do endereço. Toque no campo
+            do endereço e confira: depois do <Palavra>?valor=</Palavra> tem de haver uma etiqueta
+            azul, e não um espaço vazio nem um número digitado à mão.
           </Jeito>
           <Jeito titulo="Lançou, mas não aparece no app">
             Aparece na próxima sincronização: abra o app e espere um instante. Para forçar,{" "}
@@ -332,7 +339,7 @@ export function TelaDoAtalho() {
  */
 function useEndereco(): string {
   const [endereco, setEndereco] = useState("");
-  useEffect(() => setEndereco(`${window.location.origin}/api/lancar`), []);
+  useEffect(() => setEndereco(`${window.location.origin}/api/lancar?valor=`), []);
   return endereco;
 }
 
