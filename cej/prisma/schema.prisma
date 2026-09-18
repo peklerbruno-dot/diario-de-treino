@@ -1,0 +1,283 @@
+// Centro de Estudos Judaicos — o sistema da equipe.
+//
+// Duas decisões atravessam o arquivo inteiro:
+//
+// 1. **Data é texto, hora é texto.** Um `DateTime` carrega fuso, e é assim que
+//    uma palestra marcada para 19h de 3 de junho em São Paulo vira 22h no
+//    servidor — e, num dia de virada, 4 de junho. A data de uma palestra não é
+//    um instante no tempo físico: é o que está escrito no cartaz. Então guarda-se
+//    o que está no cartaz — "2026-06-03" e "19:00" — e ninguém converte nada.
+//    O fuso aparece num lugar só, na hora de gerar o calendário (`src/lib/ics.ts`),
+//    porque ali o Google precisa dele.
+//
+// 2. **Nada some.** Toda linha apagável tem `apagadaEm` em vez de sair da tabela.
+//    Numa equipe, quem apagou o quê é uma pergunta que se faz, e uma linha que
+//    sumiu não responde.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+/// Uma variável só, `DATABASE_URL`. A conexão sem intermediário que a criação de
+/// tabelas exige é trocada na hora da migração por `scripts/build-vercel.mjs`.
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Gente
+// ---------------------------------------------------------------------------
+
+/// Quem manda no sistema, não no Centro. `COORDENACAO` cadastra pessoas e apaga
+/// coisa dos outros; `MEMBRO` faz todo o resto — cria atividade, cria reunião,
+/// escreve ata, fecha encaminhamento. A separação existe para proteger contra
+/// acidente, não contra colega.
+enum Papel {
+  COORDENACAO
+  MEMBRO
+}
+
+model Pessoa {
+  id    String @id
+  nome  String
+  email String @unique
+
+  papel Papel @default(MEMBRO)
+
+  /// `scrypt`, no formato "salt:hash" em hexadecimal. Nula enquanto a pessoa
+  /// não tiver feito o primeiro acesso — a conta existe antes da senha.
+  senha String?
+
+  /// O convite de primeiro acesso, e também o "esqueci a senha": quem é da
+  /// coordenação gera um link novo e manda pela mão. Guardado com hash, porque
+  /// um convite em aberto vale tanto quanto a senha que ele cria.
+  convite        String?
+  conviteExpiraEm DateTime?
+
+  /// A chave do calendário particular da pessoa. Quem assina o calendário no
+  /// Google carrega esta chave no endereço; trocá-la derruba só a assinatura
+  /// dela, sem mexer na de mais ninguém.
+  chaveDaAgenda String @unique
+
+  ativa Boolean @default(true)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+  ultimoAcesso DateTime?
+
+  atividades      Atividade[]       @relation("ResponsavelPelaAtividade")
+  reunioes        Reuniao[]         @relation("QuemConvocou")
+  encaminhamentos Encaminhamento[]  @relation("ResponsavelPeloEncaminhamento")
+  presencas       Presenca[]
+
+  @@index([ativa])
+}
+
+// ---------------------------------------------------------------------------
+// Atividades — o que o Centro faz
+// ---------------------------------------------------------------------------
+
+enum TipoDeAtividade {
+  PALESTRA
+  CURSO
+  OFICINA
+  WORKSHOP
+  CONGRESSO
+  SIMPOSIO
+  SEMINARIO
+  MESA_REDONDA
+  GRUPO_DE_ESTUDOS
+  LANCAMENTO_DE_LIVRO
+  MOSTRA
+  OUTRA
+}
+
+/// O caminho de uma atividade, da conversa de corredor até o relatório.
+///
+/// O estado é a única coisa aqui que não descreve a atividade, e sim a equipe:
+/// é olhando para ele que se enxerga o que está parado. Uma palestra em `IDEIA`
+/// há quatro meses é uma pergunta; em `DIVULGACAO` na semana que vem é outra.
+enum EstadoDaAtividade {
+  IDEIA
+  APROVADA
+  EM_PREPARACAO
+  DIVULGACAO
+  REALIZADA
+  CANCELADA
+}
+
+model Atividade {
+  id     String            @id
+  titulo String
+  tipo   TipoDeAtividade
+  estado EstadoDaAtividade @default(IDEIA)
+
+  /// "2026-06-03". Texto, não DateTime — ver o cabeçalho do arquivo.
+  dia String
+  /// "19:00", ou nulo quando a atividade ocupa o dia inteiro.
+  hora String?
+  /// O último dia, quando a atividade dura mais de um (um curso, um congresso).
+  /// Nulo quer dizer que começa e termina no mesmo dia.
+  diaFinal String?
+  horaFinal String?
+
+  local   String?
+  /// A ementa, o resumo, o que se escreveria no cartaz.
+  resumo  String?
+  /// Quem são os parceiros: outro departamento, outra instituição, um consulado.
+  parceria String?
+  publicoAlvo String?
+
+  /// Links que a equipe reparte: a pasta no Drive, o formulário de inscrição,
+  /// a arte da divulgação. Três campos nomeados valem mais que um campo "links"
+  /// solto, porque cada um aparece no lugar certo da tela.
+  pastaNoDrive   String?
+  linkDeInscricao String?
+  linkDaDivulgacao String?
+
+  /// Preenchido depois que aconteceu: é o número que o relatório soma.
+  publicoPresente Int?
+  /// O que ficou de aprendizado, para a próxima. Também entra no relatório.
+  avaliacao String?
+
+  responsavelId String?
+  responsavel   Pessoa? @relation("ResponsavelPelaAtividade", fields: [responsavelId], references: [id])
+
+  /// A ponte para o Google Agenda em mão dupla, quando ela existir: aqui fica o
+  /// identificador do evento lá. Hoje o calendário é de mão única (o Google lê
+  /// o nosso `.ics`), e este campo fica nulo. Ele mora aqui desde já para que
+  /// ligar a mão dupla depois não exija mexer no banco de ninguém.
+  googleEventoId String?
+
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
+  apagadaEm    DateTime?
+
+  convidados      Convidado[]
+  encaminhamentos Encaminhamento[]
+
+  @@index([dia])
+  @@index([estado])
+  @@index([apagadaEm])
+}
+
+/// Quem fala numa atividade. Separado da equipe de propósito: um palestrante
+/// convidado não tem conta no sistema, e não deveria precisar de uma para
+/// constar do relatório.
+model Convidado {
+  id          String @id
+  atividadeId String
+  atividade   Atividade @relation(fields: [atividadeId], references: [id], onDelete: Cascade)
+
+  nome        String
+  instituicao String?
+  /// "palestrante", "mediação", "debatedora"… Texto livre porque a realidade é
+  /// mais criativa que qualquer lista que eu inventasse aqui.
+  funcao      String?
+  ordem       Int    @default(0)
+
+  @@index([atividadeId])
+}
+
+// ---------------------------------------------------------------------------
+// Reuniões — onde as coisas são decididas
+// ---------------------------------------------------------------------------
+
+enum EstadoDaReuniao {
+  AGENDADA
+  REALIZADA
+  CANCELADA
+}
+
+model Reuniao {
+  id     String          @id
+  titulo String
+  estado EstadoDaReuniao @default(AGENDADA)
+
+  dia  String
+  hora String?
+  local String?
+
+  /// Escrita antes. Uma pauta que só existe na cabeça de quem convocou faz a
+  /// reunião durar o dobro.
+  pauta String?
+  /// Escrita depois. Esta é a memória do Centro: daqui a dois anos, é o único
+  /// lugar onde vai estar por que se decidiu o que se decidiu.
+  ata   String?
+
+  convocouId String?
+  convocou   Pessoa? @relation("QuemConvocou", fields: [convocouId], references: [id])
+
+  googleEventoId String?
+
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
+  apagadaEm    DateTime?
+
+  presencas       Presenca[]
+  encaminhamentos Encaminhamento[]
+
+  @@index([dia])
+  @@index([apagadaEm])
+}
+
+/// Quem foi convocado e quem apareceu. Existe por causa da ata: "presentes:
+/// fulano, beltrano" é uma linha que se escreve em toda ata e que ninguém
+/// deveria estar digitando à mão.
+model Presenca {
+  reuniaoId String
+  reuniao   Reuniao @relation(fields: [reuniaoId], references: [id], onDelete: Cascade)
+  pessoaId  String
+  pessoa    Pessoa  @relation(fields: [pessoaId], references: [id], onDelete: Cascade)
+
+  compareceu Boolean @default(false)
+
+  @@id([reuniaoId, pessoaId])
+  @@index([pessoaId])
+}
+
+// ---------------------------------------------------------------------------
+// Encaminhamentos — o que sobra de uma reunião
+// ---------------------------------------------------------------------------
+
+enum EstadoDoEncaminhamento {
+  ABERTO
+  FEITO
+  CANCELADO
+}
+
+/// Três colunas que não podem faltar: **o quê, quem, até quando**. Um
+/// encaminhamento sem responsável é um desejo, e sem prazo é um desejo para
+/// sempre — por isso os dois campos existem, ainda que o sistema aceite salvar
+/// sem eles (a tela é que cobra).
+model Encaminhamento {
+  id    String                 @id
+  oQue  String
+  estado EstadoDoEncaminhamento @default(ABERTO)
+
+  responsavelId String?
+  responsavel   Pessoa? @relation("ResponsavelPeloEncaminhamento", fields: [responsavelId], references: [id])
+
+  /// "2026-06-10", ou nulo. Data de caderno, como todas as outras.
+  prazo String?
+
+  /// De onde nasceu. Os dois podem estar preenchidos: um encaminhamento tirado
+  /// da reunião de maio sobre a palestra de junho pertence às duas coisas, e é
+  /// pelas duas que alguém vai procurá-lo.
+  reuniaoId String?
+  reuniao   Reuniao? @relation(fields: [reuniaoId], references: [id])
+  atividadeId String?
+  atividade   Atividade? @relation(fields: [atividadeId], references: [id])
+
+  observacao String?
+
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
+  concluidoEm  DateTime?
+  apagadoEm    DateTime?
+
+  @@index([responsavelId, estado])
+  @@index([prazo])
+  @@index([apagadoEm])
+}

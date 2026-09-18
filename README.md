@@ -135,3 +135,10 @@ o seu próprio deploy na Vercel (pasta escolhida em *Root Directory*).
   o computador mostrarem sempre a mesma coisa.
   Veja [`termometro/README.md`](termometro/README.md) e, para publicar,
   [`termometro/docs/COLOCAR-NO-AR.md`](termometro/docs/COLOCAR-NO-AR.md).
+- `cej/` — o sistema da equipe do Centro de Estudos Judaicos da USP: atividades,
+  reuniões com pauta e ata, encaminhamentos com dono e prazo, calendário que se
+  assina no Google Agenda, e o relatório do ano saindo do que já foi cadastrado.
+  É o primeiro app deste repositório com uma conta por pessoa — o que um sistema
+  de equipe exige e os outros não precisavam.
+  Veja [`cej/README.md`](cej/README.md) e, para publicar,
+  [`cej/docs/COLOCAR-NO-AR.md`](cej/docs/COLOCAR-NO-AR.md).
