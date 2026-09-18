@@ -9,6 +9,15 @@ pessoas precisam ver a mesma coisa do computador delas, e cada uma entra com a
 própria conta. Isso exige um servidor e um banco de dados — é o mesmo caminho do
 Termômetro, e não o do diário de treino, que roda inteiro dentro do celular.
 
+> **O envio automático de boletins não é pré-requisito para lançar.** Ele depende
+> de um domínio próprio do Centro, que custa dinheiro e costuma precisar do aval
+> de alguém. Sem ele, o sistema inteiro funciona — atividades, reuniões,
+> encaminhamentos, contatos, inscrições, presença, certificados, agenda pública,
+> calendário e relatório — e o boletim sai pela mão de vocês, com o texto e a
+> lista do segmento preparados pelo sistema para colar no Gmail. Ligar o disparo
+> depois não muda nada do que já estiver funcionando.
+> Ver [`BOLETIM.md`](BOLETIM.md).
+
 ---
 
 ## Passo 1 — Criar o banco de dados
@@ -86,7 +95,21 @@ Três coisas que vale saber sobre esse link:
 - se alguém esquecer a senha, é o mesmo caminho: **Equipe** → *Link para nova
   senha*. Você nunca precisa saber a senha de ninguém.
 
-## Passo 5 — Levar o calendário para o Google Agenda
+## Passo 5 — Contar à equipe o que já dá e o que ainda não dá
+
+Vale dizer isso em voz alta na primeira reunião, para ninguém achar que o sistema
+está com defeito:
+
+- **Já dá:** cadastrar atividades e acompanhar o calendário; marcar reuniões com
+  pauta e ata; tirar encaminhamentos com responsável e prazo; ter a base de
+  contatos com segmentação; abrir inscrição pública em eventos; marcar presença e
+  emitir certificados; publicar a agenda aberta; assinar o calendário no Google
+  Agenda; gerar o relatório do período.
+- **Ainda não dá:** disparar o boletim direto do sistema. Por enquanto ele é
+  escrito aqui e mandado pelo Gmail de alguém, com o sistema preparando o texto e
+  a lista — em **Cco**, nunca no campo "Para".
+
+## Passo 6 — Levar o calendário para o Google Agenda
 
 Cada pessoa faz isso uma vez, no computador dela:
 

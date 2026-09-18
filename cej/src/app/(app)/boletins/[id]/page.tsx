@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { apagarBoletim, enviarTeste, prepararEnvio, refazerFalhas } from "../acoes";
+import {
+  apagarBoletim, desmarcarEnviadoPelaMao, enviarTeste, prepararEnvio, refazerFalhas,
+} from "../acoes";
 import { EnvioEmAndamento } from "./envio";
 import { Redacao } from "./redacao";
 import { exigirPessoa } from "@/lib/auth";
@@ -69,14 +71,31 @@ export default async function PaginaDoBoletim({
                   : b.estado === "ENVIANDO" ? "var(--tinta-ambar)" : "var(--fosco)"
               }
             >
-              {b.estado === "ENVIADO" ? "Enviado" : b.estado === "ENVIANDO" ? "Enviando" : "Rascunho"}
+              {b.estado === "ENVIADO"
+                ? b.enviadoPelaMao
+                  ? "Enviado pela mão"
+                  : "Enviado"
+                : b.estado === "ENVIANDO"
+                  ? "Enviando"
+                  : "Rascunho"}
             </Selo>
           </div>
           <Titulo className="mt-1.5">{b.assunto}</Titulo>
           {b.enviadoEm && (
             <p className="mt-1.5 text-[14px] text-grafite">
-              Enviado em {porBarras(b.enviadoEm.toISOString().slice(0, 10))} para {andamento.enviados}{" "}
-              {andamento.enviados === 1 ? "pessoa" : "pessoas"}.
+              {b.enviadoPelaMao ? (
+                <>
+                  Marcado como enviado pela mão em{" "}
+                  {porBarras(b.enviadoEm.toISOString().slice(0, 10))}, quando havia{" "}
+                  {b.quantosNoSegmento} {b.quantosNoSegmento === 1 ? "pessoa" : "pessoas"} no
+                  segmento.
+                </>
+              ) : (
+                <>
+                  Enviado em {porBarras(b.enviadoEm.toISOString().slice(0, 10))} para{" "}
+                  {andamento.enviados} {andamento.enviados === 1 ? "pessoa" : "pessoas"}.
+                </>
+              )}
             </p>
           )}
         </div>
@@ -105,6 +124,7 @@ export default async function PaginaDoBoletim({
               <p className="mt-4 border-t border-linha pt-3 text-[13px] leading-relaxed text-fosco">
                 Um boletim enviado não muda mais: ele já está na caixa das pessoas, e editá-lo aqui
                 só criaria uma segunda versão da verdade. Para mandar outra coisa, comece um novo.
+                {b.enviadoPelaMao && " Se a marca foi um engano, dá para voltar atrás ao lado."}
               </p>
             </Cartao>
           )}
@@ -189,10 +209,49 @@ export default async function PaginaDoBoletim({
                   </Botao>
                 </form>
               </div>
+
+              {/* O caminho da mão: enquanto o disparo não está ligado, ele é o
+                  principal; depois, continua sendo a saída de emergência. */}
+              <div className="mt-4 border-t border-linha pt-3.5">
+                <Sobrescrito>{impedimento ? "Por enquanto" : "Ou"}</Sobrescrito>
+                <p className="mt-1.5 text-[13.5px] leading-relaxed text-grafite">
+                  {impedimento
+                    ? "O boletim não precisa esperar. O sistema prepara o texto e a lista do segmento; você cola no Gmail e manda."
+                    : "Mandar pelo Gmail, com o texto e a lista prontos — útil quando alguma coisa impede o disparo."}
+                </p>
+                <BotaoLink href={`/boletins/${b.id}/copiar`} className="mt-3 w-full">
+                  Preparar para mandar pela mão
+                </BotaoLink>
+              </div>
             </Cartao>
           )}
 
-          {b.estado !== "RASCUNHO" && (
+          {b.estado !== "RASCUNHO" && b.enviadoPelaMao && (
+            <Cartao className="p-4">
+              <Sobrescrito>Enviado pela mão</Sobrescrito>
+              <p className="mt-2 text-[14px] leading-relaxed text-grafite">
+                Este boletim saiu pelo e-mail de alguém da equipe, e não pelo sistema. Por isso não
+                há aqui uma lista de quem recebeu: quem entregou foi outro programa, e afirmar
+                entrega que eu não vi seria inventar.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <BotaoLink href={`/boletins/${b.id}/copiar`}>Ver o que foi preparado</BotaoLink>
+              </div>
+              <details className="mt-3 text-[13px] text-fosco">
+                <summary className="cursor-pointer">Marquei sem querer</summary>
+                <p className="mt-2 leading-relaxed">
+                  Volta a ser rascunho, editável, como se nada tivesse acontecido. Só o que foi
+                  marcado à mão volta atrás — o que o sistema enviou, saiu.
+                </p>
+                <form action={desmarcarEnviadoPelaMao} className="mt-2.5">
+                  <input type="hidden" name="id" value={b.id} />
+                  <Botao>Voltar para rascunho</Botao>
+                </form>
+              </details>
+            </Cartao>
+          )}
+
+          {b.estado !== "RASCUNHO" && !b.enviadoPelaMao && (
             <Cartao className="p-4">
               <Sobrescrito>Andamento</Sobrescrito>
               <div className="mt-3">

@@ -71,6 +71,23 @@ function paragrafos(corpo: string): string {
     .join("");
 }
 
+/**
+ * O tipo na frente do título — a não ser que o título já o diga.
+ *
+ * "Mesa-redonda: Mesa-redonda: memória, exílio e retorno" foi o que apareceu na
+ * primeira versão, e é o tipo de coisa que só se vê olhando o boletim pronto. As
+ * pessoas batizam a atividade com o gênero dentro do nome, e é natural que
+ * façam: é assim que o cartaz vai sair.
+ */
+export function tituloComTipo(a: AtividadeNoEmail): string {
+  const tipo = NOME_DO_TIPO[a.tipo];
+  const jaDiz = a.titulo
+    .trim()
+    .toLocaleLowerCase("pt-BR")
+    .startsWith(tipo.toLocaleLowerCase("pt-BR"));
+  return jaDiz ? a.titulo : `${tipo}: ${a.titulo}`;
+}
+
 /** Quando a atividade acontece, numa linha. */
 export function quandoPorExtenso(a: AtividadeNoEmail): string {
   const base = a.diaFinal
@@ -80,8 +97,19 @@ export function quandoPorExtenso(a: AtividadeNoEmail): string {
 }
 
 function blocoDaAtividade(a: AtividadeNoEmail): string {
+  // No HTML o tipo é uma etiqueta acima do título, então a repetição aparece de
+  // outra forma: "MESA-REDONDA" em cima de "Mesa-redonda: memória…". Quando o
+  // título já diz o gênero, a etiqueta sai.
+  const tipo = NOME_DO_TIPO[a.tipo];
+  const tituloJaDizOTipo = a.titulo
+    .trim()
+    .toLocaleLowerCase("pt-BR")
+    .startsWith(tipo.toLocaleLowerCase("pt-BR"));
+
   const linhas = [
-    `<div style="font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:${COR.fosco};font-weight:bold">${escaparHtml(NOME_DO_TIPO[a.tipo])}</div>`,
+    tituloJaDizOTipo
+      ? ""
+      : `<div style="font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:${COR.fosco};font-weight:bold">${escaparHtml(tipo)}</div>`,
     `<div style="font-size:18px;font-weight:bold;color:${COR.tinta};margin-top:4px">${escaparHtml(a.titulo)}</div>`,
     `<div style="font-size:14px;color:${COR.grafite};margin-top:6px">${escaparHtml(quandoPorExtenso(a))}${a.local ? ` &middot; ${escaparHtml(a.local)}` : ""}</div>`,
   ];
@@ -104,6 +132,22 @@ export function enderecoDeDescadastro(endereco: string, chave: string): string {
   return `${endereco}/descadastrar/${chave}`;
 }
 
+/**
+ * O rodapé de quem vai mandar pela mão.
+ *
+ * Um boletim copiado para o Gmail e disparado em Cco é **uma mensagem só** para
+ * muita gente. Não há como pôr nela o link pessoal de descadastro de cada um: o
+ * link que fosse não seria de ninguém em particular, e clicá-lo descadastraria a
+ * pessoa errada — quem quer que tenha sido a primeira da lista.
+ *
+ * Então o pedido de saída passa a ser uma frase, e o trabalho passa a ser de
+ * quem recebe a resposta. É pior que o link, e é honesto: quem pede para sair
+ * precisa de um jeito de pedir, mesmo quando o jeito é responder o e-mail.
+ */
+const SAIDA_PELA_MAO =
+  "Para não receber mais estas mensagens, responda a este e-mail com a palavra SAIR — " +
+  "nós tiramos você da lista.";
+
 export function montarBoletim(dados: {
   assunto: string;
   corpo: string;
@@ -111,8 +155,14 @@ export function montarBoletim(dados: {
   destinatario: Destinatario;
   /** O endereço em que o sistema está no ar, para montar o link de descadastro. */
   endereco: string;
+  /**
+   * A versão para copiar e mandar pelo Gmail, enquanto o disparo do sistema não
+   * está ligado. Troca o link pessoal de descadastro por um pedido por escrito —
+   * ver `SAIDA_PELA_MAO`.
+   */
+  pelaMao?: boolean;
 }): { html: string; texto: string; linkDeDescadastro: string } {
-  const { assunto, corpo, atividades, destinatario, endereco } = dados;
+  const { assunto, corpo, atividades, destinatario, endereco, pelaMao = false } = dados;
   const sair = enderecoDeDescadastro(endereco, destinatario.chave);
 
   const html = `<!DOCTYPE html>
@@ -150,7 +200,11 @@ export function montarBoletim(dados: {
   <tr><td style="padding-top:28px;font-size:12px;line-height:1.6;color:${COR.fosco}">
     Você recebe este boletim porque se cadastrou ou se inscreveu numa atividade do Centro de
     Estudos Judaicos da USP.<br>
-    <a href="${escaparHtml(sair)}" style="color:${COR.fosco};text-decoration:underline">Não quero mais receber</a>
+    ${
+      pelaMao
+        ? escaparHtml(SAIDA_PELA_MAO)
+        : `<a href="${escaparHtml(sair)}" style="color:${COR.fosco};text-decoration:underline">Não quero mais receber</a>`
+    }
   </td></tr>
 </table>
 </td></tr></table>
@@ -169,7 +223,7 @@ export function montarBoletim(dados: {
           "",
           ...atividades.flatMap((a) =>
             [
-              `${NOME_DO_TIPO[a.tipo]}: ${a.titulo}`,
+              tituloComTipo(a),
               `${quandoPorExtenso(a)}${a.local ? ` · ${a.local}` : ""}`,
               a.resumo ?? null,
               a.linkDeInscricao ? `Inscrições: ${a.linkDeInscricao}` : null,
@@ -180,7 +234,7 @@ export function montarBoletim(dados: {
       : []),
     "—",
     "Você recebe este boletim porque se cadastrou ou se inscreveu numa atividade do Centro.",
-    `Para não receber mais: ${sair}`,
+    pelaMao ? SAIDA_PELA_MAO : `Para não receber mais: ${sair}`,
     "",
   ].join("\n");
 

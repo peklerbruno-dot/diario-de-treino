@@ -97,9 +97,19 @@ segunda função: quem receber o PDF pode abrir o link e ver que ele saiu daqui.
 ## O boletim, e o que ele exige de fora
 
 Mandar e-mail é a única coisa no sistema que depende de um serviço de terceiro e
-de um domínio — e por isso é a única que pode não estar ligada. O resto funciona
-sem ela: a base, a segmentação, as inscrições, o descadastro, e a exportação da
-lista segmentada em planilha, que é o que faz o CRM valer desde o primeiro dia.
+de um domínio — e por isso é a única que pode não estar ligada. **O sistema não
+espera por ela para ir ao ar.** Sem chave configurada, o boletim é escrito aqui e
+mandado pelo Gmail de alguém: a tela *Preparar para mandar pela mão* entrega a
+lista de e-mails do segmento, o assunto e a mensagem em duas versões, prontos
+para colar — em Cco, com o aviso de que uma lista no campo "Para" é a base
+inteira entregue a cada destinatário.
+
+Essa versão troca o link pessoal de descadastro por um pedido escrito ("responda
+com SAIR"), porque numa mensagem de Cco o link seria de uma pessoa só e
+descadastraria a errada. E o que fica registrado é só o que o sistema sabe: que
+alguém marcou como enviado, quando, e quantas pessoas havia no segmento naquele
+dia — nunca uma confirmação de entrega por pessoa, que quem entregou foi outro
+programa.
 
 Quando está ligado, o envio anda em lotes de cem, marcando cada linha no banco à
 medida que sai. É o que permite fechar a página no meio e continuar depois, sem

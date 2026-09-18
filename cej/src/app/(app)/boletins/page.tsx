@@ -29,15 +29,16 @@ export default async function Boletins() {
       {!pronto && (
         <div className="mb-5">
           <Aviso tom="atencao">
-            <b>O envio de e-mail ainda não está ligado.</b> Você pode escrever e montar boletins
-            normalmente — eles ficam guardados como rascunho —, mas o disparo só funciona depois de
-            configurar o serviço.{" "}
+            <b>Por enquanto, o boletim sai pela mão de vocês.</b> Escreva aqui normalmente: o
+            sistema guarda o texto, monta a lista de atividades com data e local certos, e recorta
+            o segmento. Na hora de mandar, ele prepara tudo para colar no Gmail — em <b>Cco</b>.
+            <br />
+            O disparo automático, direto daqui, depende de um domínio próprio do Centro e de três
+            variáveis.{" "}
             <Link href="/boletins/configuracao" className="text-realce underline">
-              Ver o que falta
+              Ver o que falta para ligar
             </Link>
-            . Enquanto isso, dá para{" "}
-            <Link href="/contatos" className="text-realce underline">baixar a lista segmentada</Link>{" "}
-            e mandar por onde vocês já mandam e-mail hoje.
+            .
           </Aviso>
         </div>
       )}
@@ -62,7 +63,9 @@ export default async function Boletins() {
                     <span className="block text-[15px] font-medium">{b.assunto}</span>
                     <span className="block text-[13px] text-fosco">
                       {b.enviadoEm
-                        ? `enviado em ${porBarras(b.enviadoEm.toISOString().slice(0, 10))}`
+                        ? `${b.enviadoPelaMao ? "enviado pela mão em" : "enviado em"} ${porBarras(
+                            b.enviadoEm.toISOString().slice(0, 10),
+                          )}`
                         : `criado em ${porBarras(b.criadoEm.toISOString().slice(0, 10))}`}
                       {b.atividades.length > 0 &&
                         ` · ${b.atividades.length} ${b.atividades.length === 1 ? "atividade" : "atividades"}`}
@@ -84,7 +87,13 @@ export default async function Boletins() {
                           : "var(--fosco)"
                     }
                   >
-                    {b.estado === "ENVIADO" ? "Enviado" : b.estado === "ENVIANDO" ? "Enviando" : "Rascunho"}
+                    {b.estado === "ENVIADO"
+                      ? b.enviadoPelaMao
+                        ? "Pela mão"
+                        : "Enviado"
+                      : b.estado === "ENVIANDO"
+                        ? "Enviando"
+                        : "Rascunho"}
                   </Selo>
                 </Link>
               </li>

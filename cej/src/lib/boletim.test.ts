@@ -130,3 +130,61 @@ describe("escapar", () => {
     expect(escaparHtml('& < > "')).toBe("&amp; &lt; &gt; &quot;");
   });
 });
+
+describe("a versão para mandar pela mão", () => {
+  it("troca o link pessoal por um pedido escrito", () => {
+    // Num Cco é uma mensagem só para muita gente: o link que fosse não seria de
+    // ninguém em particular, e clicá-lo descadastraria a pessoa errada.
+    const { html, texto } = montar({ pelaMao: true });
+
+    expect(html).not.toContain("/descadastrar/");
+    expect(texto).not.toContain("/descadastrar/");
+    expect(html).toContain("responda a este e-mail com a palavra SAIR");
+    expect(texto).toContain("responda a este e-mail com a palavra SAIR");
+  });
+
+  it("continua dizendo por que a pessoa está recebendo aquilo", () => {
+    const { html, texto } = montar({ pelaMao: true });
+    expect(html).toContain("Você recebe este boletim porque");
+    expect(texto).toContain("Você recebe este boletim porque");
+  });
+
+  it("e o resto do boletim é o mesmo", () => {
+    const comLink = montar({ atividades: [atividade()] });
+    const pelaMao = montar({ atividades: [atividade()], pelaMao: true });
+
+    expect(pelaMao.html).toContain("Aula inaugural");
+    expect(pelaMao.html).toContain("Quarta, 7 de outubro, às 19:00");
+    // A única diferença é o rodapé.
+    expect(comLink.html.length - pelaMao.html.length).toBeLessThan(400);
+  });
+});
+
+describe("o tipo na frente do título", () => {
+  it("entra quando o título não o diz", () => {
+    const { texto, html } = montar({ atividades: [atividade({ titulo: "Memória e exílio" })] });
+    expect(texto).toContain("Palestra: Memória e exílio");
+    // No HTML ele é a etiqueta acima do título.
+    expect(html).toContain(">Palestra</div>");
+  });
+
+  it("não se repete quando o título já começa com ele", () => {
+    // "Mesa-redonda: Mesa-redonda: memória, exílio e retorno" foi o que saiu na
+    // primeira versão. As pessoas batizam a atividade com o gênero dentro do
+    // nome, e é natural — é assim que o cartaz vai sair.
+    const a = atividade({ tipo: "MESA_REDONDA", titulo: "Mesa-redonda: memória e exílio" });
+    const { texto, html } = montar({ atividades: [a] });
+
+    expect(texto).toContain("Mesa-redonda: memória e exílio");
+    expect(texto).not.toContain("Mesa-redonda: Mesa-redonda");
+    // No HTML o tipo é uma etiqueta acima do título; ela some pelo mesmo motivo.
+    expect(html).not.toMatch(/MESA-REDONDA|>Mesa-redonda<\/div>/);
+    expect(html).toContain("Mesa-redonda: memória e exílio");
+  });
+
+  it("nem quando a caixa das letras é outra", () => {
+    const a = atividade({ tipo: "CURSO", titulo: "CURSO de hebraico bíblico" });
+    expect(montar({ atividades: [a] }).texto).toContain("CURSO de hebraico bíblico");
+    expect(montar({ atividades: [a] }).texto).not.toContain("Curso: CURSO");
+  });
+});

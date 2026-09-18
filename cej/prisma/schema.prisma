@@ -430,6 +430,15 @@ model Boletim {
   criadoEm  DateTime  @default(now())
   enviadoEm DateTime?
 
+  /// Saiu pela mão de alguém, por fora do sistema — copiado e colado no Gmail.
+  ///
+  /// Existe para o histórico não mentir. Um boletim enviado pelo sistema tem uma
+  /// linha por pessoa dizendo que a mensagem saiu; um enviado pela mão não tem
+  /// como ter isso, porque quem entregou foi outro programa. Guardar só a marca
+  /// e quantos estavam no segmento naquele dia é o que eu sei de verdade.
+  enviadoPelaMao Boolean @default(false)
+  quantosNoSegmento Int?
+
   atividades AtividadeNoBoletim[]
   envios     EnvioDeBoletim[]
 }

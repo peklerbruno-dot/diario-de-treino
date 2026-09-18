@@ -4,12 +4,55 @@ Guia para quem não programa. Uma tarde, uma vez na vida, e depois nunca mais.
 
 O sistema inteiro — a base de contatos, a segmentação, as inscrições, a presença,
 os certificados — **funciona sem isto**. O que esta página liga é uma coisa só: o
-disparo de e-mail. Enquanto não estiver ligado, você continua podendo escrever
-boletins (ficam guardados como rascunho) e baixar a lista segmentada em planilha,
-na tela Contatos, para mandar por onde vocês já mandam hoje.
+disparo automático.
 
 Dentro do sistema, a tela **Boletins → Como está o envio** mostra em que pé cada
 passo daqui está, e tem um botão para conferir quando terminar.
+
+---
+
+## Enquanto o domínio não sai: mandar pela mão
+
+Isto não é um plano B improvisado; é um caminho que o sistema prepara. O boletim
+não precisa esperar por uma decisão de orçamento.
+
+1. Em **Boletins**, escreva o boletim como sempre: assunto, texto, e as
+   atividades a anunciar. O sistema monta a lista delas com data, hora e local
+   vindos do cadastro — ninguém redigita nada, e não há como anunciar um horário
+   que mudou.
+2. Escolha o segmento (vínculo, etiqueta) e clique em
+   **Preparar para mandar pela mão**.
+3. A tela entrega três coisas prontas: a lista de e-mails de quem pode receber, o
+   assunto, e a mensagem em duas versões — uma com formatação, para abrir numa
+   aba e copiar com Ctrl+A, e uma de texto simples, que funciona em qualquer
+   lugar.
+4. No Gmail: cole os e-mails em **Cco**, cole o assunto e a mensagem, e mande.
+5. Volte e clique em **Marcar como enviado**.
+
+Três coisas que valem saber sobre este caminho:
+
+**O Cco não é detalhe.** Uma lista de duzentos endereços no campo "Para" entrega
+a base inteira do Centro para cada uma dessas duzentas pessoas. É um vazamento de
+dado pessoal cometido com um clique, e não há como desfazer. A tela avisa, mas
+quem cola é você.
+
+**O pedido de saída muda de forma.** No disparo automático, cada pessoa recebe um
+link só dela, de um clique. Numa mensagem de Cco isso não existe: é uma mensagem
+só para todo mundo, e um link ali descadastraria a pessoa errada. Por isso a
+versão da mão pede que a pessoa **responda com a palavra SAIR**. Quando alguém
+responder, abra a ficha em Contatos e clique em **Descadastrado** — daí em diante
+o sistema a mantém fora de tudo, inclusive se a planilha antiga for importada de
+novo.
+
+**Há um teto.** O Gmail de uma conta comum recusa por volta de 500 destinatários
+por dia, e uma mensagem com centenas em Cco costuma cair no spam de quem recebe.
+Até umas cem pessoas, funciona bem. Acima disso, divida em levas — ou trate como
+o sinal de que chegou a hora de ligar o disparo.
+
+O que fica guardado no sistema é só o que ele sabe de verdade: que alguém marcou
+como enviado, quando, e quantas pessoas havia no segmento naquele dia. Ele não
+inventa uma confirmação de entrega por pessoa, porque quem entregou foi outro
+programa.
 
 ---
 

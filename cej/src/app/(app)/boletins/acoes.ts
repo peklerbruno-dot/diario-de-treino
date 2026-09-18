@@ -352,6 +352,63 @@ export async function refazerFalhas(dados: FormData): Promise<void> {
   redirect(`/boletins/${id}`);
 }
 
+/**
+ * Marcar um boletim como enviado pela mão.
+ *
+ * Enquanto o disparo do sistema não está ligado, o boletim sai pelo Gmail de
+ * alguém. O sistema não tem como saber que isso aconteceu — mas precisa saber,
+ * senão o mesmo boletim é reescrito em novembro por outra pessoa que não viu
+ * que ele já foi.
+ *
+ * O que fica guardado é só o que eu sei de verdade: que alguém disse que
+ * mandou, quando, e quantas pessoas havia no segmento naquele dia. Não crio uma
+ * linha por pessoa dizendo "recebeu": quem entregou foi outro programa, e essa
+ * linha seria uma afirmação que eu não posso fazer.
+ */
+export async function marcarEnviadoPelaMao(dados: FormData): Promise<void> {
+  await exigirPessoa();
+  const id = texto(dados, "id");
+
+  const boletim = await bd.boletim.findUnique({ where: { id } });
+  if (!boletim || boletim.estado !== "RASCUNHO") redirect(`/boletins/${id}`);
+
+  const destinatarios = await quemRecebe({
+    vinculo: boletim.filtroVinculo,
+    etiquetaId: boletim.filtroEtiquetaId,
+  });
+
+  await bd.boletim.update({
+    where: { id },
+    data: {
+      estado: "ENVIADO",
+      enviadoEm: new Date(),
+      enviadoPelaMao: true,
+      quantosNoSegmento: destinatarios.length,
+    },
+  });
+
+  revalidatePath("/boletins");
+  redirect(`/boletins/${id}`);
+}
+
+/** Desfaz a marca, para quem clicou antes de mandar de verdade. */
+export async function desmarcarEnviadoPelaMao(dados: FormData): Promise<void> {
+  await exigirPessoa();
+  const id = texto(dados, "id");
+
+  const boletim = await bd.boletim.findUnique({ where: { id } });
+  // Só o que foi marcado à mão volta atrás. O que o sistema enviou, saiu.
+  if (!boletim?.enviadoPelaMao) redirect(`/boletins/${id}`);
+
+  await bd.boletim.update({
+    where: { id },
+    data: { estado: "RASCUNHO", enviadoEm: null, enviadoPelaMao: false, quantosNoSegmento: null },
+  });
+
+  revalidatePath("/boletins");
+  redirect(`/boletins/${id}`);
+}
+
 export async function apagarBoletim(dados: FormData): Promise<void> {
   await exigirPessoa();
   const id = texto(dados, "id");

@@ -27,7 +27,7 @@ export default async function ConfiguracaoDoEnvio() {
     <>
       <Topo
         titulo="Como está o envio"
-        chamada="O que o sistema precisa para mandar boletins, e se ele já tem. Tudo o mais funciona sem isto — só o disparo depende desta página."
+        chamada="O que o sistema precisa para disparar boletins sozinho, e se ele já tem. Nada mais no sistema depende desta página — e, enquanto ela não estiver completa, o boletim continua saindo pela mão de vocês, com o texto e a lista prontos."
         acao={<BotaoLink href="/boletins">Voltar aos boletins</BotaoLink>}
       />
 
@@ -40,11 +40,16 @@ export default async function ConfiguracaoDoEnvio() {
                 c.pronto ? "text-verde" : "text-ambar"
               }`}
             >
-              {c.pronto ? "O envio está ligado" : "O envio ainda não está ligado"}
+              {c.pronto ? "O disparo automático está ligado" : "O boletim sai pela mão, por enquanto"}
             </p>
 
             {c.impedimento && (
-              <div className="mt-3">
+              <div className="mt-3 space-y-2.5">
+                <p className="text-[14px] leading-relaxed text-grafite">
+                  Isso não impede nada além do disparo automático. Em{" "}
+                  <Link href="/boletins" className="text-realce hover:underline">Boletins</Link>, o
+                  sistema prepara o texto e a lista do segmento para você mandar pelo Gmail.
+                </p>
                 <Aviso tom="atencao">{c.impedimento}</Aviso>
               </div>
             )}
@@ -85,7 +90,8 @@ export default async function ConfiguracaoDoEnvio() {
                 <b className="text-tinta">Um domínio do Centro.</b> Um endereço próprio, tipo
                 <code className="mx-1">cej-usp.org</code>, por volta de R$ 50 por ano. É de onde os
                 boletins vão sair. Não dá para mandar em massa como <code>@usp.br</code> sem que a
-                TI da USP autorize — e o domínio próprio não depende de ninguém.
+                TI da USP autorize — e o domínio próprio não depende de ninguém. É o único passo
+                daqui que custa dinheiro, e o único que costuma precisar do aval de alguém.
               </Passo>
               <Passo numero={2} feito={false}>
                 <b className="text-tinta">Três registros de DNS.</b> O Resend mostra as três linhas;
