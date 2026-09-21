@@ -1,0 +1,944 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<!--ARTIFACT-START-->
+<title>Sionismo e Identidade Judaica</title>
+<meta name="description" content="Dissertação de mestrado de Bruno Pekler (FFLCH-USP) sobre o papel do sionismo na identidade judaica de estudantes universitários em São Paulo." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" />
+<style>
+  :root{
+    --ground:#eff0f3; --surface:#f8f9fb; --surface-2:#e7e9ee;
+    --ink:#13161d; --ink-soft:#333a47; --muted:#5d6472;
+    --rule:#d2d6de; --rule-soft:#e1e4ea;
+    --accent:#28408c; --accent-soft:#e0e5f4; --accent-ink:#1d3070;
+    --clay:#9e5327; --clay-soft:#f1e5dc;
+    --sand:#dfd8c9;
+    --shadow:0 1px 2px rgba(19,22,29,.05), 0 8px 24px -16px rgba(19,22,29,.28);
+    --serif:"Newsreader",Georgia,"Times New Roman",serif;
+    --sans:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+    --gutter:clamp(16px,5vw,64px);
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --ground:#0f1116; --surface:#161a22; --surface-2:#1d222c;
+      --ink:#e7e9ee; --ink-soft:#ccd1db; --muted:#99a0ae;
+      --rule:#272d38; --rule-soft:#1f242e;
+      --accent:#9db0f2; --accent-soft:#1b2440; --accent-ink:#b9c6f7;
+      --clay:#d79263; --clay-soft:#2c211a;
+      --sand:#3a3527;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -18px rgba(0,0,0,.8);
+      color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#0f1116; --surface:#161a22; --surface-2:#1d222c;
+    --ink:#e7e9ee; --ink-soft:#ccd1db; --muted:#99a0ae;
+    --rule:#272d38; --rule-soft:#1f242e;
+    --accent:#9db0f2; --accent-soft:#1b2440; --accent-ink:#b9c6f7;
+    --clay:#d79263; --clay-soft:#2c211a;
+    --sand:#3a3527;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -18px rgba(0,0,0,.8);
+    color-scheme:dark;
+  }
+
+  *,*::before,*::after{box-sizing:border-box}
+  body{
+    margin:0;background:var(--ground);color:var(--ink);
+    font-family:var(--sans);font-size:16px;line-height:1.65;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  }
+  img{max-width:100%}
+  [hidden]{display:none !important}
+  a{color:inherit}
+  ::selection{background:var(--accent-soft);color:var(--accent-ink)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+
+  /* ---------- shell ---------- */
+  .shell{display:block;max-width:1320px;margin:0 auto;padding-inline:var(--gutter)}
+  .stage{display:block}
+  @media (min-width:1100px){
+    .stage{display:grid;grid-template-columns:210px minmax(0,1fr);gap:clamp(32px,5vw,88px);align-items:start}
+  }
+  .col{max-width:73ch}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:sticky;top:env(safe-area-inset-top,0px);z-index:40;
+    background:color-mix(in srgb,var(--ground) 88%,transparent);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--rule-soft);
+  }
+  .topbar-in{display:flex;align-items:center;justify-content:space-between;gap:16px;
+    max-width:1320px;margin:0 auto;padding-inline:var(--gutter);padding-block:10px}
+  .brand{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+    text-decoration:none;display:flex;gap:10px;align-items:baseline;min-width:0}
+  .brand b{color:var(--ink);font-weight:500;letter-spacing:.06em}
+  .brand span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pdf-link{
+    font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;
+    text-decoration:none;color:var(--accent-ink);border:1px solid var(--accent);
+    padding:6px 12px;border-radius:999px;white-space:nowrap;
+  }
+  .pdf-link:hover{background:var(--accent-soft)}
+
+  /* ---------- index rail ---------- */
+  .rail{display:none}
+  @media (min-width:1100px){
+    .rail{display:block;position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px);padding-top:6px}
+    .rail ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;border-left:1px solid var(--rule)}
+    .rail a{
+      display:grid;grid-template-columns:42px 1fr;gap:6px;align-items:baseline;
+      text-decoration:none;color:var(--muted);font-size:13.5px;line-height:1.35;
+      padding:7px 10px 7px 13px;margin-left:-1px;border-left:2px solid transparent;
+    }
+    .rail a .n{font-family:var(--mono);font-size:10.5px;letter-spacing:.02em;color:var(--muted);opacity:.75;white-space:nowrap}
+    .rail a:hover{color:var(--ink)}
+    .rail a[aria-current="true"]{color:var(--ink);border-left-color:var(--accent);font-weight:500}
+    .rail a[aria-current="true"] .n{color:var(--accent);opacity:1}
+    .rail-head{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+      color:var(--muted);margin:0 0 12px 15px}
+  }
+
+  /* ---------- typography ---------- */
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:500;text-wrap:balance;margin:0}
+  h1{font-size:clamp(30px,5.4vw,53px);line-height:1.06;letter-spacing:-.015em}
+  h2{font-size:clamp(24px,3.4vw,34px);line-height:1.14;letter-spacing:-.01em}
+  h3{font-size:clamp(19px,2.2vw,22px);line-height:1.25}
+  h4{font-family:var(--sans);font-size:15px;font-weight:600;line-height:1.35}
+  p{margin:0 0 1em}
+  .lede{font-size:clamp(17px,1.9vw,19.5px);line-height:1.6;color:var(--ink-soft)}
+  .small{font-size:13.5px;line-height:1.55;color:var(--muted)}
+  .mono{font-family:var(--mono)}
+  strong{font-weight:600}
+  em{font-style:italic}
+
+  section{padding-block:clamp(52px,7vw,92px);border-top:1px solid var(--rule-soft)}
+  section:first-of-type{border-top:0}
+  .sec-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px;margin-bottom:clamp(22px,3vw,34px)}
+  .sec-head .chap{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:3px 9px}
+
+  /* ---------- hero ---------- */
+  .hero{padding-block:clamp(40px,7vw,86px) clamp(40px,6vw,72px)}
+  .hero .affil{margin-bottom:22px}
+  .hero h1{margin-bottom:26px;max-width:21ch}
+  .byline{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;
+    font-size:15px;color:var(--ink-soft);margin-bottom:26px}
+  .byline .name{font-family:var(--serif);font-size:21px;color:var(--ink)}
+  .epigraph{
+    border-left:2px solid var(--clay);padding:2px 0 2px 20px;margin:0 0 30px;
+    max-width:56ch;font-family:var(--serif);font-style:italic;font-size:clamp(17px,2.1vw,20px);
+    line-height:1.45;color:var(--ink-soft);
+  }
+  .epigraph cite{display:block;margin-top:9px;font-style:normal;font-family:var(--mono);
+    font-size:11px;letter-spacing:.06em;color:var(--muted)}
+  .facts{display:flex;flex-wrap:wrap;gap:10px 28px;margin-bottom:30px;padding-top:22px;border-top:1px solid var(--rule)}
+  .fact{min-width:130px}
+  .fact dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+  .fact dd{margin:0;font-size:14.5px;color:var(--ink-soft)}
+  .actions{display:flex;flex-wrap:wrap;gap:10px}
+  .btn{
+    display:inline-flex;align-items:center;gap:9px;text-decoration:none;
+    font-size:14px;font-weight:500;padding:11px 20px;border-radius:2px;border:1px solid var(--accent);
+    background:var(--accent);color:var(--ground);transition:opacity .15s ease;
+  }
+  .btn:hover{opacity:.87}
+  .btn--ghost{background:transparent;color:var(--accent-ink);border-color:var(--rule)}
+  .btn--ghost:hover{border-color:var(--accent);background:var(--accent-soft);opacity:1}
+
+  /* ---------- stat strip ---------- */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(142px,1fr));gap:1px;
+    background:var(--rule);border:1px solid var(--rule);margin-top:clamp(34px,5vw,54px)}
+  .stat{background:var(--ground);padding:18px 18px 16px}
+  .stat .v{font-family:var(--serif);font-size:clamp(28px,4vw,38px);line-height:1;letter-spacing:-.02em;
+    font-variant-numeric:tabular-nums;display:block;margin-bottom:8px}
+  .stat .k{font-size:12.5px;line-height:1.4;color:var(--muted)}
+
+  /* ---------- generic pieces ---------- */
+  .grid{display:grid;gap:18px}
+  @media (min-width:700px){
+    .grid--2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid--3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  }
+  .card{background:var(--surface);border:1px solid var(--rule-soft);padding:20px;border-radius:3px}
+  .card h4{margin-bottom:7px}
+  .card p:last-child{margin-bottom:0}
+  .card .src{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:var(--muted);
+    display:block;margin-bottom:10px}
+
+  blockquote{
+    margin:0 0 20px;padding-left:22px;border-left:2px solid var(--rule);
+    font-family:var(--serif);font-size:clamp(17px,2vw,19.5px);line-height:1.5;color:var(--ink-soft);
+  }
+  blockquote p{margin-bottom:.5em}
+  blockquote footer{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--muted)}
+
+  .note{font-size:13px;line-height:1.55;color:var(--muted);border-top:1px solid var(--rule-soft);padding-top:12px;margin-top:22px}
+
+  /* ---------- resumo ---------- */
+  .toggle{display:inline-flex;border:1px solid var(--rule);border-radius:999px;padding:3px;gap:3px;margin-bottom:22px}
+  .toggle button{
+    font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    background:transparent;border:0;color:var(--muted);padding:6px 15px;border-radius:999px;cursor:pointer;
+  }
+  .toggle button[aria-pressed="true"]{background:var(--accent);color:var(--ground)}
+  .keywords{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;padding:0;list-style:none}
+  .keywords li{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--accent-ink);
+    background:var(--accent-soft);padding:5px 11px;border-radius:999px}
+
+  /* ---------- numbered list ---------- */
+  ol.steps{list-style:none;counter-reset:s;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+  ol.steps li{counter-increment:s;display:grid;grid-template-columns:30px 1fr;gap:14px;align-items:baseline}
+  ol.steps li::before{
+    content:counter(s,decimal-leading-zero);font-family:var(--mono);font-size:11px;
+    color:var(--accent);letter-spacing:.04em;padding-top:2px;
+  }
+  ol.steps p{margin:0}
+
+  /* ---------- timeline ---------- */
+  .tl{list-style:none;margin:0;padding:0;border-left:1px solid var(--rule)}
+  .tl li{position:relative;padding:0 0 26px 26px}
+  .tl li::before{content:"";position:absolute;left:-4.5px;top:8px;width:8px;height:8px;border-radius:50%;
+    background:var(--ground);border:1.5px solid var(--accent)}
+  .tl li:last-child{padding-bottom:0}
+  .tl .yr{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--accent);display:block;margin-bottom:3px}
+  .tl h4{margin-bottom:4px}
+  .tl p{margin:0;font-size:14.5px;color:var(--ink-soft)}
+
+  /* ---------- people ---------- */
+  .people{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(258px,1fr))}
+  .person{background:var(--surface);border:1px solid var(--rule-soft);padding:18px;border-radius:3px;
+    display:flex;flex-direction:column;gap:9px}
+  .person .top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+  .person .nm{font-family:var(--serif);font-size:21px;line-height:1}
+  .person .age{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .person .course{font-size:13.5px;color:var(--ink-soft);font-weight:500}
+  .person p{margin:0;font-size:13.5px;line-height:1.5;color:var(--muted)}
+  .tagrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:4px}
+  .tag{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+    border:1px solid var(--rule);color:var(--muted);padding:3px 8px;border-radius:999px}
+  .tag--pub{border-color:var(--accent);color:var(--accent-ink)}
+  .tag--pri{border-color:var(--sand);color:var(--muted)}
+
+  /* ---------- spectrum ---------- */
+  .spectrum{background:var(--surface);border:1px solid var(--rule-soft);padding:clamp(18px,3vw,30px);border-radius:3px}
+  .spec-axis{display:flex;justify-content:space-between;gap:16px;margin-bottom:14px}
+  .spec-axis span{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--muted);max-width:16ch;line-height:1.35}
+  .spec-axis span:last-child{text-align:right}
+  .spec-bar{position:relative;height:3px;border-radius:2px;margin:32px 0 58px;
+    background:linear-gradient(90deg,var(--accent) 0%,var(--sand) 52%,var(--clay) 100%)}
+  .pin{position:absolute;top:50%;transform:translate(-50%,-50%);background:none;border:0;padding:0;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:0}
+  .pin .dot{width:13px;height:13px;border-radius:50%;background:var(--surface);border:2px solid var(--ink);
+    transition:transform .15s ease}
+  .pin .lbl{position:absolute;top:18px;left:50%;transform:translateX(-50%);
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.03em;color:var(--muted);white-space:nowrap}
+  .pin:nth-child(even) .lbl{top:auto;bottom:18px}
+  .pin:hover .dot{transform:scale(1.2)}
+  .pin[aria-pressed="true"] .dot{background:var(--ink);transform:scale(1.25)}
+  .pin[aria-pressed="true"] .lbl{color:var(--ink)}
+  .spec-panel{border-top:1px solid var(--rule);padding-top:20px;display:grid;gap:12px}
+  .spec-panel .who{font-family:var(--serif);font-size:24px;line-height:1.1}
+  .spec-panel .cat{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+  .spec-panel blockquote{margin:0}
+  @media (max-width:640px){
+    .spec-bar{margin:44px 0 72px}
+    .pin .lbl{font-size:10px}
+  }
+
+  /* ---------- bars (lexical count) ---------- */
+  .bars{display:flex;flex-direction:column;gap:10px;margin:0;padding:0}
+  .bars div{display:grid;grid-template-columns:76px 1fr 30px;gap:12px;align-items:center;font-size:13.5px}
+  .bars .track{height:9px;background:var(--surface-2);border-radius:2px;overflow:hidden}
+  .bars .fill{display:block;height:100%;background:var(--accent);border-radius:2px}
+  .bars .num{font-family:var(--mono);font-size:12px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+
+  /* ---------- findings ---------- */
+  .finding{border-top:1px solid var(--rule);padding-top:22px;margin-top:26px}
+  .finding:first-of-type{border-top:0;padding-top:0;margin-top:0}
+  .finding .kicker{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--clay);margin-bottom:8px}
+  .finding h3{margin-bottom:10px}
+
+  /* ---------- compare ---------- */
+  .compare{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:8px}
+  @media (min-width:700px){.compare{grid-template-columns:1fr 1fr}}
+  .compare > div{background:var(--ground);padding:20px}
+  .compare h4{margin-bottom:10px}
+  .compare ul{margin:0;padding-left:18px;font-size:14px;color:var(--ink-soft);display:flex;flex-direction:column;gap:7px}
+
+  /* ---------- toc ---------- */
+  details.toc{border:1px solid var(--rule);border-radius:3px;background:var(--surface)}
+  details.toc summary{cursor:pointer;padding:16px 20px;font-family:var(--mono);font-size:11.5px;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--ink);list-style:none;display:flex;
+    justify-content:space-between;align-items:center;gap:12px}
+  details.toc summary::-webkit-details-marker{display:none}
+  details.toc summary::after{content:"+";font-size:16px;color:var(--accent)}
+  details.toc[open] summary::after{content:"–"}
+  .toc-list{list-style:none;margin:0;padding:0 20px 18px}
+  .toc-list li{display:grid;grid-template-columns:34px 1fr auto;gap:12px;align-items:baseline;
+    padding:6px 0;border-top:1px solid var(--rule-soft);font-size:14px}
+  .toc-list li.lvl2{padding-left:20px;color:var(--muted);font-size:13.5px}
+  .toc-list .no{font-family:var(--mono);font-size:11px;color:var(--accent)}
+  .toc-list .pg{font-family:var(--mono);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+  /* ---------- footer ---------- */
+  footer.site{border-top:1px solid var(--rule);padding-block:clamp(40px,6vw,64px) 56px;margin-top:clamp(40px,6vw,72px)}
+  .cite{background:var(--surface);border:1px solid var(--rule-soft);padding:18px 20px;border-radius:3px;
+    font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--ink-soft);
+    overflow-wrap:anywhere;margin-bottom:26px}
+  .foot-grid{display:grid;gap:26px}
+  @media (min-width:760px){.foot-grid{grid-template-columns:1.3fr 1fr}}
+  .fine{font-size:12.5px;line-height:1.6;color:var(--muted)}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
+  }
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="#inicio"><b>Bruno Pekler</b> <span>Dissertação de mestrado · FFLCH-USP</span></a>
+    <a class="pdf-link" href="dissertacao-bruno-pekler.pdf" target="_blank" rel="noopener">PDF · 95 p.</a>
+  </div>
+</div>
+
+<div class="shell">
+<div class="stage">
+
+  <nav class="rail" aria-label="Índice da dissertação">
+    <p class="rail-head">Índice</p>
+    <ol id="rail">
+      <li><a href="#inicio"><span class="n">—</span><span>Início</span></a></li>
+      <li><a href="#resumo"><span class="n">—</span><span>Resumo</span></a></li>
+      <li><a href="#objetivos"><span class="n">1.2</span><span>Objetivos</span></a></li>
+      <li><a href="#metodo"><span class="n">1.4</span><span>Metodologia</span></a></li>
+      <li><a href="#conceitos"><span class="n">3–5</span><span>Chaves de leitura</span></a></li>
+      <li><a href="#sionismo"><span class="n">6</span><span>O movimento sionista</span></a></li>
+      <li><a href="#entrevistados"><span class="n">7.1</span><span>Os nove</span></a></li>
+      <li><a href="#espectro"><span class="n">7.3</span><span>O espectro</span></a></li>
+      <li><a href="#achados"><span class="n">7.4–7.7</span><span>Achados</span></a></li>
+      <li><a href="#eua"><span class="n">7.8</span><span>O caso dos EUA</span></a></li>
+      <li><a href="#final"><span class="n">8</span><span>Considerações finais</span></a></li>
+      <li><a href="#sumario"><span class="n">—</span><span>Sumário e PDF</span></a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+  <!-- ============ HERO ============ -->
+  <section id="inicio" class="hero">
+    <p class="eyebrow affil">Universidade de São Paulo · Faculdade de Filosofia, Letras e Ciências Humanas</p>
+    <h1>O papel do sionismo na identidade judaica em estudantes judeus de graduação em São Paulo</h1>
+    <div class="byline">
+      <span class="name">Bruno Pekler</span>
+      <span>Orientação: Profa. Dra. Nancy Rozenchan</span>
+    </div>
+
+    <blockquote class="epigraph">
+      “Nós, judeus, somos notoriamente incapazes de concordar sobre qualquer coisa que comece com as palavras ‘nós, judeus’.”
+      <cite>Amos Oz e Fania Oz-Salzberger, 2015 — frase que recebia os visitantes na entrada do Museu Judaico de São Paulo</cite>
+    </blockquote>
+
+    <dl class="facts">
+      <div class="fact"><dt>Programa</dt><dd>Letras Estrangeiras e Tradução</dd></div>
+      <div class="fact"><dt>Área</dt><dd>Estudos Literários e Culturais</dd></div>
+      <div class="fact"><dt>Linha</dt><dd>Cultura, História e Sociedade</dd></div>
+      <div class="fact"><dt>Versão</dt><dd>Revisada · setembro de 2026</dd></div>
+    </dl>
+
+    <div class="actions">
+      <a class="btn" href="#resumo">Ler o resumo</a>
+      <a class="btn btn--ghost" href="dissertacao-bruno-pekler.pdf" target="_blank" rel="noopener">Abrir a dissertação em PDF</a>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><span class="v">9</span><span class="k">entrevistas semiestruturadas com universitários judeus</span></div>
+      <div class="stat"><span class="v">4</span><span class="k">eixos temáticos, desdobrados em 7 subseções</span></div>
+      <div class="stat"><span class="v">45–60</span><span class="k">minutos, em média, por entrevista</span></div>
+      <div class="stat"><span class="v">21</span><span class="k">ocorrências da palavra “genocídio” nas transcrições</span></div>
+    </div>
+  </section>
+
+  <!-- ============ RESUMO ============ -->
+  <section id="resumo">
+    <div class="col">
+      <div class="sec-head"><span class="chap">Resumo</span><h2>O que esta pesquisa investiga</h2></div>
+
+      <div class="toggle" role="group" aria-label="Idioma do resumo">
+        <button type="button" id="btn-pt" aria-pressed="true" data-lang="pt">Português</button>
+        <button type="button" id="btn-en" aria-pressed="false" data-lang="en">English</button>
+      </div>
+
+      <div id="resumo-pt">
+        <p class="lede">Esta dissertação investiga a relação entre o sionismo e a manifestação da identidade judaica de estudantes universitários judeus em São Paulo, no contexto posterior aos ataques de 7 de outubro de 2023 no sul de Israel e à guerra em Gaza.</p>
+        <p>Entendendo o sionismo como campo plural de correntes, a pesquisa mobiliza, a partir de Hall, Memmi, Pollak, Nora, Hirsch e Sorj, referencial teórico sobre identidade, memória e enquadramento da memória, pós-memória e identidade judaica contemporânea, além da historiografia do sionismo e de sua institucionalização no Brasil.</p>
+        <p>A abordagem é qualitativa: nove entrevistas semiestruturadas foram realizadas com universitários judeus de instituições públicas e privadas paulistanas, selecionados por bola de neve, com busca intencional de pluralidade quanto a vínculo religioso, tipo de instituição e posição política. O material foi organizado em quatro eixos, desdobrados em sete subseções: o significado do sionismo; a relação com o Estado de Israel; o 7 de outubro e a guerra em Gaza; e o ambiente universitário e a pluralidade comunitária.</p>
+        <p>Os resultados indicam que o sionismo opera como eixo constitutivo da identidade desses jovens, vivido em espectro que vai da fusão quase total entre judaísmo e sionismo à recusa explícita desse vínculo. Identifica-se um padrão de “silêncio preventivo”, interpretado à luz de Goffman como gestão estratégica de um estigma não visível no ambiente acadêmico. O 7 de outubro atuou como gatilho de reativação da memória herdada do Holocausto, intensificando a “sionificação” descrita por Sorj em parte dos entrevistados e produzindo, em outros, afastamento comunitário ou identidade crítica a Israel. Conclui-se que a pós-memória não determina resposta política única, mas fornece o repertório emocional do qual adesão e ruptura são construídas.</p>
+        <ul class="keywords">
+          <li>Identidade judaica</li><li>Sionismo</li><li>Pós-memória</li>
+          <li>Estudantes universitários</li><li>Comunidade judaica de São Paulo</li>
+        </ul>
+      </div>
+
+      <div id="resumo-en" hidden lang="en">
+        <p class="lede">This thesis investigates the relationship between Zionism and the expression of Jewish identity among Jewish undergraduate students in São Paulo, following the October 7, 2023 attacks in southern Israel and the war in Gaza.</p>
+        <p>Understanding Zionism as a plural field of currents, the research draws, from Hall, Memmi, Pollak, Nora, Hirsch and Sorj, on a theoretical framework addressing identity, memory and the framing of memory, postmemory, and contemporary Jewish identity, alongside the historiography of Zionism and its institutionalization in Brazil.</p>
+        <p>The approach is qualitative: nine semi-structured interviews were conducted with Jewish undergraduates at public and private universities in São Paulo, selected through snowball sampling, with an intentional search for plurality of religious observance, type of institution, and political position. The material was organized into four axes, developed across seven subsections: the meaning of Zionism; the relationship with the State of Israel; October 7 and the war in Gaza; and the university environment and internal community plurality.</p>
+        <p>Findings show that Zionism operates as a constitutive axis of these students' identity, ranging from near-total fusion of Judaism and Zionism to its explicit refusal. A pattern of “preventive silence” is identified, read through Goffman as strategic management of a non-visible stigma in academic settings. October 7 triggered the reactivation of inherited Holocaust memory, intensifying Sorj's “Zionification” in some interviewees while producing, in others, withdrawal from the community or a Jewish identity critical of Israel. Postmemory does not determine a single political response, but supplies the emotional repertoire from which adherence and rupture are built.</p>
+        <ul class="keywords">
+          <li>Jewish identity</li><li>Zionism</li><li>Postmemory</li>
+          <li>Undergraduate students</li><li>Jewish community of São Paulo</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ OBJETIVOS ============ -->
+  <section id="objetivos">
+    <div class="col">
+      <div class="sec-head"><span class="chap">1.2</span><h2>Objetivos</h2></div>
+      <p class="lede">Compreender a relação entre o sionismo e a manifestação da identidade de estudantes universitários judeus em São Paulo, no contexto posterior aos ataques de 7 de outubro de 2023.</p>
+      <p class="eyebrow" style="margin:26px 0 14px">Objetivos específicos</p>
+      <ol class="steps">
+        <li><p>Sistematizar o referencial teórico sobre identidade, diáspora, sionismo e memória, construindo as categorias analíticas usadas na interpretação dos dados.</p></li>
+        <li><p>Mapear as diferentes percepções sobre o sionismo e a relação com o Estado de Israel entre os estudantes judeus paulistanos.</p></li>
+        <li><p>Analisar como o ambiente universitário — público e privado — e as interações sociais modulam a expressão da identidade judaica e o posicionamento sobre o sionismo.</p></li>
+        <li><p>Identificar pontos de convergência, tensão e dissidência no debate interno da comunidade judaica, a partir da perspectiva dos jovens entrevistados.</p></li>
+        <li><p>Compreender de que maneira a pós-memória do Holocausto e os eventos geopolíticos recentes reconfiguram o vínculo desses jovens com o sionismo e a identidade judaica.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ METODOLOGIA ============ -->
+  <section id="metodo">
+    <div class="col">
+      <div class="sec-head"><span class="chap">1.4</span><h2>Como a pesquisa foi feita</h2></div>
+      <p class="lede">Abordagem qualitativa, em etapas complementares, com análise de conteúdo segundo Bardin (2016): pré-análise, exploração do material e tratamento dos resultados.</p>
+    </div>
+
+    <div class="grid grid--3" style="margin-top:28px">
+      <div class="card">
+        <span class="src">Etapa 1</span>
+        <h4>Pesquisa bibliográfica</h4>
+        <p>Identidade (Hall), memória e pós-memória (Pollak, Hirsch), identidade judaica (Sorj) e as correntes do sionismo (Avineri, Shapira).</p>
+      </div>
+      <div class="card">
+        <span class="src">Etapa 2</span>
+        <h4>Observação participante</h4>
+        <p>Sinagogas, clubes e instituições comunitárias acompanhados ao longo da pesquisa, com registro em diário de campo.</p>
+      </div>
+      <div class="card">
+        <span class="src">Etapa 3</span>
+        <h4>Entrevistas semiestruturadas</h4>
+        <p>Nove entrevistas remotas, gravadas com consentimento prévio, de 45 a 60 minutos, transcritas na íntegra.</p>
+      </div>
+      <div class="card">
+        <span class="src">Etapa 4</span>
+        <h4>Estímulo textual</h4>
+        <p>Projeção de duas frases de instituições judaicas de posições opostas, seguida de comentário e posicionamento do entrevistado.</p>
+      </div>
+      <div class="card">
+        <span class="src">Etapa 5</span>
+        <h4>Contagem lexical</h4>
+        <p>Ocorrências de “genocídio” e variantes no conjunto das transcrições, para dimensionar a presença do tema nas falas.</p>
+      </div>
+      <div class="card">
+        <span class="src">Etapa 6</span>
+        <h4>Análise de conteúdo</h4>
+        <p>Unidades de significado agrupadas em eixos temáticos, em diálogo sistemático com o referencial teórico.</p>
+      </div>
+    </div>
+
+    <div class="col" style="margin-top:36px">
+      <h3>O roteiro, em seis blocos</h3>
+      <ol class="steps" style="margin-top:16px">
+        <li><p><strong>Contexto pessoal</strong> — perfil sociodemográfico e trajetória na comunidade judaica.</p></li>
+        <li><p><strong>Identidade e definições iniciais</strong> — o que é “ser judeu” e o que é “sionismo”.</p></li>
+        <li><p><strong>Influências na formação da opinião</strong> — família, escola, movimentos juvenis.</p></li>
+        <li><p><strong>A perspectiva acadêmica</strong> — a universidade como espaço de debate identitário.</p></li>
+        <li><p><strong>Narrativas históricas e percepções atuais</strong> — do Holocausto ao 7 de outubro.</p></li>
+        <li><p><strong>O debate na comunidade</strong> — pluralidade interna e conflitos na comunidade paulistana.</p></li>
+      </ol>
+
+      <h3 style="margin-top:34px">Desenho da amostra</h3>
+      <p style="margin-top:12px">A seleção foi intencional e estratificada, por bola de neve, cruzando três variáveis: filiação política (esquerda/direita), vínculo com a tradição religiosa (liberal/ortodoxo) e tipo de instituição (pública/privada) — com a meta de contemplar as oito combinações resultantes.</p>
+      <p>A meta não foi integralmente alcançada, e a própria dissertação registra o limite: a amostra reúne <strong>três estudantes de instituições públicas e seis de privadas</strong>, e a variável política ficou em aberto, já que a maioria optou por não declarar posicionamento explícito — o que é, em si, um dado sobre o silenciamento do tema.</p>
+      <p class="note">Aprovada pelo Comitê de Ética em Pesquisa com Seres Humanos da FFLCH-USP · CAAE nº 93022625.3.0000.0138 · parecer nº 8.182.003, de 20 de fevereiro de 2026. Todos os nomes usados na análise são fictícios. Pesquisa realizada com apoio da CAPES — Código de Financiamento 001.</p>
+    </div>
+  </section>
+
+  <!-- ============ CONCEITOS ============ -->
+  <section id="conceitos">
+    <div class="col">
+      <div class="sec-head"><span class="chap">Cap. 3–5</span><h2>Chaves de leitura</h2></div>
+      <p class="lede">Os conceitos que atravessam a análise — e que permitem ler uma pausa, uma frase interrompida ou uma omissão como dado, e não como ruído.</p>
+    </div>
+    <div class="grid grid--2" style="margin-top:28px">
+      <div class="card">
+        <span class="src">Stuart Hall, 2006</span>
+        <h4>Identidade descentrada</h4>
+        <p>Na modernidade tardia, a identidade deixa de ser essência estática e passa a ser processo: posições de sujeito articuladas sob certas circunstâncias, e não uma unidade prévia.</p>
+      </div>
+      <div class="card">
+        <span class="src">Michael Pollak, 1992</span>
+        <h4>Enquadramento da memória</h4>
+        <p>A memória coletiva é trabalhada, selecionada e enquadrada por instituições — o que explica por que certas narrativas comunitárias circulam e outras não.</p>
+      </div>
+      <div class="card">
+        <span class="src">Marianne Hirsch, 2016</span>
+        <h4>Pós-memória</h4>
+        <p>A geração seguinte herda o trauma que não viveu. Aqui, o repertório do Holocausto e das perseguições é reativado em tempo real, pelas redes sociais, depois de 7 de outubro.</p>
+      </div>
+      <div class="card">
+        <span class="src">Albert Memmi, 1999</span>
+        <h4>Jogo das inclusões</h4>
+        <p>Pertencer a um grupo implica não pertencer a outro — e ser moldado pelo contato com ele. O pertencimento não é estado fixo: aproxima-se e afasta-se ao longo da vida.</p>
+      </div>
+      <div class="card">
+        <span class="src">Bernardo Sorj, 2010</span>
+        <h4>Bricolage e “supermercado cultural-existencial”</h4>
+        <p>O judaísmo moderno como mix construído conforme a necessidade do momento — e, em 1983, a “sionificação”: Israel como fonte de proteção do judeu diaspórico.</p>
+      </div>
+      <div class="card">
+        <span class="src">Erving Goffman, 1988</span>
+        <h4>O desacreditável</h4>
+        <p>Portador de um estigma que não se vê, o sujeito administra informação sobre si: exibir ou não exibir, dizer ou não dizer. É a chave do “silêncio preventivo” descrito na análise.</p>
+      </div>
+      <div class="card">
+        <span class="src">Martin Buber, 1974</span>
+        <h4>Eu e Tu</h4>
+        <p>O Eu se constitui na relação com o Tu — como em Flávia, que se percebe judia ao sair do “mundo judaico” e encontrar quem não o é.</p>
+      </div>
+      <div class="card">
+        <span class="src">Zygmunt Bauman, 1991 · William Safran, 1991</span>
+        <h4>Estrangeiro e diáspora</h4>
+        <p>A hospitalidade condicional do estrangeiro e os critérios diaspóricos — memória de um centro, mito do retorno, compromisso com a pátria ancestral — que enquadram o vínculo com Israel.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SIONISMO ============ -->
+  <section id="sionismo">
+    <div class="col">
+      <div class="sec-head"><span class="chap">Cap. 6</span><h2>O sionismo nunca foi um bloco</h2></div>
+      <p class="lede">Antes de chegar às entrevistas, a dissertação percorre as correntes do movimento — políticas, socialistas, religiosas, espirituais, trabalhistas e revisionistas — e sua institucionalização no Brasil. É essa fragmentação de origem que reaparece, viva, na fala dos entrevistados.</p>
+    </div>
+
+    <div class="grid grid--2" style="margin-top:30px;align-items:start">
+      <ul class="tl">
+        <li><span class="yr">1839 · 1862</span><h4>Precursores religiosos</h4><p>Yehuda Alkalai (<em>Darchei Noam</em>) e Zvi Hirsch Kalischer (<em>Drishat Tzion</em>) formulam, ainda no século XIX, o retorno como tarefa prática.</p></li>
+        <li><span class="yr">1862 · 1907</span><h4>Hess e Borochov — o sionismo socialista</h4><p>A síntese entre questão nacional judaica e luta de classes.</p></li>
+        <li><span class="yr">1896 · 1897</span><h4>Herzl e o Primeiro Congresso</h4><p>Em Basileia, o movimento ganha objetivo declarado — um lar nacional judaico na Palestina garantido pelo direito público — e a Organização Sionista Mundial.</p></li>
+        <li><span class="yr">1902 · 1903</span><h4>Mizrachi e o Plano Uganda</h4><p>Ortodoxia religiosa e nacionalismo moderno de um lado; de outro, a rejeição do território alternativo oferecido pelo governo britânico.</p></li>
+        <li><span class="yr">1856–1927</span><h4>Ahad Ha’am — o sionismo espiritual</h4><p>Não o Estado, mas um centro cultural capaz de renovar o judaísmo na diáspora.</p></li>
+        <li><span class="yr">1904</span><h4>A. D. Gordon — o sionismo trabalhista</h4><p>Migra para a Palestina aos 48 anos; a religião do trabalho como redenção nacional.</p></li>
+        <li><span class="yr">1880–1940</span><h4>Jabotinsky — o sionismo revisionista</h4><p>A ruptura com a diplomacia cautelosa e a defesa de uma maioria judaica sob força própria.</p></li>
+        <li><span class="yr">1948</span><h4>Aliot, Yishuv e o Estado</h4><p>As ondas migratórias e a sociedade constituída na Palestina antes da proclamação do Estado de Israel.</p></li>
+      </ul>
+
+      <ul class="tl">
+        <li><span class="yr">1913 · 1916</span><h4>Tiferet Sion e <em>A Columna</em></h4><p>O marco de maior visibilidade do movimento no Rio de Janeiro e o jornal sionista fundado por David José Perez; núcleos em São Paulo, Belém e Curitiba entre 1916 e 1918.</p></li>
+        <li><span class="yr">1922</span><h4>Federação Sionista do Brasil</h4><p>A 1ª Conferência Territorial Sionista cria a FSB e aprova a implantação de uma educação nacional-hebraica: a escola como órgão difusor do projeto.</p></li>
+        <li><span class="yr">1922</span><h4>Colégio Renascença</h4><p>Fundado em São Paulo por dirigentes sionistas; prédio próprio na Rua Prates em 1938. A disputa entre hebraico e iídiche mostra que a “ideia sionista” era negociação, não bloco.</p></li>
+        <li><span class="yr">1928–1950</span><h4>Sionistas e progressistas</h4><p>A disputa pelo controle de entidades comunitárias — a Biblioteca Scholem Aleichem passa ao controle dos progressistas em 1928; o padrão se repete em Belo Horizonte, Curitiba e Porto Alegre.</p></li>
+        <li><span class="yr">1901 · 1920 · 1929</span><h4>As Instituições Nacionais</h4><p>KKL, Keren Hayessod e Agência Judaica — hoje responsáveis por aliá, educação e shlichut, com recursos definidos pelo Congresso Sionista Mundial.</p></li>
+        <li><span class="yr">2025</span><h4>39º Congresso Sionista</h4><p>O Brasil elege oito delegados, disputados por nove chapas, em votação inteiramente online conduzida pela FSB.</p></li>
+        <li><span class="yr">Hoje</span><h4>Movimentos juvenis</h4><p>Bnei Akiva, Habonim Dror, HaShomer Hatzair, Noam, Netzach — vetores cotidianos de socialização que reaparecem em quase todas as entrevistas.</p></li>
+        <li><span class="yr">Anos 1980–</span><h4>Pós-sionismo, neossionismo e os “novos historiadores”</h4><p>A controvérsia historiográfica: desconstrução da narrativa oficial de um lado, reconstrução fundamentalista de outro.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ ENTREVISTADOS ============ -->
+  <section id="entrevistados">
+    <div class="col">
+      <div class="sec-head"><span class="chap">7.1</span><h2>Os nove</h2></div>
+      <p class="lede">Nomes fictícios, informações biográficas preservadas. Seis estudam em instituições privadas e três em públicas; a maioria optou por não declarar posicionamento político — e a dissertação trata essa recusa como dado.</p>
+    </div>
+
+    <div class="people" style="margin-top:28px">
+      <div class="person">
+        <div class="top"><span class="nm">Amanda</span></div>
+        <span class="course">Música · Faculdade Souza Lima</span>
+        <p>Musicista e professora de piano. Escola Waldorf, clube A Hebraica, movimento Noam. Pai asquenaze, mãe sefardita. Viveu um ano em Israel no Shnat Hachshará. Hoje circula pela cena artística paulistana.</p>
+        <div class="tagrow"><span class="tag tag--pri">Privada</span><span class="tag">Liberal</span><span class="tag">Shnat em Israel</span></div>
+      </div>
+      <div class="person">
+        <div class="top"><span class="nm">Andreia</span><span class="age">20</span></div>
+        <span class="course">Políticas Públicas · UFABC</span>
+        <p>Nascida em Ouro Preto, criada no Rio. Antes, três semestres na FGV. Pai judeu, mãe não. Escola Theodor Herzl em BH, Habonim Dror e HaShomer Hatzair. Infância judaica mais cultural que religiosa.</p>
+        <div class="tagrow"><span class="tag tag--pub">Pública</span><span class="tag">Movimento juvenil</span></div>
+      </div>
+      <div class="person">
+        <div class="top"><span class="nm">Sara</span><span class="age">19</span></div>
+        <span class="course">Direito · Mackenzie</span>
+        <p>Escola Beit Yaakov e movimento juvenil da Hebraica. Estagia na Procuradoria do Município. Laços próximos com amigos judeus da escola; na universidade, amizades majoritariamente não judias.</p>
+        <div class="tagrow"><span class="tag tag--pri">Privada</span><span class="tag">Escola judaica</span></div>
+      </div>
+      <div class="person">
+        <div class="top"><span class="nm">Carlos</span><span class="age">20</span></div>
+        <span class="course">Relações Internacionais · ESPM</span>
+        <p>Família de tradição ortodoxa/ultraortodoxa; pai nascido na Lituânia soviética, onde a prática era reprimida. Escola Or Torá e internato Or Israel Kodesh. Frequenta aulas noturnas de estudos religiosos.</p>
+        <div class="tagrow"><span class="tag tag--pri">Privada</span><span class="tag">Ortodoxo</span></div>
+      </div>
+      <div class="person">
+        <div class="top"><span class="nm">Danilo</span><span class="age">24</span></div>
+        <span class="course">Arquitetura e Urbanismo · FAU-USP</span>
+        <p>Família não ortodoxa; a Hebraica como principal vínculo comunitário. Perdeu a mãe aos sete anos e encontrou acolhimento na Sinagoga Shalom, onde celebrou o Bar Mitzvá. Hoje, participação religiosa quase nula.</p>
+        <div class="tagrow"><span class="tag tag--pub">Pública</span><span class="tag">Sem movimento juvenil</span></div>
+      </div>
+      <div class="person">
+        <div class="top"><span class="nm">Marcus</span><span class="age">25</span></div>
+        <span class="course">Geografia · UNESP Rio Claro</span>
+        <p>Mãe judia, pai de herança católica e ateu; núcleo familiar de esquerda progressista. Escola Waldorf. Avós maternos imigrados da Alemanha nos anos 1930. Identifica-se com a esquerda radical.</p>
+        <div class="tagrow"><span class="tag tag--pub">Pública</span><span class="tag">Esquerda radical</span></div>
+      </div>
+      <div class="person">
+        <div class="top"><span class="nm">Flávia</span><span class="age">19</span></div>
+        <span class="course">Medicina · Faculdade São Camilo</span>
+        <p>Formada na Beit Yaakov, com forte educação religiosa. Família judaica “light”: shabat de sexta, kashrut parcial, sinagoga regular. Bnei Akiva e grupos de estudo bíblico para mulheres no Makom.</p>
+        <div class="tagrow"><span class="tag tag--pri">Privada</span><span class="tag">Bnei Akiva</span></div>
+      </div>
+      <div class="person">
+        <div class="top"><span class="nm">Rodrigo</span><span class="age">19</span></div>
+        <span class="course">Administração · Nova Links</span>
+        <p>Escola Beit Yaakov e passagens pelo movimento Netzach. Sócio da Hebraica. Viagens a Israel (Macabíadas, 2022; Tapuz, 2023). Empreende no setor de embalagens térmicas.</p>
+        <div class="tagrow"><span class="tag tag--pri">Privada</span><span class="tag">Viagens a Israel</span></div>
+      </div>
+      <div class="person">
+        <div class="top"><span class="nm">Ravi</span></div>
+        <span class="course">Economia · FGV</span>
+        <p>Judeu praticante. Avós poloneses que emigraram por volta de 1940. Colégio Iavne, que avalia como fundamental para seus valores. Frequenta a sinagoga Beit Chabad e um grupo de jovens de estudo.</p>
+        <div class="tagrow"><span class="tag tag--pri">Privada</span><span class="tag">Religioso</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ESPECTRO ============ -->
+  <section id="espectro">
+    <div class="col">
+      <div class="sec-head"><span class="chap">7.3</span><h2>Um espectro, não duas margens</h2></div>
+      <p class="lede">Do quase total entre judaísmo e sionismo à recusa explícita do vínculo — passando pela distinção entre sionismo “em I” e “em Y”, por Amanda, e pela identidade judaica “contra Israel”, reivindicada por Marcus.</p>
+    </div>
+
+    <div class="spectrum" style="margin-top:26px">
+      <div class="spec-axis">
+        <span>Fusão entre judaísmo e sionismo</span>
+        <span>Recusa explícita do vínculo</span>
+      </div>
+      <div class="spec-bar" id="spec-bar"></div>
+      <div class="spec-panel" id="spec-panel" aria-live="polite"></div>
+      <p class="note">As posições na linha são uma leitura editorial da análise do capítulo 7, feita para este site. A dissertação organiza o material em eixos temáticos e não atribui pontuação nem categoriza os entrevistados — a única classificação citada é a aproximação às categorias de Krasner et al. (2025), discutida na seção 7.8.</p>
+    </div>
+  </section>
+
+  <!-- ============ ACHADOS ============ -->
+  <section id="achados">
+    <div class="col">
+      <div class="sec-head"><span class="chap">7.4–7.7</span><h2>Achados</h2></div>
+
+      <div class="finding">
+        <p class="kicker">O ambiente acadêmico · 7.6</p>
+        <h3>Silêncio preventivo</h3>
+        <p>O campus não é cenário: é regulador da visibilidade identitária. Os entrevistados administram estrategicamente o quanto expõem — o que, à luz de Goffman, configura o <em>encobrimento</em> de um estigma que não se vê. Carlos não esconde ser sionista, mas deixa de discutir porque “ninguém ia mudar a opinião”; Andreia descreve a FGV como ambiente “blindado” e a UFABC como o lugar onde viu cartazes de “fora sionistas” na segunda semana de aula; Amanda evita o assunto para não ser lida como “colonialista”.</p>
+        <blockquote>
+          <p>Impotência total, porque você não consegue levantar a mão. Se você levantar a mão na hora, a sala inteira vai virar contra você. E se você chegar no fim da aula e falar, só você e o professor, é sua palavra contra o professor.</p>
+          <footer>Flávia, 2026 — sobre um slide que nomeava como Palestina o território onde hoje é Israel</footer>
+        </blockquote>
+        <p>A pichação “do rio ao mar” e a keffiyeh no campus funcionam, na leitura da dissertação, como sinalizadores de território: estabelecem uma fronteira invisível antes de qualquer interação verbal.</p>
+      </div>
+
+      <div class="finding">
+        <p class="kicker">7 de outubro · 7.4</p>
+        <h3>Sionificação — e o movimento inverso</h3>
+        <p>Para parte dos entrevistados, a guerra converteu posturas críticas ou distantes em defesa contundente do sionismo: é a “sionificação” descrita por Sorj, em que Israel reaparece como única fonte viável de proteção. Para outros, o mesmo evento produziu adoecimento, afastamento comunitário ou o reforço de uma identidade judaica crítica ao Estado.</p>
+        <blockquote>
+          <p>Eu era uma pessoa que não era tão sionista até estourar a guerra. […] Você se sente desamparado na questão de não ter pessoas defendendo o que eu defendo […] e aí, quando você vê raras pessoas que defendem, você vai aumentando essa sua defesa.</p>
+          <footer>Carlos, 2026</footer>
+        </blockquote>
+        <blockquote>
+          <p>Teve uma época, depois do 7 de outubro, em que eu estava muito mergulhada, e começou a me deixar doente. […] As pessoas do meio artístico colocam tudo numa coisa só, como se Israel e o povo de Israel e o povo judeu fossem o problema.</p>
+          <footer>Amanda, 2026</footer>
+        </blockquote>
+      </div>
+
+      <div class="finding">
+        <p class="kicker">Disputa semântica · 7.4</p>
+        <h3>A palavra “genocídio”</h3>
+        <p>Contada em todas as transcrições, a palavra e suas variantes aparecem <strong>21 vezes</strong> — concentradas em quatro dos nove entrevistados. Para Danilo, o termo vira “cortina de fumaça” que desloca a atenção do que Israel faz; Sara recorre a um professor de Direito Internacional para sustentar que se trata de guerra; Marcus recusa a palavra “guerra” pela disparidade de forças. Cinco entrevistados não mencionaram o termo nenhuma vez.</p>
+        <div class="bars" style="margin-top:18px">
+          <div><span>Marcus</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="num">10</span></div>
+          <div><span>Sara</span><span class="track"><span class="fill" style="width:70%"></span></span><span class="num">7</span></div>
+          <div><span>Danilo</span><span class="track"><span class="fill" style="width:30%"></span></span><span class="num">3</span></div>
+          <div><span>Ravi</span><span class="track"><span class="fill" style="width:10%"></span></span><span class="num">1</span></div>
+          <div><span>Outros 5</span><span class="track"><span class="fill" style="width:0%"></span></span><span class="num">0</span></div>
+        </div>
+      </div>
+
+      <div class="finding">
+        <p class="kicker">Debates comunitários · 7.7</p>
+        <h3>As feridas do jovem judeu brasileiro</h3>
+        <p>A institucionalidade projeta coesão; as vivências revelam rachaduras. Carlos afirma nunca ter visto uma discordância sobre sionismo em ambiente judaico depois da guerra. Marcus relata desilusão com parentes de esquerda que, no tocante a Israel, reagiam de forma contrária ao que demonstravam politicamente. Amanda conta o caso de uma figura conhecida de sua comunidade que passou a se declarar antissionista e, desde então, “não é tão bem vista”.</p>
+        <blockquote>
+          <p>Depois do 7 de outubro, eu não consigo nem mais falar isso [ser pró-Palestina], porque parece que eu estou ferindo o meu povo quando eu falo isso, mas, na verdade, não. […] Se essas pessoas de fato quiserem sentar para tomar um café com o ouvido de fato aberto, daí legal.</p>
+          <footer>Amanda, 2026 — explicando, ao fim da entrevista, por que pedira anonimato</footer>
+        </blockquote>
+        <p>O jovem judeu gerencia estigmas nos dois sentidos: omite a vivência comunitária na universidade para não ser julgado como colonialista, e omite críticas humanitárias na sinagoga para não ser rejeitado como mau judeu.</p>
+      </div>
+
+      <div class="finding">
+        <p class="kicker">Pública e privada · 7.6</p>
+        <h3>A instituição regula a exposição</h3>
+        <p>Universidades privadas como FGV e ESPM aparecem como espaços relativamente “blindados”; nas públicas, a presença de coletivos organizados altera a dinâmica. O caso da UFABC sugere algo contraintuitivo: a organização institucional de um dos lados do debate — mesmo quando alinhada à posição do próprio entrevistado — não produz necessariamente um ambiente mais seguro; pode antecipar o conflito e tornar a identidade um alvo mais nítido.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ EUA ============ -->
+  <section id="eua">
+    <div class="col">
+      <div class="sec-head"><span class="chap">7.8</span><h2>Lido ao lado do caso norte-americano</h2></div>
+      <p class="lede">Durante a pesquisa, Krasner et al. (2025) publicaram estudo com objeto próximo: 38 estudantes judeus em 24 instituições dos Estados Unidos, depois do 7 de outubro. A dissertação o usa como referência — não como comparação sistemática.</p>
+    </div>
+    <div class="compare">
+      <div>
+        <h4>Convergências</h4>
+        <ul>
+          <li>Entrevistas semiestruturadas remotas, transcritas na íntegra e tratadas sob pseudônimos.</li>
+          <li>Recrutamento fora dos canais institucionais — indicação e boca a boca lá, bola de neve aqui — com a autosseleção reconhecida como limite.</li>
+          <li>Nenhum dos dois forneceu definições prévias aos entrevistados: a formulação do próprio sujeito é o dado.</li>
+          <li>O ocultamento estratégico reaparece lá na estudante que esconde o colar com a estrela de David sob a blusa ao passar por um protesto.</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Divergências</h4>
+        <ul>
+          <li>Desenho: seis categorias (<em>Affirmed, Aggrieved, Retrenched, Conflicted, Disillusioned, Disengaged</em>) contra eixos temáticos sem pontuação.</li>
+          <li>Foco: clima do campus e a fronteira antissemitismo/antissionismo lá; o sionismo como eixo constitutivo da identidade aqui.</li>
+          <li>Contexto: interseccionalidade, “espaços seguros” e branquitude judaica lá; sionismo cristão, keffiyeh, partidos de esquerda no campus, escolas judaicas e movimentos juvenis aqui.</li>
+          <li>Entre os “desiludidos” norte-americanos, a ruptura veio de quem teve <em>mais</em> educação sionista; na amostra paulistana, a crítica veio dos menos institucionalizados.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col">
+      <p class="note">Lidos lado a lado, os dois estudos sugerem que o silêncio preventivo, a ruptura familiar e o policiamento comunitário não são particularidades paulistanas, mas respostas diaspóricas ao 7 de outubro — cuja forma depende das instituições sociais e educativas que formaram esses jovens.</p>
+    </div>
+  </section>
+
+  <!-- ============ FINAL ============ -->
+  <section id="final">
+    <div class="col">
+      <div class="sec-head"><span class="chap">Cap. 8</span><h2>Considerações finais</h2></div>
+      <p class="lede">O sionismo não opera como crença acessória à identidade judaica desses jovens, mas como um de seus eixos constitutivos — ainda que vivido, nomeado e disputado de formas muito distintas entre os próprios entrevistados.</p>
+      <p>O achado mais significativo talvez esteja na pós-memória: o 7 de outubro de 2023 não foi apenas um evento político distante, mas um gatilho que reativou, em tempo real, o repertório de memória herdada do Holocausto e das perseguições. Esse mesmo gatilho, porém, produz respostas opostas. A pós-memória não determina uma única resposta política: ela fornece o repertório emocional a partir do qual tanto a adesão quanto a ruptura são construídas.</p>
+
+      <blockquote style="border-left-color:var(--clay);margin-block:28px">
+        <p>O que aconteceria se a comunidade judaica substituísse a cultura da interdição por uma disposição genuína de escutar seus próprios membros — sem pré-julgamentos e sem o impulso de distanciar aqueles que não abraçam a narrativa hegemônica?</p>
+        <footer>Bruno Pekler, 2026</footer>
+      </blockquote>
+
+      <h3>Limites reconhecidos</h3>
+      <p style="margin-top:12px">A amostragem por bola de neve, feita a partir da rede do próprio pesquisador, não cobriu de forma equilibrada as oito combinações previstas. A proximidade identitária entre pesquisador e pesquisados favoreceu o acesso às camadas afetivas da experiência, mas os resultados não podem ser generalizados para a totalidade da juventude judaica paulistana, tampouco para a brasileira.</p>
+
+      <h3 style="margin-top:30px">Três caminhos para pesquisas futuras</h3>
+      <ol class="steps" style="margin-top:16px">
+        <li><p>A fronteira entre antissemitismo e antissionismo em ambientes universitários — identificada como relevante, mas fora do escopo desta pesquisa.</p></li>
+        <li><p>Um estudo comparativo entre São Paulo e outras comunidades judaicas brasileiras, para verificar se sionificação, silêncio preventivo e jogo das inclusões se repetem em outros contextos regionais.</p></li>
+        <li><p>O acompanhamento dos mesmos sujeitos ao longo do tempo, para observar se as posições reativas ao 7 de outubro se consolidam ou se reconfiguram.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ SUMÁRIO ============ -->
+  <section id="sumario">
+    <div class="col">
+      <div class="sec-head"><span class="chap">Texto integral</span><h2>Sumário e leitura completa</h2></div>
+      <p class="lede">A dissertação tem 95 páginas, incluindo referências e o roteiro de entrevista em apêndice.</p>
+      <div class="actions" style="margin-bottom:26px">
+        <a class="btn" href="dissertacao-bruno-pekler.pdf" target="_blank" rel="noopener">Abrir o PDF completo</a>
+      </div>
+
+      <details class="toc">
+        <summary>Sumário detalhado</summary>
+        <ul class="toc-list">
+          <li><span class="no">1</span><span>Introdução</span><span class="pg">11</span></li>
+          <li class="lvl2"><span class="no">1.1</span><span>Apresentação</span><span class="pg">11</span></li>
+          <li class="lvl2"><span class="no">1.2</span><span>Objetivos</span><span class="pg">14</span></li>
+          <li class="lvl2"><span class="no">1.3</span><span>Justificativa</span><span class="pg">15</span></li>
+          <li class="lvl2"><span class="no">1.4</span><span>Metodologia</span><span class="pg">17</span></li>
+          <li><span class="no">2</span><span>Os judeus no Brasil, a universidade e o contexto político</span><span class="pg">21</span></li>
+          <li><span class="no">3</span><span>Sobre o conceito de identidade</span><span class="pg">23</span></li>
+          <li><span class="no">4</span><span>Sobre o conceito de memória</span><span class="pg">27</span></li>
+          <li><span class="no">5</span><span>Pós-memória e identidade judaica na contemporaneidade</span><span class="pg">29</span></li>
+          <li><span class="no">6</span><span>O movimento sionista</span><span class="pg">32</span></li>
+          <li class="lvl2"><span class="no">6.1</span><span>O sionismo religioso</span><span class="pg">33</span></li>
+          <li class="lvl2"><span class="no">6.2</span><span>Theodor Herzl</span><span class="pg">34</span></li>
+          <li class="lvl2"><span class="no">6.3</span><span>Moses Hess e Ber Borochov: o sionismo socialista</span><span class="pg">35</span></li>
+          <li class="lvl2"><span class="no">6.4</span><span>Ahad Ha’am: o sionismo espiritual</span><span class="pg">36</span></li>
+          <li class="lvl2"><span class="no">6.5</span><span>Aaron David Gordon: o sionismo trabalhista</span><span class="pg">36</span></li>
+          <li class="lvl2"><span class="no">6.6</span><span>Vladimir Jabotinsky: o sionismo revisionista</span><span class="pg">37</span></li>
+          <li class="lvl2"><span class="no">6.7</span><span>Os congressos sionistas</span><span class="pg">38</span></li>
+          <li class="lvl2"><span class="no">6.8</span><span>Aliot, Yishuv e o estabelecimento do Estado de Israel</span><span class="pg">39</span></li>
+          <li class="lvl2"><span class="no">6.9</span><span>O movimento sionista no Brasil</span><span class="pg">42</span></li>
+          <li class="lvl2"><span class="no">6.10</span><span>Pós-sionismo, neossionismo e os “novos historiadores”</span><span class="pg">46</span></li>
+          <li><span class="no">7</span><span>Entre a voz do pesquisado e o olhar do pesquisador</span><span class="pg">47</span></li>
+          <li class="lvl2"><span class="no">7.1</span><span>Caracterização dos entrevistados</span><span class="pg">49</span></li>
+          <li class="lvl2"><span class="no">7.2</span><span>Reflexões sobre o que é “ser judeu”</span><span class="pg">51</span></li>
+          <li class="lvl2"><span class="no">7.3</span><span>Percepções sobre “o que é sionismo e ser sionista”</span><span class="pg">57</span></li>
+          <li class="lvl2"><span class="no">7.4</span><span>Outubro de 2023, território e tensões identitárias</span><span class="pg">64</span></li>
+          <li class="lvl2"><span class="no">7.5</span><span>Comentários sobre enunciados externos</span><span class="pg">70</span></li>
+          <li class="lvl2"><span class="no">7.6</span><span>O ambiente acadêmico</span><span class="pg">75</span></li>
+          <li class="lvl2"><span class="no">7.7</span><span>Sobre debates comunitários e as feridas do jovem judeu brasileiro</span><span class="pg">79</span></li>
+          <li class="lvl2"><span class="no">7.8</span><span>O caso norte-americano</span><span class="pg">83</span></li>
+          <li><span class="no">8</span><span>Considerações finais</span><span class="pg">85</span></li>
+          <li><span class="no">—</span><span>Referências</span><span class="pg">88</span></li>
+          <li><span class="no">A</span><span>Apêndice A — Roteiro de entrevista</span><span class="pg">94</span></li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <footer class="site">
+    <div class="col">
+      <p class="eyebrow" style="margin-bottom:12px">Como citar</p>
+      <p class="cite">PEKLER, Bruno. <strong>O papel do sionismo na identidade judaica em estudantes judeus de graduação em São Paulo</strong>. 2026. Dissertação (Mestrado em Letras) — Faculdade de Filosofia, Letras e Ciências Humanas, Universidade de São Paulo, São Paulo, 2026.</p>
+    </div>
+    <div class="foot-grid">
+      <div>
+        <p class="fine">Dissertação apresentada ao Programa de Pós-Graduação em Letras Estrangeiras e Tradução da FFLCH-USP, área de concentração Estudos Literários e Culturais, linha Cultura, História e Sociedade. Orientação: Profa. Dra. Nancy Rozenchan.</p>
+        <p class="fine">O presente trabalho foi realizado com apoio da Coordenação de Aperfeiçoamento de Pessoal de Nível Superior — Brasil (CAPES) — Código de Financiamento 001.</p>
+      </div>
+      <div>
+        <p class="fine">Todos os nomes de entrevistados são fictícios, conforme os protocolos éticos da pesquisa (CAAE nº 93022625.3.0000.0138).</p>
+        <p class="fine">Esta página apresenta e resume a dissertação; as citações reproduzem trechos do texto integral, disponível em PDF.</p>
+      </div>
+    </div>
+  </footer>
+
+  </main>
+</div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- resumo PT / EN ---------- */
+  var btnPt = document.getElementById("btn-pt");
+  var btnEn = document.getElementById("btn-en");
+  var boxPt = document.getElementById("resumo-pt");
+  var boxEn = document.getElementById("resumo-en");
+  function setLang(lang){
+    var pt = lang === "pt";
+    boxPt.hidden = !pt; boxEn.hidden = pt;
+    btnPt.setAttribute("aria-pressed", String(pt));
+    btnEn.setAttribute("aria-pressed", String(!pt));
+  }
+  btnPt.addEventListener("click", function(){ setLang("pt"); });
+  btnEn.addEventListener("click", function(){ setLang("en"); });
+
+  /* ---------- espectro ---------- */
+  var people = [
+    { id:"sara", nome:"Sara", pos:4, cat:"Aproxima-se de Affirmed",
+      curso:"Direito · Mackenzie",
+      quote:"Sim, cem por cento sionista. Eu sei que existem judeus que não são, mas, para mim, isso não existe. […] A gente tem total direito de ter o nosso próprio estado, ainda mais depois de ter sido perseguido em todas as épocas possíveis.",
+      nota:"O sionismo como normalização: um Estado como qualquer outro, com a especificidade de ser judaico. A perseguição histórica é o argumento central — e o “ainda mais” converte memória herdada em urgência." },
+    { id:"carlos", nome:"Carlos", pos:13, cat:"Aproxima-se de Affirmed",
+      curso:"Relações Internacionais · ESPM",
+      quote:"Você não escolhe se você é judeu, você nasce judeu porque você nasceu de um ventre judaico […] e principalmente nos afazeres que a religião meio que obriga a ser realizados.",
+      nota:"Linhagem e obrigação. Era crítico ao sionismo antes da guerra; o desamparo percebido depois de 7 de outubro o levou ao entrincheiramento identitário — a “sionificação” de Sorj." },
+    { id:"ravi", nome:"Ravi", pos:22, cat:"Aproxima-se de Affirmed",
+      curso:"Economia · FGV",
+      quote:"Não tem como serem desatreladas essas duas coisas, porque na Bíblia, na Torá, defende a volta para Israel, conta da diáspora. […] Talvez você possa falar que o Estado de Israel não está conforme a Bíblia; isso para mim é um ponto válido.",
+      nota:"Política e teologia no mesmo espaço: o vínculo é bíblico e, por isso, indissolúvel — o que não impede a crítica ao Estado moderno por não seguir os tribunais haláchicos." },
+    { id:"flavia", nome:"Flávia", pos:33, cat:"Aproxima-se de Retrenched",
+      curso:"Medicina · São Camilo",
+      quote:"Quando você sai da escola judaica, do seu mundo judaico, você percebe que o mundo inteiro não é judeu. […] Ser uma pessoa judia é ser uma pessoa diferente dos outros.",
+      nota:"O saber como centro do “ser judeu”. Depois da faculdade, busca espaços judaicos de estudo — e descreve “impotência total” diante de uma aula em que não sabia como responder." },
+    { id:"rodrigo", nome:"Rodrigo", pos:45, cat:"Aproxima-se de Disengaged",
+      curso:"Administração · Nova Links",
+      quote:"Teve influência desde pequeno, tanto na escola, a gente aprendendo com aulas de Torá e tudo mais […] a gente vê muita gente que não teve esse embasamento tendo menos repertório.",
+      nota:"Sionismo naturalizado, fundido ao ensino religioso e despolitizado — definido como “estudo” e “conhecimento”. Diante das duas frases do estímulo textual: “Não sei dizer.”" },
+    { id:"amanda", nome:"Amanda", pos:57, cat:"Aproxima-se de Conflicted",
+      curso:"Música · Souza Lima",
+      quote:"Segmentos do sionismo. Sionismo em I ou em Y. […] Enquanto judia, humanista, mas sionista também. É muito agoniante ver essa diferença.",
+      nota:"Distingue o vínculo de quem mora em Israel (“em I”) do apoio que se mantém na diáspora (“em Y”). Pediu anonimato antes da entrevista — pedido que a própria dissertação lê como sintoma do silenciamento." },
+    { id:"andreia", nome:"Andreia", pos:68, cat:"Entre os eixos",
+      curso:"Políticas Públicas · UFABC",
+      quote:"Eu fiquei muito nessa de tipo assim, o lugar seguro que eu tinha de discutir o sionismo na FGV. Eu não sei se eu teria na UFABC, sabe?",
+      nota:"O termo não esteve presente na criação e apareceu depois. Sua trajetória entre privada e pública é o caso mais nítido de como a instituição regula o que pode ser dito." },
+    { id:"danilo", nome:"Danilo", pos:82, cat:"Aproxima-se de Disengaged",
+      curso:"Arquitetura · FAU-USP",
+      quote:"Eu diria que eu não sou sionista. Mas não que eu seja contra a existência do Estado de Israel. […] Eu não sou muito de ficar defendendo Estados.",
+      nota:"Recusa o vínculo sem recusar o Estado: divisão forte entre ser judeu e defender Estados. Descreve o tema como “ausente” nas disciplinas da FAU e “barulhento” nas pichações do campus." },
+    { id:"marcus", nome:"Marcus", pos:95, cat:"Aproxima-se de Aggrieved",
+      curso:"Geografia · UNESP",
+      quote:"Gerou até uma vontade de me identificar mais como judeu perante esses acontecimentos, de levantar uma bandeira de que eu sou judeu e sou contra Israel. Eu me tornei mais judeu.",
+      nota:"O paradoxo que a dissertação destaca: a crítica radical não o afasta do grupo, radicaliza sua judeidade — uma “identidade de resistência” dentro do próprio judaísmo." }
+  ];
+
+  var bar = document.getElementById("spec-bar");
+  var panel = document.getElementById("spec-panel");
+
+  function render(p){
+    panel.innerHTML =
+      '<div><span class="cat">' + p.cat + '</span>' +
+      '<div class="who">' + p.nome + '</div>' +
+      '<div class="small">' + p.curso + '</div></div>' +
+      '<blockquote><p>' + p.quote + '</p><footer>' + p.nome + ', 2026</footer></blockquote>' +
+      '<p class="small" style="margin:0">' + p.nota + '</p>';
+    Array.prototype.forEach.call(bar.querySelectorAll(".pin"), function(btn){
+      btn.setAttribute("aria-pressed", String(btn.dataset.id === p.id));
+    });
+  }
+
+  people.forEach(function(p){
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "pin";
+    b.style.left = p.pos + "%";
+    b.dataset.id = p.id;
+    b.setAttribute("aria-pressed", "false");
+    b.setAttribute("aria-label", "Ver o trecho de " + p.nome);
+    b.innerHTML = '<span class="dot"></span><span class="lbl">' + p.nome + '</span>';
+    b.addEventListener("click", function(){ render(p); });
+    bar.appendChild(b);
+  });
+  render(people[0]);
+
+  /* ---------- scrollspy ---------- */
+  var links = Array.prototype.slice.call(document.querySelectorAll("#rail a"));
+  var map = {};
+  links.forEach(function(a){ map[a.getAttribute("href").slice(1)] = a; });
+  var sections = Array.prototype.slice.call(document.querySelectorAll("main section"));
+
+  if ("IntersectionObserver" in window) {
+    var visible = {};
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ visible[e.target.id] = e.isIntersecting ? e.intersectionRatio : 0; });
+      var best = null, bestVal = 0;
+      sections.forEach(function(s){
+        var v = visible[s.id] || 0;
+        if (v > bestVal) { bestVal = v; best = s.id; }
+      });
+      links.forEach(function(a){ a.removeAttribute("aria-current"); });
+      if (best && map[best]) map[best].setAttribute("aria-current", "true");
+    }, { rootMargin: "-84px 0px -55% 0px", threshold: [0, .1, .3, .6, 1] });
+    sections.forEach(function(s){ io.observe(s); });
+  }
+})();
+</script>
+<!--ARTIFACT-END-->
+</body>
+</html>
