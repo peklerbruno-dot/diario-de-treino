@@ -1,0 +1,172 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * A paleta.
+ *
+ * Papel levemente quente e cartões brancos: é uma ferramenta que se usa por
+ * horas, num laboratório de universidade, e o cinza-azulado dos painéis de
+ * controle cansa. O realce é um azul profundo — presente nos títulos e nos
+ * botões, ausente do resto.
+ *
+ * As cinco cores de estado (azul, âmbar, roxo, verde, vermelho) nunca carregam
+ * sentido sozinhas: cada estado aparece sempre com o nome escrito ao lado. Quem
+ * não distingue as cores continua lendo a tela inteira.
+ *
+ * Todo valor foi escolhido com pelo menos 4,5:1 contra a superfície em que é
+ * usado, nos dois modos. Trocar um hex pede medir de novo.
+ */
+:root {
+  color-scheme: light;
+  --papel: #f7f6f3;
+  --cartao: #ffffff;
+  --tinta: #16161a;
+  --grafite: #4f5058;
+  --fosco: #74757e;
+  --regua: #dcdbd6;
+  --linha: #ebeae6;
+  --heroi: #1b2a4a;
+  --heroi-tinta: #ffffff;
+  --realce: #1f4b8f;
+  --realce-fraco: #e8eefa;
+  --tinta-azul: #1f4b8f;
+  --tinta-ambar: #8a5300;
+  --tinta-roxo: #6b3fa0;
+  --tinta-verde: #1c6b43;
+  --tinta-vermelha: #b3352c;
+  --sombra: 0 1px 2px rgba(20, 20, 26, 0.04), 0 8px 20px rgba(20, 20, 26, 0.05);
+  --sombra-baixa: 0 1px 2px rgba(20, 20, 26, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --papel: #121215;
+    --cartao: #1c1c21;
+    --tinta: #f3f3f5;
+    --grafite: #b9bac2;
+    --fosco: #8a8b95;
+    --regua: #35353d;
+    --linha: #2a2a31;
+    --heroi: #0d1626;
+    --heroi-tinta: #ffffff;
+    --realce: #7aa7ee;
+    --realce-fraco: #1b2537;
+    --tinta-azul: #7aa7ee;
+    --tinta-ambar: #d9a441;
+    --tinta-roxo: #b18cec;
+    --tinta-verde: #4cc088;
+    --tinta-vermelha: #ff7a70;
+    /* No escuro a sombra não aparece; o que separa o cartão do fundo é o
+       contraste das duas cores, mais uma borda de um fio. */
+    --sombra: 0 0 0 1px rgba(255, 255, 255, 0.06);
+    --sombra-baixa: 0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--papel);
+  color: var(--tinta);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+button,
+a,
+[role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+input,
+select,
+textarea {
+  /* Abaixo de 16px o Safari do iPhone dá zoom ao focar o campo. */
+  font-size: 16px;
+  font-family: inherit;
+  color: inherit;
+}
+
+/* O rótulo pequeno em maiúsculas que encabeça um bloco. */
+.sobrescrito {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fosco);
+  font-weight: 600;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* O texto longo que a pessoa escreveu (pauta, ata) guarda as quebras de linha. */
+.escrito {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* O anel de foco tem que aparecer: quem navega por teclado depende só dele. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--realce);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/**
+ * A folha impressa do relatório.
+ *
+ * "Salvar em PDF" no diálogo de impressão é o caminho que já existe em todo
+ * computador e em todo celular — e evita carregar uma biblioteca de PDF de
+ * 300 KB para gerar o que o sistema operacional gera de graça e melhor.
+ */
+@media print {
+  .nao-imprime {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+    color: #000;
+  }
+  .so-impresso {
+    display: block !important;
+  }
+  .cartao-impresso {
+    box-shadow: none !important;
+    border: 1px solid #ccc;
+    break-inside: avoid;
+  }
+  a[href]::after {
+    content: "";
+  }
+
+  /* O certificado ocupa a folha inteira, sem sombra e sem margem do cartão. */
+  .folha-do-certificado {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+}
+
+@page {
+  margin: 18mm;
+}
+
+.so-impresso {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
