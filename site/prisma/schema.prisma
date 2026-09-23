@@ -1,0 +1,71 @@
+// Site da Chazit Hanoar São Paulo.
+//
+// O site não tem uma tabela por página. Tem duas formas de conteúdo, e é o
+// arquivo `src/lib/esquema.ts` que diz quais campos cada uma tem:
+//
+// - `Bloco`: um pedaço único do site, com chave fixa ("inicio.capa",
+//   "contato.info"). Se ainda não foi editado, não existe aqui, e o site mostra o
+//   texto inicial de `src/lib/padrao.ts`.
+// - `Item`: um elemento de lista — uma atividade da agenda, uma notícia, uma
+//   shichvá, uma foto. `tipo` diz qual.
+//
+// Assim, criar um campo novo numa seção é mexer num arquivo só, sem migração.
+//
+// Nada some: apagar marca `apagadoEm`, e o painel da equipe traz de volta.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Bloco {
+  chave         String   @id
+  dados         Json
+  atualizadoEm  DateTime @updatedAt
+  atualizadoPor String
+}
+
+model Item {
+  id            String    @id @default(cuid())
+  tipo          String
+  /// Posição nas listas arrumadas à mão (shichvot, pilares, fotos). A agenda e
+  /// as notícias ignoram este campo e se ordenam pela data.
+  ordem         Float
+  dados         Json
+  /// Rascunho: a equipe vê, o visitante não.
+  oculto        Boolean   @default(false)
+  apagadoEm     DateTime?
+  criadoEm      DateTime  @default(now())
+  atualizadoEm  DateTime  @updatedAt
+  atualizadoPor String
+
+  @@index([tipo, apagadoEm])
+}
+
+/// Fotos e PDFs guardados no próprio banco. Evita um segundo serviço para
+/// configurar: as fotos já chegam reduzidas pelo navegador (em torno de 300 KB).
+/// O endereço de um arquivo nunca muda de conteúdo — trocar a foto é enviar
+/// outra —, e por isso o navegador pode guardá-lo para sempre.
+model Arquivo {
+  id        String   @id @default(cuid())
+  nome      String
+  tipo      String
+  tamanho   Int
+  conteudo  Bytes
+  criadoEm  DateTime @default(now())
+  criadoPor String
+}
+
+/// O histórico que o painel mostra: quem mudou o quê, e quando.
+model Alteracao {
+  id     String   @id @default(cuid())
+  quando DateTime @default(now())
+  quem   String
+  oQue   String
+
+  @@index([quando])
+}
