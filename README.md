@@ -130,6 +130,10 @@ o seu próprio deploy na Vercel (pasta escolhida em *Root Directory*).
 
 - `machanot/` — a plataforma de precificação de machanot da Chazit Hanoar.
   Veja [`machanot/README.md`](machanot/README.md).
+- `site/` — o site público da Chazit Hanoar São Paulo, que a equipe edita no
+  próprio site depois de entrar com nome e código.
+  Veja [`site/README.md`](site/README.md) e, para publicar,
+  [`site/docs/COLOCAR-NO-AR.md`](site/docs/COLOCAR-NO-AR.md).
 - `termometro/` — o controle de entradas, saídas e saldo diário, que substitui a
   aba de um ano da planilha "Termômetro". PWA com banco próprio, para o iPhone e
   o computador mostrarem sempre a mesma coisa.
