@@ -1,7 +1,7 @@
 /**
- * Os cinco ícones da navegação. Desenhados aqui, em traço, para não trazer uma
- * biblioteca inteira por causa de cinco desenhos — e para que a espessura do
- * traço combine com a do resto da tela.
+ * Os ícones da navegação. Desenhados aqui, em traço, para não trazer uma
+ * biblioteca inteira por causa de meia dúzia de desenhos — e para que a
+ * espessura do traço combine com a do resto da tela.
  *
  * São decorativos: quem lê por leitor de tela ouve o nome da aba, que está
  * escrito ao lado.
@@ -70,5 +70,14 @@ export const IconeCalendario = () => (
   <Traco>
     <rect x="3" y="4" width="18" height="17" rx="3" />
     <path d="M3 9h18M8 3v3M16 3v3M8.5 13h.01M12 13h.01M15.5 13h.01M8.5 17h.01M12 17h.01" />
+  </Traco>
+);
+
+/** O que vem: uma seta que aponta adiante, até a parede do fim do ano. */
+export const IconeAgenda = () => (
+  <Traco>
+    <path d="M3 12h12" />
+    <path d="m11 8 4 4-4 4" />
+    <path d="M20 5v14" />
   </Traco>
 );

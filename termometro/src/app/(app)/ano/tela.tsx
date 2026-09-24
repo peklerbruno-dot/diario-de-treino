@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { GraficoDoSaldo } from "@/componentes/grafico-do-saldo";
 import { Cartao, Dinheiro, Linha, Sobrescrito, Subtitulo, Titulo } from "@/componentes/pecas";
 import { useAnoCalculado, useEstado } from "@/componentes/usar-loja";
 import { MESES_CURTOS, hoje, partesDaData } from "@/lib/datas";
@@ -41,22 +40,7 @@ export function TelaDoAno() {
         </label>
       </header>
 
-      <Cartao escuro className="mt-4 px-5 py-4">
-        <Sobrescrito escuro>Termina o ano com</Sobrescrito>
-        <p className="mt-1">
-          <Dinheiro cents={calculado.saldoFinalCents} tamanho="gigante" />
-        </p>
-        <p className="mt-2 text-[13px] text-heroi-fosco">
-          Começou com {comCifrao(calculado.saldoInicialCents)} · sobrou{" "}
-          {comCifrao(t.performanceCents)} no ano
-        </p>
-      </Cartao>
-
-      <Cartao className="mt-3 p-4">
-        <GraficoDoSaldo ano={calculado} hoje={agora} />
-      </Cartao>
-
-      <section className="mt-6">
+      <section className="mt-5">
         <Subtitulo className="mb-2">Mês a mês</Subtitulo>
         <Cartao className="overflow-hidden">
           <table className="w-full border-collapse whitespace-nowrap text-[15px]">

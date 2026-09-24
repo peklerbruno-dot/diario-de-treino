@@ -4,9 +4,9 @@ import { useState } from "react";
 import { FolhaDeLancamento } from "@/componentes/folha-de-lancamento";
 import { Botao, Cartao, Dinheiro, Selo, Sobrescrito, Subtitulo, Titulo } from "@/componentes/pecas";
 import { useAnoCalculado } from "@/componentes/usar-loja";
-import { curta, hoje, nomeDoDiaDaSemana, nomeDoMes, partesDaData } from "@/lib/datas";
+import { hoje, nomeDoDiaDaSemana, nomeDoMes, partesDaData } from "@/lib/datas";
 import { comCifrao } from "@/lib/dinheiro";
-import { NOME_DO_TIPO, type Lancamento, type Tipo } from "@/lib/tipos";
+import { NOME_DO_TIPO, type Tipo } from "@/lib/tipos";
 
 /**
  * A tela de abrir o app.
@@ -23,8 +23,6 @@ export function TelaDeHoje() {
   const anoCalculado = useAnoCalculado(ano);
   const doMes = anoCalculado.meses[mes - 1];
   const doDia = doMes.dias[dia - 1];
-
-  const oQueVem = proximosCompromissos(anoCalculado, agora);
 
   return (
     <div>
@@ -90,27 +88,6 @@ export function TelaDeHoje() {
         )}
       </section>
 
-      {oQueVem.length > 0 && (
-        <section className="mt-6">
-          <Subtitulo className="mb-2">O que vem</Subtitulo>
-          <Cartao className="px-4 py-1">
-            {oQueVem.map((l) => (
-              <div
-                key={l.id}
-                className="flex items-baseline justify-between gap-3 border-b border-linha py-2.5 last:border-b-0"
-              >
-                <span className="min-w-0 truncate text-[14.5px]">
-                  <span className="tabular text-fosco">{curta(l.data)}</span>
-                  <span className="mx-1.5 text-fosco">·</span>
-                  {l.nota || NOME_DO_TIPO[l.tipo]}
-                </span>
-                <Dinheiro cents={l.valorCents} papel={corDe(l.tipo)} />
-              </div>
-            ))}
-          </Cartao>
-        </section>
-      )}
-
       {lancando && (
         <FolhaDeLancamento data={agora} tipoInicial={lancando} aoFechar={() => setLancando(null)} />
       )}
@@ -120,23 +97,3 @@ export function TelaDeHoje() {
 
 const corDe = (tipo: Tipo) =>
   tipo === "ENTRADA" ? "entrada" : tipo === "SAIDA" ? "saida" : "diario";
-
-/**
- * O que ainda vai acontecer: as contas e entradas dos próximos dias, sem o
- * gasto do dia a dia — esse não é compromisso, é o que sobra depois deles.
- */
-function proximosCompromissos(
-  ano: ReturnType<typeof useAnoCalculado>,
-  agora: string,
-): Lancamento[] {
-  const proximos: Lancamento[] = [];
-  for (const mes of ano.meses) {
-    for (const dia of mes.dias) {
-      if (dia.data <= agora) continue;
-      for (const l of dia.lancamentos) {
-        if (l.tipo !== "DIARIO") proximos.push(l);
-      }
-    }
-  }
-  return proximos.slice(0, 5);
-}
