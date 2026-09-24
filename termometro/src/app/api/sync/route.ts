@@ -51,6 +51,7 @@ const zFixo = z.object({
   id: z.string().min(1).max(64),
   tipo,
   dia: z.number().int().min(0).max(31),
+  repeticao: z.string().max(40).nullish(),
   valorCents: z.number().int().finite(),
   nota: z.string().max(500).nullish(),
   categoria: z.string().max(80).nullish(),
@@ -217,6 +218,7 @@ async function gravarFixos(entrando: Fixo[]) {
     const dados = {
       tipo: f.tipo,
       dia: f.dia,
+      repeticao: f.repeticao ?? null,
       valorCents: f.valorCents,
       nota: f.nota ?? null,
       categoria: f.categoria ?? null,
@@ -279,6 +281,7 @@ function limparFixo(f: LinhaFixo) {
     id: f.id,
     tipo: f.tipo,
     dia: f.dia,
+    repeticao: f.repeticao,
     valorCents: f.valorCents,
     nota: f.nota,
     categoria: f.categoria,

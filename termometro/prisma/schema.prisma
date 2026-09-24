@@ -87,7 +87,15 @@ model Fixo {
   id         String  @id
   tipo       Tipo
   /// 1 a 31; 0 quer dizer "todo dia" (o gasto do dia a dia).
+  ///
+  /// Continua aqui porque é o recuo de `repeticao`: um fixo cadastrado antes de
+  /// existirem regras, ou com uma regra que não dá para entender, cai neste
+  /// campo e segue funcionando.
   dia        Int
+  /// Quando ele acontece, quando a regra não é um dia do mês: "semana:1:3" é
+  /// toda primeira quarta, "util:ultimo" é o último dia útil. Nulo quer dizer
+  /// "use o campo `dia`".
+  repeticao  String?
   valorCents Int
   nota       String?
   /// A categoria que os lançamentos nascidos deste fixo herdam.

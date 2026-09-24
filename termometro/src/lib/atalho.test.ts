@@ -172,13 +172,38 @@ describe("o que vem no próprio endereço", () => {
     expect(camposDoEndereco(url("valor=38,50"))).toEqual({ valor: "38,50" });
   });
 
-  it("lê também o tipo, a nota e a data", () => {
-    expect(camposDoEndereco(url("valor=90&tipo=entrada&nota=freela&data=2026-09-10"))).toEqual({
+  it("lê também o tipo, a categoria, a nota e a data", () => {
+    expect(
+      camposDoEndereco(url("valor=90&tipo=entrada&categoria=freela&nota=nf&data=2026-09-10")),
+    ).toEqual({
       valor: "90",
       tipo: "entrada",
-      nota: "freela",
+      categoria: "freela",
+      nota: "nf",
       data: "2026-09-10",
     });
+  });
+
+  /**
+   * Este teste existe porque a categoria ficou de fora desta lista na primeira
+   * vez: o atalho mandava, o app aceitava em teor, e o campo era jogado fora
+   * caladamente no meio do caminho. Um campo que some sem erro é o pior jeito
+   * de uma funcionalidade não funcionar.
+   */
+  it("todo campo que a porta aceita também entra pelo endereço", () => {
+    const busca =
+      "valor=1&tipo=saida&categoria=contas&nota=x&data=2026-01-01" +
+      "&rendaPropria=sim&investimento=sim&apartamento=sim";
+    expect(Object.keys(camposDoEndereco(url(busca))).sort()).toEqual([
+      "apartamento",
+      "categoria",
+      "data",
+      "investimento",
+      "nota",
+      "rendaPropria",
+      "tipo",
+      "valor",
+    ]);
   });
 
   // Esta é a regra que separa os dois segredos. O valor pode ficar num registro
@@ -204,5 +229,59 @@ describe("o que vem no próprio endereço", () => {
   it("o que vem do endereço é lido igual ao que vem do corpo", () => {
     const r = lerPedidoDoAtalho(camposDoEndereco(url("valor=38 reais e 50&tipo=saída")), opcoes);
     expect(r.ok && r.lancamentos[0]).toMatchObject({ valorCents: 3900, tipo: "SAIDA" });
+  });
+});
+
+describe("a categoria que a Siri fala", () => {
+  const categorias = [
+    { id: "mercado", nome: "Mercado", tipos: ["DIARIO" as const] },
+    { id: "contas", nome: "Contas", tipos: ["SAIDA" as const] },
+  ];
+  const comLista = (corpo: Parameters<typeof lerPedidoDoAtalho>[0]) =>
+    lerPedidoDoAtalho(corpo, { ...opcoes, categorias });
+
+  it("vira o identificador guardado no lançamento", () => {
+    const r = comLista({ valor: "90", categoria: "mercado" });
+    expect(r.ok && r.lancamentos[0].categoria).toBe("mercado");
+  });
+
+  it("uma frase inteira ainda acha a categoria", () => {
+    const r = comLista({ valor: "180", tipo: "saída", categoria: "conta de luz" });
+    expect(r.ok && r.lancamentos[0].categoria).toBe("contas");
+  });
+
+  /** Perder o gasto porque a Siri ouviu errado desfaria o que o atalho resolve. */
+  it("categoria que não existe não derruba o lançamento, e é avisada", () => {
+    const r = comLista({ valor: "25", categoria: "jiu-jitsu" });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.lancamentos[0].categoria).toBeNull();
+    expect(r.lancamentos[0].valorCents).toBe(2500);
+    expect(r.categoriaNaoAchada).toBe("jiu-jitsu");
+  });
+
+  it("sem categoria falada, nada é avisado", () => {
+    const r = comLista({ valor: "25" });
+    expect(r.ok && r.categoriaNaoAchada).toBeUndefined();
+  });
+});
+
+describe("o recado diz a categoria", () => {
+  const um = [{ id: "a", data: "2026-09-15", tipo: "DIARIO" as const, valorCents: 9000 }];
+
+  it("para um erro de ditado aparecer na hora, e não no fim do mês", () => {
+    expect(recadoDoAtalho(um, 150000, { nome: "Mercado" })).toBe(
+      "R$ 90 no diário em Mercado. Saldo de hoje: R$ 1.500.",
+    );
+  });
+
+  it("avisa quando não achou, sem esconder que o valor entrou", () => {
+    expect(recadoDoAtalho(um, 150000, { naoAchada: "jiu-jitsu" })).toContain(
+      'não achei a categoria "jiu-jitsu"',
+    );
+  });
+
+  it("sem categoria, a frase é a de sempre", () => {
+    expect(recadoDoAtalho(um, 150000)).toBe("R$ 90 no diário. Saldo de hoje: R$ 1.500.");
   });
 });

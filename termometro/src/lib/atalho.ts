@@ -10,6 +10,7 @@
  * mandou e montar os lançamentos. É o que dá para testar sem servidor nenhum.
  */
 import { diasNoMes, partesDaData } from "./datas";
+import { acharCategoria, type Categoria } from "./categorias";
 import { aoReal, comCifrao, paraCentavos, parcelas } from "./dinheiro";
 import type { Lancamento, Tipo } from "./tipos";
 
@@ -40,6 +41,7 @@ export function hojeNoFuso(fuso: string = FUSO_PADRAO, agora: Date = new Date())
 
 export interface PedidoDoAtalho {
   valor?: unknown;
+  categoria?: unknown;
   tipo?: unknown;
   data?: unknown;
   nota?: unknown;
@@ -77,6 +79,7 @@ export function camposDoEndereco(url: string): Record<string, string> {
 
 const ACEITOS_NO_ENDERECO = [
   "valor",
+  "categoria",
   "tipo",
   "data",
   "nota",
@@ -85,7 +88,14 @@ const ACEITOS_NO_ENDERECO = [
   "apartamento",
 ] as const;
 
-export type LeituraDoPedido = { ok: true; lancamentos: Lancamento[] } | { ok: false; erro: string };
+export type LeituraDoPedido =
+  | {
+      ok: true;
+      lancamentos: Lancamento[];
+      /** O que foi falado e não casou com categoria nenhuma. */
+      categoriaNaoAchada?: string;
+    }
+  | { ok: false; erro: string };
 
 const ehData = (v: unknown): v is string => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);
 
@@ -109,7 +119,12 @@ function comoBooleano(v: unknown): boolean {
  */
 export function lerPedidoDoAtalho(
   corpo: PedidoDoAtalho,
-  opcoes: { agora?: string; hoje?: string; novoId?: () => string } = {},
+  opcoes: {
+    agora?: string;
+    hoje?: string;
+    novoId?: () => string;
+    categorias?: readonly Categoria[];
+  } = {},
 ): LeituraDoPedido {
   const texto = comoTexto(corpo.valor);
   if (texto === null || texto.trim() === "") {
@@ -145,6 +160,12 @@ export function lerPedidoDoAtalho(
   const novoId = opcoes.novoId ?? (() => crypto.randomUUID());
   const nota = comoTexto(corpo.nota)?.trim() || null;
 
+  // Categoria que não casou não derruba o lançamento: o valor entra, e a
+  // notificação avisa. Perder o gasto porque a Siri ouviu "farmássia" seria
+  // desfazer justamente o que o atalho veio resolver.
+  const falada = comoTexto(corpo.categoria)?.trim() || null;
+  const achada = falada ? acharCategoria(opcoes.categorias ?? [], falada, tipo) : null;
+
   const lancamentos = valores
     .filter((v) => v !== 0)
     .map<Lancamento>((valorCents) => ({
@@ -152,6 +173,7 @@ export function lerPedidoDoAtalho(
       data,
       tipo,
       valorCents: aoReal(valorCents),
+      categoria: achada?.id ?? null,
       nota,
       previsto: false,
       rendaPropria: tipo === "ENTRADA" && comoBooleano(corpo.rendaPropria),
@@ -163,7 +185,9 @@ export function lerPedidoDoAtalho(
       apagadoEm: null,
     }));
 
-  return { ok: true, lancamentos };
+  return falada && !achada
+    ? { ok: true, lancamentos, categoriaNaoAchada: falada }
+    : { ok: true, lancamentos };
 }
 
 /** "R$ 38,50" e "38,50 reais" — o cifrão e a palavra saem, o número fica. */
@@ -237,9 +261,23 @@ const COMO_SE_DIZ: Record<Tipo, string> = {
  * É ela que fecha o gesto: sem abrir o app, você já sabe que entrou e quanto
  * sobrou. Sem isso o atalho vira um ato de fé.
  */
-export function recadoDoAtalho(lancamentos: Lancamento[], saldoDoDiaCents: number): string {
+export function recadoDoAtalho(
+  lancamentos: Lancamento[],
+  saldoDoDiaCents: number,
+  categoria?: { nome?: string; naoAchada?: string },
+): string {
   const total = lancamentos.reduce((soma, l) => soma + l.valorCents, 0);
   const quantos = lancamentos.length > 1 ? `${lancamentos.length} lançamentos, ` : "";
   const como = COMO_SE_DIZ[lancamentos[0]?.tipo ?? "DIARIO"];
-  return `${quantos}${comCifrao(total)} ${como}. Saldo de hoje: ${comCifrao(saldoDoDiaCents)}.`;
+
+  // A categoria é dita de volta de propósito: é assim que um "farmácia" ouvido
+  // como "farmássia" aparece na hora, em vez de virar um total errado que só se
+  // descobre no fim do mês.
+  const onde = categoria?.nome
+    ? ` em ${categoria.nome}`
+    : categoria?.naoAchada
+      ? ` (não achei a categoria "${categoria.naoAchada}")`
+      : "";
+
+  return `${quantos}${comCifrao(total)} ${como}${onde}. Saldo de hoje: ${comCifrao(saldoDoDiaCents)}.`;
 }

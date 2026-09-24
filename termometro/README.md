@@ -167,7 +167,22 @@ planilha mostrava. Os doze meses de 2026 batem ao centavo.
 ## O termômetro mede o futuro
 
 Em **Fixos** ficam as coisas que se repetem: o salário do dia 5, a fatura do dia
-10, os 60 reais de todo dia. "Preencher previsão até dezembro" escreve esses
+10, os 60 reais de todo dia — e também a diarista de **toda primeira quarta** e o
+boleto do **último dia útil**. "Dia 5" dá conta do salário e não dá conta de
+metade do resto; escrever a feira de sábado como um dia do mês obriga a corrigir
+à mão todo mês, que é o mesmo que não ter fixo nenhum.
+
+As regras vivem em [`src/lib/repeticao.ts`](src/lib/repeticao.ts), como função
+pura. Não há "a cada N dias" de propósito: ela precisa de uma data-âncora, e uma
+âncora que ninguém vê é fonte de surpresa. Dia útil é de segunda a sexta,
+**sem feriado** — uma tabela de feriados nacionais, estaduais e municipais é um
+problema que não acaba, e errar por excesso de zelo seria pior do que a regra
+simples e anunciada.
+
+O campo `dia` continua no banco como **recuo**: um fixo cadastrado antes de
+existirem regras, ou com uma regra que não dá para entender, cai nele e segue
+funcionando. Um fixo que some da previsão por causa de um texto torto é pior do
+que um caindo no dia errado, que se vê e se conserta. "Preencher previsão até dezembro" escreve esses
 valores nos dias que ainda não chegaram, sem mexer no passado e sem repetir o
 que já está lançado. Um fixo marcado para o dia 31 cai no dia 30 em mês de 30
 dias — que é justamente o que a planilha errava.
@@ -179,7 +194,8 @@ confirma o valor.
 
 ## Lançar sem abrir o app
 
-`POST /api/lancar?valor=38,50`, com o código de acesso no cabeçalho `x-codigo` —
+`POST /api/lancar?valor=39&categoria=mercado`, com o código de acesso no
+cabeçalho `x-codigo` —
 sem tipo é gasto do dia a dia, sem data é hoje. A resposta traz o saldo do dia já
 calculado, para a notificação do atalho dizer o que aconteceu sem abrir nada. O
 mesmo vale em corpo JSON, `{"valor":"38,50"}`, para quem montou o atalho assim.
@@ -212,6 +228,12 @@ Três decisões que essa porta carrega:
   UTC; sem isso um gasto lançado às dez da noite em São Paulo nasceria no dia
   seguinte, e o saldo do dia sairia errado bem na hora em que mais se olha para
   ele.
+- **A categoria vai pelo nome falado, e quem traduz é o servidor.** "mercado",
+  "conta de luz", "saude" sem acento: a busca vai afrouxando — igual, começa
+  com, primeira palavra, contém — porque ditado não bate letra por letra. Uma
+  categoria que não casa **não derruba o lançamento**: o valor entra sem
+  categoria e a notificação avisa, porque perder o gasto por causa de uma
+  palavra ouvida errada desfaria o que o atalho veio resolver.
 - **Um tipo que não existe é recusado, não adivinhado.** Silenciar o erro
   colocaria dinheiro na coluna errada sem ninguém ficar sabendo.
 - **O valor ditado é lido como fala, e o ambíguo é recusado.** A leitura antiga
