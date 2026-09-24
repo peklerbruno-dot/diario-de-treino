@@ -35,7 +35,7 @@ const ehOperador = (c: string): boolean => (OPERADORES as readonly string[]).inc
 /** Tira do fim o que ainda está pela metade, para a prévia acompanhar a digitação. */
 function aparar(texto: string): string {
   let t = texto.trim();
-  while (t.length > 0 && (ehOperador(t[t.length - 1]) || t.endsWith(","))) {
+  while (t.length > 0 && ehOperador(t[t.length - 1])) {
     t = t.slice(0, -1).trim();
   }
   return t;
@@ -43,7 +43,7 @@ function aparar(texto: string): string {
 
 /** "1.234,56" → 1234.56 · "12" → 12 */
 function numero(pedaco: string): number | null {
-  const limpo = pedaco.replace(/\./g, "").replace(",", ".").trim();
+  const limpo = pedaco.replace(/[.,]/g, "").trim();
   if (limpo === "" || !/^\d*\.?\d*$/.test(limpo)) return null;
   const n = Number(limpo);
   return Number.isFinite(n) ? n : null;
@@ -125,7 +125,7 @@ export function paraOVisor(texto: string): string {
 
 /**
  * Acrescenta uma tecla ao que já está escrito, sem deixar a conta inválida:
- * dois operadores seguidos viram um só, e uma vírgula só entra uma vez por
+ * dois operadores seguidos viram um só, e o zero duplo só entra depois de
  * número.
  */
 export function teclar(atual: string, tecla: string): string {
@@ -135,16 +135,12 @@ export function teclar(atual: string, tecla: string): string {
     if (atual === "") return "";
     const ultimo = atual[atual.length - 1];
     if (ehOperador(ultimo)) return atual.slice(0, -1) + tecla;
-    if (ultimo === ",") return atual.slice(0, -1) + tecla;
     return atual + tecla;
   }
 
-  if (tecla === ",") {
-    const ultimoNumero = atual.split(/[+\-*/]/).pop() ?? "";
-    if (ultimoNumero.includes(",")) return atual;
-    if (ultimoNumero === "") return atual + "0,";
-    return atual + ",";
-  }
+  // "00" é atalho para os valores redondos, que são a maioria. Começar um
+  // número por ele daria "00", que não quer dizer nada.
+  if (tecla === "00" && (atual === "" || ehOperador(atual[atual.length - 1]))) return atual;
 
   return atual + tecla;
 }

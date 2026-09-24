@@ -1,6 +1,15 @@
 /**
- * Dinheiro é sempre inteiro em centavos. A conversão para reais acontece só na
- * hora de mostrar.
+ * Dinheiro é sempre inteiro em centavos — e sempre múltiplo de 100.
+ *
+ * O app não trabalha com centavos. Não é só uma escolha de exibição: o valor
+ * é arredondado ao entrar, de modo que a soma das partes sempre bate com o
+ * total. Esconder os centavos e continuar guardando-os daria um rodapé que
+ * fecha um real fora do que a coluna mostra — o tipo de diferença que a gente
+ * passa meia hora tentando entender.
+ *
+ * A unidade guardada continua sendo o centavo, e não o real, porque é ela que
+ * a planilha trouxe e é ela que o banco tem. Mudar a unidade não deixaria nada
+ * mais simples e quebraria os 815 lançamentos que já existem.
  *
  * O detalhe que custa caro no iPhone: no teclado em português a tecla decimal é
  * a vírgula. Um campo que só entende ponto engole "52,5" e grava outra coisa —
@@ -73,39 +82,23 @@ export function parcelas(texto: string): number[] | null {
   return valores;
 }
 
-const FORMATO = new Intl.NumberFormat("pt-BR", {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
+const FORMATO = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 });
 
-/** 123456 → "1.234,56" */
-export function emReais(centavos: number): string {
-  return FORMATO.format(centavos / 100);
+/** Ao real mais próximo. É por aqui que todo valor passa antes de ser guardado. */
+export function aoReal(centavos: number): number {
+  if (!Number.isFinite(centavos)) return 0;
+  return Math.round(centavos / 100) * 100;
 }
 
-/** 123456 → "R$ 1.234,56" */
+/** 123456 → "1.235" */
+export function emReais(centavos: number): string {
+  const sinal = centavos < 0 ? "-" : "";
+  return `${sinal}${FORMATO.format(Math.round(Math.abs(centavos) / 100))}`;
+}
+
+/** 123456 → "R$ 1.235" */
 export function comCifrao(centavos: number): string {
   const sinal = centavos < 0 ? "-" : "";
-  return `${sinal}R$ ${FORMATO.format(Math.abs(centavos) / 100)}`;
+  return `${sinal}R$ ${FORMATO.format(Math.round(Math.abs(centavos) / 100))}`;
 }
 
-const SEM_CASAS = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 });
-
-/**
- * 293600 → "2.936".
- *
- * É como a coluna da planilha era lida: numa tabela de trinta linhas, os
- * centavos ocupam o lugar em que a gente compara os reais, e nenhuma decisão
- * muda por causa deles. O valor exato continua a um toque, na folha do dia.
- */
-export function semCentavos(centavos: number): string {
-  const sinal = centavos < 0 ? "-" : "";
-  return `${sinal}${SEM_CASAS.format(Math.round(Math.abs(centavos) / 100))}`;
-}
-
-/** 123456 → "R$ 1.235" — para os números grandes do painel. */
-export function redondo(centavos: number): string {
-  const sinal = centavos < 0 ? "-" : "";
-  const reais = Math.round(Math.abs(centavos) / 100);
-  return `${sinal}R$ ${new Intl.NumberFormat("pt-BR").format(reais)}`;
-}

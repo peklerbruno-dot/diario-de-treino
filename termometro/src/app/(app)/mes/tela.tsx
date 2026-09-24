@@ -17,7 +17,7 @@ import {
 import { useAnoCalculado, useEstado } from "@/componentes/usar-loja";
 import type { DiaCalculado, MesCalculado } from "@/lib/calculo";
 import { hoje, nomeDoDiaDaSemana, nomeDoMes, partesDaData } from "@/lib/datas";
-import { comCifrao, semCentavos } from "@/lib/dinheiro";
+import { comCifrao, emReais } from "@/lib/dinheiro";
 import { classeDoSaldo, corDoSaldo, faixaDoMes } from "@/lib/escala";
 
 type Visao = "lista" | "calendario";
@@ -206,7 +206,7 @@ function ListaDeDias({
                     aria-label={`Abrir o dia ${dia.dia} para lançar ou conferir.`}
                     className={`block w-full rounded-[8px] px-1.5 py-1 text-right text-[13.5px] font-semibold ${cor}`}
                   >
-                    {semCentavos(dia.saldoCents)}
+                    {emReais(dia.saldoCents)}
                   </button>
                 </td>
               </tr>
@@ -229,7 +229,7 @@ function Valor({ cents, classe, fraco }: { cents: number; classe: string; fraco:
         fraco ? "opacity-55" : ""
       }`}
     >
-      {cents === 0 ? "" : semCentavos(cents)}
+      {cents === 0 ? "" : emReais(cents)}
     </td>
   );
 }

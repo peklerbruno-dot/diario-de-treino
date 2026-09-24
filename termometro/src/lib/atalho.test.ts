@@ -17,7 +17,7 @@ describe("o que o atalho manda", () => {
     expect(r.lancamentos[0]).toMatchObject({
       data: "2026-09-15",
       tipo: "DIARIO",
-      valorCents: 3850,
+      valorCents: 3900,
       previsto: false,
       nota: null,
     });
@@ -25,7 +25,7 @@ describe("o que o atalho manda", () => {
 
   it("aceita número, que é como o Atalhos entrega o que você digitou", () => {
     const r = ler({ valor: 38.5 });
-    expect(r.ok && r.lancamentos[0].valorCents).toBe(3850);
+    expect(r.ok && r.lancamentos[0].valorCents).toBe(3900);
   });
 
   it("aceita a soma, igual ao app", () => {
@@ -72,17 +72,19 @@ describe("o que o atalho manda errado", () => {
 
   it("entende o valor ditado à Siri, com a palavra no meio", () => {
     expect(ler({ valor: "38 reais e 50" }).ok && ler({ valor: "38 reais e 50" })).toMatchObject({
-      lancamentos: [{ valorCents: 3850 }],
+      lancamentos: [{ valorCents: 3900 }],
     });
     const casos: [string, number][] = [
-      ["38 reais e 50 centavos", 3850],
-      ["38 reais 50", 3850],
+      // O valor ainda é lido com centavos e arredondado na entrada: o app não
+      // guarda centavo nenhum, e a notificação já devolve o valor redondo.
+      ["38 reais e 50 centavos", 3900],
+      ["38 reais 50", 3900],
       ["38 reais", 3800],
       ["1 real", 100],
-      ["38,50 reais", 3850],
-      ["R$ 38,50", 3850],
-      ["r$ 1.234,56", 123456],
-      ["38 reais e 5", 3850],
+      ["38,50 reais", 3900],
+      ["R$ 38,50", 3900],
+      ["r$ 1.234,56", 123500],
+      ["38 reais e 5", 3900],
     ];
     for (const [dito, cents] of casos) {
       const r = ler({ valor: dito });
@@ -148,14 +150,14 @@ describe("o recado da notificação", () => {
 
   it("diz o que entrou e quanto sobrou", () => {
     expect(recadoDoAtalho([lancamento("DIARIO", 38.5)], 149743)).toBe(
-      "R$ 38,50 no diário. Saldo de hoje: R$ 1.497,43.",
+      "R$ 39 no diário. Saldo de hoje: R$ 1.497.",
     );
   });
 
   it("conta quantos foram, quando foi mais de um", () => {
     const recado = recadoDoAtalho([lancamento("DIARIO", 10), lancamento("DIARIO", 5)], 100);
     expect(recado).toContain("2 lançamentos");
-    expect(recado).toContain("R$ 15,00");
+    expect(recado).toContain("R$ 15");
   });
 
   it("fala 'entrou' quando foi entrada", () => {
@@ -201,6 +203,6 @@ describe("o que vem no próprio endereço", () => {
 
   it("o que vem do endereço é lido igual ao que vem do corpo", () => {
     const r = lerPedidoDoAtalho(camposDoEndereco(url("valor=38 reais e 50&tipo=saída")), opcoes);
-    expect(r.ok && r.lancamentos[0]).toMatchObject({ valorCents: 3850, tipo: "SAIDA" });
+    expect(r.ok && r.lancamentos[0]).toMatchObject({ valorCents: 3900, tipo: "SAIDA" });
   });
 });

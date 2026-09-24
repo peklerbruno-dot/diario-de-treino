@@ -9,15 +9,15 @@ describe("o + separa em vários lançamentos", () => {
   });
 
   it("um valor sozinho é um lançamento só", () => {
-    expect(parcelas("38,50")).toEqual([3850]);
+    expect(avaliar("195")).toEqual({ parcelas: [19500], totalCents: 19500 });
   });
 
-  it("aceita a vírgula dentro da soma", () => {
-    expect(parcelas("19,12+45,8")).toEqual([1912, 4580]);
+  it("não há vírgula para aceitar: o app só trabalha com reais inteiros", () => {
+    expect(avaliar("52,5")).toEqual({ parcelas: [52500], totalCents: 52500 });
   });
 
-  it("aceita o ponto de milhar", () => {
-    expect(parcelas("1.234,56")).toEqual([123456]);
+  it("o ponto de milhar é só enfeite e sai da conta", () => {
+    expect(avaliar("1.234")).toEqual({ parcelas: [123400], totalCents: 123400 });
   });
 });
 
@@ -85,14 +85,13 @@ describe("as teclas", () => {
     expect(teclar("", "+")).toBe("");
   });
 
-  it("só deixa uma vírgula por número", () => {
-    expect(teclar("12,5", ",")).toBe("12,5");
-    expect(teclar("12,5+3", ",")).toBe("12,5+3,");
+  it("o zero duplo é atalho para valor redondo", () => {
+    expect(teclar("15", "00")).toBe("1500");
   });
 
-  it("vírgula sozinha vira zero vírgula", () => {
-    expect(teclar("", ",")).toBe("0,");
-    expect(teclar("10+", ",")).toBe("10+0,");
+  it("o zero duplo não começa um número, que daria \"00\"", () => {
+    expect(teclar("", "00")).toBe("");
+    expect(teclar("15+", "00")).toBe("15+");
   });
 });
 

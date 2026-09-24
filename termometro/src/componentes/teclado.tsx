@@ -21,7 +21,7 @@ const TECLAS = [
   ["7", "8", "9", "/"],
   ["4", "5", "6", "*"],
   ["1", "2", "3", "-"],
-  [",", "0", "⌫", "+"],
+  ["0", "00", "⌫", "+"],
 ] as const;
 
 const DESENHO: Record<string, string> = { "/": "÷", "*": "×", "-": "−", "+": "+" };
@@ -31,16 +31,10 @@ const NOME: Record<string, string> = {
   "-": "menos",
   "+": "mais um lançamento",
   "⌫": "apagar",
-  ",": "vírgula",
+  "00": "dois zeros",
 };
 
-export function Teclado({
-  valor,
-  aoMudar,
-}: {
-  valor: string;
-  aoMudar: (novo: string) => void;
-}) {
+export function Teclado({ valor, aoMudar }: { valor: string; aoMudar: (novo: string) => void }) {
   const conta = avaliar(valor);
   const varios = (conta?.parcelas.length ?? 0) > 1;
 
@@ -64,7 +58,9 @@ export function Teclado({
               )}
             </>
           ) : (
-            <span className="text-fosco">Digite o valor. Dá para somar: 195 + 15 + 83.</span>
+            <span className="text-fosco">
+              Digite o valor, em reais inteiros. Dá para somar: 195 + 15 + 83.
+            </span>
           )}
         </p>
       </div>

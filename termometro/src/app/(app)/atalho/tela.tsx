@@ -256,7 +256,7 @@ export function TelaDoAtalho() {
         <Cartao className="px-4 py-1">
           <Jeito titulo="Diga o número, e só ele">
             As formas mais seguras são <i>“trinta e oito reais e cinquenta centavos”</i> e{" "}
-            <i>“trinta e oito vírgula cinquenta”</i>. Valor redondo pode ser só{" "}
+            <i>“trinta e oito vírgula cinquenta”</i>. Valor comCifrao pode ser só{" "}
             <i>“trinta e oito”</i>. Se a Siri entender alguma coisa com duas leituras possíveis, o
             app <b>recusa e explica</b>, em vez de chutar e colocar dinheiro errado no seu saldo — e
             de todo jeito a confirmação no fim lê o valor de volta, então o erro aparece na hora.

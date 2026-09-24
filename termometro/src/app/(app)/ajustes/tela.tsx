@@ -19,11 +19,13 @@ import { paraCentavos } from "@/lib/dinheiro";
 import {
   ajustesDoAno,
   anosComDados,
+  arredondarTudo,
   fixosVivos,
   guardarRateio,
   guardarSaldoInicial,
   lancamentosVivos,
   loja,
+  quantosComCentavos,
   RECADO_DA_SITUACAO,
 } from "@/lib/loja";
 import { NOME_DO_TIPO } from "@/lib/tipos";
@@ -121,6 +123,8 @@ export function TelaDeAjustes() {
           <Botao onClick={() => guardarRateio(Number(rateio) || 0)}>Salvar</Botao>
         </div>
       </section>
+
+      <ArrumarOsCentavos estado={estado} />
 
       <section className="mt-6">
         <Subtitulo>Levar os dados embora</Subtitulo>
@@ -226,6 +230,72 @@ export function TelaDeAjustes() {
         </Aviso>
       </div>
     </div>
+  );
+}
+
+/**
+ * O pente nos centavos antigos.
+ *
+ * Só aparece enquanto houver o que arrumar: passado o pente, a seção some
+ * sozinha e não vira mais um botão perigoso morando em Ajustes para sempre.
+ *
+ * O backup é baixado antes, e não oferecido depois. Quem clica num botão que
+ * diz "não tem volta" já decidiu; parar para explicar que seria bom guardar uma
+ * cópia é conselho chegando tarde.
+ */
+function ArrumarOsCentavos({ estado }: { estado: EstadoDoApp }) {
+  const [confirmando, setConfirmando] = useState(false);
+  const [recado, setRecado] = useState<string | null>(null);
+  const quantos = quantosComCentavos(estado);
+
+  if (quantos === 0 && !recado) return null;
+
+  function arrumar() {
+    baixarBackup(estado);
+    const { lancamentos, fixos } = arredondarTudo();
+    setConfirmando(false);
+    setRecado(
+      lancamentos + fixos === 0
+        ? "Não havia nada com centavos."
+        : `Arredondei ${lancamentos} lançamento${lancamentos === 1 ? "" : "s"}` +
+            (fixos > 0 ? ` e ${fixos} fixo${fixos === 1 ? "" : "s"}` : "") +
+            ". O backup de antes está na pasta de downloads.",
+    );
+  }
+
+  return (
+    <section className="mt-6">
+      <Subtitulo>Centavos que sobraram</Subtitulo>
+      {recado ? (
+        <p className="mt-2 text-[15px] leading-relaxed text-grafite" role="status">
+          {recado}
+        </p>
+      ) : (
+        <>
+          <p className="mt-1 text-[15px] leading-relaxed text-grafite">
+            {quantos} valor{quantos === 1 ? "" : "es"} ainda tem centavos, da época da planilha. O
+            app hoje só trabalha com reais inteiros, e enquanto os dois convivem um rodapé pode
+            fechar um real fora do que a coluna mostra.
+          </p>
+          {confirmando ? (
+            <div className="mt-2 flex flex-wrap gap-2">
+              <Botao tipo="primario" onClick={arrumar}>
+                Baixar backup e arredondar
+              </Botao>
+              <Botao onClick={() => setConfirmando(false)}>Cancelar</Botao>
+            </div>
+          ) : (
+            <Botao onClick={() => setConfirmando(true)} className="mt-2">
+              Arredondar tudo
+            </Botao>
+          )}
+          <p className="mt-2 text-[13px] leading-snug text-fosco">
+            Não tem desfazer. O backup é baixado sozinho antes de qualquer alteração, e volta por
+            “Importar planilha” se precisar.
+          </p>
+        </>
+      )}
+    </section>
   );
 }
 
