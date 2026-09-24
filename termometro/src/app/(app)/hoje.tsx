@@ -4,7 +4,6 @@ import { useState } from "react";
 import { FolhaDeLancamento } from "@/componentes/folha-de-lancamento";
 import { Botao, Cartao, Dinheiro, Selo, Sobrescrito, Subtitulo, Titulo } from "@/componentes/pecas";
 import { useAnoCalculado } from "@/componentes/usar-loja";
-import { sobraPorDia } from "@/lib/calculo";
 import { curta, hoje, nomeDoDiaDaSemana, nomeDoMes, partesDaData } from "@/lib/datas";
 import { comCifrao } from "@/lib/dinheiro";
 import { NOME_DO_TIPO, type Lancamento, type Tipo } from "@/lib/tipos";
@@ -24,7 +23,6 @@ export function TelaDeHoje() {
   const anoCalculado = useAnoCalculado(ano);
   const doMes = anoCalculado.meses[mes - 1];
   const doDia = doMes.dias[dia - 1];
-  const sobra = sobraPorDia(anoCalculado, agora);
 
   const oQueVem = proximosCompromissos(anoCalculado, agora);
 
@@ -40,40 +38,12 @@ export function TelaDeHoje() {
         <p className="mt-1">
           <Dinheiro cents={doDia.saldoCents} tamanho="gigante" />
         </p>
-
-        {sobra && (
-          <div className="mt-4 border-t border-white/10 pt-3">
-            <div className="flex items-baseline justify-between gap-3">
-              <Sobrescrito escuro>Dá para gastar hoje</Sobrescrito>
-              <b
-                className={`tabular shrink-0 text-[19px] ${
-                  sobra.porDiaCents < 0 ? "text-atencao" : ""
-                }`}
-              >
-                {comCifrao(sobra.porDiaCents)}
-              </b>
-            </div>
-            <Barra usado={sobra.gastoDeHojeCents} total={sobra.porDiaCents} />
-            <p className="mt-1.5 text-[12px] leading-snug text-heroi-fosco">
-              {sobra.porDiaCents < 0 ? (
-                <>
-                  As contas que ainda vêm passam do que há em caixa. Faltam {sobra.diasRestantes}{" "}
-                  dias no mês.
-                </>
-              ) : sobra.gastoDeHojeCents > 0 ? (
-                <>
-                  Já gastou {comCifrao(sobra.gastoDeHojeCents)} hoje. Repartido pelos{" "}
-                  {sobra.diasRestantes} dias que faltam no mês.
-                </>
-              ) : (
-                <>
-                  O que sobra depois das contas que ainda vêm, repartido pelos {sobra.diasRestantes}{" "}
-                  dias que faltam no mês.
-                </>
-              )}
-            </p>
-          </div>
-        )}
+        <p className="mt-2 text-[13px] text-heroi-fosco">
+          No fim de {nomeDoMes(mes)}, se nada mudar:{" "}
+          <b className="tabular whitespace-nowrap text-heroi-tinta">
+            {comCifrao(doMes.totais.saldoFechamentoCents)}
+          </b>
+        </p>
       </Cartao>
 
       <div className="mt-3 flex gap-2">
@@ -150,24 +120,6 @@ export function TelaDeHoje() {
 
 const corDe = (tipo: Tipo) =>
   tipo === "ENTRADA" ? "entrada" : tipo === "SAIDA" ? "saida" : "diario";
-
-/**
- * A barra que mostra quanto do dia já foi gasto. Passou do limite, ela enche e
- * fica vermelha — sem esconder o excesso atrás de uma barra cheia e calma.
- */
-function Barra({ usado, total }: { usado: number; total: number }) {
-  if (total <= 0) return null;
-  const parte = Math.min(usado / total, 1);
-  const estourou = usado > total;
-  return (
-    <div className="mt-2 h-[7px] overflow-hidden rounded-full bg-white/15">
-      <div
-        className={`h-full rounded-full ${estourou ? "bg-atencao" : "bg-saldo"}`}
-        style={{ width: `${Math.max(parte * 100, usado > 0 ? 4 : 0)}%` }}
-      />
-    </div>
-  );
-}
 
 /**
  * O que ainda vai acontecer: as contas e entradas dos próximos dias, sem o

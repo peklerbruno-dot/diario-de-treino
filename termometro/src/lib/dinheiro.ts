@@ -89,6 +89,20 @@ export function comCifrao(centavos: number): string {
   return `${sinal}R$ ${FORMATO.format(Math.abs(centavos) / 100)}`;
 }
 
+const SEM_CASAS = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 });
+
+/**
+ * 293600 → "2.936".
+ *
+ * É como a coluna da planilha era lida: numa tabela de trinta linhas, os
+ * centavos ocupam o lugar em que a gente compara os reais, e nenhuma decisão
+ * muda por causa deles. O valor exato continua a um toque, na folha do dia.
+ */
+export function semCentavos(centavos: number): string {
+  const sinal = centavos < 0 ? "-" : "";
+  return `${sinal}${SEM_CASAS.format(Math.round(Math.abs(centavos) / 100))}`;
+}
+
 /** 123456 → "R$ 1.235" — para os números grandes do painel. */
 export function redondo(centavos: number): string {
   const sinal = centavos < 0 ? "-" : "";

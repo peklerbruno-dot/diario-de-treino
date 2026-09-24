@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { comCifrao, emReais, paraCentavos, parcelas, redondo } from "./dinheiro";
+import { comCifrao, emReais, paraCentavos, parcelas, redondo, semCentavos } from "./dinheiro";
 
 describe("ler um valor digitado", () => {
   it("aceita a vírgula, que é a tecla decimal do teclado em português", () => {
@@ -69,5 +69,25 @@ describe("mostrar dinheiro", () => {
   it("arredonda para o painel, onde os centavos só atrapalham", () => {
     expect(redondo(123456)).toBe("R$ 1.235");
     expect(redondo(-99)).toBe("-R$ 1");
+  });
+});
+
+describe("a coluna da planilha, sem centavos", () => {
+  it("arredonda para o real mais próximo", () => {
+    expect(semCentavos(293600)).toBe("2.936");
+    expect(semCentavos(293649)).toBe("2.936");
+    expect(semCentavos(293650)).toBe("2.937");
+  });
+
+  it("usa o ponto de milhar do português", () => {
+    expect(semCentavos(1234567)).toBe("12.346");
+  });
+
+  it("mantém o sinal de quem está no vermelho", () => {
+    expect(semCentavos(-77100)).toBe("-771");
+  });
+
+  it("zero é zero", () => {
+    expect(semCentavos(0)).toBe("0");
   });
 });
