@@ -6,7 +6,16 @@ import { useEffect, useState } from "react";
 import { hoje } from "@/lib/datas";
 import { loja, RECADO_DA_SITUACAO } from "@/lib/loja";
 import { FolhaDeLancamento } from "./folha-de-lancamento";
-import { IconeAgenda, IconeHoje, IconeMais, IconeMes, IconeTotais } from "./icones";
+import {
+  IconeAgenda,
+  IconeAjustes,
+  IconeAno,
+  IconeFixos,
+  IconeHoje,
+  IconeMais,
+  IconeMes,
+  IconeTotais,
+} from "./icones";
 import { Botao } from "./pecas";
 import { useEstado, useIniciarLoja } from "./usar-loja";
 
@@ -34,13 +43,46 @@ const ALTURA = {
   comBarra: `calc(${FAIXA} + 164px)`,
 };
 
-const ABAS = [
-  { href: "/", rotulo: "Hoje", Icone: IconeHoje },
-  { href: "/mes", rotulo: "Mês", Icone: IconeMes },
-  { href: "/totais", rotulo: "Totais", Icone: IconeTotais },
-  { href: "/agenda", rotulo: "O que vem", Icone: IconeAgenda },
-  { href: "/mais", rotulo: "Mais", Icone: IconeMais },
+/**
+ * Os destinos, e quais deles cabem na barra do celular.
+ *
+ * `naBarra` existe porque as duas telas têm orçamentos diferentes: a barra do
+ * iPhone comporta cinco nomes antes de virar uma fileira de palavras cortadas,
+ * e a lateral do computador comporta todos com folga. Esconder Ano, Fixos e
+ * Ajustes atrás de "Mais" é uma conta do celular — repeti-la num monitor de mil
+ * e quatrocentos pixels seria economizar espaço que sobra.
+ */
+const DESTINOS = [
+  { href: "/", rotulo: "Hoje", Icone: IconeHoje, naBarra: true },
+  { href: "/mes", rotulo: "Mês", Icone: IconeMes, naBarra: true },
+  { href: "/totais", rotulo: "Totais", Icone: IconeTotais, naBarra: true },
+  { href: "/agenda", rotulo: "O que vem", Icone: IconeAgenda, naBarra: true },
+  { href: "/mais", rotulo: "Mais", Icone: IconeMais, naBarra: true },
+  { href: "/ano", rotulo: "Ano", Icone: IconeAno, naBarra: false },
+  { href: "/fixos", rotulo: "Fixos", Icone: IconeFixos, naBarra: false },
+  { href: "/ajustes", rotulo: "Ajustes", Icone: IconeAjustes, naBarra: false },
 ];
+
+/** "Mais" acende quando se está em qualquer uma das telas que ele guarda. */
+const GUARDADAS_POR_MAIS = [
+  "/mais",
+  "/ano",
+  "/fixos",
+  "/ajustes",
+  "/atalho",
+  "/importar",
+  "/classificar",
+];
+
+const aqui = (href: string, caminho: string, naLateral: boolean) => {
+  if (href === "/") return caminho === "/";
+  if (href === "/mais") {
+    // Na lateral, Ano/Fixos/Ajustes têm item próprio e acendem sozinhos; "Mais"
+    // só responde por si. Na barra, ele responde por todos.
+    return naLateral ? caminho === "/mais" : GUARDADAS_POR_MAIS.some((r) => caminho.startsWith(r));
+  }
+  return caminho.startsWith(href);
+};
 
 export function Casca({ children }: { children: React.ReactNode }) {
   useIniciarLoja();
@@ -49,27 +91,88 @@ export function Casca({ children }: { children: React.ReactNode }) {
   const caminho = usePathname();
 
   // A aba Hoje tem os próprios botões de lançar; nas telas de leitura, a barra.
+  // No computador o botão mora na lateral e vale para todas, porque lá ele não
+  // disputa espaço com nada.
   const temBarraDeLancar = caminho === "/mes" || caminho === "/ano";
 
   return (
-    <div className="mx-auto flex min-h-[100svh] w-full max-w-2xl flex-col">
-      <div
-        className="flex-1 px-4 pt-4"
-        style={{ paddingBottom: temBarraDeLancar ? ALTURA.comBarra : ALTURA.semBarra }}
-      >
-        {montado ? (
-          <>
-            <ConviteParaInstalar />
-            {children}
-          </>
-        ) : (
-          <Esqueleto />
-        )}
+    <div className="min-h-[100svh] lg:flex">
+      <Lateral caminho={caminho} />
+
+      <div className="flex min-h-[100svh] w-full flex-col lg:min-h-0 lg:flex-1">
+        <div
+          // As alturas vão por variável, e não por estilo em linha: estilo em
+          // linha ganha de classe, e o `lg:pb-14` do computador nunca conseguia
+          // anular o espaço reservado para a barra do celular.
+          style={
+            {
+              "--fundo": temBarraDeLancar ? ALTURA.comBarra : ALTURA.semBarra,
+            } as React.CSSProperties
+          }
+          className="flex-1 px-4 pb-[var(--fundo)] pt-4 lg:mx-auto lg:w-full lg:max-w-5xl lg:px-10 lg:pb-14 lg:pt-8"
+        >
+          {montado ? (
+            <>
+              <ConviteParaInstalar />
+              {children}
+            </>
+          ) : (
+            <Esqueleto />
+          )}
+        </div>
+        {temBarraDeLancar && <BarraDeLancar />}
+        <Situacao acimaDaBarra={temBarraDeLancar} />
+        <Navegacao caminho={caminho} />
       </div>
-      {temBarraDeLancar && <BarraDeLancar />}
-      <Situacao acimaDaBarra={temBarraDeLancar} />
-      <Navegacao caminho={caminho} />
     </div>
+  );
+}
+
+/**
+ * O menu do computador.
+ *
+ * Substitui a barra de baixo a partir de 1024 px, e não convive com ela: duas
+ * navegações na mesma tela são duas respostas para "onde eu estou". Aqui cabem
+ * todos os destinos, o nome do app e o botão de lançar — que na lateral vale
+ * para qualquer tela, em vez de aparecer só em duas.
+ */
+function Lateral({ caminho }: { caminho: string }) {
+  const [lancando, setLancando] = useState(false);
+
+  return (
+    <>
+      <aside className="sticky top-0 hidden h-[100svh] w-[236px] shrink-0 flex-col border-r border-linha bg-cartao px-3 py-6 lg:flex">
+        <p className="px-3 font-titulo text-[21px] font-semibold tracking-tight">Termômetro</p>
+
+        <Botao tipo="primario" onClick={() => setLancando(true)} className="mx-1 mt-5">
+          Lançar
+        </Botao>
+
+        <nav className="mt-6">
+          <ul className="space-y-0.5">
+            {DESTINOS.map(({ href, rotulo, Icone }) => {
+              const aceso = aqui(href, caminho, true);
+              return (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    aria-current={aceso ? "page" : undefined}
+                    className={`flex items-center gap-3 rounded-folha px-3 py-2.5 text-[14.5px] ${
+                      aceso ? "bg-papel font-semibold text-tinta" : "text-grafite hover:bg-papel"
+                    }`}
+                  >
+                    <Icone />
+                    {rotulo}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      </aside>
+
+      {lancando && <FolhaDeLancamento data={hoje()} aoFechar={() => setLancando(false)} />}
+    </>
   );
 }
 
@@ -77,26 +180,19 @@ export function Casca({ children }: { children: React.ReactNode }) {
 function Navegacao({ caminho }: { caminho: string }) {
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-20 px-3 pt-2"
+      className="fixed inset-x-0 bottom-0 z-20 px-3 pt-2 lg:hidden"
       style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 8px)" }}
     >
       <ul className="mx-auto flex max-w-2xl rounded-[26px] bg-cartao px-1 py-1.5 shadow-cartao">
-        {ABAS.map(({ href, rotulo, Icone }) => {
-          const aqui =
-            href === "/"
-              ? caminho === "/"
-              : href === "/mais"
-                ? ["/mais", "/ano", "/fixos", "/ajustes", "/atalho", "/importar"].some((r) =>
-                    caminho.startsWith(r),
-                  )
-                : caminho.startsWith(href);
+        {DESTINOS.filter((d) => d.naBarra).map(({ href, rotulo, Icone }) => {
+          const aceso = aqui(href, caminho, false);
           return (
             <li key={href} className="flex-1">
               <Link
                 href={href}
-                aria-current={aqui ? "page" : undefined}
+                aria-current={aceso ? "page" : undefined}
                 className={`flex flex-col items-center gap-0.5 rounded-[20px] py-2 text-[10px] ${
-                  aqui ? "font-semibold text-tinta" : "text-fosco"
+                  aceso ? "font-semibold text-tinta" : "text-fosco"
                 }`}
               >
                 <Icone />
@@ -301,7 +397,10 @@ function BarraDeLancar() {
   const [lancando, setLancando] = useState(false);
   return (
     <>
-      <div className="fixed inset-x-0 z-20 px-4" style={{ bottom: ALTURA.barraDeLancar }}>
+      <div
+        style={{ "--baixo": ALTURA.barraDeLancar } as React.CSSProperties}
+        className="fixed inset-x-0 bottom-[var(--baixo)] z-20 px-4 lg:hidden"
+      >
         <div className="mx-auto max-w-2xl">
           <Botao tipo="primario" onClick={() => setLancando(true)} className="w-full">
             Lançar
@@ -325,8 +424,12 @@ function Situacao({ acimaDaBarra }: { acimaDaBarra: boolean }) {
 
   return (
     <div
-      className="fixed inset-x-0 z-30 px-4"
-      style={{ bottom: acimaDaBarra ? ALTURA.avisoAcimaDaBarra : ALTURA.avisoSozinho }}
+      style={
+        {
+          "--baixo": acimaDaBarra ? ALTURA.avisoAcimaDaBarra : ALTURA.avisoSozinho,
+        } as React.CSSProperties
+      }
+      className="fixed inset-x-0 bottom-[var(--baixo)] z-30 px-4 lg:bottom-5 lg:left-[236px]"
     >
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 rounded-folha bg-cartao px-3.5 py-2.5 text-[12.5px] shadow-cartao">
         <span className={situacao === "erro" ? "text-atencao" : "text-grafite"}>

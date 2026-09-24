@@ -53,34 +53,36 @@ export function TelaDaAgenda() {
             .
           </p>
 
-          {meses.map((mes) => (
-            <section key={mes.chave} className="mt-5">
-              <Subtitulo className="mb-2 first-letter:uppercase">{mes.nome}</Subtitulo>
-              <Cartao className="px-4 py-1">
-                {mes.dias.map((dia) =>
-                  dia.lancamentos.map((l) => (
-                    <button
-                      key={l.id}
-                      type="button"
-                      onClick={() => setDiaAberto(dia)}
-                      className="flex w-full items-baseline justify-between gap-3 border-b border-linha py-3 text-left last:border-b-0"
-                    >
-                      <span className="min-w-0">
-                        <span className="block truncate text-[15px]">
-                          {l.nota || NOME_DO_TIPO[l.tipo]}
-                          {l.previsto && <Selo tom="quieto">previsto</Selo>}
+          <div className="lg:columns-2 lg:gap-6">
+            {meses.map((mes) => (
+              <section key={mes.chave} className="mt-5 lg:break-inside-avoid">
+                <Subtitulo className="mb-2 first-letter:uppercase">{mes.nome}</Subtitulo>
+                <Cartao className="px-4 py-1">
+                  {mes.dias.map((dia) =>
+                    dia.lancamentos.map((l) => (
+                      <button
+                        key={l.id}
+                        type="button"
+                        onClick={() => setDiaAberto(dia)}
+                        className="flex w-full items-baseline justify-between gap-3 border-b border-linha py-3 text-left last:border-b-0"
+                      >
+                        <span className="min-w-0">
+                          <span className="block truncate text-[15px]">
+                            {l.nota || NOME_DO_TIPO[l.tipo]}
+                            {l.previsto && <Selo tom="quieto">previsto</Selo>}
+                          </span>
+                          <span className="mt-0.5 block text-[12.5px] text-fosco">
+                            dia {dia.dia} · {nomeDoDiaDaSemana(dia.data)}
+                          </span>
                         </span>
-                        <span className="mt-0.5 block text-[12.5px] text-fosco">
-                          dia {dia.dia} · {nomeDoDiaDaSemana(dia.data)}
-                        </span>
-                      </span>
-                      <Dinheiro cents={l.valorCents} papel={corDe(l.tipo)} />
-                    </button>
-                  )),
-                )}
-              </Cartao>
-            </section>
-          ))}
+                        <Dinheiro cents={l.valorCents} papel={corDe(l.tipo)} />
+                      </button>
+                    )),
+                  )}
+                </Cartao>
+              </section>
+            ))}
+          </div>
         </>
       )}
 

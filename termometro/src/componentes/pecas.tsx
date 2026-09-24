@@ -120,8 +120,7 @@ export function Selo({
   children: React.ReactNode;
   tom?: "azul" | "quieto";
 }) {
-  const estilo =
-    tom === "azul" ? "bg-saldo text-white" : "bg-linha text-grafite";
+  const estilo = tom === "azul" ? "bg-saldo text-white" : "bg-linha text-grafite";
   return (
     <span
       className={`ml-1.5 inline-block rounded-full px-[7px] py-[2px] align-[1px] text-[9.5px] font-bold uppercase tracking-wide ${estilo}`}
@@ -334,13 +333,17 @@ export function Linha({
 }) {
   return (
     <div
-      className={`flex items-baseline justify-between gap-3 border-b border-linha py-2.5 last:border-b-0 ${
+      className={`flex items-baseline justify-between gap-3 whitespace-nowrap border-b border-linha py-2.5 last:border-b-0 ${
         forte ? "font-semibold" : ""
       }`}
     >
-      <span className="text-[14px] text-grafite">
+      {/* O detalhe vai embaixo, e não ao lado: ao lado, "Entrada sua · sem
+          repasse de fora" empurrava o valor e quebrava a cifra em duas linhas
+          numa coluna estreita. Embaixo, o rótulo e o valor ficam na mesma
+          linha, que é o que se lê. */}
+      <span className="min-w-0 text-[14px] text-grafite">
         {rotulo}
-        {detalhe && <span className="ml-2 text-[12px] text-fosco">{detalhe}</span>}
+        {detalhe && <span className="block text-[12px] leading-snug text-fosco">{detalhe}</span>}
       </span>
       {children}
     </div>

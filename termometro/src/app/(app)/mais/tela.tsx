@@ -40,10 +40,10 @@ export function TelaDoMais() {
       <Sobrescrito>O resto</Sobrescrito>
       <Titulo className="mt-0.5">Mais</Titulo>
 
-      <div className="mt-4 space-y-2">
+      <div className="mt-4 space-y-2 lg:grid lg:grid-cols-3 lg:gap-4 lg:space-y-0">
         {DESTINOS.map(({ href, Icone, titulo, descricao }) => (
           <Link key={href} href={href} className="block">
-            <Cartao className="flex items-center gap-3.5 px-4 py-4">
+            <Cartao className="flex h-full items-center gap-3.5 px-4 py-4 lg:flex-col lg:items-start lg:gap-2">
               <span className="text-grafite">
                 <Icone />
               </span>

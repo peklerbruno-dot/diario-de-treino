@@ -78,15 +78,22 @@ export function TelaDoMes() {
         <AlternarVisao visao={visao} aoTrocar={setVisao} />
       </div>
 
-      <div className="mt-2">
-        {visao === "lista" ? (
-          <ListaDeDias mes={doMes} hoje={agora} aoAbrirDia={(d) => setDiaAberto(d.data)} />
-        ) : (
-          <Calendario mes={doMes} hoje={agora} aoAbrirDia={(d) => setDiaAberto(d.data)} />
-        )}
-      </div>
+      {/* No computador, o rodapé sobe para o lado da tabela. Empilhado, ele
+          ficava depois de trinta linhas — e é justamente o resumo que se quer
+          olhar junto com elas, não depois delas. */}
+      <div className="mt-2 lg:grid lg:grid-cols-[minmax(0,1fr)_352px] lg:items-start lg:gap-6">
+        <div>
+          {visao === "lista" ? (
+            <ListaDeDias mes={doMes} hoje={agora} aoAbrirDia={(d) => setDiaAberto(d.data)} />
+          ) : (
+            <Calendario mes={doMes} hoje={agora} aoAbrirDia={(d) => setDiaAberto(d.data)} />
+          )}
+        </div>
 
-      <Rodape mes={doMes} />
+        <div className="lg:sticky lg:top-8">
+          <Rodape mes={doMes} />
+        </div>
+      </div>
 
       {diaSelecionado && <FolhaDoDia dia={diaSelecionado} aoFechar={() => setDiaAberto(null)} />}
     </div>
@@ -262,7 +269,7 @@ function Valor({ cents, classe, fraco }: { cents: number; classe: string; fraco:
 function Rodape({ mes }: { mes: MesCalculado }) {
   const t = mes.totais;
   return (
-    <section className="mt-6">
+    <section className="mt-6 lg:mt-0">
       <Subtitulo className="mb-2">O mês fechado</Subtitulo>
       <Cartao className="px-4 py-1">
         <Linha rotulo="Entradas">
