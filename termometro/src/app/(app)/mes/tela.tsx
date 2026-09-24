@@ -16,7 +16,7 @@ import {
 } from "@/componentes/pecas";
 import { useAnoCalculado, useEstado } from "@/componentes/usar-loja";
 import type { DiaCalculado, MesCalculado } from "@/lib/calculo";
-import { curta, hoje, nomeDoDiaDaSemana, nomeDoMes, partesDaData } from "@/lib/datas";
+import { hoje, nomeDoDiaDaSemana, nomeDoMes, partesDaData } from "@/lib/datas";
 import { comCifrao, semCentavos } from "@/lib/dinheiro";
 import { classeDoSaldo, corDoSaldo, faixaDoMes } from "@/lib/escala";
 
@@ -39,8 +39,6 @@ export function TelaDoMes() {
   const anoCalculado = useAnoCalculado(ano);
   const doMes = anoCalculado.meses[mes - 1];
 
-  const ehOMesDeHoje = ano === inicial.ano && mes === inicial.mes;
-  const diaDeHoje = ehOMesDeHoje ? doMes.dias[inicial.dia - 1] : null;
   const diaSelecionado = diaAberto ? doMes.dias.find((d) => d.data === diaAberto) : null;
 
   function andar(passos: number) {
@@ -74,8 +72,6 @@ export function TelaDoMes() {
           </Aviso>
         </div>
       )}
-
-      <Painel mes={doMes} diaDeHoje={diaDeHoje} />
 
       <div className="mt-4 flex items-center justify-between">
         <Sobrescrito>{visao === "lista" ? "Dia a dia" : "O mês inteiro"}</Sobrescrito>
@@ -120,52 +116,6 @@ function AlternarVisao({ visao, aoTrocar }: { visao: Visao; aoTrocar: (v: Visao)
         </button>
       ))}
     </div>
-  );
-}
-
-/**
- * O número grande é um só: o saldo de hoje quando o mês é este, o saldo do
- * fechamento quando não é. Abaixo dele, a projeção — e o aviso de quando o
- * dinheiro acaba, que é a única coisa que precisa gritar.
- */
-function Painel({ mes, diaDeHoje }: { mes: MesCalculado; diaDeHoje: DiaCalculado | null }) {
-  const principal = diaDeHoje ?? mes.dias[mes.dias.length - 1];
-  const fechamento = mes.totais.saldoFechamentoCents;
-  const noVermelho = mes.dias.find(
-    (d) => d.saldoCents < 0 && (!diaDeHoje || d.dia >= diaDeHoje.dia),
-  );
-
-  return (
-    <>
-      <Cartao escuro className="mt-4 px-5 py-4">
-        <Sobrescrito escuro>
-          {diaDeHoje
-            ? `Saldo hoje · ${diaDeHoje.dia} de ${mes.nome}`
-            : `Saldo no fim de ${mes.nome}`}
-        </Sobrescrito>
-        <p className="mt-1">
-          <Dinheiro cents={principal.saldoCents} tamanho="gigante" />
-        </p>
-        {diaDeHoje && (
-          <p className="mt-2 text-[13.5px] text-heroi-fosco">
-            No fim de {mes.nome}, se nada mudar:{" "}
-            <b className="tabular text-heroi-tinta">{comCifrao(fechamento)}</b>
-          </p>
-        )}
-      </Cartao>
-
-      {noVermelho && (
-        <p className="mt-2 flex items-start gap-2 rounded-folha bg-cartao p-3 text-[14px] leading-snug shadow-baixa ring-1 ring-atencao/40">
-          <span aria-hidden className="text-atencao">
-            ▲
-          </span>
-          <span>
-            Fica negativo no dia <b>{noVermelho.dia}</b> ({curta(noVermelho.data)}):{" "}
-            <span className="tabular text-atencao">{comCifrao(noVermelho.saldoCents)}</span>
-          </span>
-        </p>
-      )}
-    </>
   );
 }
 
@@ -247,11 +197,17 @@ function ListaDeDias({
                 <Valor cents={dia.saidaCents} classe="text-saida" fraco={futuro} />
                 <Valor cents={dia.diarioCents} classe="text-diario" fraco={futuro} />
                 <td className="py-[3px] pl-1 pr-1.5">
-                  <span
-                    className={`block rounded-[8px] px-1.5 py-1 text-right text-[13.5px] font-semibold ${cor}`}
+                  {/* O saldo abre o dia igual ao número do dia: é nele que o
+                      dedo vai primeiro, porque é o maior e o mais colorido da
+                      linha. Tocar e não acontecer nada parecia app quebrado. */}
+                  <button
+                    type="button"
+                    onClick={() => aoAbrirDia(dia)}
+                    aria-label={`Abrir o dia ${dia.dia} para lançar ou conferir.`}
+                    className={`block w-full rounded-[8px] px-1.5 py-1 text-right text-[13.5px] font-semibold ${cor}`}
                   >
                     {semCentavos(dia.saldoCents)}
-                  </span>
+                  </button>
                 </td>
               </tr>
             );
@@ -319,9 +275,6 @@ function Rodape({ mes }: { mes: MesCalculado }) {
             </span>
           </Linha>
         )}
-        <Linha rotulo="Performance" detalhe="entradas − saída total" forte>
-          <Dinheiro cents={t.performanceCents} papel="saldo" />
-        </Linha>
         <Linha rotulo="Saldo no fim do mês" forte>
           <Dinheiro cents={t.saldoFechamentoCents} papel="saldo" />
         </Linha>

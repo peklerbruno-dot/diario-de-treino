@@ -6,13 +6,38 @@ import { useEffect, useState } from "react";
 import { hoje } from "@/lib/datas";
 import { loja, RECADO_DA_SITUACAO } from "@/lib/loja";
 import { FolhaDeLancamento } from "./folha-de-lancamento";
-import { IconeAjustes, IconeAno, IconeFixos, IconeHoje, IconeMes } from "./icones";
+import { IconeAgenda, IconeAjustes, IconeAno, IconeFixos, IconeHoje, IconeMes } from "./icones";
 import { Botao } from "./pecas";
 import { useEstado, useIniciarLoja } from "./usar-loja";
+
+/**
+ * As alturas do rodapé, num lugar só.
+ *
+ * Elas precisam concordar entre três coisas — o espaço que o conteúdo reserva,
+ * onde o botão de lançar pousa e onde o aviso de sincronização aparece — e
+ * precisam contar a faixa do gesto do iPhone, que muda de aparelho para
+ * aparelho. Enquanto eram três números soltos em `bottom-[76px]`, o iPhone com
+ * faixa empurrava a navegação para cima e ela cobria o botão de lançar: o botão
+ * existia, aparecia na tela, e não dava para tocar.
+ */
+const FAIXA = "env(safe-area-inset-bottom, 0px)";
+const ALTURA = {
+  /** Do fim da tela até o topo da barra de navegação. */
+  navegacao: `calc(${FAIXA} + 86px)`,
+  /** Onde o botão de lançar pousa: logo acima da navegação. */
+  barraDeLancar: `calc(${FAIXA} + 94px)`,
+  /** O aviso de sincronização, acima de tudo o que houver. */
+  avisoAcimaDaBarra: `calc(${FAIXA} + 152px)`,
+  avisoSozinho: `calc(${FAIXA} + 94px)`,
+  /** O que o conteúdo reserva embaixo para não terminar atrás do rodapé. */
+  semBarra: `calc(${FAIXA} + 102px)`,
+  comBarra: `calc(${FAIXA} + 164px)`,
+};
 
 const ABAS = [
   { href: "/", rotulo: "Hoje", Icone: IconeHoje },
   { href: "/mes", rotulo: "Mês", Icone: IconeMes },
+  { href: "/agenda", rotulo: "Agenda", Icone: IconeAgenda },
   { href: "/ano", rotulo: "Ano", Icone: IconeAno },
   { href: "/fixos", rotulo: "Fixos", Icone: IconeFixos },
   { href: "/ajustes", rotulo: "Ajustes", Icone: IconeAjustes },
@@ -29,7 +54,10 @@ export function Casca({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="mx-auto flex min-h-[100svh] w-full max-w-2xl flex-col">
-      <div className={`flex-1 px-4 pt-4 ${temBarraDeLancar ? "pb-44" : "pb-28"}`}>
+      <div
+        className="flex-1 px-4 pt-4"
+        style={{ paddingBottom: temBarraDeLancar ? ALTURA.comBarra : ALTURA.semBarra }}
+      >
         {montado ? (
           <>
             <ConviteParaInstalar />
@@ -53,7 +81,7 @@ function Navegacao({ caminho }: { caminho: string }) {
       className="fixed inset-x-0 bottom-0 z-20 px-3 pt-2"
       style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 8px)" }}
     >
-      <ul className="mx-auto flex max-w-2xl rounded-[26px] bg-cartao px-1.5 py-1.5 shadow-cartao">
+      <ul className="mx-auto flex max-w-2xl rounded-[26px] bg-cartao px-1 py-1.5 shadow-cartao">
         {ABAS.map(({ href, rotulo, Icone }) => {
           const aqui = href === "/" ? caminho === "/" : caminho.startsWith(href);
           return (
@@ -61,7 +89,7 @@ function Navegacao({ caminho }: { caminho: string }) {
               <Link
                 href={href}
                 aria-current={aqui ? "page" : undefined}
-                className={`flex flex-col items-center gap-0.5 rounded-[20px] py-2 text-[10.5px] ${
+                className={`flex flex-col items-center gap-0.5 rounded-[20px] py-2 text-[9.5px] ${
                   aqui ? "font-semibold text-tinta" : "text-fosco"
                 }`}
               >
@@ -267,7 +295,7 @@ function BarraDeLancar() {
   const [lancando, setLancando] = useState(false);
   return (
     <>
-      <div className="fixed inset-x-0 bottom-[76px] z-20 px-4">
+      <div className="fixed inset-x-0 z-20 px-4" style={{ bottom: ALTURA.barraDeLancar }}>
         <div className="mx-auto max-w-2xl">
           <Botao tipo="primario" onClick={() => setLancando(true)} className="w-full">
             Lançar
@@ -291,7 +319,8 @@ function Situacao({ acimaDaBarra }: { acimaDaBarra: boolean }) {
 
   return (
     <div
-      className={`fixed inset-x-0 z-30 px-4 ${acimaDaBarra ? "bottom-[134px]" : "bottom-[76px]"}`}
+      className="fixed inset-x-0 z-30 px-4"
+      style={{ bottom: acimaDaBarra ? ALTURA.avisoAcimaDaBarra : ALTURA.avisoSozinho }}
     >
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 rounded-folha bg-cartao px-3.5 py-2.5 text-[12.5px] shadow-cartao">
         <span className={situacao === "erro" ? "text-atencao" : "text-grafite"}>
