@@ -56,7 +56,7 @@ export function Calendario({
               aria-label={`Dia ${dia.dia}, ${nomeDoDiaDaSemana(dia.data)}. Saldo ${comCifrao(
                 dia.saldoCents,
               )}.`}
-              className={`relative h-[92px] overflow-hidden rounded-[11px] px-1 pb-1 pt-1.5 text-left ${
+              className={`relative h-[92px] overflow-hidden rounded-[11px] px-1 pb-1 pt-1.5 text-left lg:h-[104px] lg:px-2 ${
                 cor || "bg-papel"
               } ${ehHoje ? "ring-[2px] ring-saldo" : ""}`}
             >
@@ -70,23 +70,23 @@ export function Calendario({
 
               <span className={`tabular mt-0.5 block leading-[1.35] ${futuro ? "opacity-60" : ""}`}>
                 {dia.entradaCents > 0 && (
-                  <span className="block text-[9.5px] text-entrada">
+                  <span className="block text-[9.5px] text-entrada lg:text-[11px]">
                     +{emReais(dia.entradaCents)}
                   </span>
                 )}
                 {dia.saidaCents > 0 && (
-                  <span className="block text-[9.5px] text-saida">
+                  <span className="block text-[9.5px] text-saida lg:text-[11px]">
                     −{emReais(dia.saidaCents)}
                   </span>
                 )}
                 {dia.diarioCents > 0 && (
-                  <span className="block text-[9.5px] text-diario">
+                  <span className="block text-[9.5px] text-diario lg:text-[11px]">
                     −{emReais(dia.diarioCents)}
                   </span>
                 )}
               </span>
 
-              <span className="tabular absolute inset-x-1 bottom-1 text-right text-[11px] font-semibold">
+              <span className="tabular absolute inset-x-1 bottom-1 text-right text-[11px] font-semibold lg:inset-x-2 lg:text-[13px]">
                 {emReais(dia.saldoCents)}
               </span>
             </button>

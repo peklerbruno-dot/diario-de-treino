@@ -49,95 +49,104 @@ export function TelaDosTotais() {
       <Sobrescrito>Para onde foi</Sobrescrito>
       <Titulo className="mt-0.5">Totais</Titulo>
 
-      <header className="mt-3 flex items-center justify-between gap-2">
-        <Seta rotulo="Anterior" onClick={() => andar(-1)}>
-          ‹
-        </Seta>
-        <button
-          type="button"
-          onClick={() => setMes(mes === null ? inicial.mes : null)}
-          className="rounded-folha bg-cartao px-4 py-2 text-[16px] font-medium shadow-baixa"
-        >
-          {mes === null ? `${ano} inteiro` : `${nomeDoMes(mes)} ${ano}`}
-        </button>
-        <Seta rotulo="Próximo" onClick={() => andar(1)}>
-          ›
-        </Seta>
-      </header>
-      <p className="mt-1.5 text-center text-[12.5px] text-fosco">
-        Toque no período para {mes === null ? "voltar ao mês" : "ver o ano inteiro"}
-      </p>
-
-      <div className="mt-4 flex gap-1.5">
-        {TIPOS.map((t) => (
-          <button
-            key={t}
-            type="button"
-            aria-pressed={tipo === t}
-            onClick={() => setTipo(t)}
-            className={`min-h-[40px] flex-1 rounded-folha text-[15px] shadow-baixa ${
-              tipo === t ? "bg-heroi font-semibold text-heroi-tinta" : "bg-cartao text-tinta"
-            }`}
-          >
-            {NOME_DO_TIPO[t]}
-          </button>
-        ))}
-      </div>
-
-      <Cartao className="mt-3 px-5 py-4">
-        <Sobrescrito>
-          {NOME_DO_TIPO[tipo]} {mes === null ? `em ${ano}` : `em ${nomeDoMes(mes)}`}
-        </Sobrescrito>
-        <p className="tabular mt-1 text-[32px] font-bold leading-none tracking-tight">
-          {comCifrao(totais.totalCents)}
-        </p>
-      </Cartao>
-
-      {totais.categorias.length === 0 ? (
-        <div className="mt-4">
-          <Aviso>
-            Nada nesta coluna no período. Se você acabou de começar a marcar categorias, só os
-            lançamentos novos aparecem aqui — os antigos ficam em “Sem categoria” até você abrir e
-            escolher.
-          </Aviso>
-        </div>
-      ) : (
-        <section className="mt-5">
-          <Subtitulo className="mb-2">Por categoria</Subtitulo>
-          <Cartao className="px-4 py-1">
-            {totais.categorias.map((c) => (
-              <div key={c.id} className="border-b border-linha py-3 last:border-b-0">
-                <div className="flex items-baseline justify-between gap-3">
-                  {/* "Sem categoria" é o único nome que leva a algum lugar: ele é
-                      o convite, e aparece exatamente onde incomoda. */}
-                  {c.nome === SEM_CATEGORIA ? (
-                    <Link href="/classificar" className="min-w-0 truncate text-[15px] font-medium">
-                      {c.nome}{" "}
-                      <span className="text-[13px] font-normal text-saldo">classificar</span>
-                    </Link>
-                  ) : (
-                    <span className="min-w-0 truncate text-[15px] font-medium">{c.nome}</span>
-                  )}
-                  <span className="tabular shrink-0 text-[15px] font-semibold">
-                    {comCifrao(c.centavos)}
-                  </span>
-                </div>
-                <div className="mt-1.5 flex items-center gap-2">
-                  <Barra parte={c.parte} />
-                  <span className="tabular w-[62px] shrink-0 text-right text-[12px] text-fosco">
-                    {Math.round(c.parte * 100)}% · {c.quantos}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </Cartao>
-          <p className="mt-2 px-1 text-[12.5px] leading-snug text-fosco">
-            A porcentagem é sobre o total desta coluna no período, e o número ao lado é quantos
-            lançamentos entraram na linha. Previsto conta junto: um mês pela metade respondido só
-            pelo confirmado não responde nada.
+      <div className="lg:grid lg:grid-cols-[320px_minmax(0,1fr)] lg:items-start lg:gap-8">
+        <div className="lg:sticky lg:top-8">
+          <header className="mt-3 flex items-center justify-between gap-2">
+            <Seta rotulo="Anterior" onClick={() => andar(-1)}>
+              ‹
+            </Seta>
+            <button
+              type="button"
+              onClick={() => setMes(mes === null ? inicial.mes : null)}
+              className="rounded-folha bg-cartao px-4 py-2 text-[16px] font-medium shadow-baixa"
+            >
+              {mes === null ? `${ano} inteiro` : `${nomeDoMes(mes)} ${ano}`}
+            </button>
+            <Seta rotulo="Próximo" onClick={() => andar(1)}>
+              ›
+            </Seta>
+          </header>
+          <p className="mt-1.5 text-center text-[12.5px] text-fosco">
+            Toque no período para {mes === null ? "voltar ao mês" : "ver o ano inteiro"}
           </p>
-        </section>
-      )}
+
+          <div className="mt-4 flex gap-1.5">
+            {TIPOS.map((t) => (
+              <button
+                key={t}
+                type="button"
+                aria-pressed={tipo === t}
+                onClick={() => setTipo(t)}
+                className={`min-h-[40px] flex-1 rounded-folha text-[15px] shadow-baixa ${
+                  tipo === t ? "bg-heroi font-semibold text-heroi-tinta" : "bg-cartao text-tinta"
+                }`}
+              >
+                {NOME_DO_TIPO[t]}
+              </button>
+            ))}
+          </div>
+
+          <Cartao className="mt-3 px-5 py-4">
+            <Sobrescrito>
+              {NOME_DO_TIPO[tipo]} {mes === null ? `em ${ano}` : `em ${nomeDoMes(mes)}`}
+            </Sobrescrito>
+            <p className="tabular mt-1 text-[32px] font-bold leading-none tracking-tight">
+              {comCifrao(totais.totalCents)}
+            </p>
+          </Cartao>
+        </div>
+
+        <div>
+          {totais.categorias.length === 0 ? (
+            <div className="mt-4">
+              <Aviso>
+                Nada nesta coluna no período. Se você acabou de começar a marcar categorias, só os
+                lançamentos novos aparecem aqui — os antigos ficam em “Sem categoria” até você abrir
+                e escolher.
+              </Aviso>
+            </div>
+          ) : (
+            <section className="mt-5 lg:mt-3">
+              <Subtitulo className="mb-2">Por categoria</Subtitulo>
+              <Cartao className="px-4 py-1">
+                {totais.categorias.map((c) => (
+                  <div key={c.id} className="border-b border-linha py-3 last:border-b-0">
+                    <div className="flex items-baseline justify-between gap-3">
+                      {/* "Sem categoria" é o único nome que leva a algum lugar: ele é
+                      o convite, e aparece exatamente onde incomoda. */}
+                      {c.nome === SEM_CATEGORIA ? (
+                        <Link
+                          href="/classificar"
+                          className="min-w-0 truncate text-[15px] font-medium"
+                        >
+                          {c.nome}{" "}
+                          <span className="text-[13px] font-normal text-saldo">classificar</span>
+                        </Link>
+                      ) : (
+                        <span className="min-w-0 truncate text-[15px] font-medium">{c.nome}</span>
+                      )}
+                      <span className="tabular shrink-0 text-[15px] font-semibold">
+                        {comCifrao(c.centavos)}
+                      </span>
+                    </div>
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <Barra parte={c.parte} />
+                      <span className="tabular w-[62px] shrink-0 text-right text-[12px] text-fosco">
+                        {Math.round(c.parte * 100)}% · {c.quantos}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </Cartao>
+              <p className="mt-2 px-1 text-[12.5px] leading-snug text-fosco">
+                A porcentagem é sobre o total desta coluna no período, e o número ao lado é quantos
+                lançamentos entraram na linha. Previsto conta junto: um mês pela metade respondido
+                só pelo confirmado não responde nada.
+              </p>
+            </section>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

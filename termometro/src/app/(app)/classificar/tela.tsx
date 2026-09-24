@@ -74,9 +74,9 @@ export function TelaDeClassificar() {
             </p>
           )}
 
-          <div className="mt-4 space-y-2">
+          <div className="mt-4 space-y-2 lg:columns-2 lg:gap-4 lg:space-y-0">
             {grupos.map((g) => (
-              <Cartao key={g.chave} className="px-4 py-3.5">
+              <Cartao key={g.chave} className="mb-4 break-inside-avoid px-4 py-3.5 lg:mb-4">
                 <div className="flex items-baseline justify-between gap-3">
                   <span className="min-w-0 truncate text-[15.5px] font-medium">
                     {g.nota ?? <span className="text-fosco">sem nota</span>}

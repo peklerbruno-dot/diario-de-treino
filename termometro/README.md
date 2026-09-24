@@ -123,6 +123,29 @@ importância e sim por postura: Hoje, Mês, Totais e O que vem se olham de pé, 
 fila do mercado. **Ano**, **Fixos** e **Ajustes** se olham sentado, e vivem atrás
 de **Mais** — um toque a mais não custa nada para quem já sentou.
 
+### O computador não é um celular grande
+
+A partir de 1024 px a barra de baixo dá lugar a um **menu lateral**, e as duas
+nunca aparecem juntas: duas navegações na mesma tela são duas respostas para
+"onde eu estou". Na lateral cabem todos os destinos, porque esconder Ano, Fixos
+e Ajustes atrás de "Mais" é uma conta do celular — repeti-la num monitor seria
+economizar espaço que sobra. O botão de lançar também muda de papel: na barra
+ele aparece em duas telas, na lateral vale para todas.
+
+O espaço que sobra vira segunda coluna onde ela responde alguma coisa:
+
+- **Mês**: o rodapé sobe para o lado da tabela. Empilhado, ele ficava depois de
+  trinta linhas — e é justamente o resumo que se quer olhar *junto* com elas.
+- **Totais**: o período e o total ficam fixos à esquerda enquanto a lista de
+  categorias rola.
+- **Hoje**: o saldo e os botões à esquerda, o que foi lançado à direita.
+- **O que vem** e **Classificar**: duas colunas de cartões, porque são listas
+  longas de coisas independentes.
+
+O que não ganha nada com a largura — Ano, Fixos, Ajustes — fica centralizado e
+com a mesma medida de leitura. Esticar um formulário até 1.400 px não o torna
+melhor; torna-o mais difícil de ler.
+
 A previsão dos fixos vai até **dezembro do ano seguinte**, não até dezembro
 deste. Em outubro, "até dezembro" são dez semanas de futuro — pouco para decidir
 qualquer coisa que atravesse o Ano-Novo, e a vida atravessa.

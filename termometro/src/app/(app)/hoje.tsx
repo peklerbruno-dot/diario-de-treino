@@ -31,62 +31,66 @@ export function TelaDeHoje() {
         {dia} de {nomeDoMes(mes)}
       </Titulo>
 
-      <Cartao escuro className="mt-4 px-5 py-4">
-        <Sobrescrito escuro>Saldo agora</Sobrescrito>
-        <p className="mt-1">
-          <Dinheiro cents={doDia.saldoCents} tamanho="gigante" />
-        </p>
-        <p className="mt-2 text-[13px] text-heroi-fosco">
-          No fim de {nomeDoMes(mes)}, se nada mudar:{" "}
-          <b className="tabular whitespace-nowrap text-heroi-tinta">
-            {comCifrao(doMes.totais.saldoFechamentoCents)}
-          </b>
-        </p>
-      </Cartao>
-
-      <div className="mt-3 flex gap-2">
-        <Botao onClick={() => setLancando("ENTRADA")} className="flex-1 !text-[15px]">
-          + Entrada
-        </Botao>
-        <Botao onClick={() => setLancando("SAIDA")} className="flex-1 !text-[15px]">
-          + Saída
-        </Botao>
-        <Botao
-          tipo="primario"
-          onClick={() => setLancando("DIARIO")}
-          className="flex-1 !text-[15px]"
-        >
-          + Diário
-        </Botao>
-      </div>
-
-      <section className="mt-6">
-        <Subtitulo className="mb-2">Lançado hoje</Subtitulo>
-        {doDia.lancamentos.length === 0 ? (
-          <Cartao className="px-4 py-3.5">
-            <p className="text-[14.5px] text-grafite">
-              Nada ainda. Toque em <b>+ Diário</b> e registre o primeiro.
+      <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
+        <div>
+          <Cartao escuro className="mt-4 px-5 py-4">
+            <Sobrescrito escuro>Saldo agora</Sobrescrito>
+            <p className="mt-1">
+              <Dinheiro cents={doDia.saldoCents} tamanho="gigante" />
+            </p>
+            <p className="mt-2 text-[13px] text-heroi-fosco">
+              No fim de {nomeDoMes(mes)}, se nada mudar:{" "}
+              <b className="tabular whitespace-nowrap text-heroi-tinta">
+                {comCifrao(doMes.totais.saldoFechamentoCents)}
+              </b>
             </p>
           </Cartao>
-        ) : (
-          <Cartao className="px-4 py-1">
-            {doDia.lancamentos.map((l) => (
-              <div
-                key={l.id}
-                className="flex items-baseline justify-between gap-3 border-b border-linha py-2.5 last:border-b-0"
-              >
-                <span className="min-w-0 text-[14.5px]">
-                  <span className={l.previsto ? "text-grafite" : ""}>
-                    {l.nota || NOME_DO_TIPO[l.tipo]}
+
+          <div className="mt-3 flex gap-2">
+            <Botao onClick={() => setLancando("ENTRADA")} className="flex-1 !text-[15px]">
+              + Entrada
+            </Botao>
+            <Botao onClick={() => setLancando("SAIDA")} className="flex-1 !text-[15px]">
+              + Saída
+            </Botao>
+            <Botao
+              tipo="primario"
+              onClick={() => setLancando("DIARIO")}
+              className="flex-1 !text-[15px]"
+            >
+              + Diário
+            </Botao>
+          </div>
+        </div>
+
+        <section className="mt-6 lg:mt-4">
+          <Subtitulo className="mb-2">Lançado hoje</Subtitulo>
+          {doDia.lancamentos.length === 0 ? (
+            <Cartao className="px-4 py-3.5">
+              <p className="text-[14.5px] text-grafite">
+                Nada ainda. Toque em <b>+ Diário</b> e registre o primeiro.
+              </p>
+            </Cartao>
+          ) : (
+            <Cartao className="px-4 py-1">
+              {doDia.lancamentos.map((l) => (
+                <div
+                  key={l.id}
+                  className="flex items-baseline justify-between gap-3 border-b border-linha py-2.5 last:border-b-0"
+                >
+                  <span className="min-w-0 text-[14.5px]">
+                    <span className={l.previsto ? "text-grafite" : ""}>
+                      {l.nota || NOME_DO_TIPO[l.tipo]}
+                    </span>
+                    {l.previsto && <Selo tom="quieto">previsto</Selo>}
                   </span>
-                  {l.previsto && <Selo tom="quieto">previsto</Selo>}
-                </span>
-                <Dinheiro cents={l.valorCents} papel={corDe(l.tipo)} />
-              </div>
-            ))}
-          </Cartao>
-        )}
-      </section>
+                  <Dinheiro cents={l.valorCents} papel={corDe(l.tipo)} />
+                </div>
+              ))}
+            </Cartao>
+          )}
+        </section>
+      </div>
 
       {lancando && (
         <FolhaDeLancamento data={agora} tipoInicial={lancando} aoFechar={() => setLancando(null)} />
