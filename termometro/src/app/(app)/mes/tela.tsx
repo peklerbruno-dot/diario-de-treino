@@ -17,7 +17,8 @@ import {
 import { useAnoCalculado, useEstado } from "@/componentes/usar-loja";
 import type { DiaCalculado, MesCalculado } from "@/lib/calculo";
 import { curta, hoje, nomeDoDiaDaSemana, nomeDoMes, partesDaData } from "@/lib/datas";
-import { comCifrao, emReais } from "@/lib/dinheiro";
+import { comCifrao, semCentavos } from "@/lib/dinheiro";
+import { classeDoSaldo, corDoSaldo, faixaDoMes } from "@/lib/escala";
 
 type Visao = "lista" | "calendario";
 
@@ -168,7 +169,16 @@ function Painel({ mes, diaDeHoje }: { mes: MesCalculado; diaDeHoje: DiaCalculado
   );
 }
 
-/** As cinco colunas da planilha, uma cor por coluna. */
+/**
+ * As cinco colunas da planilha, com a coluna do saldo pintada.
+ *
+ * A mancha de cor é o que a planilha tinha e o app não: dá para ver a forma do
+ * mês — onde aperta, onde folga, em que dia vira — antes de ler número nenhum.
+ * A cor nunca está sozinha, porque o número está escrito dentro da célula.
+ *
+ * Célula vazia quer dizer zero, como na planilha. O travessão que havia ali
+ * antes era ruído repetido trinta vezes: o olho já lê o branco como "não teve".
+ */
 function ListaDeDias({
   mes,
   hoje: agora,
@@ -179,6 +189,7 @@ function ListaDeDias({
   aoAbrirDia: (dia: DiaCalculado) => void;
 }) {
   const linhaDeHoje = useRef<HTMLTableRowElement>(null);
+  const faixa = faixaDoMes(mes.dias.map((d) => d.saldoCents));
 
   // A lista abre no dia de hoje, e não no dia 1º: quem abre o app está quase
   // sempre olhando para agora, e rolar dezessete linhas toda vez cansa.
@@ -187,26 +198,23 @@ function ListaDeDias({
   }, [mes.mes, mes.ano]);
 
   return (
-    // Em tela estreita as cinco colunas não cabem inteiras. Rolar a tabela por
-    // dentro do cartão é melhor do que encolher os números ou empurrar a página
-    // toda para o lado — o resto do app fica parado no lugar.
-    <div className="overflow-x-auto rounded-cartao bg-cartao px-3.5 pb-1 pt-3 shadow-cartao">
-      <table className="tabular w-full min-w-[318px] border-collapse">
+    <div className="overflow-hidden rounded-cartao bg-cartao px-2 pb-1 pt-2.5 shadow-cartao">
+      <table className="tabular w-full border-collapse">
         <thead>
-          <tr className="text-[10.5px] uppercase tracking-wide text-fosco">
+          <tr className="text-[10px] uppercase tracking-wide text-fosco">
             <th scope="col" className="pb-2 pl-1.5 text-left font-medium">
               Dia
             </th>
-            <th scope="col" className="pb-2 pl-2 text-right font-medium">
+            <th scope="col" className="pb-2 pl-1 text-right font-medium">
               Entrada
             </th>
-            <th scope="col" className="pb-2 pl-2 text-right font-medium">
+            <th scope="col" className="pb-2 pl-1 text-right font-medium">
               Saída
             </th>
-            <th scope="col" className="pb-2 pl-2 text-right font-medium">
+            <th scope="col" className="pb-2 pl-1 text-right font-medium">
               Diário
             </th>
-            <th scope="col" className="pb-2 pl-2 pr-1.5 text-right font-medium">
+            <th scope="col" className="pb-2 pl-1 pr-1.5 text-right font-medium">
               Saldo
             </th>
           </tr>
@@ -215,46 +223,35 @@ function ListaDeDias({
           {mes.dias.map((dia) => {
             const ehHoje = dia.data === agora;
             const futuro = dia.data > agora;
+            const cor = classeDoSaldo(corDoSaldo(dia.saldoCents, faixa));
             return (
-              <tr
-                key={dia.data}
-                ref={ehHoje ? linhaDeHoje : undefined}
-                className={`border-t border-linha first:border-t-0 ${
-                  ehHoje ? "bg-saldo/[0.08] font-semibold" : futuro ? "text-fosco" : ""
-                }`}
-              >
-                <td
-                  className={`py-[9px] pl-1.5 text-left text-[13.5px] font-medium ${
-                    ehHoje ? "rounded-l-[10px] border-l-[3px] border-saldo pl-[3px]" : ""
-                  }`}
-                >
+              <tr key={dia.data} ref={ehHoje ? linhaDeHoje : undefined}>
+                <td className="py-[3px] pl-1.5 pr-1">
                   <button
                     type="button"
                     onClick={() => aoAbrirDia(dia)}
                     aria-label={`${ehHoje ? "Hoje, dia" : "Dia"} ${dia.dia}, ${nomeDoDiaDaSemana(
                       dia.data,
                     )}. Saldo ${comCifrao(dia.saldoCents)}.`}
-                    className="whitespace-nowrap text-left"
+                    className={`flex w-full items-baseline gap-1 whitespace-nowrap rounded-[8px] px-1 py-1 text-left text-[13.5px] ${
+                      ehHoje ? "bg-saldo font-bold text-white" : futuro ? "text-fosco" : ""
+                    }`}
                   >
-                    <span className={ehHoje ? "text-saldo" : ""}>{dia.dia}</span>
-                    <span
-                      className={`ml-1 text-[11.5px] font-normal ${
-                        ehHoje ? "text-saldo" : "text-fosco"
-                      }`}
-                    >
+                    <span className={ehHoje ? "" : "font-medium"}>{dia.dia}</span>
+                    <span className={`text-[10.5px] ${ehHoje ? "text-white/75" : "text-fosco"}`}>
                       {nomeDoDiaDaSemana(dia.data, true)}
                     </span>
                   </button>
                 </td>
-                <Valor cents={dia.entradaCents} classe="text-entrada" sinal="+" fraco={futuro} />
-                <Valor cents={dia.saidaCents} classe="text-saida" sinal="−" fraco={futuro} />
-                <Valor cents={dia.diarioCents} classe="text-diario" sinal="−" fraco={futuro} />
-                <td
-                  className={`py-[9px] pl-2 pr-1.5 text-right text-[13.5px] font-semibold ${
-                    dia.saldoCents < 0 ? "text-atencao" : ""
-                  } ${ehHoje ? "rounded-r-[10px]" : ""}`}
-                >
-                  {emReais(dia.saldoCents)}
+                <Valor cents={dia.entradaCents} classe="text-entrada" fraco={futuro} />
+                <Valor cents={dia.saidaCents} classe="text-saida" fraco={futuro} />
+                <Valor cents={dia.diarioCents} classe="text-diario" fraco={futuro} />
+                <td className="py-[3px] pl-1 pr-1.5">
+                  <span
+                    className={`block rounded-[8px] px-1.5 py-1 text-right text-[13.5px] font-semibold ${cor}`}
+                  >
+                    {semCentavos(dia.saldoCents)}
+                  </span>
                 </td>
               </tr>
             );
@@ -265,28 +262,18 @@ function ListaDeDias({
   );
 }
 
-function Valor({
-  cents,
-  classe,
-  sinal,
-  fraco,
-}: {
-  cents: number;
-  classe: string;
-  sinal: string;
-  fraco: boolean;
-}) {
-  if (cents === 0) {
-    return <td className="py-[9px] pl-2 text-right text-[12.5px] text-regua">–</td>;
-  }
+/**
+ * Uma célula de valor. Vazia quando é zero — a planilha fazia assim, e é o
+ * branco que deixa as cifras que existem saltarem da coluna.
+ */
+function Valor({ cents, classe, fraco }: { cents: number; classe: string; fraco: boolean }) {
   return (
     <td
-      className={`whitespace-nowrap py-[9px] pl-2 text-right text-[12.5px] ${classe} ${
-        fraco ? "opacity-60" : ""
+      className={`whitespace-nowrap py-[3px] pl-1 text-right text-[12.5px] ${classe} ${
+        fraco ? "opacity-55" : ""
       }`}
     >
-      {sinal}
-      {emReais(cents)}
+      {cents === 0 ? "" : semCentavos(cents)}
     </td>
   );
 }

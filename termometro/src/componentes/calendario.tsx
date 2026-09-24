@@ -2,7 +2,8 @@
 
 import type { DiaCalculado, MesCalculado } from "@/lib/calculo";
 import { diaDaSemana, nomeDoDiaDaSemana } from "@/lib/datas";
-import { comCifrao, emReais } from "@/lib/dinheiro";
+import { comCifrao, semCentavos } from "@/lib/dinheiro";
+import { classeDoSaldo, corDoSaldo, faixaDoMes } from "@/lib/escala";
 
 const CABECALHO = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
 
@@ -28,6 +29,7 @@ export function Calendario({
   aoAbrirDia: (dia: DiaCalculado) => void;
 }) {
   const vaziosAntes = diaDaSemana(mes.dias[0].data);
+  const faixa = faixaDoMes(mes.dias.map((d) => d.saldoCents));
 
   return (
     <div className="rounded-cartao bg-cartao p-2 shadow-cartao">
@@ -45,6 +47,7 @@ export function Calendario({
         {mes.dias.map((dia) => {
           const ehHoje = dia.data === hoje;
           const futuro = dia.data > hoje;
+          const cor = classeDoSaldo(corDoSaldo(dia.saldoCents, faixa));
           return (
             <button
               key={dia.data}
@@ -54,8 +57,8 @@ export function Calendario({
                 dia.saldoCents,
               )}.`}
               className={`relative h-[92px] overflow-hidden rounded-[11px] px-1 pb-1 pt-1.5 text-left ${
-                ehHoje ? "bg-saldo/10 ring-[1.5px] ring-saldo" : "bg-papel"
-              }`}
+                cor || "bg-papel"
+              } ${ehHoje ? "ring-[2px] ring-saldo" : ""}`}
             >
               <span
                 className={`block text-[12.5px] ${
@@ -68,27 +71,23 @@ export function Calendario({
               <span className={`tabular mt-0.5 block leading-[1.35] ${futuro ? "opacity-60" : ""}`}>
                 {dia.entradaCents > 0 && (
                   <span className="block text-[9.5px] text-entrada">
-                    +{emReais(dia.entradaCents).split(",")[0]}
+                    +{semCentavos(dia.entradaCents)}
                   </span>
                 )}
                 {dia.saidaCents > 0 && (
                   <span className="block text-[9.5px] text-saida">
-                    −{emReais(dia.saidaCents).split(",")[0]}
+                    −{semCentavos(dia.saidaCents)}
                   </span>
                 )}
                 {dia.diarioCents > 0 && (
                   <span className="block text-[9.5px] text-diario">
-                    −{emReais(dia.diarioCents).split(",")[0]}
+                    −{semCentavos(dia.diarioCents)}
                   </span>
                 )}
               </span>
 
-              <span
-                className={`tabular absolute inset-x-1 bottom-1 text-right text-[11px] font-semibold ${
-                  dia.saldoCents < 0 ? "text-atencao" : futuro ? "text-grafite" : ""
-                }`}
-              >
-                {emReais(dia.saldoCents).split(",")[0]}
+              <span className="tabular absolute inset-x-1 bottom-1 text-right text-[11px] font-semibold">
+                {semCentavos(dia.saldoCents)}
               </span>
             </button>
           );

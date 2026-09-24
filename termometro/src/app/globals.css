@@ -38,6 +38,21 @@
   --atencao: #c2372f;
   --sombra: 0 1px 2px rgba(16, 16, 20, 0.05), 0 10px 24px rgba(16, 16, 20, 0.06);
   --sombra-baixa: 0 1px 2px rgba(16, 16, 20, 0.06);
+
+  /* A escala do saldo — o degradê da planilha. Cinco degraus por braço: forte é
+     longe do zero, pálido é perto. Todo degrau foi medido com a tinta por cima:
+     o pior contraste da escala inteira é 7,98, e o mínimo para texto pequeno é
+     4,5. Trocar um hex daqui pede medir de novo. */
+  --sobrou-1: #eaf7f3;
+  --sobrou-2: #d1eee7;
+  --sobrou-3: #b0e2d8;
+  --sobrou-4: #8ad5c7;
+  --sobrou-5: #5fc7b5;
+  --faltou-1: #fdefed;
+  --faltou-2: #fbdcd7;
+  --faltou-3: #f8c4bc;
+  --faltou-4: #f4a89d;
+  --faltou-5: #ef8b7c;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -62,6 +77,19 @@
        próprio contraste das duas cores, mais uma borda de um fio. */
     --sombra: 0 0 0 1px rgba(255, 255, 255, 0.06);
     --sombra-baixa: 0 0 0 1px rgba(255, 255, 255, 0.05);
+
+    /* No escuro a escala é escolhida de novo, e não invertida: os mesmos dois
+       tons, rebaixados até caberem no fundo escuro. Pior contraste, 8,0. */
+    --sobrou-1: #142623;
+    --sobrou-2: #16322d;
+    --sobrou-3: #183f38;
+    --sobrou-4: #1a4c44;
+    --sobrou-5: #1d5a50;
+    --faltou-1: #2a1a17;
+    --faltou-2: #371e19;
+    --faltou-3: #45231c;
+    --faltou-4: #53281f;
+    --faltou-5: #622d23;
   }
 }
 

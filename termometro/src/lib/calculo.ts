@@ -222,69 +222,6 @@ function ordemDeExibicao(a: Lancamento, b: Lancamento): number {
   return (a.criadoEm ?? "").localeCompare(b.criadoEm ?? "");
 }
 
-export interface SobraPorDia {
-  /** O que resta para o dia a dia, de hoje até o fim do mês. */
-  disponivelCents: number;
-  diasRestantes: number;
-  /** O disponível repartido pelos dias que faltam. */
-  porDiaCents: number;
-  /** O que já saiu no diário de hoje, confirmado. */
-  gastoDeHojeCents: number;
-}
-
-/**
- * Quanto ainda dá para gastar por dia até o fim do mês.
- *
- * É a pergunta que o saldo sozinho não responde. Ver "R$ 1.317" na tela não
- * diz nada enquanto houver uma parcela e um investimento para sair antes do dia
- * 30 — e diz demais no dia seguinte ao salário. Esta conta tira do caminho
- * tudo o que já tem dono:
- *
- *     (saldo de ontem + o que ainda entra − o que ainda sai) ÷ dias que faltam
- *
- * O diário **previsto** dos dias que faltam fica de fora da subtração: ele é
- * justamente o que se está calculando. Já o diário confirmado entra, porque
- * esse dinheiro foi gasto de verdade.
- *
- * Arredonda para baixo: é melhor sobrar do que faltar.
- */
-export function sobraPorDia(ano: AnoCalculado, hoje: string): SobraPorDia | null {
-  const { ano: anoDeHoje, mes: mesDeHoje, dia: diaDeHoje } = partesDaData(hoje);
-  if (anoDeHoje !== ano.ano) return null;
-
-  const mes = ano.meses[mesDeHoje - 1];
-  if (!mes || diaDeHoje < 1 || diaDeHoje > mes.dias.length) return null;
-
-  const saldoDeOntem =
-    diaDeHoje > 1 ? mes.dias[diaDeHoje - 2].saldoCents : mes.totais.saldoAberturaCents;
-
-  let entram = 0;
-  let saem = 0;
-  let diarioConfirmado = 0;
-  let gastoDeHoje = 0;
-
-  for (const dia of mes.dias.slice(diaDeHoje - 1)) {
-    for (const l of dia.lancamentos) {
-      if (l.tipo === "ENTRADA") entram += l.valorCents;
-      else if (l.tipo === "SAIDA") saem += l.valorCents;
-      else if (!l.previsto) {
-        diarioConfirmado += l.valorCents;
-        if (dia.dia === diaDeHoje) gastoDeHoje += l.valorCents;
-      }
-    }
-  }
-
-  const disponivel = saldoDeOntem + entram - saem - diarioConfirmado;
-  const diasRestantes = mes.dias.length - diaDeHoje + 1;
-
-  return {
-    disponivelCents: disponivel,
-    diasRestantes,
-    porDiaCents: Math.floor(disponivel / diasRestantes),
-    gastoDeHojeCents: gastoDeHoje,
-  };
-}
-
 /**
  * Onde o saldo passa a ser negativo daqui para a frente, se nada mudar.
  * É a pergunta que a planilha existia para responder: "dá até o fim do mês?"
