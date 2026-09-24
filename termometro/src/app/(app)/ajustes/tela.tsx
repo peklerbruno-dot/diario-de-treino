@@ -32,6 +32,7 @@ import {
   RECADO_DA_SITUACAO,
 } from "@/lib/loja";
 import { categoriasDoTipo, idDoNome, type Categoria } from "@/lib/categorias";
+import { quantosSemCategoria } from "@/lib/classificar";
 import { NOME_DO_TIPO, TIPOS, type Tipo } from "@/lib/tipos";
 
 export function TelaDeAjustes() {
@@ -129,6 +130,8 @@ export function TelaDeAjustes() {
       </section>
 
       <Categorias estado={estado} />
+
+      <Classificar estado={estado} />
 
       <ArrumarOsCentavos estado={estado} />
 
@@ -240,6 +243,34 @@ export function TelaDeAjustes() {
 }
 
 /**
+ * O convite para classificar o passado.
+ *
+ * Só aparece enquanto sobrar o que classificar, e some sozinho quando acabar —
+ * em vez de virar um item permanente em Ajustes anunciando uma tarefa que já
+ * foi feita.
+ */
+function Classificar({ estado }: { estado: EstadoDoApp }) {
+  const faltam = quantosSemCategoria(lancamentosVivos(estado));
+  if (faltam === 0) return null;
+
+  return (
+    <section className="mt-6">
+      <Subtitulo>Classificar o que veio da planilha</Subtitulo>
+      <p className="mt-1 text-[15px] leading-relaxed text-grafite">
+        {faltam} lançamentos ainda estão sem categoria — é como eles nasceram, porque a planilha não
+        guardava isso. Juntados por nota, viram poucas decisões.
+      </p>
+      <Link
+        href="/classificar"
+        className="mt-2 inline-flex min-h-[46px] items-center rounded-folha bg-cartao px-4 text-[16px] shadow-baixa"
+      >
+        Classificar agora
+      </Link>
+    </section>
+  );
+}
+
+/**
  * A lista de categorias, editável.
  *
  * Ela começa preenchida de propósito — uma tela vazia pedindo que alguém
@@ -276,6 +307,16 @@ function Categorias({ estado }: { estado: EstadoDoApp }) {
 
   const apagar = (id: string) => guardarCategorias(categorias.filter((c) => c.id !== id));
 
+  /**
+   * Renomear troca só o nome, nunca o identificador.
+   *
+   * É o identificador que está gravado em cada lançamento: mexer nele
+   * desligaria a categoria de todo o passado dela. Assim, corrigir "Mercado"
+   * para "Supermercado" renomeia também nos totais de janeiro.
+   */
+  const renomear = (id: string, nome: string) =>
+    guardarCategorias(categorias.map((c) => (c.id === id ? { ...c, nome } : c)));
+
   function alternarTipo(c: Categoria, tipo: Tipo) {
     const tipos = c.tipos.includes(tipo) ? c.tipos.filter((t) => t !== tipo) : [...c.tipos, tipo];
     if (tipos.length === 0) return; // sem coluna nenhuma ela não apareceria em lugar algum
@@ -294,7 +335,12 @@ function Categorias({ estado }: { estado: EstadoDoApp }) {
         {categorias.map((c) => (
           <div key={c.id} className="border-b border-linha py-3 last:border-b-0">
             <div className="flex items-center justify-between gap-3">
-              <span className="min-w-0 truncate text-[15px] font-medium">{c.nome}</span>
+              <input
+                value={c.nome}
+                onChange={(e) => renomear(c.id, e.target.value)}
+                aria-label={`Nome da categoria ${c.nome}`}
+                className="min-w-0 flex-1 bg-transparent text-[15px] font-medium outline-none focus:underline"
+              />
               <button
                 type="button"
                 onClick={() => apagar(c.id)}

@@ -1,11 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Aviso, Cartao, Seta, Sobrescrito, Subtitulo, Titulo } from "@/componentes/pecas";
 import { useEstado } from "@/componentes/usar-loja";
 import { categoriasDe, lancamentosVivos } from "@/lib/loja";
 import { hoje, nomeDoMes, partesDaData } from "@/lib/datas";
 import { comCifrao } from "@/lib/dinheiro";
+import { SEM_CATEGORIA } from "@/lib/categorias";
 import { doPeriodo, totaisPorCategoria } from "@/lib/totais";
 import { NOME_DO_TIPO, TIPOS, type Tipo } from "@/lib/tipos";
 
@@ -106,7 +108,16 @@ export function TelaDosTotais() {
             {totais.categorias.map((c) => (
               <div key={c.id} className="border-b border-linha py-3 last:border-b-0">
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="min-w-0 truncate text-[15px] font-medium">{c.nome}</span>
+                  {/* "Sem categoria" é o único nome que leva a algum lugar: ele é
+                      o convite, e aparece exatamente onde incomoda. */}
+                  {c.nome === SEM_CATEGORIA ? (
+                    <Link href="/classificar" className="min-w-0 truncate text-[15px] font-medium">
+                      {c.nome}{" "}
+                      <span className="text-[13px] font-normal text-saldo">classificar</span>
+                    </Link>
+                  ) : (
+                    <span className="min-w-0 truncate text-[15px] font-medium">{c.nome}</span>
+                  )}
                   <span className="tabular shrink-0 text-[15px] font-semibold">
                     {comCifrao(c.centavos)}
                   </span>

@@ -72,7 +72,26 @@ Três decisões que essa parte carrega:
 A lista já vem preenchida ([`src/lib/categorias.ts`](src/lib/categorias.ts)). Uma
 tela vazia pedindo que alguém invente um sistema de classificação antes de poder
 lançar um almoço é o jeito mais seguro de ninguém classificar nada — e o palpite
-é todo editável em Ajustes.
+é todo editável em Ajustes. **Renomear troca só o nome, nunca o identificador**,
+que é o que está gravado em cada lançamento: corrigir "Mercado" para
+"Supermercado" renomeia também nos totais de janeiro.
+
+### Classificar o passado
+
+Os lançamentos que vieram da planilha nasceram sem categoria — ninguém escreveu
+essa informação lá. Um por um, 815 vezes, ninguém classifica, e a aba Totais
+ficaria para sempre dizendo "sem categoria, 96%", que é o mesmo que não ter
+categoria nenhuma.
+
+A saída é a nota ([`src/lib/classificar.ts`](src/lib/classificar.ts)). A planilha
+repetia "aluguel" doze vezes, "salário" doze vezes — e quem diz "aluguel" uma vez
+está dizendo das doze. Juntados por tipo e nota, centenas de lançamentos viram
+**uma dúzia de decisões**, ordenadas do maior para o menor em dinheiro: é onde
+está o que muda a resposta da tela, e é por onde vale começar quando a paciência
+dá para três toques.
+
+O convite mora em dois lugares e some sozinho quando não sobra nada: em Ajustes,
+e na própria linha "Sem categoria" da aba Totais — exatamente onde ela incomoda.
 
 ## As abas
 
