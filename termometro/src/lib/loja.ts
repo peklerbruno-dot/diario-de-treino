@@ -1,5 +1,11 @@
 "use client";
 
+import {
+  CHAVE_DAS_CATEGORIAS,
+  escreverCategorias,
+  lerCategorias,
+  type Categoria,
+} from "./categorias";
 import { aoReal } from "./dinheiro";
 import type { Ajustes, Fixo, Lancamento, Tipo } from "./tipos";
 import { AJUSTES_PADRAO } from "./tipos";
@@ -488,6 +494,15 @@ export function quantosComCentavos(estado: Estado): number {
     Object.values(estado.lancamentos).filter(conta).length +
     Object.values(estado.fixos).filter(conta).length
   );
+}
+
+/** As categorias deste aparelho, já lidas do ajuste que sincroniza. */
+export function categoriasDe(estado: Estado): Categoria[] {
+  return lerCategorias(estado.ajustes[CHAVE_DAS_CATEGORIAS]?.valor);
+}
+
+export function guardarCategorias(lista: Categoria[]) {
+  loja.definirAjuste(CHAVE_DAS_CATEGORIAS, escreverCategorias(lista));
 }
 
 export function guardarSaldoInicial(ano: number, cents: number) {

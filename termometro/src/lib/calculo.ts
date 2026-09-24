@@ -303,6 +303,7 @@ export function gerarPrevisao(opcoes: {
             tipo: fixo.tipo,
             valorCents: fixo.valorCents,
             nota: fixo.nota ?? null,
+            categoria: fixo.categoria ?? null,
             previsto: true,
             rendaPropria: !!fixo.rendaPropria,
             investimento: !!fixo.investimento,

@@ -81,3 +81,19 @@ export const IconeAgenda = () => (
     <path d="M20 5v14" />
   </Traco>
 );
+
+/** Totais: três barras de tamanhos diferentes, que é o desenho da tela. */
+export const IconeTotais = () => (
+  <Traco>
+    <path d="M4 7h14M4 12h9M4 17h5" />
+  </Traco>
+);
+
+/** Mais: as reticências de sempre. */
+export const IconeMais = () => (
+  <Traco>
+    <circle cx="5" cy="12" r="1.3" />
+    <circle cx="12" cy="12" r="1.3" />
+    <circle cx="19" cy="12" r="1.3" />
+  </Traco>
+);

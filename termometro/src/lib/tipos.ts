@@ -21,6 +21,8 @@ export interface Lancamento {
   tipo: Tipo;
   valorCents: number;
   nota?: string | null;
+  /** Para onde o dinheiro foi. Nulo é "sem categoria", e é uma resposta válida. */
+  categoria?: string | null;
   previsto?: boolean;
   rendaPropria?: boolean;
   investimento?: boolean;
@@ -38,6 +40,8 @@ export interface Fixo {
   dia: number;
   valorCents: number;
   nota?: string | null;
+  /** A categoria que os lançamentos nascidos deste fixo herdam. */
+  categoria?: string | null;
   rendaPropria?: boolean;
   investimento?: boolean;
   apartamento?: boolean;

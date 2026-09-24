@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { avaliar } from "@/lib/calculadora";
+import { categoriasDoTipo } from "@/lib/categorias";
 import { curta, porExtenso } from "@/lib/datas";
-import { loja } from "@/lib/loja";
+import { categoriasDe, loja } from "@/lib/loja";
 import { EXPLICACAO_DO_TIPO, NOME_DO_TIPO, TIPOS, type Lancamento, type Tipo } from "@/lib/tipos";
-import { Botao, CampoDeTexto, Folha } from "./pecas";
+import { Botao, CampoDeTexto, Folha, Sobrescrito } from "./pecas";
+import { useEstado } from "./usar-loja";
 import { ComoAsTeclasFuncionam, Teclado } from "./teclado";
 
 /**
@@ -32,6 +34,7 @@ export function FolhaDeLancamento({
   );
   const [quando, setQuando] = useState(lancamento?.data ?? data);
   const [nota, setNota] = useState(lancamento?.nota ?? "");
+  const [categoria, setCategoria] = useState<string | null>(lancamento?.categoria ?? null);
   const [marcado, setMarcado] = useState({
     rendaPropria: !!lancamento?.rendaPropria,
     investimento: !!lancamento?.investimento,
@@ -40,6 +43,12 @@ export function FolhaDeLancamento({
   const [erro, setErro] = useState<string | null>(null);
 
   const conta = avaliar(valor);
+  const categorias = categoriasDe(useEstado());
+  const daColuna = categoriasDoTipo(categorias, tipo);
+  // Trocar de coluna troca a lista, e a categoria escolhida pode não existir na
+  // nova: "fatura" não é gasto do dia a dia. Em vez de guardar uma escolha
+  // impossível, ela é esquecida — e o que fica na tela é o que vai ser salvo.
+  const escolhida = daColuna.some((c) => c.id === categoria) ? categoria : null;
 
   function salvar() {
     if (!conta) {
@@ -51,6 +60,7 @@ export function FolhaDeLancamento({
       data: quando,
       tipo,
       nota: nota.trim() || null,
+      categoria: escolhida,
       previsto: false,
       rendaPropria: tipo === "ENTRADA" && marcado.rendaPropria,
       investimento: tipo === "SAIDA" && marcado.investimento,
@@ -91,8 +101,25 @@ export function FolhaDeLancamento({
 
         <Teclado valor={valor} aoMudar={setValor} />
 
+        {daColuna.length > 0 && (
+          <div className="!mt-4">
+            <Sobrescrito>Para onde foi</Sobrescrito>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {daColuna.map((c) => (
+                <Chip
+                  key={c.id}
+                  ligado={escolhida === c.id}
+                  aoTocar={() => setCategoria(escolhida === c.id ? null : c.id)}
+                >
+                  {c.nome}
+                </Chip>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="flex gap-2">
-          <CampoDeTexto valor={nota} aoMudar={setNota} placeholder="Nota (opcional)" />
+          <CampoDeTexto valor={nota} aoMudar={setNota} placeholder="Observação (opcional)" />
           <input
             type="date"
             value={quando}
