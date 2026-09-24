@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  acharCategoria,
   CATEGORIAS_PADRAO,
   categoriasDoTipo,
   escreverCategorias,
@@ -79,5 +80,47 @@ describe("o id que nasce do nome", () => {
   it("nunca devolve vazio, que não daria para guardar", () => {
     expect(idDoNome("???")).toBe("categoria");
     expect(idDoNome("")).toBe("categoria");
+  });
+});
+
+describe("achar a categoria que a Siri ouviu", () => {
+  const todas: Categoria[] = [
+    { id: "mercado", nome: "Mercado", tipos: ["DIARIO"] },
+    { id: "contas", nome: "Contas", tipos: ["SAIDA"] },
+    { id: "saude", nome: "Saúde", tipos: ["DIARIO", "SAIDA"] },
+    { id: "transporte-diario", nome: "Transporte", tipos: ["DIARIO"] },
+  ];
+
+  it("acha pelo nome exato", () => {
+    expect(acharCategoria(todas, "Mercado", "DIARIO")?.id).toBe("mercado");
+  });
+
+  it("não se importa com maiúscula nem com acento, que o ditado come", () => {
+    expect(acharCategoria(todas, "saude", "DIARIO")?.id).toBe("saude");
+    expect(acharCategoria(todas, "SAÚDE", "DIARIO")?.id).toBe("saude");
+    expect(acharCategoria(todas, "  mercado  ", "DIARIO")?.id).toBe("mercado");
+  });
+
+  it("aceita o começo e o que contém, porque a fala não é exata", () => {
+    expect(acharCategoria(todas, "merc", "DIARIO")?.id).toBe("mercado");
+    expect(acharCategoria(todas, "conta de luz", "SAIDA")?.id).toBe("contas");
+  });
+
+  it("prefere a categoria da coluna pedida", () => {
+    expect(acharCategoria(todas, "transporte", "DIARIO")?.id).toBe("transporte-diario");
+  });
+
+  /**
+   * Guardar com a coluna trocada é melhor do que guardar sem categoria: o valor
+   * entra, aparece nos totais, e se conserta em dois toques.
+   */
+  it("aceita categoria de outra coluna em vez de desistir", () => {
+    expect(acharCategoria(todas, "contas", "DIARIO")?.id).toBe("contas");
+  });
+
+  it("não inventa categoria quando não há parecida", () => {
+    expect(acharCategoria(todas, "jiu-jitsu", "DIARIO")).toBeNull();
+    expect(acharCategoria(todas, "", "DIARIO")).toBeNull();
+    expect(acharCategoria(todas, "   ", "DIARIO")).toBeNull();
   });
 });

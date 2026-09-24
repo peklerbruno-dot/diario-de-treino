@@ -75,18 +75,21 @@ export function TelaDoAtalho() {
               pergunta. Escreva <Palavra>Quanto?</Palavra>. Depois toque no <b>primeiro</b>, o azul
               forte: é o tipo. Escolha <b>Número</b>.
             </span>
-            <span className="mt-1.5 block">
-              No fim tem de estar:{" "}
-              <i>
-                “Pedir <b>Número</b> com <b>Quanto?</b>”
-              </i>
-              .
-            </span>
           </Passo>
 
           <Passo n={3}>
-            Busque por <b>Obter conteúdo da URL</b>. Esta é a ação que faz o trabalho — os quatro
-            ajustes dela estão logo abaixo.
+            Busque por <b>Pedir entrada</b> <b>de novo</b>. Neste segundo, a pergunta é{" "}
+            <Palavra>Qual categoria?</Palavra> e o tipo fica em <b>Texto</b> — você vai falar uma
+            palavra, não um número.
+            <span className="mt-1.5 block">
+              Não precisa acertar o nome exato: “mercado”, “conta de luz”, “saude” sem acento — o
+              app acha a categoria mais parecida e diz na notificação qual escolheu.
+            </span>
+          </Passo>
+
+          <Passo n={4}>
+            Busque por <b>Obter conteúdo da URL</b>. Esta é a ação que faz o trabalho — os ajustes
+            dela estão logo abaixo.
           </Passo>
         </ol>
 
@@ -100,9 +103,21 @@ export function TelaDoAtalho() {
               <span className="mt-2 block">
                 Depois, <b className="text-tinta">sem sair do campo</b>, toque logo depois do sinal
                 de igual e escolha a variável <b className="text-tinta">Entrada fornecida</b> — ela
-                aparece na barrinha de sugestões acima do teclado. O endereço fica com uma etiqueta
-                azul grudada no fim. É ela que carrega o valor que você vai falar; não digite um
-                número aqui.
+                aparece na barrinha de sugestões acima do teclado, e vira uma etiqueta azul grudada
+                no fim. É ela que carrega o valor; não digite um número aqui.
+              </span>
+              <span className="mt-2 block">
+                Ainda no mesmo campo, <b className="text-tinta">depois da etiqueta</b>, escreva{" "}
+                <Palavra>&amp;categoria=</Palavra> e escolha a segunda{" "}
+                <b className="text-tinta">Entrada fornecida</b> — a do passo 3. Vão ficar{" "}
+                <b>duas etiquetas azuis</b>, e a barrinha de sugestões mostra as duas; a segunda é a
+                da categoria.
+              </span>
+              <span className="mt-2 block text-[13.5px] text-fosco">
+                No fim o campo lê: <span className="tabular">…/api/lancar?valor=</span>
+                <span className="rounded bg-saldo/15 px-1 text-saldo">valor</span>
+                <span className="tabular">&amp;categoria=</span>
+                <span className="rounded bg-saldo/15 px-1 text-saldo">categoria</span>
               </span>
             </div>
 
@@ -138,7 +153,7 @@ export function TelaDoAtalho() {
         </Cartao>
 
         <ol className="mt-3 space-y-2.5">
-          <Passo n={4}>
+          <Passo n={5}>
             Busque por <b>Obter valor do dicionário</b>. O cartão vem escrito{" "}
             <i>
               “Obter <b>Valor</b> para <b>chave</b> em <b>Dicionário</b>”
@@ -147,14 +162,14 @@ export function TelaDoAtalho() {
             <i>Dicionário</i> ele preenche <b>Conteúdo da URL</b> sozinho.
           </Passo>
 
-          <Passo n={5}>
+          <Passo n={6}>
             Busque por <b>Mostrar notificação</b>. O cartão vem com um texto de exemplo —{" "}
             <b>apague esse texto</b> e escolha, na barrinha de sugestões, a variável{" "}
             <b>Valor do Dicionário</b>. É isto que faz o celular avisar{" "}
             <i>“R$ 38,50 no diário. Saldo de hoje: R$ 1.497,43.”</i> sem você abrir nada.
           </Passo>
 
-          <Passo n={6}>
+          <Passo n={7}>
             O iPhone batiza o atalho sozinho, com o nome da primeira ação — costuma ficar{" "}
             <i>“Pedir Entrada”</i>. Toque nesse nome lá em cima, na setinha <b>⌄</b> ao lado,
             escolha <b>Renomear</b> e chame de <b>Lançar gasto</b>. Este é o passo mais importante
@@ -168,7 +183,7 @@ export function TelaDoAtalho() {
             </span>
           </Passo>
 
-          <Passo n={7}>
+          <Passo n={8}>
             <b>Teste antes de chamar a Siri</b>, que é mais fácil de consertar se algo estiver
             torto: toque no <b>▶</b> no rodapé do editor e digite <Palavra>1</Palavra> quando ele
             perguntar. Na primeira vez o iPhone pergunta se pode enviar dados para esse endereço —
@@ -185,20 +200,24 @@ export function TelaDoAtalho() {
         <Subtitulo className="mb-2">Falando com a Siri</Subtitulo>
         <p className="mb-3 text-[14.5px] leading-relaxed text-grafite">
           Não precisa configurar nada a mais: todo atalho já vira comando de voz sozinho, com o
-          próprio nome. A conversa é esta, e são dois tempos.
+          próprio nome. A conversa é esta, e são três tempos.
         </p>
 
         <Cartao className="px-4 py-4">
           <Fala quem="você">E aí Siri, Lançar gasto</Fala>
           <Fala quem="siri">Quanto?</Fala>
-          <Fala quem="você">trinta e oito e cinquenta</Fala>
-          <Fala quem="siri">R$ 38,50 no diário. Saldo de hoje: R$ 1.497,43.</Fala>
+          <Fala quem="você">trinta e nove</Fala>
+          <Fala quem="siri">Qual categoria?</Fala>
+          <Fala quem="você">mercado</Fala>
+          <Fala quem="siri">R$ 39 no diário em Mercado. Saldo de hoje: R$ 1.497.</Fala>
         </Cartao>
 
         <p className="mt-3 text-[14px] leading-relaxed text-grafite">
-          A pergunta <i>“Quanto?”</i> é o passo 2 do atalho: quando ele roda pela voz, a Siri fala a
-          pergunta e escuta a resposta. E a última frase é a confirmação — ela diz o valor que
-          entrou e o saldo que sobrou, que é como você percebe na hora se ela ouviu errado.
+          As perguntas <i>“Quanto?”</i> e <i>“Qual categoria?”</i> são os passos 2 e 3 do atalho:
+          quando ele roda pela voz, a Siri fala cada pergunta e escuta a resposta. E a última frase
+          é a confirmação — ela diz o valor, a categoria e o saldo que sobrou — é assim que um
+          “farmácia” ouvido como “farmássia” aparece na hora, em vez de virar um total errado que só
+          se descobre no fim do mês.
         </p>
 
         <div className="mt-3">
@@ -261,6 +280,12 @@ export function TelaDoAtalho() {
             app <b>recusa e explica</b>, em vez de chutar e colocar dinheiro errado no seu saldo — e
             de todo jeito a confirmação no fim lê o valor de volta, então o erro aparece na hora.
           </Jeito>
+          <Jeito titulo="A categoria não precisa ser o nome exato">
+            “mercado”, “conta de luz”, “saude” sem acento — o app acha a mais parecida e diz na
+            notificação qual escolheu. Se não achar nenhuma, <b>o valor entra mesmo assim</b>, sem
+            categoria, e a notificação avisa: perder o gasto porque a Siri ouviu errado desfaria
+            justamente o que o atalho veio resolver.
+          </Jeito>
           <Jeito titulo="Se ela escrever o número errado">
             Confira o <i>Tipo de entrada</i> do passo 2: precisa estar em <b>Número</b>. Em{" "}
             <b>Texto</b> a Siri manda a frase inteira, e a chance de confusão é maior.
@@ -294,19 +319,20 @@ export function TelaDoAtalho() {
       <section className="mt-6">
         <Subtitulo className="mb-2">Fazer mais de um</Subtitulo>
         <p className="mb-2 text-[14.5px] leading-relaxed text-grafite">
-          Vale ter três, para não escolher o tipo toda vez — e, por voz, cada um vira uma frase
-          diferente. Duplique o atalho (três pontinhos → <b>Duplicar</b>), mude o nome e acrescente
-          um pedaço ao fim do endereço, <b>depois</b> da etiqueta azul:
+          Um para cada coluna, para não ter de dizer o tipo toda vez. Duplique o atalho (três
+          pontinhos → <b>Duplicar</b>), mude o nome e acrescente um pedaço ao <b>fim</b> do
+          endereço, depois da segunda etiqueta:
         </p>
         <Cartao className="px-4 py-1">
           <Jeito titulo="“E aí Siri, Lançar gasto”">
-            nada a mudar — sem tipo, é gasto do dia a dia.
+            nada a mudar — sem tipo, é o gasto do dia a dia, que é a maioria.
+          </Jeito>
+          <Jeito titulo="“E aí Siri, Lançar saída”">
+            acrescente <Palavra>&amp;tipo=saida</Palavra> no fim. É a conta grande e prevista:
+            fatura, aluguel, parcela.
           </Jeito>
           <Jeito titulo="“E aí Siri, Lançar entrada”">
             acrescente <Palavra>&amp;tipo=entrada</Palavra> no fim.
-          </Jeito>
-          <Jeito titulo="“E aí Siri, Lançar conta”">
-            acrescente <Palavra>&amp;tipo=saida</Palavra> no fim.
           </Jeito>
         </Cartao>
         <p className="mt-2 px-1 text-[12.5px] leading-snug text-fosco">

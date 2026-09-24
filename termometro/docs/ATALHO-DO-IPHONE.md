@@ -47,14 +47,25 @@ diferentes, e é aí que confunde.
    - Toque no **primeiro**, o azul forte: é o tipo. Escolha **Número**.
    - No fim tem de estar: *"Pedir **Número** com **Quanto?**"*.
 
-**3.** Busque por **Obter conteúdo da URL** e toque nela. Agora preencha com
+**3.** Busque por **Pedir entrada** **de novo**. Neste segundo, a pergunta é
+`Qual categoria?` e o tipo fica em **Texto** — você vai falar uma palavra, não um
+número.
+
+   > Não precisa acertar o nome exato: "mercado", "conta de luz", "saude" sem
+   > acento. O app acha a categoria mais parecida e diz na notificação qual
+   > escolheu. Não achando nenhuma, o valor entra mesmo assim, sem categoria, e a
+   > notificação avisa.
+
+**4.** Busque por **Obter conteúdo da URL** e toque nela. Agora preencha com
 cuidado:
 
    - No campo do endereço, **cole o endereço** que você copiou do app.
    - Ainda no mesmo campo, toque logo depois do sinal de igual e escolha a
-     variável **Entrada fornecida** (é o resultado do "Pedir entrada" do passo
-     2). Ela aparece na barrinha de sugestões acima do teclado, e vira uma
-     etiqueta azul grudada no fim do endereço.
+     variável **Entrada fornecida** (é o resultado do passo 2). Ela aparece na
+     barrinha de sugestões acima do teclado, e vira uma etiqueta azul.
+   - Depois da etiqueta, escreva `&categoria=` e escolha a **segunda** Entrada
+     fornecida — a do passo 3. Vão ficar duas etiquetas azuis.
+   - No fim o campo lê: `…/api/lancar?valor=`[valor]`&categoria=`[categoria]
    - Toque na setinha **Mostrar mais** (ou no `>` ao lado do endereço) para
      abrir o resto das opções.
    - **Método**: troque de `GET` para **POST**.
@@ -67,20 +78,20 @@ cuidado:
    > fica gravado em registro de servidor e em histórico, e o código abre o
    > dinheiro inteiro. O valor não é segredo do mesmo tamanho.
 
-**4.** Busque por **Obter valor do dicionário**. O cartão vem escrito
+**5.** Busque por **Obter valor do dicionário**. O cartão vem escrito
 *"Obter **Valor** para **chave** em **Dicionário**"*.
    - Toque em *chave* e escreva `recado`.
    - O resto já vem certo: em *Dicionário* ele preenche **Conteúdo da URL**
      sozinho.
 
-**5.** Busque por **Mostrar notificação**. O cartão vem com um texto de exemplo
+**6.** Busque por **Mostrar notificação**. O cartão vem com um texto de exemplo
 — **apague esse texto** e escolha, na barrinha de sugestões, a variável **Valor
 do Dicionário**.
 
    É isso que faz o celular avisar *"R$ 38,50 no diário. Saldo de hoje:
    R$ 1.497,43."* sem você abrir nada.
 
-**6.** O iPhone batiza o atalho sozinho, com o nome da primeira ação — costuma
+**7.** O iPhone batiza o atalho sozinho, com o nome da primeira ação — costuma
 ficar *"Pedir Entrada"*. Toque nesse nome lá em cima, na setinha **⌄** ao lado,
 escolha **Renomear** e chame de **Lançar gasto**. Escolha um ícone e uma cor se
 quiser.
@@ -91,7 +102,7 @@ quiser.
    > ainda mais sendo verbo comum ("Gastei", "Paguei", "Anotar"), ela ouve como o
    > começo de uma frase e sai procurando na internet.
 
-**7.** Toque em **OK** / **Concluído**.
+**8.** Toque em **OK** / **Concluído**.
 
 ### Teste antes de chamar a Siri
 
@@ -116,8 +127,10 @@ para quem vai usar a voz.
 
 > — **você:** E aí Siri, Lançar gasto
 > — **Siri:** Quanto?
-> — **você:** trinta e oito e cinquenta
-> — **Siri:** R$ 38,50 no diário. Saldo de hoje: R$ 1.497,43.
+> — **você:** trinta e nove
+> — **Siri:** Qual categoria?
+> — **você:** mercado
+> — **Siri:** R$ 39 no diário em Mercado. Saldo de hoje: R$ 1.497.
 
 A pergunta *"Quanto?"* é o passo 2: quando o atalho roda pela voz, a Siri fala a
 pergunta e escuta a resposta. A última frase é a confirmação — ela diz o valor
@@ -192,9 +205,9 @@ Duplique o atalho, mude o nome e acrescente um pedaço ao fim do endereço,
 
 | Frase | O que acrescentar no fim do endereço |
 |---|---|
-| *"E aí Siri, Lançar gasto"* | nada — sem tipo, é gasto do dia a dia |
+| *"E aí Siri, Lançar gasto"* | nada — sem tipo, é o gasto do dia a dia |
+| *"E aí Siri, Lançar saída"* | `&tipo=saida` |
 | *"E aí Siri, Lançar entrada"* | `&tipo=entrada` |
-| *"E aí Siri, Lançar conta"* | `&tipo=saida` |
 
 Outros pedaços, todos opcionais e todos no fim do endereço:
 

@@ -3,6 +3,7 @@ import { codigoConfere, temSessao } from "@/lib/auth";
 import { bd } from "@/lib/bd";
 import { calcularAno } from "@/lib/calculo";
 import { camposDoEndereco, hojeNoFuso, lerPedidoDoAtalho, recadoDoAtalho } from "@/lib/atalho";
+import { CHAVE_DAS_CATEGORIAS, lerCategorias, nomeDaCategoria } from "@/lib/categorias";
 import { partesDaData } from "@/lib/datas";
 
 /**
@@ -53,7 +54,12 @@ export async function POST(pedido: Request) {
   const autorizado = codigoConfere(doCabecalho) || codigoConfere(doCorpo) || (await temSessao());
   if (!autorizado) return naoAutorizado();
 
-  const leitura = lerPedidoDoAtalho(corpo, { hoje: hojeNoFuso() });
+  // A lista de categorias vive no banco, e é o servidor que traduz o que foi
+  // falado ("mercado", "conta de luz") no identificador que o lançamento guarda.
+  const guardadas = await bd.ajuste.findUnique({ where: { chave: CHAVE_DAS_CATEGORIAS } });
+  const categorias = lerCategorias(guardadas?.valor);
+
+  const leitura = lerPedidoDoAtalho(corpo, { hoje: hojeNoFuso(), categorias });
   if (!leitura.ok) return NextResponse.json({ erro: leitura.erro }, { status: 400 });
 
   const { lancamentos } = leitura;
@@ -65,6 +71,7 @@ export async function POST(pedido: Request) {
       tipo: l.tipo,
       valorCents: l.valorCents,
       nota: l.nota ?? null,
+      categoria: l.categoria ?? null,
       previsto: false,
       rendaPropria: !!l.rendaPropria,
       investimento: !!l.investimento,
@@ -105,7 +112,12 @@ export async function POST(pedido: Request) {
 
   return NextResponse.json({
     ok: true,
-    recado: recadoDoAtalho(lancamentos, saldoDoDia),
+    recado: recadoDoAtalho(lancamentos, saldoDoDia, {
+      nome: lancamentos[0].categoria
+        ? nomeDaCategoria(categorias, lancamentos[0].categoria)
+        : undefined,
+      naoAchada: leitura.categoriaNaoAchada,
+    }),
     quantos: lancamentos.length,
     data,
     tipo: lancamentos[0].tipo,
@@ -118,9 +130,10 @@ export async function POST(pedido: Request) {
 export function GET() {
   return NextResponse.json({
     comoUsar:
-      'POST em /api/lancar?valor=38,50 com o cabeçalho "x-codigo". ' +
+      'POST em /api/lancar?valor=38,50&categoria=mercado com o cabeçalho "x-codigo". ' +
       'O mesmo vale em corpo JSON: {"valor":"38,50"}. ' +
-      'Opcionais: "tipo" (entrada, saída ou diário), "data" (AAAA-MM-DD) e "nota". ' +
+      'Opcionais: "tipo" (entrada, saída ou diário), "categoria" (o nome, como se fala), ' +
+      '"data" (AAAA-MM-DD) e "nota". ' +
       "O código só é lido do cabeçalho ou do corpo, nunca do endereço.",
   });
 }

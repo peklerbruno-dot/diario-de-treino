@@ -36,8 +36,10 @@ export interface Lancamento {
 export interface Fixo {
   id: string;
   tipo: Tipo;
-  /** 1 a 31; 0 = todo dia. */
+  /** 1 a 31; 0 = todo dia. É o recuo de `repeticao`. */
   dia: number;
+  /** A regra de quando ele cai, quando não é um dia do mês. Ver `lib/repeticao`. */
+  repeticao?: string | null;
   valorCents: number;
   nota?: string | null;
   /** A categoria que os lançamentos nascidos deste fixo herdam. */

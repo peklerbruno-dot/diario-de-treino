@@ -18,6 +18,7 @@
  *    como se nada tivesse entrado no ano todo.
  */
 import { diasNoMes, montarData, nomeDoMes, partesDaData } from "./datas";
+import { diasDoMes, lerRepeticao } from "./repeticao";
 import type { Ajustes, Fixo, Lancamento, Tipo } from "./tipos";
 
 export interface DiaCalculado {
@@ -283,13 +284,8 @@ export function gerarPrevisao(opcoes: {
     const mesFinal = ano === fim.ano ? fim.mes : 12;
 
     for (let mes = mesInicial; mes <= mesFinal; mes++) {
-      const quantosDias = diasNoMes(ano, mes);
-
       for (const fixo of fixos) {
-        const diasAlvo =
-          fixo.dia === 0
-            ? Array.from({ length: quantosDias }, (_, i) => i + 1)
-            : [Math.min(fixo.dia, quantosDias)];
+        const diasAlvo = diasDoMes(lerRepeticao(fixo), ano, mes);
 
         for (const dia of diasAlvo) {
           const data = montarData(ano, mes, dia);

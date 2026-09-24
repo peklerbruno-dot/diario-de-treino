@@ -115,3 +115,50 @@ export function idDoNome(nome: string): string {
       .replace(/^-+|-+$/g, "") || "categoria"
   );
 }
+
+/** Sem acento, sem maiúscula, sem espaço sobrando — para comparar o que foi falado. */
+const achatar = (t: string): string =>
+  t
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+
+/**
+ * Acha a categoria que a pessoa falou para a Siri.
+ *
+ * Ditado não bate letra por letra: sai "mercado" com maiúscula, "saude" sem
+ * acento, "conta de luz" quando a categoria é "Contas". Então a busca vai
+ * afrouxando — igual, começa com, contém — e só desiste no fim.
+ *
+ * As do tipo pedido vêm primeiro: falando "transporte" num gasto do dia a dia,
+ * é a de diário que se quer. Mas uma categoria de outra coluna ainda é aceita,
+ * porque guardar o lançamento com a categoria de coluna trocada é melhor do que
+ * guardar sem categoria nenhuma — e é corrigível em dois toques.
+ */
+export function acharCategoria(
+  lista: readonly Categoria[],
+  falado: string,
+  tipo: Tipo,
+): Categoria | null {
+  const alvo = achatar(falado);
+  if (!alvo) return null;
+
+  const daColuna = lista.filter((c) => c.tipos.includes(tipo));
+  const ordem = [...daColuna, ...lista.filter((c) => !daColuna.includes(c))];
+
+  // A primeira palavra carrega o assunto: quem diz "conta de luz" quer
+  // "Contas", e quem diz "mercado do mês" quer "Mercado". É o degrau que salva
+  // a maioria das frases, e por isso vem depois dos exatos e antes dos vagos.
+  const primeira = alvo.split(/\s+/)[0];
+
+  return (
+    ordem.find((c) => achatar(c.nome) === alvo) ??
+    ordem.find((c) => c.id === alvo) ??
+    ordem.find((c) => achatar(c.nome).startsWith(alvo)) ??
+    ordem.find((c) => alvo.startsWith(achatar(c.nome))) ??
+    ordem.find((c) => achatar(c.nome).startsWith(primeira)) ??
+    ordem.find((c) => achatar(c.nome).includes(alvo)) ??
+    null
+  );
+}
