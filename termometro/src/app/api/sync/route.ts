@@ -36,6 +36,7 @@ const zLancamento = z.object({
   tipo,
   valorCents: z.number().int().finite(),
   nota: z.string().max(500).nullish(),
+  categoria: z.string().max(80).nullish(),
   previsto: z.boolean().default(false),
   rendaPropria: z.boolean().default(false),
   investimento: z.boolean().default(false),
@@ -52,6 +53,7 @@ const zFixo = z.object({
   dia: z.number().int().min(0).max(31),
   valorCents: z.number().int().finite(),
   nota: z.string().max(500).nullish(),
+  categoria: z.string().max(80).nullish(),
   rendaPropria: z.boolean().default(false),
   investimento: z.boolean().default(false),
   apartamento: z.boolean().default(false),
@@ -112,9 +114,7 @@ export async function POST(pedido: Request) {
     ...fixos.map((f) => f.servidorEm),
     ...ajustes.map((a) => a.servidorEm),
   ];
-  const ate = marcadores.length
-    ? new Date(Math.max(...marcadores.map((d) => d.getTime())))
-    : desde;
+  const ate = marcadores.length ? new Date(Math.max(...marcadores.map((d) => d.getTime()))) : desde;
 
   return NextResponse.json({
     ate: ate.toISOString(),
@@ -164,6 +164,7 @@ async function gravarLancamentos(entrando: Lancamento[]) {
         tipo: l.tipo,
         valorCents: l.valorCents,
         nota: l.nota ?? null,
+        categoria: l.categoria ?? null,
         previsto: l.previsto,
         rendaPropria: l.rendaPropria,
         investimento: l.investimento,
@@ -187,6 +188,7 @@ async function gravarLancamentos(entrando: Lancamento[]) {
             tipo: l.tipo,
             valorCents: l.valorCents,
             nota: l.nota ?? null,
+            categoria: l.categoria ?? null,
             previsto: l.previsto,
             rendaPropria: l.rendaPropria,
             investimento: l.investimento,
@@ -217,6 +219,7 @@ async function gravarFixos(entrando: Fixo[]) {
       dia: f.dia,
       valorCents: f.valorCents,
       nota: f.nota ?? null,
+      categoria: f.categoria ?? null,
       rendaPropria: f.rendaPropria,
       investimento: f.investimento,
       apartamento: f.apartamento,
@@ -259,6 +262,7 @@ function limparLancamento(l: LinhaLancamento) {
     tipo: l.tipo,
     valorCents: l.valorCents,
     nota: l.nota,
+    categoria: l.categoria,
     previsto: l.previsto,
     rendaPropria: l.rendaPropria,
     investimento: l.investimento,
@@ -277,6 +281,7 @@ function limparFixo(f: LinhaFixo) {
     dia: f.dia,
     valorCents: f.valorCents,
     nota: f.nota,
+    categoria: f.categoria,
     rendaPropria: f.rendaPropria,
     investimento: f.investimento,
     apartamento: f.apartamento,

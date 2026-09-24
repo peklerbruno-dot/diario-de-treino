@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { hoje } from "@/lib/datas";
 import { loja, RECADO_DA_SITUACAO } from "@/lib/loja";
 import { FolhaDeLancamento } from "./folha-de-lancamento";
-import { IconeAgenda, IconeAjustes, IconeAno, IconeFixos, IconeHoje, IconeMes } from "./icones";
+import { IconeAgenda, IconeHoje, IconeMais, IconeMes, IconeTotais } from "./icones";
 import { Botao } from "./pecas";
 import { useEstado, useIniciarLoja } from "./usar-loja";
 
@@ -37,10 +37,9 @@ const ALTURA = {
 const ABAS = [
   { href: "/", rotulo: "Hoje", Icone: IconeHoje },
   { href: "/mes", rotulo: "Mês", Icone: IconeMes },
-  { href: "/agenda", rotulo: "Agenda", Icone: IconeAgenda },
-  { href: "/ano", rotulo: "Ano", Icone: IconeAno },
-  { href: "/fixos", rotulo: "Fixos", Icone: IconeFixos },
-  { href: "/ajustes", rotulo: "Ajustes", Icone: IconeAjustes },
+  { href: "/totais", rotulo: "Totais", Icone: IconeTotais },
+  { href: "/agenda", rotulo: "O que vem", Icone: IconeAgenda },
+  { href: "/mais", rotulo: "Mais", Icone: IconeMais },
 ];
 
 export function Casca({ children }: { children: React.ReactNode }) {
@@ -83,13 +82,20 @@ function Navegacao({ caminho }: { caminho: string }) {
     >
       <ul className="mx-auto flex max-w-2xl rounded-[26px] bg-cartao px-1 py-1.5 shadow-cartao">
         {ABAS.map(({ href, rotulo, Icone }) => {
-          const aqui = href === "/" ? caminho === "/" : caminho.startsWith(href);
+          const aqui =
+            href === "/"
+              ? caminho === "/"
+              : href === "/mais"
+                ? ["/mais", "/ano", "/fixos", "/ajustes", "/atalho", "/importar"].some((r) =>
+                    caminho.startsWith(r),
+                  )
+                : caminho.startsWith(href);
           return (
             <li key={href} className="flex-1">
               <Link
                 href={href}
                 aria-current={aqui ? "page" : undefined}
-                className={`flex flex-col items-center gap-0.5 rounded-[20px] py-2 text-[9.5px] ${
+                className={`flex flex-col items-center gap-0.5 rounded-[20px] py-2 text-[10px] ${
                   aqui ? "font-semibold text-tinta" : "text-fosco"
                 }`}
               >

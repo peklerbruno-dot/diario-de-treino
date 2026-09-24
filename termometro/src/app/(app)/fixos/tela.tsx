@@ -14,10 +14,11 @@ import {
   Titulo,
 } from "@/componentes/pecas";
 import { useEstado } from "@/componentes/usar-loja";
+import { categoriasDoTipo } from "@/lib/categorias";
 import { gerarPrevisao } from "@/lib/calculo";
 import { hoje, partesDaData } from "@/lib/datas";
 import { parcelas } from "@/lib/dinheiro";
-import { fixosVivos, lancamentosVivos, loja } from "@/lib/loja";
+import { categoriasDe, fixosVivos, lancamentosVivos, loja } from "@/lib/loja";
 import { EXPLICACAO_DO_TIPO, NOME_DO_TIPO, TIPOS, type Fixo, type Tipo } from "@/lib/tipos";
 
 /**
@@ -31,20 +32,25 @@ export function TelaDosFixos() {
   const [editando, setEditando] = useState<Fixo | "novo" | null>(null);
   const [recado, setRecado] = useState<string | null>(null);
 
-  function preencherAteODezembro() {
+  // Até o fim do ano que vem, e não até dezembro deste. Em outubro, "até
+  // dezembro" são dez semanas de futuro — pouco para decidir qualquer coisa que
+  // atravesse o Ano-Novo, e a vida atravessa. Esticando até o dezembro
+  // seguinte, a pergunta "dá?" sempre tem pelo menos doze meses de resposta.
+  const ateQuando = partesDaData(hoje()).ano + 1;
+
+  function preencherAPrevisao() {
     const agora = hoje();
-    const { ano } = partesDaData(agora);
     const novos = gerarPrevisao({
       fixos,
       de: agora,
-      ate: `${ano}-12-31`,
+      ate: `${ateQuando}-12-31`,
       existentes: lancamentosVivos(estado),
     });
     loja.salvarVariosLancamentos(novos);
     setRecado(
       novos.length === 0
-        ? "Já estava tudo preenchido daqui até dezembro."
-        : `Escrevi ${novos.length} lançamentos previstos, de hoje até 31 de dezembro.`,
+        ? `Já estava tudo preenchido daqui até o fim de ${ateQuando}.`
+        : `Escrevi ${novos.length} lançamentos previstos, de hoje até 31 de dezembro de ${ateQuando}.`,
     );
   }
 
@@ -113,8 +119,8 @@ export function TelaDosFixos() {
 
       {fixos.length > 0 && (
         <div className="mt-5">
-          <Botao tipo="primario" onClick={preencherAteODezembro} className="w-full">
-            Preencher previsão até dezembro
+          <Botao tipo="primario" onClick={preencherAPrevisao} className="w-full">
+            Preencher previsão até dezembro de {ateQuando}
           </Botao>
           <p className="mt-2 text-[13px] leading-snug text-fosco">
             Escreve os fixos nos dias de hoje em diante que ainda estiverem vazios. Não mexe no
@@ -140,17 +146,21 @@ export function TelaDosFixos() {
 }
 
 function FolhaDeFixo({ fixo, aoFechar }: { fixo?: Fixo; aoFechar: () => void }) {
+  const categorias = categoriasDe(useEstado());
   const [tipo, setTipo] = useState<Tipo>(fixo?.tipo ?? "SAIDA");
   const [dia, setDia] = useState(String(fixo?.dia ?? 5));
   const [valor, setValor] = useState(
     fixo ? (fixo.valorCents / 100).toFixed(2).replace(".", ",") : "",
   );
   const [nota, setNota] = useState(fixo?.nota ?? "");
+  const [categoria, setCategoria] = useState<string | null>(fixo?.categoria ?? null);
   const [ativo, setAtivo] = useState(fixo?.ativo !== false);
   const [rendaPropria, setRendaPropria] = useState(!!fixo?.rendaPropria);
   const [investimento, setInvestimento] = useState(!!fixo?.investimento);
   const [apartamento, setApartamento] = useState(!!fixo?.apartamento);
   const [erro, setErro] = useState<string | null>(null);
+
+  const daColuna = categoriasDoTipo(categorias, tipo);
 
   function salvar() {
     const valores = parcelas(valor);
@@ -165,6 +175,7 @@ function FolhaDeFixo({ fixo, aoFechar }: { fixo?: Fixo; aoFechar: () => void }) 
       dia: Number(dia),
       valorCents: total,
       nota: nota.trim() || null,
+      categoria: daColuna.some((c) => c.id === categoria) ? categoria : null,
       ativo,
       rendaPropria: tipo === "ENTRADA" && rendaPropria,
       investimento: tipo === "SAIDA" && investimento,
@@ -227,6 +238,35 @@ function FolhaDeFixo({ fixo, aoFechar }: { fixo?: Fixo; aoFechar: () => void }) 
         <Campo rotulo="Nome" dica="Como ele aparece na lista.">
           <CampoDeTexto valor={nota} aoMudar={setNota} placeholder="salário" />
         </Campo>
+
+        {daColuna.length > 0 && (
+          <div>
+            <span className="block text-[15px] text-grafite">
+              Para onde vai
+              <span className="ml-2 text-[13px] text-fosco">
+                os lançamentos previstos herdam esta
+              </span>
+            </span>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {daColuna.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  aria-pressed={categoria === c.id}
+                  onClick={() => setCategoria(categoria === c.id ? null : c.id)}
+                  className={`min-h-[38px] rounded-full px-4 text-[14px] shadow-baixa ${
+                    categoria === c.id
+                      ? "bg-saldo font-semibold text-white"
+                      : "bg-cartao text-grafite"
+                  }`}
+                >
+                  {categoria === c.id ? "✓ " : ""}
+                  {c.nome}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <label className="flex items-center gap-3 rounded-folha bg-cartao p-3 shadow-baixa">
           <input

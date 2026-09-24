@@ -6,6 +6,7 @@ import {
   Aviso,
   Botao,
   Campo,
+  CampoDeTexto,
   CampoDeValor,
   Cartao,
   Linha,
@@ -20,6 +21,8 @@ import {
   ajustesDoAno,
   anosComDados,
   arredondarTudo,
+  categoriasDe,
+  guardarCategorias,
   fixosVivos,
   guardarRateio,
   guardarSaldoInicial,
@@ -28,7 +31,8 @@ import {
   quantosComCentavos,
   RECADO_DA_SITUACAO,
 } from "@/lib/loja";
-import { NOME_DO_TIPO } from "@/lib/tipos";
+import { categoriasDoTipo, idDoNome, type Categoria } from "@/lib/categorias";
+import { NOME_DO_TIPO, TIPOS, type Tipo } from "@/lib/tipos";
 
 export function TelaDeAjustes() {
   const estado = useEstado();
@@ -123,6 +127,8 @@ export function TelaDeAjustes() {
           <Botao onClick={() => guardarRateio(Number(rateio) || 0)}>Salvar</Botao>
         </div>
       </section>
+
+      <Categorias estado={estado} />
 
       <ArrumarOsCentavos estado={estado} />
 
@@ -230,6 +236,133 @@ export function TelaDeAjustes() {
         </Aviso>
       </div>
     </div>
+  );
+}
+
+/**
+ * A lista de categorias, editável.
+ *
+ * Ela começa preenchida de propósito — uma tela vazia pedindo que alguém
+ * invente um sistema de classificação antes de poder lançar um almoço é o jeito
+ * mais seguro de ninguém classificar nada. O que está ali é palpite meu, e todo
+ * palpite precisa poder ser desfeito.
+ *
+ * Apagar uma categoria não mexe no passado: o lançamento guarda o identificador
+ * dela, e os totais continuam mostrando o nome. Ela só some da lista de
+ * escolha.
+ */
+function Categorias({ estado }: { estado: EstadoDoApp }) {
+  const categorias = categoriasDe(estado);
+  const [nova, setNova] = useState("");
+  const [tiposDaNova, setTiposDaNova] = useState<Tipo[]>(["DIARIO"]);
+  const [erro, setErro] = useState<string | null>(null);
+
+  function acrescentar() {
+    const nome = nova.trim();
+    if (!nome) return;
+    if (tiposDaNova.length === 0) {
+      setErro("Escolha ao menos uma coluna.");
+      return;
+    }
+    const id = idDoNome(nome);
+    if (categorias.some((c) => c.id === id)) {
+      setErro(`Já existe uma categoria chamada “${nome}”.`);
+      return;
+    }
+    guardarCategorias([...categorias, { id, nome, tipos: tiposDaNova }]);
+    setNova("");
+    setErro(null);
+  }
+
+  const apagar = (id: string) => guardarCategorias(categorias.filter((c) => c.id !== id));
+
+  function alternarTipo(c: Categoria, tipo: Tipo) {
+    const tipos = c.tipos.includes(tipo) ? c.tipos.filter((t) => t !== tipo) : [...c.tipos, tipo];
+    if (tipos.length === 0) return; // sem coluna nenhuma ela não apareceria em lugar algum
+    guardarCategorias(categorias.map((x) => (x.id === c.id ? { ...x, tipos } : x)));
+  }
+
+  return (
+    <section className="mt-6">
+      <Subtitulo>Categorias</Subtitulo>
+      <p className="mt-1 text-[15px] leading-relaxed text-grafite">
+        Para onde o dinheiro vai, e o que a aba <strong>Totais</strong> soma. Cada uma vale nas
+        colunas marcadas — “transporte” é diário quando é o aplicativo e saída quando é o seguro.
+      </p>
+
+      <Cartao className="mt-3 px-4 py-1">
+        {categorias.map((c) => (
+          <div key={c.id} className="border-b border-linha py-3 last:border-b-0">
+            <div className="flex items-center justify-between gap-3">
+              <span className="min-w-0 truncate text-[15px] font-medium">{c.nome}</span>
+              <button
+                type="button"
+                onClick={() => apagar(c.id)}
+                aria-label={`Apagar a categoria ${c.nome}`}
+                className="shrink-0 text-[13px] text-atencao"
+              >
+                Apagar
+              </button>
+            </div>
+            <div className="mt-1.5 flex gap-1.5">
+              {TIPOS.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  aria-pressed={c.tipos.includes(t)}
+                  onClick={() => alternarTipo(c, t)}
+                  className={`min-h-[30px] rounded-full px-3 text-[12.5px] ${
+                    c.tipos.includes(t) ? "bg-saldo font-medium text-white" : "bg-papel text-fosco"
+                  }`}
+                >
+                  {NOME_DO_TIPO[t]}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </Cartao>
+
+      <div className="mt-3">
+        <Campo rotulo="Nova categoria">
+          <CampoDeTexto valor={nova} aoMudar={setNova} placeholder="farmácia" />
+        </Campo>
+        <div className="mt-2 flex gap-1.5">
+          {TIPOS.map((t) => (
+            <button
+              key={t}
+              type="button"
+              aria-pressed={tiposDaNova.includes(t)}
+              onClick={() =>
+                setTiposDaNova((atual) =>
+                  atual.includes(t) ? atual.filter((x) => x !== t) : [...atual, t],
+                )
+              }
+              className={`min-h-[34px] flex-1 rounded-full text-[13px] ${
+                tiposDaNova.includes(t)
+                  ? "bg-saldo font-medium text-white"
+                  : "bg-cartao shadow-baixa"
+              }`}
+            >
+              {NOME_DO_TIPO[t]}
+            </button>
+          ))}
+        </div>
+        {erro && (
+          <p role="alert" className="mt-2 text-[14px] text-atencao">
+            {erro}
+          </p>
+        )}
+        <Botao onClick={acrescentar} className="mt-2">
+          Acrescentar
+        </Botao>
+      </div>
+
+      <p className="mt-2 text-[12.5px] leading-snug text-fosco">
+        Apagar uma categoria não mexe nos lançamentos antigos: eles continuam contando nos totais,
+        com o mesmo nome. Ela só deixa de aparecer na hora de escolher.
+      </p>
+    </section>
   );
 }
 

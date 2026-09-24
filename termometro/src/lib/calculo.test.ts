@@ -280,3 +280,50 @@ describe("a previsão dos dias que ainda não chegaram", () => {
     expect(ano.meses[9].totais.temPrevisto).toBe(true);
   });
 });
+
+describe("a previsão atravessa o Ano-Novo", () => {
+  const salario = {
+    id: "f1",
+    tipo: "ENTRADA" as const,
+    dia: 5,
+    valorCents: 500000,
+    nota: "salário",
+    ativo: true,
+  };
+
+  it("vai de outubro de um ano até dezembro do seguinte, sem parar em 31/12", () => {
+    const novos = gerarPrevisao({
+      fixos: [salario],
+      de: "2026-10-01",
+      ate: "2027-12-31",
+      existentes: [],
+      agora: "2026-10-01T12:00:00.000Z",
+      novoId: (() => {
+        let n = 0;
+        return () => `p${++n}`;
+      })(),
+    });
+
+    const datas = novos.map((l) => l.data);
+    // Três em 2026 (out, nov, dez) e os doze de 2027.
+    expect(datas).toHaveLength(15);
+    expect(datas[0]).toBe("2026-10-05");
+    expect(datas.at(-1)).toBe("2027-12-05");
+    expect(datas.filter((d) => d.startsWith("2027"))).toHaveLength(12);
+  });
+
+  it("um fixo de dia 31 cai no último dia dos meses curtos do ano que vem", () => {
+    const novos = gerarPrevisao({
+      fixos: [{ ...salario, dia: 31 }],
+      de: "2027-02-01",
+      ate: "2027-04-30",
+      existentes: [],
+      agora: "2027-02-01T12:00:00.000Z",
+      novoId: (() => {
+        let n = 0;
+        return () => `q${++n}`;
+      })(),
+    });
+    expect(novos.map((l) => l.data)).toEqual(["2027-02-28", "2027-03-31", "2027-04-30"]);
+  });
+});

@@ -52,6 +52,17 @@ model Lancamento {
   /// Saída do apartamento, que é rateada com outra pessoa.
   apartamento Boolean @default(false)
 
+  /// Para onde o dinheiro foi: mercado, fatura, apartamento, salário.
+  ///
+  /// Texto, e não uma tabela de categorias com chave estrangeira. São umas
+  /// quinze, escolhidas numa lista de botões, e uma tabela aqui cobraria uma
+  /// junção em toda leitura e uma linha órfã toda vez que uma categoria fosse
+  /// renomeada. A lista de categorias mora em `Ajuste`, que já sincroniza.
+  ///
+  /// Nulo quer dizer "sem categoria", que é como nascem os 815 lançamentos que
+  /// vieram da planilha — e continua valendo para quem não quer classificar.
+  categoria String?
+
   /// De qual lançamento fixo esta linha nasceu, quando nasceu de um.
   fixoId String?
 
@@ -63,10 +74,11 @@ model Lancamento {
   /// Relógio do servidor. É só por ele que um aparelho pergunta "o que mudou
   /// desde a última vez?" — usar o relógio do celular aqui faria um aparelho
   /// adiantado esconder do outro tudo o que escreveu.
-  servidorEm DateTime @default(now()) @updatedAt
+  servidorEm   DateTime  @default(now()) @updatedAt
 
   @@index([servidorEm])
   @@index([data])
+  @@index([categoria])
 }
 
 /// O que se repete todo mês. É daqui que sai a previsão dos dias que ainda não
@@ -78,6 +90,8 @@ model Fixo {
   dia        Int
   valorCents Int
   nota       String?
+  /// A categoria que os lançamentos nascidos deste fixo herdam.
+  categoria  String?
 
   rendaPropria Boolean @default(false)
   investimento Boolean @default(false)
@@ -87,7 +101,7 @@ model Fixo {
   criadoEm     DateTime
   atualizadoEm DateTime
   apagadoEm    DateTime?
-  servidorEm   DateTime @default(now()) @updatedAt
+  servidorEm   DateTime  @default(now()) @updatedAt
 
   @@index([servidorEm])
 }

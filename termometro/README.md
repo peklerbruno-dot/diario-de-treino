@@ -44,7 +44,37 @@ coisa.
    entrava na conta do ano, mas ficava fora do último dia do mês. Na importação
    ele desce para o dia 30, e o app avisa que fez isso.
 
-## As cinco abas
+## Categorias: para onde o dinheiro foi
+
+O saldo responde "quanto sobrou". A categoria responde **"sobrou pouco por
+quê"** — e é a segunda que faz alguém mudar alguma coisa, porque ela aponta um
+lugar onde dá para mexer.
+
+Cada lançamento guarda uma categoria (ou nenhuma, que é resposta válida e é como
+estão os 815 que vieram da planilha). A aba **Totais** soma por ela, uma coluna
+por vez: entrada e saída não se comparam na mesma lista, e o que se quer saber é
+sempre "das minhas saídas, quanto foi para o apartamento".
+
+Três decisões que essa parte carrega:
+
+- **A categoria é texto no lançamento, não uma tabela com chave estrangeira.**
+  São umas quinze, escolhidas numa lista de botões. Uma tabela cobraria uma
+  junção em toda leitura e deixaria linha órfã a cada renomeação. A lista mora
+  em `Ajuste`, que já sincroniza.
+- **Uma categoria vale em mais de uma coluna.** "Transporte" é gasto do dia a
+  dia quando é o aplicativo da esquina e é saída quando é o seguro do carro.
+  Amarrar cada categoria a uma coluna obrigaria a inventá-la duas vezes, com
+  dois totais que ninguém quer separados.
+- **Apagar uma categoria não apaga o passado dela.** O lançamento guarda o
+  identificador; se a categoria some da lista, o identificador vira o nome e a
+  linha continua nos totais.
+
+A lista já vem preenchida ([`src/lib/categorias.ts`](src/lib/categorias.ts)). Uma
+tela vazia pedindo que alguém invente um sistema de classificação antes de poder
+lançar um almoço é o jeito mais seguro de ninguém classificar nada — e o palpite
+é todo editável em Ajustes.
+
+## As abas
 
 **Hoje** é onde o app abre. Responde as duas perguntas de quem está com o
 celular na mão depois de gastar algo: quanto eu tenho, e quanto ainda posso
@@ -65,7 +95,18 @@ já abre rolada. O mesmo mês também se vê em **calendário**, ocupando a larg
 inteira, com os três valores e o saldo dentro de cada célula: a lista responde
 como o saldo chegou até aqui, o calendário responde qual é a forma deste mês.
 
-**Ano**, **Fixos** e **Ajustes** continuam onde estavam.
+**Totais** é para onde o dinheiro foi, por categoria, num mês ou no ano inteiro.
+**O que vem** é tudo o que está marcado daqui até o fim do ano, sem o gasto do
+dia a dia — ele não é compromisso, é o que sobra depois deles.
+
+A barra de baixo tem cinco nomes, e a escolha de quem fica nela não é por
+importância e sim por postura: Hoje, Mês, Totais e O que vem se olham de pé, na
+fila do mercado. **Ano**, **Fixos** e **Ajustes** se olham sentado, e vivem atrás
+de **Mais** — um toque a mais não custa nada para quem já sentou.
+
+A previsão dos fixos vai até **dezembro do ano seguinte**, não até dezembro
+deste. Em outubro, "até dezembro" são dez semanas de futuro — pouco para decidir
+qualquer coisa que atravesse o Ano-Novo, e a vida atravessa.
 
 O ano vira sozinho. Um ano começa onde o anterior terminou, e o app encadeia os
 anos que tem em vez de esperar alguém digitar o saldo de abertura em 1º de
