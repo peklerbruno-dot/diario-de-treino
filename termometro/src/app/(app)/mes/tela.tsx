@@ -149,7 +149,23 @@ function ListaDeDias({
 
   return (
     <div className="overflow-hidden rounded-cartao bg-cartao px-2 pb-1 pt-2.5 shadow-cartao">
-      <table className="tabular w-full border-collapse">
+      {/* Larguras em proporção, e não conforme o conteúdo. Deixada solta, a
+          coluna do dia engolia toda a sobra numa tela de computador e os
+          números acabavam espalhados na borda direita, longe do dia a que
+          pertencem. Em proporção, a tabela tem a mesma forma no celular e na
+          tela grande. */}
+      {/* 360 px é o piso para as proporções acima caberem sem espremer nada: o
+          maior saldo ("196.438") pede uns 79 px, que são os 22% da coluna. Numa
+          tela mais estreita a tabela rola por dentro do cartão, e o resto do app
+          fica parado. */}
+      <table className="tabular w-full min-w-[360px] table-fixed border-collapse">
+        <colgroup>
+          <col className="w-[23%]" />
+          <col className="w-[19%]" />
+          <col className="w-[19%]" />
+          <col className="w-[17%]" />
+          <col className="w-[22%]" />
+        </colgroup>
         <thead>
           <tr className="text-[10px] uppercase tracking-wide text-fosco">
             <th scope="col" className="pb-2 pl-1.5 text-left font-medium">
@@ -183,13 +199,21 @@ function ListaDeDias({
                     aria-label={`${ehHoje ? "Hoje, dia" : "Dia"} ${dia.dia}, ${nomeDoDiaDaSemana(
                       dia.data,
                     )}. Saldo ${comCifrao(dia.saldoCents)}.`}
-                    className={`flex w-full items-baseline gap-1 whitespace-nowrap rounded-[8px] px-1 py-1 text-left text-[13.5px] ${
-                      ehHoje ? "bg-saldo font-bold text-white" : futuro ? "text-fosco" : ""
-                    }`}
+                    // O botão ocupa a célula inteira, para o dedo ter onde
+                    // acertar; o azul de hoje envolve só as palavras. Pintar a
+                    // célula toda transformava o destaque numa barra esticada
+                    // na tela do computador, larga e sem sentido.
+                    className="flex w-full py-1 text-left text-[13.5px]"
                   >
-                    <span className={ehHoje ? "" : "font-medium"}>{dia.dia}</span>
-                    <span className={`text-[10.5px] ${ehHoje ? "text-white/75" : "text-fosco"}`}>
-                      {nomeDoDiaDaSemana(dia.data, true)}
+                    <span
+                      className={`flex items-baseline gap-1 whitespace-nowrap rounded-[8px] px-1.5 py-0.5 ${
+                        ehHoje ? "bg-saldo font-bold text-white" : futuro ? "text-fosco" : ""
+                      }`}
+                    >
+                      <span className={ehHoje ? "" : "font-medium"}>{dia.dia}</span>
+                      <span className={`text-[10.5px] ${ehHoje ? "text-white/75" : "text-fosco"}`}>
+                        {nomeDoDiaDaSemana(dia.data, true)}
+                      </span>
                     </span>
                   </button>
                 </td>
