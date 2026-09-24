@@ -2,7 +2,7 @@
 
 import type { DiaCalculado, MesCalculado } from "@/lib/calculo";
 import { diaDaSemana, nomeDoDiaDaSemana } from "@/lib/datas";
-import { comCifrao, semCentavos } from "@/lib/dinheiro";
+import { comCifrao, emReais } from "@/lib/dinheiro";
 import { classeDoSaldo, corDoSaldo, faixaDoMes } from "@/lib/escala";
 
 const CABECALHO = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
@@ -71,23 +71,23 @@ export function Calendario({
               <span className={`tabular mt-0.5 block leading-[1.35] ${futuro ? "opacity-60" : ""}`}>
                 {dia.entradaCents > 0 && (
                   <span className="block text-[9.5px] text-entrada">
-                    +{semCentavos(dia.entradaCents)}
+                    +{emReais(dia.entradaCents)}
                   </span>
                 )}
                 {dia.saidaCents > 0 && (
                   <span className="block text-[9.5px] text-saida">
-                    −{semCentavos(dia.saidaCents)}
+                    −{emReais(dia.saidaCents)}
                   </span>
                 )}
                 {dia.diarioCents > 0 && (
                   <span className="block text-[9.5px] text-diario">
-                    −{semCentavos(dia.diarioCents)}
+                    −{emReais(dia.diarioCents)}
                   </span>
                 )}
               </span>
 
               <span className="tabular absolute inset-x-1 bottom-1 text-right text-[11px] font-semibold">
-                {semCentavos(dia.saldoCents)}
+                {emReais(dia.saldoCents)}
               </span>
             </button>
           );

@@ -10,7 +10,7 @@
  * mandou e montar os lançamentos. É o que dá para testar sem servidor nenhum.
  */
 import { diasNoMes, partesDaData } from "./datas";
-import { comCifrao, paraCentavos, parcelas } from "./dinheiro";
+import { aoReal, comCifrao, paraCentavos, parcelas } from "./dinheiro";
 import type { Lancamento, Tipo } from "./tipos";
 
 const TIPOS_ACEITOS: Record<string, Tipo> = {
@@ -151,7 +151,7 @@ export function lerPedidoDoAtalho(
       id: novoId(),
       data,
       tipo,
-      valorCents,
+      valorCents: aoReal(valorCents),
       nota,
       previsto: false,
       rendaPropria: tipo === "ENTRADA" && comoBooleano(corpo.rendaPropria),

@@ -288,7 +288,7 @@ function Esqueleto() {
 /**
  * O botão que abre o lançamento, numa barra acima da navegação.
  *
- * Não é um botão redondo flutuando: o redondo pousava justamente sobre a coluna
+ * Não é um botão comCifrao flutuando: o comCifrao pousava justamente sobre a coluna
  * do saldo — o número que a tela existe para mostrar.
  */
 function BarraDeLancar() {

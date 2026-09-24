@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { comCifrao, emReais, paraCentavos, parcelas, redondo, semCentavos } from "./dinheiro";
+import { aoReal, comCifrao, emReais, paraCentavos, parcelas } from "./dinheiro";
 
 describe("ler um valor digitado", () => {
   it("aceita a vírgula, que é a tecla decimal do teclado em português", () => {
@@ -59,35 +59,20 @@ describe("a soma que a planilha deixou como hábito", () => {
 });
 
 describe("mostrar dinheiro", () => {
-  it("escreve em português", () => {
-    expect(emReais(123456)).toBe("1.234,56");
-    expect(comCifrao(123456)).toBe("R$ 1.234,56");
-    expect(comCifrao(-500)).toBe("-R$ 5,00");
-    expect(comCifrao(0)).toBe("R$ 0,00");
+  it("escreve em português, sempre em reais inteiros", () => {
+    expect(emReais(123456)).toBe("1.235");
+    expect(comCifrao(123456)).toBe("R$ 1.235");
+    expect(comCifrao(-50)).toBe("-R$ 1");
+    expect(comCifrao(0)).toBe("R$ 0");
   });
 
-  it("arredonda para o painel, onde os centavos só atrapalham", () => {
-    expect(redondo(123456)).toBe("R$ 1.235");
-    expect(redondo(-99)).toBe("-R$ 1");
+  it("arredonda ao real mais próximo antes de guardar", () => {
+    expect(aoReal(77142)).toBe(77100);
+    expect(aoReal(77150)).toBe(77200);
+    expect(aoReal(-77142)).toBe(-77100);
+    expect(aoReal(0)).toBe(0);
+    expect(aoReal(NaN)).toBe(0);
   });
+
 });
 
-describe("a coluna da planilha, sem centavos", () => {
-  it("arredonda para o real mais próximo", () => {
-    expect(semCentavos(293600)).toBe("2.936");
-    expect(semCentavos(293649)).toBe("2.936");
-    expect(semCentavos(293650)).toBe("2.937");
-  });
-
-  it("usa o ponto de milhar do português", () => {
-    expect(semCentavos(1234567)).toBe("12.346");
-  });
-
-  it("mantém o sinal de quem está no vermelho", () => {
-    expect(semCentavos(-77100)).toBe("-771");
-  });
-
-  it("zero é zero", () => {
-    expect(semCentavos(0)).toBe("0");
-  });
-});

@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import type { AnoCalculado } from "@/lib/calculo";
 import { MESES_CURTOS, curta } from "@/lib/datas";
-import { comCifrao, redondo } from "@/lib/dinheiro";
+import { comCifrao } from "@/lib/dinheiro";
 
 /**
  * O termômetro propriamente dito: o saldo de cada dia do ano, numa linha só.
@@ -94,9 +94,9 @@ export function GraficoDoSaldo({ ano, hoje }: { ano: AnoCalculado; hoje: string 
         className="mt-1 w-full touch-pan-y select-none"
         style={{ height: "auto" }}
         role="img"
-        aria-label={`Saldo de cada dia de ${ano.ano}. Começa em ${redondo(
+        aria-label={`Saldo de cada dia de ${ano.ano}. Começa em ${comCifrao(
           ano.saldoInicialCents,
-        )} e termina em ${redondo(ano.saldoFinalCents)}.`}
+        )} e termina em ${comCifrao(ano.saldoFinalCents)}.`}
         onPointerMove={seguirODedo}
         onPointerDown={seguirODedo}
         onPointerLeave={() => setIndiceSobOToque(null)}
@@ -119,7 +119,7 @@ export function GraficoDoSaldo({ ano, hoje }: { ano: AnoCalculado; hoje: string 
         />
         {Math.abs(paraY(topo) - yDoZero) > 16 && (
           <text x={0} y={paraY(topo) + 4} fontSize={11} fill="var(--fosco)" className="tabular">
-            {redondo(topo)}
+            {comCifrao(topo)}
           </text>
         )}
 
@@ -140,7 +140,7 @@ export function GraficoDoSaldo({ ano, hoje }: { ano: AnoCalculado; hoje: string 
             zero ele encostava no "R$ 0" e os dois viravam um borrão. */}
         {base < 0 && Math.abs(paraY(base) - yDoZero) > 16 && (
           <text x={0} y={paraY(base) - 3} fontSize={11} fill="var(--fosco)" className="tabular">
-            {redondo(base)}
+            {comCifrao(base)}
           </text>
         )}
 

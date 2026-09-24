@@ -280,8 +280,22 @@ cor. A tabela dos doze meses logo abaixo é o mesmo dado em números.
     src/app/(app)/           uma tela por pasta: hoje, mês, ano, fixos, ajustes, atalho
     src/componentes/         as peças, o teclado, o calendário e as folhas
 
-Todo dinheiro é inteiro em centavos (`valorCents`). Nunca `Float`: a planilha
-guardava 87,36866667 numa célula de média, e aqui a conta fecha.
+Todo dinheiro é inteiro em centavos (`valorCents`), e sempre múltiplo de 100.
+Nunca `Float`: a planilha guardava 87,36866667 numa célula de média, e aqui a
+conta fecha.
+
+**O app não trabalha com centavos.** Não é só exibição: o valor é arredondado ao
+entrar — em `loja.salvarLancamento`, `loja.salvarFixo` e na porta do atalho —
+de modo que a soma das partes sempre bate com o total. Esconder os centavos e
+continuar guardando-os daria um rodapé fechando um real fora do que a coluna
+mostra, que é o tipo de diferença que custa meia hora de procura. A unidade
+guardada continua sendo o centavo, e não o real, porque é ela que o banco tem e
+mudá-la não deixaria nada mais simples.
+
+Os lançamentos que vieram da planilha com centavos são arredondados de uma vez,
+por **Ajustes → Centavos que sobraram** — uma seção que só existe enquanto
+houver o que arrumar e some depois. O backup é baixado antes da alteração, não
+oferecido depois: quem clicou num botão que diz "não tem volta" já decidiu.
 
 ## Rodar no computador
 

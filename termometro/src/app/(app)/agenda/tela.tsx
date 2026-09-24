@@ -6,7 +6,7 @@ import { Aviso, Cartao, Dinheiro, Selo, Sobrescrito, Subtitulo, Titulo } from "@
 import { useAnoCalculado } from "@/componentes/usar-loja";
 import type { DiaCalculado } from "@/lib/calculo";
 import { hoje, nomeDoDiaDaSemana, nomeDoMes, partesDaData } from "@/lib/datas";
-import { semCentavos } from "@/lib/dinheiro";
+import { emReais } from "@/lib/dinheiro";
 import { NOME_DO_TIPO, type Tipo } from "@/lib/tipos";
 
 /**
@@ -48,7 +48,7 @@ export function TelaDaAgenda() {
           <p className="mt-2 text-[14.5px] leading-relaxed text-grafite">
             Tudo o que está marcado daqui até o fim do ano, sem o gasto do dia a dia. No saldo,{" "}
             <b className={total < 0 ? "text-atencao" : "text-entrada"}>
-              {total < 0 ? "−" : "+"}R$ {semCentavos(Math.abs(total))}
+              {total < 0 ? "−" : "+"}R$ {emReais(Math.abs(total))}
             </b>
             .
           </p>

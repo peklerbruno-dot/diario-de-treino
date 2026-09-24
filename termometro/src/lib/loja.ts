@@ -1,5 +1,6 @@
 "use client";
 
+import { aoReal } from "./dinheiro";
 import type { Ajustes, Fixo, Lancamento, Tipo } from "./tipos";
 import { AJUSTES_PADRAO } from "./tipos";
 
@@ -150,6 +151,10 @@ export class Loja {
     const l: Lancamento = {
       ...dados,
       id,
+      // O app não guarda centavos, e esta é a porta por onde todo lançamento
+      // entra: arredondar aqui é o que faz a soma das partes bater com o total
+      // em toda tela, sem cada tela precisar lembrar disso.
+      valorCents: aoReal(dados.valorCents),
       criadoEm: anterior?.criadoEm ?? agora(),
       atualizadoEm: agora(),
       apagadoEm: null,
@@ -165,7 +170,11 @@ export class Loja {
     const lancamentos = { ...this.estado.lancamentos };
     const pendentes = new Set(this.estado.pendentes);
     for (const l of lista) {
-      lancamentos[l.id] = { ...l, atualizadoEm: l.atualizadoEm ?? agora() };
+      lancamentos[l.id] = {
+        ...l,
+        valorCents: aoReal(l.valorCents),
+        atualizadoEm: l.atualizadoEm ?? agora(),
+      };
       pendentes.add(`l:${l.id}`);
     }
     this.publicar({ lancamentos, pendentes: [...pendentes] });
@@ -197,6 +206,7 @@ export class Loja {
     const f: Fixo = {
       ...dados,
       id,
+      valorCents: aoReal(dados.valorCents),
       criadoEm: anterior?.criadoEm ?? agora(),
       atualizadoEm: agora(),
       apagadoEm: null,
@@ -421,7 +431,67 @@ export function ajustesDoAno(estado: Estado, ano: number): Ajustes {
   };
 }
 
+/**
+ * Passa o pente nos centavos que já estavam guardados.
+ *
+ * Os 815 lançamentos vieram da planilha com centavos, e daqui em diante nada
+ * mais entra com eles. Enquanto os dois convivem, um rodapé pode mostrar 10.150
+ * enquanto as parcelas somam 10.151, porque cada uma foi arredondada sozinha na
+ * hora de aparecer — a diferença de um real que faz a gente passar meia hora
+ * procurando erro onde não tem.
+ *
+ * Só mexe em quem precisa: o que já é redondo não é tocado, não vira pendência
+ * e não sobe de novo. Devolve quantos mudaram, porque uma operação que promete
+ * arrumar o passado precisa dizer o tamanho do que fez.
+ */
+export function arredondarTudo(): { lancamentos: number; fixos: number } {
+  const estado = loja.instantaneo();
+
+  const lancamentos = Object.values(estado.lancamentos).filter(
+    (l) => !l.apagadoEm && l.valorCents !== aoReal(l.valorCents),
+  );
+  const fixos = Object.values(estado.fixos).filter(
+    (f) => !f.apagadoEm && f.valorCents !== aoReal(f.valorCents),
+  );
+
+  if (lancamentos.length > 0) {
+    // `atualizadoEm` fica de fora de propósito: `salvarVariosLancamentos`
+    // carimba a hora, e é esse carimbo novo que faz a linha ganhar do que está
+    // no servidor quando a sincronização comparar as duas.
+    loja.salvarVariosLancamentos(
+      lancamentos.map(({ atualizadoEm: _, ...resto }) => ({
+        ...resto,
+        valorCents: aoReal(resto.valorCents),
+      })),
+    );
+  }
+  for (const f of fixos) {
+    loja.salvarFixo({ ...f, valorCents: aoReal(f.valorCents) });
+  }
+
+  for (const [chave, ajuste] of Object.entries(estado.ajustes)) {
+    if (!chave.startsWith("saldoInicial:")) continue;
+    const cents = Number(ajuste.valor);
+    if (Number.isFinite(cents) && cents !== aoReal(cents)) {
+      loja.definirAjuste(chave, String(aoReal(cents)));
+    }
+  }
+
+  return { lancamentos: lancamentos.length, fixos: fixos.length };
+}
+
+/** Quantos valores ainda carregam centavos. Zero quer dizer que não há o que fazer. */
+export function quantosComCentavos(estado: Estado): number {
+  const conta = (v: { valorCents: number; apagadoEm?: string | null }) =>
+    !v.apagadoEm && v.valorCents !== aoReal(v.valorCents);
+  return (
+    Object.values(estado.lancamentos).filter(conta).length +
+    Object.values(estado.fixos).filter(conta).length
+  );
+}
+
 export function guardarSaldoInicial(ano: number, cents: number) {
+  cents = aoReal(cents);
   loja.definirAjuste(chaveDoSaldo(ano), String(Math.round(cents)));
 }
 
