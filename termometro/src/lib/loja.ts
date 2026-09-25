@@ -1,5 +1,6 @@
 "use client";
 
+import { CHAVE_DOS_ATALHOS, escreverAtalhos, lerAtalhos, type AtalhoFixo } from "./atalhos";
 import {
   CHAVE_DAS_CATEGORIAS,
   escreverCategorias,
@@ -503,6 +504,15 @@ export function categoriasDe(estado: Estado): Categoria[] {
 
 export function guardarCategorias(lista: Categoria[]) {
   loja.definirAjuste(CHAVE_DAS_CATEGORIAS, escreverCategorias(lista));
+}
+
+/** Os atalhos de lançamento rápido, do mesmo ajuste que sincroniza. */
+export function atalhosDe(estado: Estado): AtalhoFixo[] {
+  return lerAtalhos(estado.ajustes[CHAVE_DOS_ATALHOS]?.valor);
+}
+
+export function guardarAtalhos(lista: AtalhoFixo[]) {
+  loja.definirAjuste(CHAVE_DOS_ATALHOS, escreverAtalhos(lista));
 }
 
 export function guardarSaldoInicial(ano: number, cents: number) {

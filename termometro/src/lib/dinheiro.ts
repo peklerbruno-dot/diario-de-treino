@@ -102,3 +102,18 @@ export function comCifrao(centavos: number): string {
   return `${sinal}R$ ${FORMATO.format(Math.round(Math.abs(centavos) / 100))}`;
 }
 
+/**
+ * Centavos no idioma do teclado do app.
+ *
+ * O teclado não tem tecla de vírgula, e por isso `avaliar` lê o que está
+ * escrito como reais inteiros: "66" é R$ 66 e "1.234" é R$ 1.234. Preencher
+ * esse campo com "66,00" — o formato que se usa para mostrar dinheiro — fazia
+ * a conta ler 6.600, e **salvar multiplicava o lançamento por cem**. Acontecia
+ * ao abrir qualquer lançamento para editar.
+ *
+ * Então quem escreve nesse campo passa por aqui, e não por `toFixed(2)`.
+ */
+export function paraOTeclado(centavos: number | null | undefined): string {
+  if (centavos === null || centavos === undefined || !Number.isFinite(centavos)) return "";
+  return String(Math.round(centavos / 100));
+}
