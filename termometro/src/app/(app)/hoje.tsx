@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AtalhosRapidos } from "@/componentes/atalhos-rapidos";
 import { FolhaDeLancamento } from "@/componentes/folha-de-lancamento";
 import { Botao, Cartao, Dinheiro, Selo, Sobrescrito, Subtitulo, Titulo } from "@/componentes/pecas";
 import { useAnoCalculado } from "@/componentes/usar-loja";
@@ -89,6 +90,8 @@ export function TelaDeHoje() {
               ))}
             </Cartao>
           )}
+
+          <AtalhosRapidos data={agora} />
         </section>
       </div>
 

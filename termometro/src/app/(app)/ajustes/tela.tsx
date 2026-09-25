@@ -14,6 +14,7 @@ import {
   Subtitulo,
   Titulo,
 } from "@/componentes/pecas";
+import { EditorDeAtalhos } from "@/componentes/editor-de-atalhos";
 import { useEstado } from "@/componentes/usar-loja";
 import { hoje, partesDaData } from "@/lib/datas";
 import { paraCentavos } from "@/lib/dinheiro";
@@ -130,6 +131,8 @@ export function TelaDeAjustes() {
       </section>
 
       <Categorias estado={estado} />
+
+      <EditorDeAtalhos estado={estado} />
 
       <Classificar estado={estado} />
 

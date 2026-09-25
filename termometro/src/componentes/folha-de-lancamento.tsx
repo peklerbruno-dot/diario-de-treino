@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import type { PartidaDoAtalho } from "@/lib/atalhos";
 import { avaliar } from "@/lib/calculadora";
 import { categoriasDoTipo } from "@/lib/categorias";
+import { paraOTeclado } from "@/lib/dinheiro";
 import { curta, porExtenso } from "@/lib/datas";
 import { categoriasDe, loja } from "@/lib/loja";
 import { EXPLICACAO_DO_TIPO, NOME_DO_TIPO, TIPOS, type Lancamento, type Tipo } from "@/lib/tipos";
@@ -19,22 +21,30 @@ export function FolhaDeLancamento({
   data,
   lancamento,
   tipoInicial = "DIARIO",
+  partida,
   aoFechar,
 }: {
   data: string;
   lancamento?: Lancamento;
   tipoInicial?: Tipo;
+  /**
+   * O que um atalho de lançamento rápido já deixou preenchido. Vence
+   * `tipoInicial`, porque o atalho diz a coluna junto com o resto.
+   */
+  partida?: PartidaDoAtalho;
   aoFechar: () => void;
 }) {
   const editando = !!lancamento;
 
-  const [tipo, setTipo] = useState<Tipo>(lancamento?.tipo ?? tipoInicial);
-  const [valor, setValor] = useState(
-    lancamento ? (lancamento.valorCents / 100).toFixed(2).replace(".", ",") : "",
+  const [tipo, setTipo] = useState<Tipo>(lancamento?.tipo ?? partida?.tipo ?? tipoInicial);
+  const [valor, setValor] = useState(() =>
+    paraOTeclado(lancamento?.valorCents ?? partida?.valorCents),
   );
   const [quando, setQuando] = useState(lancamento?.data ?? data);
-  const [nota, setNota] = useState(lancamento?.nota ?? "");
-  const [categoria, setCategoria] = useState<string | null>(lancamento?.categoria ?? null);
+  const [nota, setNota] = useState(lancamento?.nota ?? partida?.nota ?? "");
+  const [categoria, setCategoria] = useState<string | null>(
+    lancamento?.categoria ?? partida?.categoria ?? null,
+  );
   const [marcado, setMarcado] = useState({
     rendaPropria: !!lancamento?.rendaPropria,
     investimento: !!lancamento?.investimento,

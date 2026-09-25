@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { aoReal, comCifrao, emReais, paraCentavos, parcelas } from "./dinheiro";
+import { avaliar } from "./calculadora";
+import { aoReal, comCifrao, emReais, paraCentavos, paraOTeclado, parcelas } from "./dinheiro";
 
 describe("ler um valor digitado", () => {
   it("aceita a vírgula, que é a tecla decimal do teclado em português", () => {
@@ -73,6 +74,30 @@ describe("mostrar dinheiro", () => {
     expect(aoReal(0)).toBe(0);
     expect(aoReal(NaN)).toBe(0);
   });
-
 });
 
+describe("o valor que o teclado recebe pronto", () => {
+  it("é sem vírgula, porque o teclado não tem vírgula", () => {
+    expect(paraOTeclado(6600)).toBe("66");
+    expect(paraOTeclado(123400)).toBe("1234");
+  });
+
+  it("sem valor nenhum, o campo fica em branco", () => {
+    expect(paraOTeclado(null)).toBe("");
+    expect(paraOTeclado(undefined)).toBe("");
+    expect(paraOTeclado(Number.NaN)).toBe("");
+  });
+
+  /**
+   * O teste que faltava.
+   *
+   * Editar um lançamento de R$ 66 preenchia o campo com "66,00", a calculadora
+   * lia 6.600 e salvar gravava cem vezes o valor. A ida e a volta têm de
+   * fechar: o que sai para o campo, lido de volta, é o mesmo dinheiro.
+   */
+  it("o que vai para o campo volta valendo o mesmo", () => {
+    for (const cents of [100, 6600, 2700, 123400, 1400, 999900]) {
+      expect(avaliar(paraOTeclado(cents))?.totalCents).toBe(cents);
+    }
+  });
+});

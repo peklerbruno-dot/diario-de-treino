@@ -178,6 +178,42 @@ O leitor da conta é puro e vive em
 [`src/lib/calculadora.ts`](src/lib/calculadora.ts) — ele recusa valor negativo e
 divisão por zero, e o teclado nunca deixa digitar dois operadores seguidos.
 
+**Esse teclado não tem tecla de vírgula**, e por isso `avaliar` lê o que está
+escrito como reais inteiros: `66` é R$ 66 e `1.234` é R$ 1.234. Quem preenche o
+campo por fora — a edição de um lançamento, um atalho de lançamento rápido —
+passa por `paraOTeclado`, que escreve no mesmo idioma. Enquanto isso não
+existia, abrir um lançamento de R$ 66 para editar mostrava `66,00`, a conta lia
+6.600 e **salvar multiplicava o valor por cem**. O teste que tranca isso é a ida
+e a volta: o que sai para o campo, lido de novo, vale o mesmo dinheiro.
+
+## Atalhos de lançamento rápido
+
+Quase todo gasto do dia a dia é repetido: o mesmo almoço, o mesmo café, a mesma
+condução. Lançar cada um custava quatro toques — abrir, escolher a coluna,
+escolher a categoria, escrever a observação — e só o valor mudava.
+
+Um atalho guarda as três respostas que não mudam e deixa na tela só a que muda.
+Eles aparecem numa fileira embaixo de **Lançado hoje**, rolando de lado no
+celular e quebrando em linhas no computador; montam-se em **Ajustes → Atalhos
+rápidos**, com nome, coluna, categoria, observação e um valor sugerido opcional.
+
+Duas decisões que valem explicação:
+
+- **Tocar num atalho abre a folha de sempre, já preenchida — não grava
+  direto.** É um toque a mais e um arrependimento a menos: um botão que lança
+  sozinho é um jeito novo de registrar R$ 40 sem ver, e desfazer custa mais caro
+  do que conferir.
+- **Apagar todos deixa a fileira vazia, e ela fica vazia.** A lista começa com
+  três palpites genéricos, porque um recurso que nasce invisível não é usado;
+  mas quem apagou os três não quer os três de volta na próxima abertura. As
+  categorias fazem o contrário, e ali está certo — um app sem categoria nenhuma
+  não classifica nada.
+
+Como as categorias, a lista mora em `Ajuste`, a tabela chave/valor que já
+sincroniza entre o celular e o computador: é uma lista curta, e uma tabela
+própria cobraria uma junção em toda leitura e uma linha órfã a cada renomeação.
+Ver [`src/lib/atalhos.ts`](src/lib/atalhos.ts).
+
 ## Trazer a planilha para dentro
 
 Em **Ajustes → Importar planilha**, escolhendo o `.xlsx`. O arquivo é lido no
@@ -383,6 +419,7 @@ cor. A tabela dos doze meses logo abaixo é o mesmo dado em números.
     src/lib/calculadora.ts   o que o teclado do app digita → conta e parcelas
     src/lib/datas.ts         dia de caderno: texto, sem fuso
     src/lib/atalho.ts        o que o atalho do iPhone manda → lançamentos
+    src/lib/atalhos.ts       os botões de lançamento rápido da tela Hoje
     src/lib/loja.ts          o estado no aparelho, a fila e a sincronização
     src/lib/auth.ts          a porta: um código, um cookie assinado
     src/app/api/sync         o único endereço que o app chama

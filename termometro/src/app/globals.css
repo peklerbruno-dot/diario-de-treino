@@ -134,6 +134,24 @@ textarea {
   box-shadow: var(--sombra);
 }
 
+/*
+ * Uma fileira que rola de lado com o dedo.
+ *
+ * A barra de rolagem fica escondida de propósito: no celular ela nem aparece, e
+ * no computador ela cortaria a sombra dos botões por dentro da fileira. Quem
+ * não tem dedo tem o teclado — os botões continuam sendo botões, e o Tab passa
+ * por eles rolando a fileira sozinho.
+ */
+.fileira {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.fileira::-webkit-scrollbar {
+  display: none;
+}
+
 /* O rótulo pequeno em maiúsculas que encabeça cada bloco. */
 .sobrescrito {
   font-size: 11px;
