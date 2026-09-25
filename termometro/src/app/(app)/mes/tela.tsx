@@ -198,18 +198,27 @@ function ListaDeDias({
             const futuro = dia.data > agora;
             const cor = classeDoSaldo(corDoSaldo(dia.saldoCents, faixa));
             return (
-              <tr key={dia.data} ref={ehHoje ? linhaDeHoje : undefined}>
+              // A linha inteira abre o dia — o número, qualquer valor, o saldo,
+              // e o branco entre eles. Quando só dois pedaços respondiam ao
+              // toque, o resto da linha parecia app quebrado: a mesma linha,
+              // dois lugares que funcionam e três que não.
+              //
+              // O clique mora aqui, e o botão do dia fica sem ação própria: ele
+              // existe para o teclado e o leitor de tela terem um alvo com
+              // nome, e o clique dele sobe até a linha. Cinco botões por linha
+              // fariam o leitor de tela anunciar cinco vezes a mesma coisa.
+              <tr
+                key={dia.data}
+                ref={ehHoje ? linhaDeHoje : undefined}
+                onClick={() => aoAbrirDia(dia)}
+                className="cursor-pointer hover:bg-papel"
+              >
                 <td className="py-[3px] pl-1.5 pr-1">
                   <button
                     type="button"
-                    onClick={() => aoAbrirDia(dia)}
                     aria-label={`${ehHoje ? "Hoje, dia" : "Dia"} ${dia.dia}, ${nomeDoDiaDaSemana(
                       dia.data,
-                    )}. Saldo ${comCifrao(dia.saldoCents)}.`}
-                    // O botão ocupa a célula inteira, para o dedo ter onde
-                    // acertar; o azul de hoje envolve só as palavras. Pintar a
-                    // célula toda transformava o destaque numa barra esticada
-                    // na tela do computador, larga e sem sentido.
+                    )}. Saldo ${comCifrao(dia.saldoCents)}. Abrir para lançar ou conferir.`}
                     className="flex w-full py-1 text-left text-[13.5px]"
                   >
                     <span
@@ -228,17 +237,11 @@ function ListaDeDias({
                 <Valor cents={dia.saidaCents} classe="text-saida" fraco={futuro} />
                 <Valor cents={dia.diarioCents} classe="text-diario" fraco={futuro} />
                 <td className="py-[3px] pl-1 pr-1.5">
-                  {/* O saldo abre o dia igual ao número do dia: é nele que o
-                      dedo vai primeiro, porque é o maior e o mais colorido da
-                      linha. Tocar e não acontecer nada parecia app quebrado. */}
-                  <button
-                    type="button"
-                    onClick={() => aoAbrirDia(dia)}
-                    aria-label={`Abrir o dia ${dia.dia} para lançar ou conferir.`}
+                  <span
                     className={`block w-full rounded-[8px] px-1.5 py-1 text-right text-[13.5px] font-semibold ${cor}`}
                   >
                     {emReais(dia.saldoCents)}
-                  </button>
+                  </span>
                 </td>
               </tr>
             );

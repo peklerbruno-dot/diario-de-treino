@@ -110,7 +110,11 @@ sobrar do que faltar. Está em `sobraPorDia`, em
 
 **Mês** é a planilha: cinco colunas — dia, entrada, saída, diário, saldo — uma
 cor por coluna, e o dia de hoje marcado com uma barra azul, para o qual a lista
-já abre rolada. O mesmo mês também se vê em **calendário**, ocupando a largura
+já abre rolada. A **linha inteira** abre o dia: o número, qualquer valor, o
+saldo, e o branco entre eles. O clique mora na linha e o botão do dia fica sem
+ação própria — ele existe para o teclado e o leitor de tela terem um alvo com
+nome, e o clique dele sobe até a linha. Cinco botões por linha fariam o leitor
+de tela anunciar cinco vezes a mesma coisa. O mesmo mês também se vê em **calendário**, ocupando a largura
 inteira, com os três valores e o saldo dentro de cada célula: a lista responde
 como o saldo chegou até aqui, o calendário responde qual é a forma deste mês.
 
