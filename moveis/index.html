@@ -186,6 +186,10 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
         <button class="bt" id="pFrente" title="Trazer para a frente" aria-label="Trazer para a frente">⬆<span class="txt-bt"> Frente</span></button>
         <button class="bt perigo" id="pExcluir" title="Excluir (Delete)">🗑 Excluir</button>
       </div>
+      <div id="pGrupo" hidden style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;font-size:14px">
+        <label class="linha-chk" style="margin:0"><input type="checkbox" id="pJunto" checked> Move junto com o conjunto (<span id="pGrupoN"></span> peças)</label>
+        <button class="bt perigo" id="pExcluirGrupo">🗑 Excluir conjunto</button>
+      </div>
       <div id="pAlerta"></div>
       <details id="pDetalhes">
         <summary>Medidas, posição e cor</summary>
@@ -195,6 +199,7 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
           <label class="campo">Da parede esquerda (cm)<input id="pX" inputmode="decimal" autocomplete="off"></label>
           <label class="campo">Da parede de cima (cm)<input id="pY" inputmode="decimal" autocomplete="off"></label>
           <label class="campo">Rotação (graus)<input id="pR" inputmode="decimal" autocomplete="off"></label>
+          <label class="campo">Fundo do assento (cm)<input id="pP" inputmode="decimal" autocomplete="off"></label>
         </div>
         <div class="cores" id="pCores"></div>
         <label class="linha-chk"><input type="checkbox" id="pSobrepor"> Pode ficar sob outros móveis (tapete)</label>
@@ -217,7 +222,8 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
       <label class="campo">Formato
         <select id="cForma"><option value="generico">Retangular</option><option value="redondo">Redondo</option>
         <option value="mesa">Mesa</option><option value="armario">Armário</option><option value="sofa">Sofá</option>
-        <option value="cama">Cama</option><option value="tapete">Tapete</option></select></label>
+        <option value="cama">Cama</option><option value="cantoL">Canto alemão (L)</option><option value="bancoEnc">Banco com encosto</option>
+        <option value="banco">Banco sem encosto</option><option value="tapete">Tapete</option></select></label>
       <label class="campo">&nbsp;<button class="bt prim" id="cAdd" style="justify-content:center">Adicionar</button></label>
     </div>
   </div>
@@ -272,6 +278,7 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
       <li>Com o <b>ímã</b> ligado o móvel encosta sozinho nas paredes e nos outros móveis, e gira de 15 em 15°.</li>
       <li>As linhas azuis mostram <b>quanto sobra</b> de cada lado do móvel selecionado (em cm).</li>
       <li>Móvel com contorno <b style="color:#d93025">vermelho</b> está batendo em parede, em peça fixa ou em outro móvel. <b style="color:#e8710a">Laranja</b>: está no caminho de uma porta abrindo.</li>
+      <li><b>Canto alemão:</b> há peças avulsas (L de vários tamanhos, reto, bancos e mesas) e <b>conjuntos</b> prontos. Peças de um conjunto andam, giram e duplicam juntas (contorno tracejado); desmarque "Move junto" no painel para soltar uma peça. No L, o "fundo do assento" muda a largura do banco, e girar 90° leva o L para qualquer canto.</li>
       <li>Em cada móvel o lado de cima do desenho é o fundo (encosto do sofá, cabeceira da cama, costas do armário).</li>
       <li>Tudo é salvo sozinho neste aparelho/navegador. Para levar a outro aparelho, use <b>Exportar</b> e <b>Importar</b> no menu.</li>
       <li>Teclado: setas movem 1 cm (<kbd>Shift</kbd> = 10 cm), <kbd>R</kbd> gira, <kbd>Ctrl</kbd>+<kbd>D</kbd> duplica, <kbd>Delete</kbd> exclui, <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz, <kbd>Esc</kbd> tira a seleção.</li>
@@ -360,6 +367,37 @@ const CATALOGO = [
     ['geladeira', 'Geladeira', 70, 75], ['fogao', 'Fogão 4 bocas', 55, 60],
     ['eletro', 'Máquina de lavar', 60, 65], ['armario', 'Armário / despensa', 80, 45]
   ]},
+  { cat: 'Canto alemão e bancos', itens: [
+    ['cantoL', 'Canto alemão 1,20 × 1,20', 120, 120, { p: 50 }], ['cantoL', 'Canto alemão 1,40 × 1,00', 140, 100, { p: 50 }],
+    ['cantoL', 'Canto alemão 1,50 × 1,20', 150, 120, { p: 50 }], ['cantoL', 'Canto alemão 1,60 × 1,30', 160, 130, { p: 50 }],
+    ['cantoL', 'Canto alemão 1,80 × 1,40', 180, 140, { p: 50 }], ['cantoL', 'Canto alemão estreito 1,40 × 1,20', 140, 120, { p: 42 }],
+    ['bancoEnc', 'Canto alemão reto 1,20', 120, 50], ['bancoEnc', 'Canto alemão reto 1,50', 150, 50],
+    ['bancoEnc', 'Canto alemão reto 1,80', 180, 50], ['banco', 'Banco sem encosto 1,00', 100, 35],
+    ['banco', 'Banco sem encosto 1,20', 120, 35], ['banco', 'Banco sem encosto 1,40', 140, 35],
+    ['banco', 'Banco sem encosto 1,60', 160, 35], ['mesa', 'Mesa 80 × 70', 80, 70],
+    ['mesa', 'Mesa 110 × 75', 110, 75], ['mesa', 'Mesa 140 × 85', 140, 85],
+    ['redondo', 'Mesa redonda Ø80', 80, 80]
+  ]},
+  { cat: 'Conjuntos de canto alemão (movem juntos)', conjuntos: true, itens: [
+    { nome: 'Canto 1,20 × 1,20 + mesa 80 × 70 + 2 cadeiras', lugares: 4, pecas: [
+      ['cantoL', 'Canto alemão 1,20 × 1,20', 120, 120, 0, 0, 0, { p: 50 }], ['mesa', 'Mesa 80 × 70', 80, 70, 50, 50],
+      ['cadeira', 'Cadeira', 45, 50, 67, 120, 180], ['cadeira', 'Cadeira', 45, 50, 130, 62, 90]] },
+    { nome: 'Canto 1,20 × 1,20 + mesa redonda Ø80 + 2 cadeiras', lugares: 4, pecas: [
+      ['cantoL', 'Canto alemão 1,20 × 1,20', 120, 120, 0, 0, 0, { p: 50 }], ['redondo', 'Mesa redonda Ø80', 80, 80, 50, 50],
+      ['cadeira', 'Cadeira', 45, 50, 67, 130, 180], ['cadeira', 'Cadeira', 45, 50, 130, 67, 90]] },
+    { nome: 'Canto 1,50 × 1,20 + mesa 110 × 75 + banco + cadeira', lugares: 6, pecas: [
+      ['cantoL', 'Canto alemão 1,50 × 1,20', 150, 120, 0, 0, 0, { p: 50 }], ['mesa', 'Mesa 110 × 75', 110, 75, 50, 50],
+      ['banco', 'Banco sem encosto 1,00', 100, 35, 55, 125], ['cadeira', 'Cadeira', 45, 50, 160, 65, 90]] },
+    { nome: 'Canto 1,60 × 1,30 + mesa 120 × 80 + banco + cadeira', lugares: '6 a 7', pecas: [
+      ['cantoL', 'Canto alemão 1,60 × 1,30', 160, 130, 0, 0, 0, { p: 50 }], ['mesa', 'Mesa 4 lugares', 120, 80, 50, 50],
+      ['banco', 'Banco sem encosto 1,20', 120, 35, 50, 130], ['cadeira', 'Cadeira', 45, 50, 170, 67, 90]] },
+    { nome: 'Canto 1,80 × 1,40 + mesa 140 × 85 + banco + cadeira', lugares: 8, pecas: [
+      ['cantoL', 'Canto alemão 1,80 × 1,40', 180, 140, 0, 0, 0, { p: 50 }], ['mesa', 'Mesa 140 × 85', 140, 85, 50, 50],
+      ['banco', 'Banco sem encosto 1,40', 140, 35, 50, 135], ['cadeira', 'Cadeira', 45, 50, 190, 70, 90]] },
+    { nome: 'Canto reto 1,50 + mesa 120 × 75 + banco 1,20', lugares: 6, pecas: [
+      ['bancoEnc', 'Canto alemão reto 1,50', 150, 50, 0, 0], ['mesa', 'Mesa 120 × 75', 120, 75, 15, 50],
+      ['banco', 'Banco sem encosto 1,20', 120, 35, 15, 125]] }
+  ]},
   { cat: 'Dormitório', itens: [
     ['cama', 'Cama de casal', 145, 200], ['cama', 'Cama queen', 165, 210],
     ['cama', 'Cama de solteiro', 95, 200], ['criado', 'Criado-mudo', 45, 40],
@@ -376,7 +414,7 @@ const CATALOGO = [
 const COR_TIPO = {
   cama: '#dfe7f0', sofa: '#b7c7d9', poltrona: '#b7c7d9', mesa: '#e9d8b4', redondo: '#e9d8b4',
   cadeira: '#c9a57a', armario: '#dcc7a5', rack: '#c9a57a', estante: '#c9a57a', criado: '#dcc7a5',
-  tapete: '#e6e0f2', planta: '#c8dcc0', geladeira: '#e6e9ec', fogao: '#e6e9ec', eletro: '#e6e9ec',
+  cantoL: '#c9a57a', banco: '#c9a57a', bancoEnc: '#c9a57a', tapete: '#e6e0f2', planta: '#c8dcc0', geladeira: '#e6e9ec', fogao: '#e6e9ec', eletro: '#e6e9ec',
   generico: '#d6dde4'
 };
 const PALETA = ['#e9d8b4', '#c9a57a', '#8d6e52', '#d6dde4', '#9aa5b1', '#b7c7d9', '#c8dcc0', '#efc9c0', '#e6e0f2', '#fff3c4', '#ffffff', '#44505c'];
@@ -408,10 +446,11 @@ function novoItem(tipo, nome, w, h, extra) {
     cor: COR_TIPO[tipo] || COR_TIPO.generico, sobrepor: tipo === 'tapete' }, extra || {});
 }
 // Posiciona pelo retângulo que o móvel ocupa (x1,y1 = canto superior esquerdo).
-function mk(tipo, nome, w, h, x1, y1, rot = 0) {
-  const deitado = rot % 180 !== 0;
-  const bw = deitado ? h : w, bh = deitado ? w : h;
-  return novoItem(tipo, nome, w, h, { x: x1 + bw / 2, y: y1 + bh / 2, rot });
+function mk(tipo, nome, w, h, x1, y1, rot = 0, extra) {
+  const it = novoItem(tipo, nome, w, h, Object.assign({ x: 0, y: 0, rot }, extra || {}));
+  const b = caixa(itemPoly(it));
+  it.x = x1 - b.x1; it.y = y1 - b.y1;
+  return it;
 }
 function exemplo() {
   return [
@@ -448,7 +487,8 @@ function limparItem(i) {
   return { id: typeof i.id === 'string' ? i.id : uid(), tipo: COR_TIPO[i.tipo] ? i.tipo : 'generico',
     nome: String(i.nome || 'Móvel').slice(0, 60), w: limitar(w, 5, 1000), h: limitar(h, 5, 1000),
     x: num(i.x) ?? W / 2, y: num(i.y) ?? H / 2, rot: ((num(i.rot) || 0) % 360 + 360) % 360,
-    cor: /^#[0-9a-f]{3,8}$/i.test(i.cor) ? i.cor : (COR_TIPO[i.tipo] || COR_TIPO.generico), sobrepor: !!i.sobrepor };
+    cor: /^#[0-9a-f]{3,8}$/i.test(i.cor) ? i.cor : (COR_TIPO[i.tipo] || COR_TIPO.generico), sobrepor: !!i.sobrepor,
+    ...(num(i.p) ? { p: limitar(num(i.p), 20, 200) } : {}), ...(typeof i.grupo === 'string' ? { grupo: i.grupo } : {}) };
 }
 function gravar() {
   try { localStorage.setItem(CHAVE, JSON.stringify(estado)); } catch (e) { /* sem armazenamento: segue sem salvar */ }
@@ -492,8 +532,26 @@ function girar(px, py, graus) {
   const a = graus * Math.PI / 180, c = Math.cos(a), s = Math.sin(a);
   return [px * c - py * s, px * s + py * c];
 }
+const profL = it => limitar(it.p || 50, 20, Math.max(20, Math.min(it.w, it.h) - 10));
+const retLocal = (x1, y1, x2, y2) => [[x1, y1], [x2, y1], [x2, y2], [x1, y2]];
+function paraMundo(it, pts) {
+  return pts.map(([lx, ly]) => { const [dx, dy] = girar(lx, ly, it.rot); return [it.x + dx, it.y + dy]; });
+}
+// Partes convexas usadas na colisão (o canto alemão em L vira dois retângulos).
+function itemPartes(it) {
+  if (it.tipo === 'cantoL') {
+    const w = it.w, h = it.h, p = profL(it);
+    return [paraMundo(it, retLocal(-w / 2, -h / 2, w / 2, -h / 2 + p)), paraMundo(it, retLocal(-w / 2, -h / 2 + p, -w / 2 + p, h / 2))];
+  }
+  return [itemPoly(it)];
+}
+// Contorno do móvel (para desenho, caixas e cotas).
 function itemPoly(it) {
   if (redondo(it)) return circPoly(it.x, it.y, it.w / 2);
+  if (it.tipo === 'cantoL') {
+    const w = it.w, h = it.h, p = profL(it);
+    return paraMundo(it, [[-w / 2, -h / 2], [w / 2, -h / 2], [w / 2, -h / 2 + p], [-w / 2 + p, -h / 2 + p], [-w / 2 + p, h / 2], [-w / 2, h / 2]]);
+  }
   return [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([sx, sy]) => {
     const [dx, dy] = girar(sx * it.w / 2, sy * it.h / 2, it.rot);
     return [it.x + dx, it.y + dy];
@@ -537,32 +595,40 @@ const OBST_FIXOS = [
 ].map(o => Object.assign(o, { cx: caixa(o.poly) }));
 const OBST_PORTAS = PORTAS.map(p => ({ nome: p.nome.toLowerCase(), poly: setorPorta(p).pts }));
 
+// Conjuntos: peças com o mesmo "grupo" se movem, giram e duplicam juntas.
+const membros = it => it && it.grupo ? itens().filter(i => i.grupo === it.grupo) : (it ? [it] : []);
+function moverJunto(it, dx, dy) {
+  for (const m of membros(it)) { m.x = arred(m.x + dx, 10); m.y = arred(m.y + dy, 10); }
+}
 let conflitos = new Map(); // id -> { duro:[nomes], porta:[nomes] }
 function calcularConflitos() {
   const lista = itens();
-  const polys = new Map(lista.map(i => [i.id, itemPoly(i)]));
+  const polys = new Map(lista.map(i => [i.id, itemPartes(i)]));
+  const bate = (a, b) => a.some(pa => b.some(pb => colide(pa, pb)));
   conflitos = new Map(lista.map(i => [i.id, { duro: [], porta: [] }]));
   const add = (id, k, nome) => { const c = conflitos.get(id)[k]; if (!c.includes(nome)) c.push(nome); };
   for (const it of lista) {
     const p = polys.get(it.id);
-    if (p.some(([x, y]) => x < -0.5 || y < -0.5 || x > W + 0.5 || y > H + 0.5)) add(it.id, 'duro', 'parede externa');
-    for (const o of OBST_FIXOS) if (colide(p, o.poly)) add(it.id, 'duro', o.nome);
-    if (!it.sobrepor) for (const o of OBST_PORTAS) if (colide(p, o.poly)) add(it.id, 'porta', o.nome);
+    if (p.flat().some(([x, y]) => x < -0.5 || y < -0.5 || x > W + 0.5 || y > H + 0.5)) add(it.id, 'duro', 'parede externa');
+    for (const o of OBST_FIXOS) if (bate(p, [o.poly])) add(it.id, 'duro', o.nome);
+    if (!it.sobrepor) for (const o of OBST_PORTAS) if (bate(p, [o.poly])) add(it.id, 'porta', o.nome);
   }
   for (let i = 0; i < lista.length; i++) {
     for (let j = i + 1; j < lista.length; j++) {
       const a = lista[i], b = lista[j];
       if (a.sobrepor || b.sobrepor) continue;
-      if (colide(polys.get(a.id), polys.get(b.id))) { add(a.id, 'duro', b.nome); add(b.id, 'duro', a.nome); }
+      if (bate(polys.get(a.id), polys.get(b.id))) { add(a.id, 'duro', b.nome); add(b.id, 'duro', a.nome); }
     }
   }
 }
 // Caixas usadas pelo ímã e pelas cotas: peças fixas, paredes e outros móveis.
-function caixasObstaculos(excetoId, incluirSobrepor) {
+function caixasObstaculos(exceto, incluirSobrepor) {
+  const fora = exceto instanceof Set ? exceto : new Set([exceto]);
   const r = OBST_FIXOS.map(o => o.cx);
   for (const it of itens()) {
-    if (it.id === excetoId || (it.sobrepor && !incluirSobrepor)) continue;
-    r.push(caixa(itemPoly(it)));
+    if (fora.has(it.id) || (it.sobrepor && !incluirSobrepor)) continue;
+    // o L entra como seus dois braços, para as cotas e o ímã enxergarem o vão de dentro
+    for (const parte of itemPartes(it)) r.push(caixa(parte));
   }
   return r;
 }
@@ -587,6 +653,7 @@ const ESTILO_SVG = `
   .movel.aviso .corpo{stroke:#e8710a;stroke-width:2.5px}
   .movel.ruim .corpo{stroke:#d93025;stroke-width:2.5px;fill:#f6c9c4}
   .movel.sel .corpo{stroke:#1f6feb;stroke-width:2.5px}
+  .movel.grupo .corpo{stroke:#1f6feb;stroke-width:1.8px;stroke-dasharray:5 3}
   .movel.sel.ruim .corpo{stroke:#d93025}
   .rot{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;fill:#1b1f24;
     text-anchor:middle;dominant-baseline:central;pointer-events:none;paint-order:stroke;stroke:#ffffffb0;stroke-width:2px;stroke-linejoin:round}
@@ -744,6 +811,29 @@ function desenhoMovel(it) {
       s += `<circle class="corpo" r="${w / 2}" fill="${c}"/>`;
       break;
     }
+    case 'cantoL': {
+      const p = profL(it), e = Math.min(12, p * 0.26);
+      s += `<path class="corpo" d="M${x},${y}H${x + w}V${y + p}H${x + p}V${y + h}H${x}Z" fill="${c}" stroke-linejoin="round"/>`;
+      s += `<path class="detf" d="M${x},${y}H${x + w}V${y + e}H${x + e}V${y + h}H${x}Z" fill="#00000020"/>`;
+      // assentos de ~50 cm em cada braço
+      const n1 = Math.max(1, Math.round((w - p) / 50)), n2 = Math.max(1, Math.round((h - p) / 50));
+      for (let i = 0; i < n1; i++) { const lx = x + p + (w - p) * i / n1; s += `<line class="det" x1="${lx}" y1="${y + e}" x2="${lx}" y2="${y + p}"/>`; }
+      for (let i = 0; i < n2; i++) { const ly = y + p + (h - p) * i / n2; s += `<line class="det" x1="${x + e}" y1="${ly}" x2="${x + p}" y2="${ly}"/>`; }
+      break;
+    }
+    case 'banco': {
+      s += ret(3);
+      for (const f of [1 / 3, 2 / 3]) s += `<line class="det" x1="${x + 3}" y1="${y + h * f}" x2="${x + w - 3}" y2="${y + h * f}"/>`;
+      break;
+    }
+    case 'bancoEnc': {
+      s += ret(3);
+      const e = Math.min(12, h * 0.26);
+      s += `<rect class="detf" x="${x}" y="${y}" width="${w}" height="${e}" rx="3" fill="#00000020"/>`;
+      const n = Math.max(1, Math.round(w / 50));
+      for (let i = 1; i < n; i++) { const lx = x + w * i / n; s += `<line class="det" x1="${lx}" y1="${y + e}" x2="${lx}" y2="${y + h}"/>`; }
+      break;
+    }
     case 'planta': {
       s += `<circle class="corpo" r="${w / 2}" fill="${c}"/>`;
       for (let i = 0; i < 6; i++) { const a = i * 60; s += `<ellipse class="detf" rx="${w * 0.12}" ry="${w * 0.3}" transform="rotate(${a}) translate(0 ${-w * 0.18})" fill="#5d8f4e40"/>`; }
@@ -777,10 +867,12 @@ function desenhoMovel(it) {
 }
 function rotuloMovel(it) {
   if (!estado.op.rotulos) return '';
-  const r = redondo(it);
-  const estreito = !r && it.w < it.h * 0.7;
-  const comp = r ? it.w * 0.8 : (estreito ? it.h : it.w);
-  const esp = r ? it.w * 0.6 : (estreito ? it.w : it.h);
+  const r = redondo(it), L = it.tipo === 'cantoL';
+  const estreito = !r && !L && it.w < it.h * 0.7;
+  let comp = r ? it.w * 0.8 : (estreito ? it.h : it.w);
+  let esp = r ? it.w * 0.6 : (estreito ? it.w : it.h);
+  let ox = 0, oy = 0;
+  if (L) { const p = profL(it); comp = it.w - p; esp = p * 0.8; ox = p / 2; oy = -it.h / 2 + p * 0.55; }
   const fs = limitar(esp * 0.22, 5, 12);
   const max = Math.floor(comp * 0.9 / (fs * 0.56));
   if (max < 3 || esp < fs * 1.2) return '';
@@ -794,7 +886,7 @@ function rotuloMovel(it) {
   if (r) local = -it.rot;
   const duas = esp >= fs * 2.7;
   const dy = duas ? fs * 0.55 : 0;
-  let t = `<g transform="rotate(${local})">`;
+  let t = `<g transform="translate(${ox} ${oy}) rotate(${local})">`;
   t += `<text class="rot" y="${-dy}" font-size="${fs}" font-weight="600">${esc(nome)}</text>`;
   if (duas) t += `<text class="rot" y="${fs * 0.75}" font-size="${fs * 0.8}">${medidas}</text>`;
   return t + '</g>';
@@ -804,6 +896,7 @@ function renderMoveis() {
   calcularConflitos();
   const lista = itens();
   const ordem = [...lista.filter(i => i.sobrepor), ...lista.filter(i => !i.sobrepor)];
+  const selGrupo = sel && pegar(sel) && pegar(sel).grupo;
   const vivos = new Set();
   let anterior = null;
   for (const it of ordem) {
@@ -818,7 +911,8 @@ function renderMoveis() {
     if (assinatura !== no.assinatura) { no.g.innerHTML = desenhoMovel(it); no.assinatura = assinatura; }
     no.g.setAttribute('transform', `translate(${it.x} ${it.y}) rotate(${it.rot})`);
     const c = conflitos.get(it.id);
-    no.g.setAttribute('class', 'movel' + (it.tipo === 'tapete' || it.sobrepor ? ' tapete' : '') +
+    const doGrupo = selGrupo && it.grupo === selGrupo && it.id !== sel;
+    no.g.setAttribute('class', 'movel' + (doGrupo ? ' grupo' : '') + (it.tipo === 'tapete' || it.sobrepor ? ' tapete' : '') +
       (c.duro.length ? ' ruim' : c.porta.length ? ' aviso' : '') + (it.id === sel ? ' sel' : ''));
     // mantém a ordem sem mexer em nós que já estão no lugar (não interrompe toques em andamento)
     const esperado = anterior ? anterior.nextSibling : gMoveis.firstChild;
@@ -987,7 +1081,7 @@ function encaixar(it, cx, cy) {
   if (!estado.op.ima) return [arred(cx), arred(cy)];
   const b = caixa(itemPoly(Object.assign({}, it, { x: cx, y: cy })));
   const tol = 12 * view.k;
-  const obst = caixasObstaculos(it.id, it.sobrepor);
+  const obst = caixasObstaculos(new Set(membros(it).map(m => m.id)), it.sobrepor);
   let dx = null, dy = null;
   const cx_ = d => { if (Math.abs(d) <= tol && (dx === null || Math.abs(d) < Math.abs(dx))) dx = d; };
   const cy_ = d => { if (Math.abs(d) <= tol && (dy === null || Math.abs(d) < Math.abs(dy))) dy = d; };
@@ -1052,7 +1146,8 @@ svg.addEventListener('pointermove', e => {
   }
   if (!it) return;
   if (gesto.tipo === 'mover') {
-    [it.x, it.y] = encaixar(it, p.x + gesto.off[0], p.y + gesto.off[1]);
+    const [nx, ny] = encaixar(it, p.x + gesto.off[0], p.y + gesto.off[1]);
+    moverJunto(it, nx - it.x, ny - it.y);
   } else if (gesto.tipo === 'girar') {
     let a = Math.atan2(p.y - it.y, p.x - it.x) * 180 / Math.PI + 90;
     const passo = estado.op.ima ? 15 : 1;
@@ -1127,10 +1222,10 @@ function selecionar(id) {
   sel = id;
   render();
 }
-function adicionar(tipo, nome, w, h) {
+function adicionar(tipo, nome, w, h, extra) {
   const t = tamanho();
   const c = telaParaPlanta(t.l + t.w / 2, t.t + t.h / 2);
-  const it = novoItem(tipo, nome, w, h);
+  const it = novoItem(tipo, nome, w, h, extra);
   it.x = limitar(c.x, 0, W); it.y = limitar(c.y, 0, H);
   [it.x, it.y] = encaixar(it, it.x, it.y);
   itens().push(it);
@@ -1141,19 +1236,54 @@ function adicionar(tipo, nome, w, h) {
 }
 function girar90(sentido) {
   const it = pegar(sel); if (!it) return;
-  it.rot = ((Math.round(it.rot / 90) * 90 + 90 * sentido) % 360 + 360) % 360;
+  const ms = membros(it);
+  if (ms.length > 1) { // o conjunto gira inteiro em volta do próprio centro
+    const b = caixa(ms.flatMap(itemPoly)), cx = (b.x1 + b.x2) / 2, cy = (b.y1 + b.y2) / 2;
+    for (const m of ms) {
+      const [dx, dy] = girar(m.x - cx, m.y - cy, 90 * sentido);
+      m.x = arred(cx + dx, 10); m.y = arred(cy + dy, 10);
+      m.rot = ((m.rot + 90 * sentido) % 360 + 360) % 360;
+    }
+  } else it.rot = ((Math.round(it.rot / 90) * 90 + 90 * sentido) % 360 + 360) % 360;
   confirmar(); render();
 }
 function duplicar() {
   const it = pegar(sel); if (!it) return;
-  const n = Object.assign({}, it, { id: uid(), x: it.x + 20, y: it.y + 20 });
-  itens().push(n); sel = n.id;
+  const grupo = it.grupo ? uid() : undefined;
+  let novoSel = null;
+  for (const m of membros(it)) {
+    const n = Object.assign({}, m, { id: uid(), x: m.x + 20, y: m.y + 20 });
+    if (grupo) n.grupo = grupo;
+    itens().push(n);
+    if (m.id === it.id) novoSel = n.id;
+  }
+  sel = novoSel;
   confirmar(); render();
+}
+function adicionarConjunto(cj) {
+  const grupo = uid();
+  const pecas = cj.pecas.map(([tipo, nome, w, h, x1, y1, rot, extra]) => Object.assign(mk(tipo, nome, w, h, x1, y1, rot || 0, extra), { grupo }));
+  const b = caixa(pecas.flatMap(itemPoly));
+  const t = tamanho();
+  const c = telaParaPlanta(t.l + t.w / 2, t.t + t.h / 2);
+  const dx = Math.round((limitar(c.x, 0, W) - (b.x1 + b.x2) / 2) / 5) * 5, dy = Math.round((limitar(c.y, 0, H) - (b.y1 + b.y2) / 2) / 5) * 5;
+  for (const m of pecas) { m.x += dx; m.y += dy; itens().push(m); }
+  sel = pecas[0].id;
+  confirmar(); render(); fecharFolhas();
+  requestAnimationFrame(() => centrarEm(pecas[0]));
 }
 function excluir() {
   if (!sel) return;
+  const g = pegar(sel) && pegar(sel).grupo;
   layout().itens = itens().filter(i => i.id !== sel);
+  soltarGrupoSozinho(g);
   sel = null; confirmar(); render();
+}
+// Um "conjunto" com uma peça só deixa de ser conjunto.
+function soltarGrupoSozinho(g) {
+  if (!g) return;
+  const r = itens().filter(i => i.grupo === g);
+  if (r.length === 1) delete r[0].grupo;
 }
 function paraFrente() {
   const it = pegar(sel); if (!it) return;
@@ -1227,7 +1357,14 @@ function renderPainel() {
   const redond = redondo(it);
   $('#pGirarE').style.display = $('#pGirarD').style.display = redond ? 'none' : '';
   $('#pH').parentElement.style.display = $('#pR').parentElement.style.display = redond ? 'none' : '';
-  $('#pW').parentElement.firstChild.textContent = redond ? 'Diâmetro (cm)' : 'Largura (cm)';
+  const L = it.tipo === 'cantoL';
+  $('#pW').parentElement.firstChild.textContent = redond ? 'Diâmetro (cm)' : L ? 'Braço 1 (cm)' : 'Largura (cm)';
+  $('#pH').parentElement.firstChild.textContent = L ? 'Braço 2 (cm)' : 'Profundidade (cm)';
+  $('#pP').parentElement.style.display = L ? '' : 'none';
+  const ms = membros(it);
+  $('#pGrupo').hidden = ms.length < 2;
+  $('#pGrupoN').textContent = ms.length;
+  $('#pJunto').checked = true;
   $('#pCores').innerHTML = PALETA.map(c => `<button class="cor${c.toLowerCase() === it.cor.toLowerCase() ? ' on' : ''}" data-cor="${c}" style="background:${c}" aria-label="Cor ${c}"></button>`).join('');
   atualizarCamposPainel(true);
 }
@@ -1235,7 +1372,7 @@ function atualizarCamposPainel(forcar) {
   const it = sel && pegar(sel);
   if (!it || $('#painel').classList.contains('vazio')) return;
   const b = caixa(itemPoly(it));
-  const vals = { pW: it.w, pH: it.h, pX: b.x1, pY: b.y1, pR: it.rot };
+  const vals = { pW: it.w, pH: it.h, pX: b.x1, pY: b.y1, pR: it.rot, pP: profL(it) };
   for (const k in vals) { const i = $('#' + k); if (forcar || document.activeElement !== i) i.value = fmt(vals[k]); }
   const c = conflitos.get(it.id), a = $('#pAlerta');
   if (c.duro.length) { a.className = 'ruim'; a.textContent = 'Batendo em: ' + c.duro.join(', ') + '.'; }
@@ -1262,19 +1399,28 @@ function preencherListaMoveis() {
    ============================================================ */
 function montarCatalogo() {
   let h = '';
+  const estilo = '<style>.corpo{stroke:#4d5660;stroke-width:1px;vector-effect:non-scaling-stroke}.det,.detf{stroke:#0004;stroke-width:1px;vector-effect:non-scaling-stroke}.det{fill:none}</style>';
+  const salvaRot = estado.op.rotulos; estado.op.rotulos = false;
   CATALOGO.forEach((grupo, gi) => {
     h += `<h3>${grupo.cat}</h3><div class="grade-cat">`;
-    grupo.itens.forEach(([tipo, nome, w, hh], ii) => {
-      const it = { tipo, nome, w, h: hh, rot: 0, cor: COR_TIPO[tipo] };
+    grupo.itens.forEach((entrada, ii) => {
+      if (grupo.conjuntos) {
+        const pecas = entrada.pecas.map(([tipo, nome, w, hh, x1, y1, rot, extra]) => mk(tipo, nome, w, hh, x1, y1, rot || 0, extra));
+        const b = caixa(pecas.flatMap(itemPoly)), tam = Math.max(b.x2 - b.x1, b.y2 - b.y1);
+        const des = pecas.map(m => `<g transform="translate(${m.x} ${m.y}) rotate(${m.rot})">${desenhoMovel(m)}</g>`).join('');
+        h += `<button class="item-cat" data-cat="${gi}.${ii}" style="grid-column:span 2"><svg width="56" height="56" viewBox="${b.x1 - 4} ${b.y1 - 4} ${tam + 8} ${tam + 8}">${estilo}${des}</svg>
+          <span>${esc(entrada.nome)}<small>${entrada.lugares} lugares · ocupa ${Math.round(b.x2 - b.x1)} × ${Math.round(b.y2 - b.y1)} cm</small></span></button>`;
+        return;
+      }
+      const [tipo, nome, w, hh, extra] = entrada;
+      const it = Object.assign({ tipo, nome, w, h: hh, x: 0, y: 0, rot: 0, cor: COR_TIPO[tipo] }, extra || {});
       const esc_ = 36 / Math.max(w, hh);
-      const salvaRot = estado.op.rotulos; estado.op.rotulos = false;
-      const des = desenhoMovel(it);
-      estado.op.rotulos = salvaRot;
-      h += `<button class="item-cat" data-cat="${gi}.${ii}"><svg width="40" height="40" viewBox="-20 -20 40 40"><style>.corpo{stroke:#4d5660;stroke-width:1px;vector-effect:non-scaling-stroke}.det,.detf{stroke:#0004;stroke-width:1px;vector-effect:non-scaling-stroke}.det{fill:none}</style><g transform="scale(${esc_})">${des}</g></svg>
-        <span>${esc(nome)}<small>${REDONDOS.has(tipo) ? 'Ø' + w : w + ' × ' + hh} cm</small></span></button>`;
+      h += `<button class="item-cat" data-cat="${gi}.${ii}"><svg width="40" height="40" viewBox="-20 -20 40 40">${estilo}<g transform="scale(${esc_})">${desenhoMovel(it)}</g></svg>
+        <span>${esc(nome)}<small>${REDONDOS.has(tipo) ? 'Ø' + w : w + ' × ' + hh} cm${extra && extra.p ? ' · assento ' + extra.p : ''}</small></span></button>`;
     });
     h += '</div>';
   });
+  estado.op.rotulos = salvaRot;
   $('#catalogo').innerHTML = h;
 }
 
@@ -1391,8 +1537,9 @@ $('#selLayout').onchange = e => trocarLayout(e.target.value);
 $('#catalogo').addEventListener('click', e => {
   const b = e.target.closest('[data-cat]'); if (!b) return;
   const [gi, ii] = b.dataset.cat.split('.').map(Number);
-  const [tipo, nome, w, h] = CATALOGO[gi].itens[ii];
-  adicionar(tipo, nome, w, h);
+  if (CATALOGO[gi].conjuntos) { adicionarConjunto(CATALOGO[gi].itens[ii]); return; }
+  const [tipo, nome, w, h, extra] = CATALOGO[gi].itens[ii];
+  adicionar(tipo, nome, w, h, extra ? Object.assign({}, extra) : undefined);
 });
 $('#cAdd').onclick = () => {
   const w = num($('#cW').value), h = num($('#cH').value);
@@ -1420,8 +1567,21 @@ const campoNum = (id, aplicar) => {
 campoNum('pW', (it, v) => { it.w = limitar(v, 5, 1000); if (redondo(it)) it.h = it.w; });
 campoNum('pH', (it, v) => { it.h = limitar(v, 5, 1000); });
 campoNum('pR', (it, v) => { it.rot = ((v % 360) + 360) % 360; });
-campoNum('pX', (it, v) => { const b = caixa(itemPoly(it)); it.x += v - b.x1; });
-campoNum('pY', (it, v) => { const b = caixa(itemPoly(it)); it.y += v - b.y1; });
+campoNum('pX', (it, v) => { const b = caixa(itemPoly(it)); moverJunto(it, v - b.x1, 0); });
+campoNum('pY', (it, v) => { const b = caixa(itemPoly(it)); moverJunto(it, 0, v - b.y1); });
+campoNum('pP', (it, v) => { it.p = limitar(v, 20, 200); });
+$('#pJunto').onchange = () => {
+  const it = pegar(sel); if (!it || !it.grupo) return;
+  const g = it.grupo; delete it.grupo; soltarGrupoSozinho(g);
+  confirmar(); render(); avisar('Esta peça agora se move sozinha.');
+};
+$('#pExcluirGrupo').onclick = async () => {
+  const it = pegar(sel); if (!it || !it.grupo) return;
+  if (!await pergunta(`Excluir as ${membros(it).length} peças do conjunto? (dá para desfazer)`)) return;
+  const g = it.grupo;
+  layout().itens = itens().filter(i => i.grupo !== g);
+  sel = null; confirmar(); render();
+};
 $('#pCores').addEventListener('click', e => {
   const b = e.target.closest('[data-cor]'); const it = pegar(sel); if (!b || !it) return;
   it.cor = b.dataset.cor; confirmar(); render();
@@ -1492,7 +1652,7 @@ document.addEventListener('keydown', e => {
   if (e.key.toLowerCase() === 'r' && !ctrl) { girar90(e.shiftKey ? -1 : 1); return; }
   const passo = e.shiftKey ? 10 : 1;
   const mov = { ArrowLeft: [-passo, 0], ArrowRight: [passo, 0], ArrowUp: [0, -passo], ArrowDown: [0, passo] }[e.key];
-  if (mov) { e.preventDefault(); it.x = arred(it.x + mov[0], 10); it.y = arred(it.y + mov[1], 10); render(false); clearTimeout(tSeta); tSeta = setTimeout(confirmar, 400); }
+  if (mov) { e.preventDefault(); moverJunto(it, mov[0], mov[1]); render(false); clearTimeout(tSeta); tSeta = setTimeout(confirmar, 400); }
 });
 
 /* ============================================================
