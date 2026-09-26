@@ -24,7 +24,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   -webkit-tap-highlight-color:transparent}
 button,select,input{font:inherit;color:inherit}
 button{touch-action:manipulation;cursor:pointer}
-#app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+#app{display:flex;flex-direction:column;height:100%}
 
 /* Barra do topo */
 header{background:var(--barra);color:var(--barra-txt);display:flex;align-items:center;gap:6px;
@@ -248,7 +248,8 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
     <div class="fila">
       <button class="bt" id="mPng">🖼 Salvar imagem</button>
       <button class="bt" id="mExportar">⬇ Exportar layouts (.json)</button>
-      <button class="bt" id="mImportar">⬆ Importar .json</button>
+      <button class="bt" id="mImportar">⬆ Importar arquivo</button>
+      <button class="bt" id="mColar">📋 Importar colando texto</button>
       <input type="file" id="mArquivo" accept=".json,application/json" hidden>
     </div>
     <h3>Outros</h3>
@@ -276,6 +277,32 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
       <li>Teclado: setas movem 1 cm (<kbd>Shift</kbd> = 10 cm), <kbd>R</kbd> gira, <kbd>Ctrl</kbd>+<kbd>D</kbd> duplica, <kbd>Delete</kbd> exclui, <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz, <kbd>Esc</kbd> tira a seleção.</li>
     </ul>
     <p style="color:#5b6570;font-size:13px">Medidas internas: 420 × 700 cm. Sala/jantar 18,90 m² · Dormitório 7,20 m² · Banho 2,64 m².</p>
+  </div>
+</div>
+
+<!-- Pergunta (substitui confirm/prompt, que não funcionam em todo lugar) -->
+<div class="fundo-folha" id="fPergunta" hidden>
+  <div class="folha" role="dialog" aria-label="Confirmação" style="max-width:440px">
+    <p id="qTexto" style="font-size:16px;margin:4px 0 12px"></p>
+    <input id="qCampo" autocomplete="off" style="width:100%;font-size:16px;padding:9px 10px;border:1px solid var(--borda);border-radius:8px;margin-bottom:12px">
+    <div class="fila" style="justify-content:flex-end">
+      <button class="bt" id="qNao">Cancelar</button>
+      <button class="bt prim" id="qSim">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Saída: imagem ou arquivo .json -->
+<div class="fundo-folha" id="fSaida" hidden>
+  <div class="folha" role="dialog" aria-label="Salvar">
+    <div class="folha-cab"><h2 id="sTitulo">Salvar</h2><button class="bt" data-fechar>✕</button></div>
+    <p id="sDica" style="font-size:14px;color:var(--sub);margin:0 0 10px"></p>
+    <img id="sImg" alt="Planta" hidden style="width:100%;border:1px solid var(--borda);border-radius:8px;-webkit-touch-callout:default">
+    <textarea id="sTexto" hidden readonly style="width:100%;height:40vh;font:13px ui-monospace,Menlo,monospace;border:1px solid var(--borda);border-radius:8px;padding:8px"></textarea>
+    <div class="fila" style="margin-top:10px">
+      <button class="bt prim" id="sCopiar" hidden>Copiar texto</button>
+      <button class="bt" id="sBaixar">⬇ Baixar arquivo</button>
+    </div>
   </div>
 </div>
 
@@ -1143,6 +1170,22 @@ function nomeLivre(base) {
   while (estado.layouts.some(l => l.nome === n)) n = `${base} (${i++})`;
   return n;
 }
+// Pergunta dentro da página. Sem valor inicial: confirmação (true/false). Com valor: pede texto (string/null).
+function pergunta(texto, valor) {
+  return new Promise(ok => {
+    const f = $('#fPergunta'), campo = $('#qCampo');
+    $('#qTexto').textContent = texto;
+    campo.hidden = valor === undefined;
+    campo.value = valor || '';
+    f.hidden = false;
+    if (!campo.hidden) setTimeout(() => campo.focus(), 50);
+    const fim = r => { f.hidden = true; $('#qSim').onclick = $('#qNao').onclick = campo.onkeydown = f.onclick = null; ok(r); };
+    $('#qSim').onclick = () => fim(campo.hidden ? true : campo.value);
+    $('#qNao').onclick = () => fim(campo.hidden ? false : null);
+    campo.onkeydown = e => { if (e.key === 'Enter') fim(campo.value); };
+    f.onclick = e => { if (e.target === f) fim(campo.hidden ? false : null); };
+  });
+}
 let tAviso;
 function avisar(msg) {
   const a = $('#aviso'); a.textContent = msg; a.classList.add('on');
@@ -1244,6 +1287,24 @@ function baixar(blob, nome) {
   a.href = url; a.download = nome; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
+// Mostra o resultado numa janela: a imagem pode ser salva com toque longo / botão direito,
+// o .json pode ser copiado; o botão Baixar funciona quando o navegador permite.
+function mostrarSaida(blob, nome, texto) {
+  const img = $('#sImg'), ta = $('#sTexto');
+  $('#sTitulo').textContent = texto ? 'Exportar layouts' : 'Imagem da planta';
+  $('#sDica').textContent = texto
+    ? 'Copie o texto e guarde (Notas, e-mail…). Para importar em outro aparelho: Menu → Importar, escolhendo o arquivo ou colando o texto.'
+    : 'No iPhone: toque e segure a imagem → Salvar em Fotos. No computador: botão direito → Salvar imagem.';
+  img.hidden = !!texto; ta.hidden = !texto; $('#sCopiar').hidden = !texto;
+  if (!texto) img.src = URL.createObjectURL(blob);
+  else ta.value = texto;
+  $('#sBaixar').onclick = () => compartilharOuBaixar(blob, nome);
+  $('#sCopiar').onclick = () => {
+    const fallback = () => { ta.focus(); ta.select(); avisar('Texto selecionado: copie com Ctrl+C / Copiar.'); };
+    try { navigator.clipboard.writeText(texto).then(() => avisar('Copiado.'), fallback); } catch (e) { fallback(); }
+  };
+  abrir('#fSaida');
+}
 async function compartilharOuBaixar(blob, nome) {
   try {
     const f = new File([blob], nome, { type: blob.type });
@@ -1257,7 +1318,7 @@ async function compartilharOuBaixar(blob, nome) {
 function dataHoje() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
 function exportarJson() {
   const blob = new Blob([JSON.stringify({ app: 'simulador-moveis', versao: 1, layouts: estado.layouts }, null, 2)], { type: 'application/json' });
-  compartilharOuBaixar(blob, `layouts-apartamento-${dataHoje()}.json`);
+  mostrarSaida(blob, `layouts-apartamento-${dataHoje()}.json`, JSON.stringify({ app: 'simulador-moveis', versao: 1, layouts: estado.layouts }));
 }
 function importarJson(texto) {
   let d;
@@ -1299,7 +1360,7 @@ function salvarPng() {
     ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
     ctx.drawImage(img, 0, 0, cv.width, cv.height);
     try {
-      cv.toBlob(b => b ? compartilharOuBaixar(b, `planta-${layout().nome.replace(/[^\wÀ-ú-]+/g, '-')}.png`) : avisar('Não foi possível gerar a imagem.'), 'image/png');
+      cv.toBlob(b => b ? mostrarSaida(b, `planta-${layout().nome.replace(/[^\wÀ-ú-]+/g, '-')}.png`) : avisar('Não foi possível gerar a imagem.'), 'image/png');
     } catch (e) { avisar('O navegador bloqueou a imagem.'); }
   };
   img.onerror = () => avisar('Não foi possível gerar a imagem.');
@@ -1378,13 +1439,13 @@ $('#mCopia').onclick = () => {
   const l = { id: uid(), nome: nomeLivre(layout().nome + ' – cópia'), itens: JSON.parse(JSON.stringify(itens())).map(i => Object.assign(i, { id: uid() })) };
   estado.layouts.push(l); trocarLayout(l.id); fecharFolhas(); avisar('Cópia criada: ' + l.nome);
 };
-$('#mRenomear').onclick = () => {
-  const n = prompt('Nome do layout:', layout().nome);
+$('#mRenomear').onclick = async () => {
+  const n = await pergunta('Nome do layout:', layout().nome);
   if (n && n.trim()) { layout().nome = n.trim().slice(0, 40); gravar(); preencherLayouts(); }
 };
-$('#mExcluirLayout').onclick = () => {
+$('#mExcluirLayout').onclick = async () => {
   if (estado.layouts.length === 1) { avisar('É o único layout — não dá para excluir.'); return; }
-  if (!confirm(`Excluir o layout "${layout().nome}"?`)) return;
+  if (!await pergunta(`Excluir o layout "${layout().nome}"? Isso não dá para desfazer.`)) return;
   estado.layouts = estado.layouts.filter(l => l.id !== estado.atual);
   trocarLayout(estado.layouts[0].id); fecharFolhas();
 };
@@ -1395,19 +1456,23 @@ $('#mLista').addEventListener('click', e => {
 $('#mPng').onclick = () => { fecharFolhas(); salvarPng(); };
 $('#mExportar').onclick = exportarJson;
 $('#mImportar').onclick = () => $('#mArquivo').click();
+$('#mColar').onclick = async () => {
+  const t = await pergunta('Cole aqui o texto exportado:', '');
+  if (t && t.trim()) { importarJson(t); fecharFolhas(); }
+};
 $('#mArquivo').onchange = e => {
   const f = e.target.files[0]; if (!f) return;
   const r = new FileReader();
   r.onload = () => { importarJson(r.result); fecharFolhas(); };
   r.readAsText(f); e.target.value = '';
 };
-$('#mExemplo').onclick = () => {
-  if (itens().length && !confirm('Trocar os móveis deste layout pelo exemplo? (dá para desfazer)')) return;
+$('#mExemplo').onclick = async () => {
+  if (itens().length && !await pergunta('Trocar os móveis deste layout pelo exemplo? (dá para desfazer)')) return;
   layout().itens = exemplo(); sel = null; confirmar(); render(); fecharFolhas();
 };
-$('#mLimpar').onclick = () => {
+$('#mLimpar').onclick = async () => {
   if (!itens().length) return;
-  if (!confirm('Remover todos os móveis deste layout? (dá para desfazer)')) return;
+  if (!await pergunta('Remover todos os móveis deste layout? (dá para desfazer)')) return;
   layout().itens = []; sel = null; confirmar(); render(); fecharFolhas();
 };
 $('#mAjuda').onclick = () => abrir('#fAjuda');
