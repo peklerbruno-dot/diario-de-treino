@@ -149,3 +149,9 @@ o seu próprio deploy na Vercel (pasta escolhida em *Root Directory*).
   Veja [`cej/README.md`](cej/README.md) e, para publicar,
   [`cej/docs/COLOCAR-NO-AR.md`](cej/docs/COLOCAR-NO-AR.md) e
   [`cej/docs/BOLETIM.md`](cej/docs/BOLETIM.md).
+- `moveis/` — simulador de disposição de móveis do apartamento. Um único
+  `moveis/index.html`, sem build e sem dependências: abre com duplo clique no
+  computador ou no iPhone (toque, pinça para zoom). Planta fixa em cm, catálogo
+  de móveis, aviso de colisão com paredes, peças fixas e abertura de portas,
+  distâncias livres, vários layouts salvos no navegador, exportar/importar
+  `.json` e salvar imagem PNG.

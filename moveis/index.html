@@ -1,0 +1,1447 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Móveis">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#1d2733">
+<title>Simulador de móveis</title>
+<style>
+:root{
+  --barra:#1d2733; --barra-txt:#f2f4f7; --fundo:#e9ecef; --painel:#ffffff;
+  --texto:#1b1f24; --sub:#5b6570; --borda:#d5d9de; --azul:#1f6feb;
+  --verm:#d93025; --laranja:#e8710a; --verde:#1e8e3e;
+  --topo:env(safe-area-inset-top,0px); --base:env(safe-area-inset-bottom,0px);
+  --esq:env(safe-area-inset-left,0px); --dir:env(safe-area-inset-right,0px);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--fundo);color:var(--texto);overflow:hidden;-webkit-text-size-adjust:100%;
+  -webkit-tap-highlight-color:transparent}
+button,select,input{font:inherit;color:inherit}
+button{touch-action:manipulation;cursor:pointer}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+
+/* Barra do topo */
+header{background:var(--barra);color:var(--barra-txt);display:flex;align-items:center;gap:6px;
+  padding:calc(6px + var(--topo)) calc(8px + var(--dir)) 6px calc(10px + var(--esq));flex:none}
+header h1{font-size:16px;margin:0 4px 0 0;font-weight:650;white-space:nowrap}
+header select{flex:1;min-width:0;max-width:260px;background:#2c3947;border:1px solid #3d4c5c;
+  color:var(--barra-txt);border-radius:8px;padding:6px 8px;font-size:16px}
+.bt-topo{background:#2c3947;border:1px solid #3d4c5c;color:var(--barra-txt);border-radius:8px;
+  min-width:38px;height:36px;padding:0 9px;font-size:17px;line-height:1}
+.bt-topo:disabled{opacity:.35}
+.esp{flex:1}
+
+#corpo{flex:1;display:flex;flex-direction:column;min-height:0}
+#area{position:relative;flex:1;min-height:0;overflow:hidden;background:#dfe3e7}
+#planta{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+
+/* Botões flutuantes */
+#zoom{position:absolute;right:calc(10px + var(--dir));top:10px;display:flex;flex-direction:column;gap:6px}
+.bt-flut{width:42px;height:42px;border-radius:10px;border:1px solid var(--borda);background:#fff;
+  font-size:20px;box-shadow:0 1px 4px #0002;display:flex;align-items:center;justify-content:center}
+#fab{position:absolute;left:50%;transform:translateX(-50%);bottom:12px;background:var(--azul);color:#fff;
+  border:0;border-radius:24px;padding:12px 20px;font-size:16px;font-weight:600;box-shadow:0 3px 10px #0004}
+#status{position:absolute;left:calc(10px + var(--esq));top:10px;max-width:calc(100% - 80px);background:#fffffff0;
+  border:1px solid var(--borda);border-radius:10px;padding:6px 10px;font-size:13px;color:var(--sub);
+  box-shadow:0 1px 4px #0001;pointer-events:none}
+#status b{color:var(--texto)}
+#status .ruim{color:var(--verm);font-weight:600}
+#status .aviso{color:var(--laranja);font-weight:600}
+#status .ok{color:var(--verde);font-weight:600}
+
+/* Painel do móvel selecionado */
+#painel{background:var(--painel);border-top:1px solid var(--borda);flex:none;max-height:48vh;overflow:auto;
+  padding:10px calc(12px + var(--dir)) calc(10px + var(--base)) calc(12px + var(--esq));
+  -webkit-overflow-scrolling:touch}
+#painel.vazio #pConteudo{display:none}
+#painel:not(.vazio) #pVazio{display:none}
+#pVazio{color:var(--sub);font-size:14px;line-height:1.5}
+#pVazio h2{font-size:16px;color:var(--texto);margin:2px 0 8px}
+#pVazio ul{padding-left:18px;margin:0}
+@media (max-width:899px){
+  #painel.vazio{display:none}
+  body.comSel #fab{display:none}
+  #fab{left:auto;right:calc(12px + var(--dir));transform:none;padding:11px 16px}
+  #painel .acoes{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+  #painel .acoes .bt{padding:8px 10px;flex:none}
+}
+@media (max-width:480px){
+  .txt-bt{display:none}
+  #painel .acoes .bt{padding:8px 12px}
+}
+.pcab{display:flex;gap:8px;align-items:center}
+.pcab input{flex:1;min-width:0;font-size:17px;font-weight:600;border:1px solid transparent;border-radius:8px;
+  padding:6px 8px;background:#f3f5f7}
+.pcab input:focus{border-color:var(--azul);outline:none;background:#fff}
+.bt{border:1px solid var(--borda);background:#fff;border-radius:9px;padding:8px 11px;font-size:15px;
+  display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.bt:active{background:#eef1f4}
+.bt.perigo{color:var(--verm)}
+.bt.prim{background:var(--azul);color:#fff;border-color:var(--azul)}
+.acoes{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+#pAlerta{margin-top:8px;font-size:13px;border-radius:8px;padding:6px 9px}
+#pAlerta.ruim{background:#fce8e6;color:#a50e0e}
+#pAlerta.aviso{background:#fef3e6;color:#8a4b00}
+#pAlerta:empty{display:none}
+details{margin-top:8px}
+summary{font-size:14px;color:var(--sub);cursor:pointer;padding:4px 0;list-style-position:inside}
+.campos{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:6px}
+.campo{display:flex;flex-direction:column;font-size:12px;color:var(--sub);gap:3px}
+.campo input{font-size:16px;padding:7px 8px;border:1px solid var(--borda);border-radius:8px;width:100%;color:var(--texto);background:#fff}
+.campo input:focus{outline:none;border-color:var(--azul)}
+.cores{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.cor{width:30px;height:30px;border-radius:50%;border:1px solid #0003;padding:0}
+.cor.on{outline:3px solid var(--azul);outline-offset:1px}
+.linha-chk{display:flex;align-items:center;gap:8px;font-size:14px;margin-top:10px}
+.linha-chk input{width:20px;height:20px}
+
+/* Folhas (catálogo, menu, ajuda) */
+.fundo-folha{position:fixed;inset:0;background:#0006;z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.fundo-folha[hidden]{display:none}
+.folha{background:#fff;width:100%;max-width:640px;max-height:86vh;overflow:auto;border-radius:16px 16px 0 0;
+  padding:14px calc(16px + var(--dir)) calc(18px + var(--base)) calc(16px + var(--esq));-webkit-overflow-scrolling:touch}
+.folha h2{font-size:18px;margin:0;flex:1}
+.folha h3{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--sub);margin:18px 0 8px}
+.folha-cab{display:flex;align-items:center;gap:8px;position:sticky;top:-14px;background:#fff;padding:4px 0 8px;z-index:1}
+.grade-cat{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.item-cat{border:1px solid var(--borda);border-radius:10px;background:#fafbfc;padding:9px 10px;text-align:left;display:flex;gap:9px;align-items:center}
+.item-cat:active{background:#eef1f4}
+.item-cat svg{flex:none}
+.item-cat span{display:flex;flex-direction:column;font-size:14px;line-height:1.2}
+.item-cat small{color:var(--sub);font-size:12px;margin-top:2px}
+.form-pers{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.form-pers .campo:first-child{grid-column:1/-1}
+.form-pers select{font-size:16px;padding:7px 8px;border:1px solid var(--borda);border-radius:8px;background:#fff}
+.lista-op{display:flex;flex-direction:column;gap:2px}
+.lista-op label{display:flex;align-items:center;gap:10px;padding:9px 2px;font-size:15px;border-bottom:1px solid #eef0f2}
+.lista-op input{width:20px;height:20px}
+.fila{display:flex;gap:8px;flex-wrap:wrap}
+.lista-moveis{display:flex;flex-direction:column}
+.lista-moveis button{display:flex;justify-content:space-between;gap:8px;text-align:left;background:none;border:0;
+  border-bottom:1px solid #eef0f2;padding:10px 2px;font-size:15px}
+.lista-moveis small{color:var(--sub)}
+.ajuda p,.ajuda li{font-size:15px;line-height:1.45}
+.ajuda ul{padding-left:20px}
+kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0 4px;font-size:13px}
+#aviso{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(80px + var(--base));background:#1d2733;color:#fff;
+  padding:9px 14px;border-radius:10px;font-size:14px;z-index:40;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
+#aviso.on{opacity:1}
+
+@media (min-width:900px){
+  #corpo{flex-direction:row}
+  #painel{width:330px;max-height:none;border-top:0;border-left:1px solid var(--borda);padding:14px 16px}
+  .fundo-folha{align-items:center}
+  .folha{border-radius:16px;max-height:84vh}
+  #fab{left:auto;right:calc(70px + var(--dir));transform:none;bottom:16px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>Planta</h1>
+    <select id="selLayout" aria-label="Layout"></select>
+    <span class="esp"></span>
+    <button class="bt-topo" id="btDesfazer" title="Desfazer (Ctrl+Z)" aria-label="Desfazer">↶</button>
+    <button class="bt-topo" id="btRefazer" title="Refazer (Ctrl+Shift+Z)" aria-label="Refazer">↷</button>
+    <button class="bt-topo" id="btMenu" title="Menu" aria-label="Menu">☰</button>
+  </header>
+  <div id="corpo">
+    <div id="area">
+      <svg id="planta" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div id="status"></div>
+      <div id="zoom">
+        <button class="bt-flut" id="btMais" aria-label="Aproximar">+</button>
+        <button class="bt-flut" id="btMenos" aria-label="Afastar">−</button>
+        <button class="bt-flut" id="btAjustar" aria-label="Ver planta inteira" title="Ver planta inteira">⤢</button>
+      </div>
+      <button id="fab">＋ Móvel</button>
+    </div>
+    <aside id="painel" class="vazio">
+      <div id="pVazio">
+        <h2>Nenhum móvel selecionado</h2>
+        <ul>
+          <li>Clique num móvel para mover, girar ou mudar as medidas.</li>
+          <li>Use <b>＋ Móvel</b> para trazer peças do catálogo.</li>
+          <li>Arraste o fundo para andar pela planta; a roda do mouse dá zoom.</li>
+          <li>Contorno vermelho: batendo. Laranja: no caminho de uma porta.</li>
+        </ul>
+      </div>
+      <div id="pConteudo">
+      <div class="pcab">
+        <input id="pNome" aria-label="Nome do móvel" autocomplete="off">
+        <button class="bt" id="pFechar" aria-label="Fechar">✕</button>
+      </div>
+      <div class="acoes">
+        <button class="bt" id="pGirarE" title="Girar 90° anti-horário (Shift+R)" aria-label="Girar 90° anti-horário">↺ 90°</button>
+        <button class="bt" id="pGirarD" title="Girar 90° horário (R)" aria-label="Girar 90° horário">↻ 90°</button>
+        <button class="bt" id="pDuplicar" title="Duplicar (Ctrl+D)" aria-label="Duplicar">⧉<span class="txt-bt"> Duplicar</span></button>
+        <button class="bt" id="pFrente" title="Trazer para a frente" aria-label="Trazer para a frente">⬆<span class="txt-bt"> Frente</span></button>
+        <button class="bt perigo" id="pExcluir" title="Excluir (Delete)">🗑 Excluir</button>
+      </div>
+      <div id="pAlerta"></div>
+      <details id="pDetalhes">
+        <summary>Medidas, posição e cor</summary>
+        <div class="campos">
+          <label class="campo">Largura (cm)<input id="pW" inputmode="decimal" autocomplete="off"></label>
+          <label class="campo">Profundidade (cm)<input id="pH" inputmode="decimal" autocomplete="off"></label>
+          <label class="campo">Da parede esquerda (cm)<input id="pX" inputmode="decimal" autocomplete="off"></label>
+          <label class="campo">Da parede de cima (cm)<input id="pY" inputmode="decimal" autocomplete="off"></label>
+          <label class="campo">Rotação (graus)<input id="pR" inputmode="decimal" autocomplete="off"></label>
+        </div>
+        <div class="cores" id="pCores"></div>
+        <label class="linha-chk"><input type="checkbox" id="pSobrepor"> Pode ficar sob outros móveis (tapete)</label>
+      </details>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- Catálogo -->
+<div class="fundo-folha" id="fCatalogo" hidden>
+  <div class="folha" role="dialog" aria-label="Adicionar móvel">
+    <div class="folha-cab"><h2>Adicionar móvel</h2><button class="bt" data-fechar>✕</button></div>
+    <div id="catalogo"></div>
+    <h3>Personalizado</h3>
+    <div class="form-pers">
+      <label class="campo">Nome<input id="cNome" placeholder="Ex.: Poltrona da vó" autocomplete="off"></label>
+      <label class="campo">Largura (cm)<input id="cW" inputmode="decimal" value="100"></label>
+      <label class="campo">Profundidade (cm)<input id="cH" inputmode="decimal" value="50"></label>
+      <label class="campo">Formato
+        <select id="cForma"><option value="generico">Retangular</option><option value="redondo">Redondo</option>
+        <option value="mesa">Mesa</option><option value="armario">Armário</option><option value="sofa">Sofá</option>
+        <option value="cama">Cama</option><option value="tapete">Tapete</option></select></label>
+      <label class="campo">&nbsp;<button class="bt prim" id="cAdd" style="justify-content:center">Adicionar</button></label>
+    </div>
+  </div>
+</div>
+
+<!-- Menu -->
+<div class="fundo-folha" id="fMenu" hidden>
+  <div class="folha" role="dialog" aria-label="Menu">
+    <div class="folha-cab"><h2>Menu</h2><button class="bt" data-fechar>✕</button></div>
+    <h3>Layouts</h3>
+    <div class="fila">
+      <button class="bt" id="mNovo">＋ Novo vazio</button>
+      <button class="bt" id="mCopia">⧉ Duplicar este</button>
+      <button class="bt" id="mRenomear">✎ Renomear</button>
+      <button class="bt perigo" id="mExcluirLayout">🗑 Excluir layout</button>
+    </div>
+    <h3>Mostrar</h3>
+    <div class="lista-op">
+      <label><input type="checkbox" data-op="ima"> Ímã: encaixar nas paredes e móveis (grade de 5 cm)</label>
+      <label><input type="checkbox" data-op="cotas"> Distâncias até paredes e móveis (do selecionado)</label>
+      <label><input type="checkbox" data-op="portas"> Área de abertura das portas</label>
+      <label><input type="checkbox" data-op="grade"> Grade (10 cm / 1 m)</label>
+      <label><input type="checkbox" data-op="rotulos"> Nomes e medidas nos móveis</label>
+    </div>
+    <h3>Móveis neste layout</h3>
+    <div class="lista-moveis" id="mLista"></div>
+    <h3>Arquivo</h3>
+    <div class="fila">
+      <button class="bt" id="mPng">🖼 Salvar imagem</button>
+      <button class="bt" id="mExportar">⬇ Exportar layouts (.json)</button>
+      <button class="bt" id="mImportar">⬆ Importar .json</button>
+      <input type="file" id="mArquivo" accept=".json,application/json" hidden>
+    </div>
+    <h3>Outros</h3>
+    <div class="fila">
+      <button class="bt" id="mExemplo">Carregar exemplo</button>
+      <button class="bt perigo" id="mLimpar">Remover todos os móveis</button>
+      <button class="bt" id="mAjuda">? Como usar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Ajuda -->
+<div class="fundo-folha" id="fAjuda" hidden>
+  <div class="folha ajuda" role="dialog" aria-label="Como usar">
+    <div class="folha-cab"><h2>Como usar</h2><button class="bt" data-fechar>✕</button></div>
+    <ul>
+      <li><b>＋ Móvel</b> abre o catálogo. O móvel entra no meio da tela.</li>
+      <li><b>Arrastar</b> um móvel move. Arrastar o fundo move a planta. <b>Pinça</b> (ou roda do mouse) dá zoom.</li>
+      <li>Com um móvel selecionado: a <b>bolinha de cima</b> gira, a <b>bolinha do canto</b> muda o tamanho. As medidas exatas ficam no painel.</li>
+      <li>Com o <b>ímã</b> ligado o móvel encosta sozinho nas paredes e nos outros móveis, e gira de 15 em 15°.</li>
+      <li>As linhas azuis mostram <b>quanto sobra</b> de cada lado do móvel selecionado (em cm).</li>
+      <li>Móvel com contorno <b style="color:#d93025">vermelho</b> está batendo em parede, em peça fixa ou em outro móvel. <b style="color:#e8710a">Laranja</b>: está no caminho de uma porta abrindo.</li>
+      <li>Em cada móvel o lado de cima do desenho é o fundo (encosto do sofá, cabeceira da cama, costas do armário).</li>
+      <li>Tudo é salvo sozinho neste aparelho/navegador. Para levar a outro aparelho, use <b>Exportar</b> e <b>Importar</b> no menu.</li>
+      <li>Teclado: setas movem 1 cm (<kbd>Shift</kbd> = 10 cm), <kbd>R</kbd> gira, <kbd>Ctrl</kbd>+<kbd>D</kbd> duplica, <kbd>Delete</kbd> exclui, <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz, <kbd>Esc</kbd> tira a seleção.</li>
+    </ul>
+    <p style="color:#5b6570;font-size:13px">Medidas internas: 420 × 700 cm. Sala/jantar 18,90 m² · Dormitório 7,20 m² · Banho 2,64 m².</p>
+  </div>
+</div>
+
+<div id="aviso"></div>
+
+<script>
+'use strict';
+/* ============================================================
+   PLANTA FIXA (cm). Origem no canto superior esquerdo interno.
+   ============================================================ */
+const W = 420, H = 700, E = 15;
+const PAREDES = [
+  { x1: 0,   y1: 450, x2: 222, y2: 460 }, // sala | dormitório 01
+  { x1: 300, y1: 450, x2: 310, y2: 700 }, // dormitório 01 | banho
+  { x1: 380, y1: 450, x2: 420, y2: 460 }  // divisória do banho no topo
+];
+const JANELAS = [[60, 175], [250, 405], [521, 657]]; // parede esquerda (y)
+const ENTRADA = [352, 432];                           // vão na parede direita (y)
+// Portas: h = dobradiça, c = ponta da folha fechada, o = ponta da folha aberta (90°)
+const PORTAS = [
+  { nome: 'Porta de entrada',     h: [420, 432], c: [420, 352], o: [340, 432] },
+  { nome: 'Porta do dormitório',  h: [300, 460], c: [222, 460], o: [300, 538] },
+  { nome: 'Porta do banho',       h: [320, 460], c: [380, 460], o: [320, 520] }
+];
+const FIXOS = [
+  { nome: 'Shaft',            x1: 388, y1: 0,   x2: 420, y2: 46 },
+  { nome: 'Bancada da pia',   x1: 360, y1: 145, x2: 420, y2: 265 },
+  { nome: 'Pia do banho',     circ: [401, 509, 18] },
+  { nome: 'Vaso sanitário',   x1: 358, y1: 558, x2: 420, y2: 594 },
+  { nome: 'Box',              x1: 310, y1: 616, x2: 420, y2: 700 }
+];
+const AMBIENTES = [
+  { nome: 'SALA / JANTAR', x1: 0,   y1: 0,   x2: 420, y2: 450, cor: '#f5efe3', tx: 210, ty: 432 },
+  { nome: 'DORMITÓRIO 01', x1: 0,   y1: 460, x2: 300, y2: 700, cor: '#f1ece2', tx: 150, ty: 532 },
+  { nome: 'BANHO',         x1: 310, y1: 460, x2: 420, y2: 700, cor: '#e9f0f3', tx: 336, ty: 545 }
+];
+
+/* ============================================================
+   CATÁLOGO
+   ============================================================ */
+const CATALOGO = [
+  { cat: 'Sala', itens: [
+    ['sofa', 'Sofá 3 lugares', 210, 90], ['sofa', 'Sofá 2 lugares', 160, 90],
+    ['sofa', 'Sofá retrátil (fechado)', 230, 100], ['poltrona', 'Poltrona', 80, 80],
+    ['mesa', 'Mesa de centro', 100, 60], ['redondo', 'Mesa lateral Ø50', 50, 50],
+    ['rack', 'Rack de TV', 180, 45], ['estante', 'Estante', 120, 35],
+    ['tapete', 'Tapete 2,00 × 2,50', 250, 200], ['tapete', 'Tapete 1,50 × 2,00', 200, 150],
+    ['planta', 'Vaso de planta', 45, 45], ['generico', 'Puff', 50, 50]
+  ]},
+  { cat: 'Jantar e cozinha', itens: [
+    ['mesa', 'Mesa 4 lugares', 120, 80], ['mesa', 'Mesa 6 lugares', 160, 90],
+    ['redondo', 'Mesa redonda Ø100', 100, 100], ['redondo', 'Mesa redonda Ø120', 120, 120],
+    ['cadeira', 'Cadeira', 45, 50], ['redondo', 'Banqueta', 38, 38],
+    ['armario', 'Aparador', 120, 40], ['armario', 'Buffet', 160, 45],
+    ['geladeira', 'Geladeira', 70, 75], ['fogao', 'Fogão 4 bocas', 55, 60],
+    ['eletro', 'Máquina de lavar', 60, 65], ['armario', 'Armário / despensa', 80, 45]
+  ]},
+  { cat: 'Dormitório', itens: [
+    ['cama', 'Cama de casal', 145, 200], ['cama', 'Cama queen', 165, 210],
+    ['cama', 'Cama de solteiro', 95, 200], ['criado', 'Criado-mudo', 45, 40],
+    ['armario', 'Guarda-roupa 3 portas', 150, 55], ['armario', 'Guarda-roupa 4 portas', 180, 55],
+    ['armario', 'Guarda-roupa 6 portas', 240, 55], ['armario', 'Cômoda', 100, 50],
+    ['mesa', 'Penteadeira', 90, 45], ['generico', 'Sapateira', 70, 35]
+  ]},
+  { cat: 'Escritório e outros', itens: [
+    ['mesa', 'Escrivaninha', 120, 60], ['cadeira', 'Cadeira de escritório', 60, 60],
+    ['estante', 'Estante de livros', 80, 30], ['generico', 'Bicicleta', 175, 55],
+    ['generico', 'Esteira', 180, 80], ['generico', 'Varal de chão', 140, 55]
+  ]}
+];
+const COR_TIPO = {
+  cama: '#dfe7f0', sofa: '#b7c7d9', poltrona: '#b7c7d9', mesa: '#e9d8b4', redondo: '#e9d8b4',
+  cadeira: '#c9a57a', armario: '#dcc7a5', rack: '#c9a57a', estante: '#c9a57a', criado: '#dcc7a5',
+  tapete: '#e6e0f2', planta: '#c8dcc0', geladeira: '#e6e9ec', fogao: '#e6e9ec', eletro: '#e6e9ec',
+  generico: '#d6dde4'
+};
+const PALETA = ['#e9d8b4', '#c9a57a', '#8d6e52', '#d6dde4', '#9aa5b1', '#b7c7d9', '#c8dcc0', '#efc9c0', '#e6e0f2', '#fff3c4', '#ffffff', '#44505c'];
+const REDONDOS = new Set(['redondo', 'planta']);
+
+/* ============================================================
+   ESTADO
+   ============================================================ */
+const CHAVE = 'simuladorMoveis.v1';
+const OP_PADRAO = { ima: true, cotas: true, portas: true, grade: true, rotulos: true };
+let estado;          // { layouts:[{id,nome,itens}], atual, op }
+let sel = null;      // id do móvel selecionado
+let desfazer = [], refazer = [], ultimoSalvo = '';
+const view = { x: 0, y: 0, k: 1 }; // k = cm por pixel de tela
+
+const uid = () => Math.random().toString(36).slice(2, 9);
+const $ = s => document.querySelector(s);
+const layout = () => estado.layouts.find(l => l.id === estado.atual);
+const itens = () => layout().itens;
+const pegar = id => itens().find(i => i.id === id);
+const arred = (v, c = 1) => Math.round(v * c) / c;
+const limitar = (v, a, b) => Math.max(a, Math.min(b, v));
+const fmt = v => String(arred(v, 10)).replace('.', ',');
+const num = s => { const v = parseFloat(String(s).replace(',', '.')); return isFinite(v) ? v : null; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function novoItem(tipo, nome, w, h, extra) {
+  return Object.assign({ id: uid(), tipo, nome, w, h, x: 0, y: 0, rot: 0,
+    cor: COR_TIPO[tipo] || COR_TIPO.generico, sobrepor: tipo === 'tapete' }, extra || {});
+}
+// Posiciona pelo retângulo que o móvel ocupa (x1,y1 = canto superior esquerdo).
+function mk(tipo, nome, w, h, x1, y1, rot = 0) {
+  const deitado = rot % 180 !== 0;
+  const bw = deitado ? h : w, bh = deitado ? w : h;
+  return novoItem(tipo, nome, w, h, { x: x1 + bw / 2, y: y1 + bh / 2, rot });
+}
+function exemplo() {
+  return [
+    mk('tapete', 'Tapete 1,50 × 2,00', 200, 150, 0, 80),
+    mk('rack', 'Rack de TV', 180, 45, 20, 0),
+    mk('mesa', 'Mesa de centro', 100, 60, 50, 120),
+    mk('sofa', 'Sofá 2 lugares', 160, 90, 20, 240, 180),
+    mk('mesa', 'Mesa 4 lugares', 120, 80, 220, 290),
+    mk('cadeira', 'Cadeira', 45, 50, 235, 240), mk('cadeira', 'Cadeira', 45, 50, 280, 240),
+    mk('cadeira', 'Cadeira', 45, 50, 235, 370, 180), mk('cadeira', 'Cadeira', 45, 50, 280, 370, 180),
+    mk('planta', 'Vaso de planta', 45, 45, 330, 5),
+    mk('armario', 'Guarda-roupa 3 portas', 150, 55, 0, 460),
+    mk('cama', 'Cama de casal', 145, 200, 100, 555, 90)
+  ];
+}
+
+function carregar() {
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(CHAVE)); } catch (e) { s = null; }
+  if (!s || !Array.isArray(s.layouts) || !s.layouts.length) {
+    const id = uid();
+    s = { layouts: [{ id, nome: 'Layout 1', itens: exemplo() }], atual: id };
+  }
+  s.op = Object.assign({}, OP_PADRAO, s.op || {});
+  s.layouts.forEach(l => { l.itens = (l.itens || []).map(limparItem).filter(Boolean); });
+  if (!s.layouts.some(l => l.id === s.atual)) s.atual = s.layouts[0].id;
+  estado = s;
+  ultimoSalvo = JSON.stringify(itens());
+}
+function limparItem(i) {
+  if (!i || typeof i !== 'object') return null;
+  const w = num(i.w), h = num(i.h);
+  if (!w || !h) return null;
+  return { id: typeof i.id === 'string' ? i.id : uid(), tipo: COR_TIPO[i.tipo] ? i.tipo : 'generico',
+    nome: String(i.nome || 'Móvel').slice(0, 60), w: limitar(w, 5, 1000), h: limitar(h, 5, 1000),
+    x: num(i.x) ?? W / 2, y: num(i.y) ?? H / 2, rot: ((num(i.rot) || 0) % 360 + 360) % 360,
+    cor: /^#[0-9a-f]{3,8}$/i.test(i.cor) ? i.cor : (COR_TIPO[i.tipo] || COR_TIPO.generico), sobrepor: !!i.sobrepor };
+}
+function gravar() {
+  try { localStorage.setItem(CHAVE, JSON.stringify(estado)); } catch (e) { /* sem armazenamento: segue sem salvar */ }
+}
+// Registra uma alteração concluída (para desfazer) e salva.
+function confirmar() {
+  const agora = JSON.stringify(itens());
+  if (agora !== ultimoSalvo) {
+    desfazer.push(ultimoSalvo);
+    if (desfazer.length > 200) desfazer.shift();
+    refazer = [];
+    ultimoSalvo = agora;
+  }
+  gravar();
+  botoesHistorico();
+}
+function voltar(de, para) {
+  if (!de.length) return;
+  para.push(JSON.stringify(itens()));
+  layout().itens = JSON.parse(de.pop());
+  ultimoSalvo = JSON.stringify(itens());
+  if (sel && !pegar(sel)) sel = null;
+  gravar(); botoesHistorico(); render();
+}
+function botoesHistorico() {
+  $('#btDesfazer').disabled = !desfazer.length;
+  $('#btRefazer').disabled = !refazer.length;
+}
+
+/* ============================================================
+   GEOMETRIA
+   ============================================================ */
+const retPoly = (x1, y1, x2, y2) => [[x1, y1], [x2, y1], [x2, y2], [x1, y2]];
+function circPoly(cx, cy, r, n = 20) {
+  const p = [];
+  for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2; p.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]); }
+  return p;
+}
+const redondo = it => REDONDOS.has(it.tipo);
+function girar(px, py, graus) {
+  const a = graus * Math.PI / 180, c = Math.cos(a), s = Math.sin(a);
+  return [px * c - py * s, px * s + py * c];
+}
+function itemPoly(it) {
+  if (redondo(it)) return circPoly(it.x, it.y, it.w / 2);
+  return [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([sx, sy]) => {
+    const [dx, dy] = girar(sx * it.w / 2, sy * it.h / 2, it.rot);
+    return [it.x + dx, it.y + dy];
+  });
+}
+function caixa(poly) {
+  let x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
+  for (const [x, y] of poly) { x1 = Math.min(x1, x); y1 = Math.min(y1, y); x2 = Math.max(x2, x); y2 = Math.max(y2, y); }
+  return { x1, y1, x2, y2 };
+}
+// Teorema do eixo separador (polígonos convexos). Encostar não conta como bater.
+function colide(a, b) {
+  const EPS = 0.5;
+  for (const poly of [a, b]) {
+    for (let i = 0; i < poly.length; i++) {
+      const p = poly[i], q = poly[(i + 1) % poly.length];
+      const nx = q[1] - p[1], ny = p[0] - q[0];
+      const len = Math.hypot(nx, ny) || 1;
+      let a1 = Infinity, a2 = -Infinity, b1 = Infinity, b2 = -Infinity;
+      for (const v of a) { const d = (v[0] * nx + v[1] * ny) / len; a1 = Math.min(a1, d); a2 = Math.max(a2, d); }
+      for (const v of b) { const d = (v[0] * nx + v[1] * ny) / len; b1 = Math.min(b1, d); b2 = Math.max(b2, d); }
+      if (a2 <= b1 + EPS || b2 <= a1 + EPS) return false;
+    }
+  }
+  return true;
+}
+function setorPorta(p, n = 10) {
+  const [hx, hy] = p.h;
+  const a1 = Math.atan2(p.c[1] - hy, p.c[0] - hx);
+  let d = Math.atan2(p.o[1] - hy, p.o[0] - hx) - a1;
+  while (d > Math.PI) d -= 2 * Math.PI;
+  while (d < -Math.PI) d += 2 * Math.PI;
+  const r = Math.hypot(p.c[0] - hx, p.c[1] - hy);
+  const pts = [[hx, hy]];
+  for (let i = 0; i <= n; i++) { const a = a1 + d * i / n; pts.push([hx + r * Math.cos(a), hy + r * Math.sin(a)]); }
+  return { pts, r, sweep: d > 0 ? 1 : 0 };
+}
+const OBST_FIXOS = [
+  ...PAREDES.map(p => ({ nome: 'parede', poly: retPoly(p.x1, p.y1, p.x2, p.y2) })),
+  ...FIXOS.map(f => ({ nome: f.nome.toLowerCase(), poly: f.circ ? circPoly(f.circ[0], f.circ[1], f.circ[2], 16) : retPoly(f.x1, f.y1, f.x2, f.y2) }))
+].map(o => Object.assign(o, { cx: caixa(o.poly) }));
+const OBST_PORTAS = PORTAS.map(p => ({ nome: p.nome.toLowerCase(), poly: setorPorta(p).pts }));
+
+let conflitos = new Map(); // id -> { duro:[nomes], porta:[nomes] }
+function calcularConflitos() {
+  const lista = itens();
+  const polys = new Map(lista.map(i => [i.id, itemPoly(i)]));
+  conflitos = new Map(lista.map(i => [i.id, { duro: [], porta: [] }]));
+  const add = (id, k, nome) => { const c = conflitos.get(id)[k]; if (!c.includes(nome)) c.push(nome); };
+  for (const it of lista) {
+    const p = polys.get(it.id);
+    if (p.some(([x, y]) => x < -0.5 || y < -0.5 || x > W + 0.5 || y > H + 0.5)) add(it.id, 'duro', 'parede externa');
+    for (const o of OBST_FIXOS) if (colide(p, o.poly)) add(it.id, 'duro', o.nome);
+    if (!it.sobrepor) for (const o of OBST_PORTAS) if (colide(p, o.poly)) add(it.id, 'porta', o.nome);
+  }
+  for (let i = 0; i < lista.length; i++) {
+    for (let j = i + 1; j < lista.length; j++) {
+      const a = lista[i], b = lista[j];
+      if (a.sobrepor || b.sobrepor) continue;
+      if (colide(polys.get(a.id), polys.get(b.id))) { add(a.id, 'duro', b.nome); add(b.id, 'duro', a.nome); }
+    }
+  }
+}
+// Caixas usadas pelo ímã e pelas cotas: peças fixas, paredes e outros móveis.
+function caixasObstaculos(excetoId, incluirSobrepor) {
+  const r = OBST_FIXOS.map(o => o.cx);
+  for (const it of itens()) {
+    if (it.id === excetoId || (it.sobrepor && !incluirSobrepor)) continue;
+    r.push(caixa(itemPoly(it)));
+  }
+  return r;
+}
+
+/* ============================================================
+   SVG
+   ============================================================ */
+const NS = 'http://www.w3.org/2000/svg';
+const svg = $('#planta');
+function el(tag, attrs, pai) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (pai) pai.appendChild(e);
+  return e;
+}
+const ESTILO_SVG = `
+  .corpo{stroke:#4d5660;stroke-width:1.2px;vector-effect:non-scaling-stroke}
+  .det{fill:none;stroke:#00000038;stroke-width:1px;vector-effect:non-scaling-stroke}
+  .detf{stroke:#00000038;stroke-width:1px;vector-effect:non-scaling-stroke}
+  .movel{cursor:grab}
+  .movel.tapete .corpo{stroke-dasharray:5 4;fill-opacity:.75}
+  .movel.aviso .corpo{stroke:#e8710a;stroke-width:2.5px}
+  .movel.ruim .corpo{stroke:#d93025;stroke-width:2.5px;fill:#f6c9c4}
+  .movel.sel .corpo{stroke:#1f6feb;stroke-width:2.5px}
+  .movel.sel.ruim .corpo{stroke:#d93025}
+  .rot{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;fill:#1b1f24;
+    text-anchor:middle;dominant-baseline:central;pointer-events:none;paint-order:stroke;stroke:#ffffffb0;stroke-width:2px;stroke-linejoin:round}
+  .fina{stroke-width:1px;vector-effect:non-scaling-stroke}
+  .amb{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;fill:#8b8472;font-weight:600;
+    text-anchor:middle;letter-spacing:1px;pointer-events:none}
+  .cota line{stroke:#1f6feb;stroke-width:1.3px;vector-effect:non-scaling-stroke}
+  .cota text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;fill:#0b4fbf;font-weight:700;
+    text-anchor:middle;dominant-baseline:central;paint-order:stroke;stroke:#fff;stroke-linejoin:round}
+  .cota.aperto line{stroke:#d93025}.cota.aperto text{fill:#b3261e}
+`;
+let gMoveis, gCotas, gSel, gPortas, gGrade, gRotulos;
+const nosMoveis = new Map(); // id -> { g, assinatura }
+
+function montarPlanta() {
+  svg.innerHTML = '';
+  const defs = el('defs', {}, svg);
+  el('style', {}, defs).textContent = ESTILO_SVG;
+  const p1 = el('pattern', { id: 'gradeFina', width: 10, height: 10, patternUnits: 'userSpaceOnUse' }, defs);
+  el('path', { d: 'M10 0H0V10', fill: 'none', stroke: '#00000012', 'stroke-width': 0.6 }, p1);
+  const p2 = el('pattern', { id: 'gradeGrossa', width: 100, height: 100, patternUnits: 'userSpaceOnUse' }, defs);
+  el('path', { d: 'M100 0H0V100', fill: 'none', stroke: '#00000026', 'stroke-width': 1 }, p2);
+  const p3 = el('pattern', { id: 'hachura', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
+  el('rect', { width: 6, height: 6, fill: '#c9ced4' }, p3);
+  el('line', { x1: 0, y1: 0, x2: 0, y2: 6, stroke: '#7d858e', 'stroke-width': 1.5 }, p3);
+
+  // Pisos dos ambientes
+  const gPiso = el('g', {}, svg);
+  el('rect', { x: 0, y: 0, width: W, height: H, fill: '#efe9dc' }, gPiso);
+  for (const a of AMBIENTES) el('rect', { x: a.x1, y: a.y1, width: a.x2 - a.x1, height: a.y2 - a.y1, fill: a.cor }, gPiso);
+  // piso dos vãos de porta
+  el('rect', { x: 222, y: 450, width: 78, height: 10, fill: '#f3eee4' }, gPiso);
+  el('rect', { x: 310, y: 450, width: 70, height: 10, fill: '#eef1f0' }, gPiso);
+  gGrade = el('g', {}, svg);
+  el('rect', { x: 0, y: 0, width: W, height: H, fill: 'url(#gradeFina)' }, gGrade);
+  el('rect', { x: 0, y: 0, width: W, height: H, fill: 'url(#gradeGrossa)' }, gGrade);
+
+  gRotulos = el('g', {}, svg);
+  for (const a of AMBIENTES) {
+    const area = ((a.x2 - a.x1) * (a.y2 - a.y1) / 10000).toFixed(2).replace('.', ',');
+    const t = el('text', { x: a.tx, y: a.ty, class: 'amb', 'font-size': 10 }, gRotulos);
+    t.textContent = a.nome;
+    const t2 = el('text', { x: a.tx, y: a.ty + 11, class: 'amb', 'font-size': 8, 'font-weight': 400 }, gRotulos);
+    t2.textContent = area + ' m²';
+  }
+
+  // Peças fixas
+  const gFixos = el('g', {}, svg);
+  el('rect', { x: 388, y: 0, width: 32, height: 46, fill: 'url(#hachura)', stroke: '#4d5660', class: 'fina' }, gFixos);
+  // bancada da pia da cozinha, com cuba
+  el('rect', { x: 360, y: 145, width: 60, height: 120, fill: '#d9dde2', stroke: '#4d5660', class: 'fina' }, gFixos);
+  el('rect', { x: 372, y: 180, width: 38, height: 48, rx: 5, fill: '#f4f6f8', stroke: '#4d5660', class: 'fina' }, gFixos);
+  el('circle', { cx: 391, cy: 204, r: 2.5, fill: '#8a939c' }, gFixos);
+  el('text', { x: 390, y: 158, class: 'amb', 'font-size': 7 }, gFixos).textContent = 'PIA';
+  el('text', { x: 390, y: 250, class: 'amb', 'font-size': 6, 'font-weight': 400 }, gFixos).textContent = 'COZINHA';
+  // box
+  el('rect', { x: 310, y: 616, width: 110, height: 84, fill: '#dcebf2', stroke: '#4d5660', class: 'fina' }, gFixos);
+  el('line', { x1: 310, y1: 616, x2: 420, y2: 616, stroke: '#5aa9e6', 'stroke-width': 3, 'vector-effect': 'non-scaling-stroke' }, gFixos);
+  el('circle', { cx: 365, cy: 672, r: 4, fill: 'none', stroke: '#6d7780', class: 'fina' }, gFixos);
+  el('text', { x: 365, y: 648, class: 'amb', 'font-size': 8 }, gFixos).textContent = 'BOX';
+  // pia do banho
+  el('circle', { cx: 401, cy: 509, r: 18, fill: '#f4f6f8', stroke: '#4d5660', class: 'fina' }, gFixos);
+  el('circle', { cx: 401, cy: 509, r: 11, fill: 'none', stroke: '#8a939c', class: 'fina' }, gFixos);
+  // vaso sanitário (caixa encostada na parede direita)
+  el('rect', { x: 402, y: 558, width: 18, height: 36, rx: 3, fill: '#f4f6f8', stroke: '#4d5660', class: 'fina' }, gFixos);
+  el('ellipse', { cx: 382, cy: 576, rx: 22, ry: 16, fill: '#f4f6f8', stroke: '#4d5660', class: 'fina' }, gFixos);
+  el('ellipse', { cx: 380, cy: 576, rx: 14, ry: 10, fill: 'none', stroke: '#8a939c', class: 'fina' }, gFixos);
+
+  // Portas (arco de abertura)
+  gPortas = el('g', {}, svg);
+  for (const p of PORTAS) {
+    const s = setorPorta(p);
+    el('polygon', { points: s.pts.map(q => q.join(',')).join(' '), fill: '#e8710a14', stroke: 'none', class: 'area-porta' }, gPortas);
+    el('path', { d: `M${p.c[0]},${p.c[1]} A${s.r},${s.r} 0 0 ${s.sweep} ${p.o[0]},${p.o[1]}`, fill: 'none', stroke: '#6d7780', 'stroke-dasharray': '4 3', class: 'fina' }, gPortas);
+    el('line', { x1: p.h[0], y1: p.h[1], x2: p.o[0], y2: p.o[1], stroke: '#3a4149', 'stroke-width': 2.5, 'vector-effect': 'non-scaling-stroke' }, gPortas);
+  }
+
+  // Paredes
+  const gPar = el('g', { fill: '#2f353b' }, svg);
+  el('rect', { x: -E, y: -E, width: W + 2 * E, height: E }, gPar);          // cima
+  el('rect', { x: -E, y: H, width: W + 2 * E, height: E }, gPar);           // baixo
+  el('rect', { x: -E, y: 0, width: E, height: H }, gPar);                   // esquerda
+  el('rect', { x: W, y: 0, width: E, height: ENTRADA[0] }, gPar);           // direita (acima da porta)
+  el('rect', { x: W, y: ENTRADA[1], width: E, height: H - ENTRADA[1] }, gPar); // direita (abaixo)
+  for (const p of PAREDES) el('rect', { x: p.x1, y: p.y1, width: p.x2 - p.x1, height: p.y2 - p.y1 }, gPar);
+  // Janelas
+  for (const [a, b] of JANELAS) {
+    el('rect', { x: -E, y: a, width: E, height: b - a, fill: '#e3f1fb', stroke: '#2f353b', class: 'fina' }, svg);
+    el('line', { x1: -E / 2 - 2, y1: a, x2: -E / 2 - 2, y2: b, stroke: '#5aa9e6', class: 'fina' }, svg);
+    el('line', { x1: -E / 2 + 2, y1: a, x2: -E / 2 + 2, y2: b, stroke: '#5aa9e6', class: 'fina' }, svg);
+  }
+  // Soleira da entrada
+  el('rect', { x: W, y: ENTRADA[0], width: E, height: ENTRADA[1] - ENTRADA[0], fill: '#efe9dc', stroke: '#2f353b', class: 'fina' }, svg);
+  el('text', { x: W + E + 4, y: (ENTRADA[0] + ENTRADA[1]) / 2, class: 'amb', 'font-size': 7, transform: `rotate(90 ${W + E + 4} ${(ENTRADA[0] + ENTRADA[1]) / 2})` }, svg).textContent = 'ENTRADA';
+
+  gMoveis = el('g', {}, svg);
+  gCotas = el('g', {}, svg);
+  gSel = el('g', { style: 'display:none' }, svg);
+  el('polygon', { class: 'contorno', fill: 'none', stroke: '#1f6feb', 'stroke-dasharray': '5 4', 'stroke-width': 1.3, 'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none' }, gSel);
+  el('line', { class: 'haste', stroke: '#1f6feb', 'stroke-width': 1.3, 'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none' }, gSel);
+  for (const h of ['girar', 'redim']) {
+    const g = el('g', { 'data-handle': h, style: `cursor:${h === 'girar' ? 'alias' : 'nwse-resize'}` }, gSel);
+    el('circle', { class: 'alvo', fill: 'transparent' }, g);
+    el('circle', { class: 'bola', fill: '#fff', stroke: '#1f6feb', 'stroke-width': 2, 'vector-effect': 'non-scaling-stroke' }, g);
+    el('text', { class: 'ico', 'text-anchor': 'middle', 'dominant-baseline': 'central', fill: '#1f6feb', 'pointer-events': 'none' }, g).textContent = h === 'girar' ? '↻' : '⤡';
+  }
+  nosMoveis.clear();
+}
+
+// Desenho interno do móvel, em coordenadas locais centradas (fundo do móvel = lado de cima).
+function desenhoMovel(it) {
+  const w = it.w, h = it.h, x = -w / 2, y = -h / 2, c = esc(it.cor);
+  let s = '';
+  const ret = (rx = 3) => `<rect class="corpo" x="${x}" y="${y}" width="${w}" height="${h}" rx="${Math.min(rx, w / 4, h / 4)}" fill="${c}"/>`;
+  switch (it.tipo) {
+    case 'cama': {
+      s += ret(4);
+      const n = w >= 120 ? 2 : 1, m = 8, ph = Math.min(32, h * 0.16), pw = (w - m * (n + 1)) / n;
+      s += `<rect class="detf" x="${x}" y="${y + h * 0.3}" width="${w}" height="${h * 0.7}" fill="#00000010"/>`;
+      s += `<line class="det" x1="${x}" y1="${y + h * 0.3 + 12}" x2="${x + w}" y2="${y + h * 0.3 + 12}"/>`;
+      for (let i = 0; i < n; i++) s += `<rect class="detf" x="${x + m + i * (pw + m)}" y="${y + 7}" width="${pw}" height="${ph}" rx="6" fill="#ffffffd0"/>`;
+      break;
+    }
+    case 'sofa': case 'poltrona': {
+      s += ret(7);
+      const enc = Math.min(22, h * 0.25), br = Math.min(18, w * 0.18);
+      s += `<rect class="detf" x="${x}" y="${y}" width="${w}" height="${enc}" rx="6" fill="#00000014"/>`;
+      s += `<rect class="detf" x="${x}" y="${y}" width="${br}" height="${h}" rx="6" fill="#00000014"/>`;
+      s += `<rect class="detf" x="${x + w - br}" y="${y}" width="${br}" height="${h}" rx="6" fill="#00000014"/>`;
+      const n = Math.max(1, Math.round((w - 2 * br) / 65));
+      for (let i = 1; i < n; i++) { const lx = x + br + (w - 2 * br) * i / n; s += `<line class="det" x1="${lx}" y1="${y + enc}" x2="${lx}" y2="${y + h - 4}"/>`; }
+      break;
+    }
+    case 'cadeira': {
+      s += ret(5);
+      s += `<rect class="detf" x="${x + 2}" y="${y + 2}" width="${w - 4}" height="${Math.min(10, h * 0.2)}" rx="3" fill="#00000022"/>`;
+      break;
+    }
+    case 'armario': case 'criado': case 'rack': case 'estante': {
+      s += ret(1.5);
+      const frente = y + h - Math.min(5, h * 0.12);
+      s += `<line class="det" x1="${x}" y1="${frente}" x2="${x + w}" y2="${frente}"/>`;
+      if (it.tipo === 'armario') {
+        const n = Math.max(1, Math.round(w / 50));
+        for (let i = 1; i < n; i++) { const lx = x + w * i / n; s += `<line class="det" x1="${lx}" y1="${y}" x2="${lx}" y2="${frente}"/>`; }
+        s += `<line class="det" x1="${x}" y1="${y}" x2="${x + w}" y2="${frente}"/>`;
+      }
+      if (it.tipo === 'estante') {
+        const n = Math.max(1, Math.round(w / 40));
+        for (let i = 1; i < n; i++) { const lx = x + w * i / n; s += `<line class="det" x1="${lx}" y1="${y}" x2="${lx}" y2="${y + h}"/>`; }
+      }
+      break;
+    }
+    case 'redondo': {
+      s += `<circle class="corpo" r="${w / 2}" fill="${c}"/>`;
+      break;
+    }
+    case 'planta': {
+      s += `<circle class="corpo" r="${w / 2}" fill="${c}"/>`;
+      for (let i = 0; i < 6; i++) { const a = i * 60; s += `<ellipse class="detf" rx="${w * 0.12}" ry="${w * 0.3}" transform="rotate(${a}) translate(0 ${-w * 0.18})" fill="#5d8f4e40"/>`; }
+      break;
+    }
+    case 'fogao': {
+      s += ret(2);
+      const r = Math.min(w, h) * 0.14;
+      for (const [fx, fy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) s += `<circle class="det" cx="${fx * w * 0.24}" cy="${fy * h * 0.22 + 3}" r="${r}"/>`;
+      s += `<line class="det" x1="${x}" y1="${y + 7}" x2="${x + w}" y2="${y + 7}"/>`;
+      break;
+    }
+    case 'eletro': {
+      s += ret(3);
+      s += `<circle class="det" r="${Math.min(w, h) * 0.32}"/>`;
+      break;
+    }
+    case 'geladeira': {
+      s += ret(3);
+      s += `<line class="det" x1="${x}" y1="${y + h - 6}" x2="${x + w}" y2="${y + h - 6}"/>`;
+      break;
+    }
+    case 'tapete': {
+      s += ret(2);
+      s += `<rect class="det" x="${x + 6}" y="${y + 6}" width="${Math.max(0, w - 12)}" height="${Math.max(0, h - 12)}" rx="1"/>`;
+      break;
+    }
+    default: s += ret(3);
+  }
+  return s + rotuloMovel(it);
+}
+function rotuloMovel(it) {
+  if (!estado.op.rotulos) return '';
+  const r = redondo(it);
+  const estreito = !r && it.w < it.h * 0.7;
+  const comp = r ? it.w * 0.8 : (estreito ? it.h : it.w);
+  const esp = r ? it.w * 0.6 : (estreito ? it.w : it.h);
+  const fs = limitar(esp * 0.22, 5, 12);
+  const max = Math.floor(comp * 0.9 / (fs * 0.56));
+  if (max < 3 || esp < fs * 1.2) return '';
+  let nome = it.nome;
+  if (nome.length > max) nome = nome.slice(0, Math.max(1, max - 1)) + '…';
+  const medidas = r ? `Ø${fmt(it.w)}` : `${fmt(it.w)}×${fmt(it.h)}`;
+  // ângulo local para o texto ficar sempre de pé
+  let local = estreito ? 90 : 0;
+  let mundo = ((it.rot + local) % 360 + 360) % 360;
+  if (mundo > 90 && mundo <= 270) local += 180;
+  if (r) local = -it.rot;
+  const duas = esp >= fs * 2.7;
+  const dy = duas ? fs * 0.55 : 0;
+  let t = `<g transform="rotate(${local})">`;
+  t += `<text class="rot" y="${-dy}" font-size="${fs}" font-weight="600">${esc(nome)}</text>`;
+  if (duas) t += `<text class="rot" y="${fs * 0.75}" font-size="${fs * 0.8}">${medidas}</text>`;
+  return t + '</g>';
+}
+
+function renderMoveis() {
+  calcularConflitos();
+  const lista = itens();
+  const ordem = [...lista.filter(i => i.sobrepor), ...lista.filter(i => !i.sobrepor)];
+  const vivos = new Set();
+  let anterior = null;
+  for (const it of ordem) {
+    vivos.add(it.id);
+    let no = nosMoveis.get(it.id);
+    if (!no) {
+      const g = el('g', { 'data-id': it.id });
+      no = { g, assinatura: '' };
+      nosMoveis.set(it.id, no);
+    }
+    const assinatura = [it.tipo, it.w, it.h, it.nome, it.cor, it.rot, estado.op.rotulos].join('|');
+    if (assinatura !== no.assinatura) { no.g.innerHTML = desenhoMovel(it); no.assinatura = assinatura; }
+    no.g.setAttribute('transform', `translate(${it.x} ${it.y}) rotate(${it.rot})`);
+    const c = conflitos.get(it.id);
+    no.g.setAttribute('class', 'movel' + (it.tipo === 'tapete' || it.sobrepor ? ' tapete' : '') +
+      (c.duro.length ? ' ruim' : c.porta.length ? ' aviso' : '') + (it.id === sel ? ' sel' : ''));
+    // mantém a ordem sem mexer em nós que já estão no lugar (não interrompe toques em andamento)
+    const esperado = anterior ? anterior.nextSibling : gMoveis.firstChild;
+    if (esperado !== no.g) gMoveis.insertBefore(no.g, esperado);
+    anterior = no.g;
+  }
+  for (const [id, no] of nosMoveis) if (!vivos.has(id)) { no.g.remove(); nosMoveis.delete(id); }
+}
+
+function renderSel() {
+  const it = sel && pegar(sel);
+  if (!it) { gSel.style.display = 'none'; return; }
+  gSel.style.display = '';
+  const k = view.k;
+  const poly = itemPoly(it);
+  gSel.querySelector('.contorno').setAttribute('points', (redondo(it) ? circPoly(it.x, it.y, it.w / 2 + 3 * k, 32) : poly).map(p => p.join(',')).join(' '));
+  const pos = (lx, ly) => { const [dx, dy] = girar(lx, ly, it.rot); return [it.x + dx, it.y + dy]; };
+  let pr, pg;
+  if (redondo(it)) {
+    const r = it.w / 2;
+    pr = [it.x + r * 0.7071, it.y + r * 0.7071];
+    pg = null;
+  } else {
+    pr = pos(it.w / 2, it.h / 2);
+    pg = pos(0, -it.h / 2 - 30 * k);
+  }
+  const hg = gSel.querySelector('[data-handle=girar]'), hr = gSel.querySelector('[data-handle=redim]');
+  const haste = gSel.querySelector('.haste');
+  const posHandle = (g, p) => {
+    g.style.display = p ? '' : 'none';
+    if (!p) return;
+    g.querySelector('.alvo').setAttribute('r', 22 * k);
+    const b = g.querySelector('.bola'); b.setAttribute('r', 11 * k);
+    for (const c of g.querySelectorAll('circle')) { c.setAttribute('cx', p[0]); c.setAttribute('cy', p[1]); }
+    const t = g.querySelector('.ico'); t.setAttribute('x', p[0]); t.setAttribute('y', p[1]); t.setAttribute('font-size', 14 * k);
+  };
+  posHandle(hg, pg); posHandle(hr, pr);
+  if (pg) {
+    const top = pos(0, -it.h / 2);
+    haste.style.display = '';
+    haste.setAttribute('x1', top[0]); haste.setAttribute('y1', top[1]); haste.setAttribute('x2', pg[0]); haste.setAttribute('y2', pg[1]);
+  } else haste.style.display = 'none';
+}
+
+// Distâncias livres nos quatro lados do móvel selecionado.
+function calcularCotas(it) {
+  const b = caixa(itemPoly(it));
+  const obst = caixasObstaculos(it.id, false);
+  const res = [];
+  const sobrepoe = (a1, a2, c1, c2) => Math.min(a2, c2) - Math.max(a1, c1) > 0.5;
+  const busca = (lado) => {
+    let melhor = null;
+    const considerar = (gap, meio, o) => { if (gap >= -0.5 && (!melhor || gap < melhor.gap)) melhor = { gap: Math.max(0, gap), meio, o }; };
+    if (lado === 'd') considerar(W - b.x2, (b.y1 + b.y2) / 2);
+    if (lado === 'e') considerar(b.x1, (b.y1 + b.y2) / 2);
+    if (lado === 'b') considerar(H - b.y2, (b.x1 + b.x2) / 2);
+    if (lado === 'c') considerar(b.y1, (b.x1 + b.x2) / 2);
+    for (const o of obst) {
+      if (lado === 'd' || lado === 'e') {
+        if (!sobrepoe(b.y1, b.y2, o.y1, o.y2)) continue;
+        const meio = (Math.max(b.y1, o.y1) + Math.min(b.y2, o.y2)) / 2;
+        if (lado === 'd' && o.x1 >= b.x2 - 0.5) considerar(o.x1 - b.x2, meio);
+        if (lado === 'e' && o.x2 <= b.x1 + 0.5) considerar(b.x1 - o.x2, meio);
+      } else {
+        if (!sobrepoe(b.x1, b.x2, o.x1, o.x2)) continue;
+        const meio = (Math.max(b.x1, o.x1) + Math.min(b.x2, o.x2)) / 2;
+        if (lado === 'b' && o.y1 >= b.y2 - 0.5) considerar(o.y1 - b.y2, meio);
+        if (lado === 'c' && o.y2 <= b.y1 + 0.5) considerar(b.y1 - o.y2, meio);
+      }
+    }
+    return melhor;
+  };
+  for (const lado of ['e', 'd', 'c', 'b']) {
+    const m = busca(lado);
+    if (!m || m.gap < 1) continue;
+    let x1, y1, x2, y2;
+    if (lado === 'e') { x1 = b.x1 - m.gap; x2 = b.x1; y1 = y2 = m.meio; }
+    if (lado === 'd') { x1 = b.x2; x2 = b.x2 + m.gap; y1 = y2 = m.meio; }
+    if (lado === 'c') { y1 = b.y1 - m.gap; y2 = b.y1; x1 = x2 = m.meio; }
+    if (lado === 'b') { y1 = b.y2; y2 = b.y2 + m.gap; x1 = x2 = m.meio; }
+    res.push({ lado, gap: m.gap, x1, y1, x2, y2 });
+  }
+  return res;
+}
+function renderCotas() {
+  gCotas.innerHTML = '';
+  const it = sel && pegar(sel);
+  if (!it || !estado.op.cotas) return;
+  const k = view.k, fs = 12 * k, tick = 5 * k;
+  for (const c of calcularCotas(it)) {
+    const g = el('g', { class: 'cota' + (c.gap < 60 ? ' aperto' : '') }, gCotas);
+    el('line', { x1: c.x1, y1: c.y1, x2: c.x2, y2: c.y2 }, g);
+    const hor = c.y1 === c.y2;
+    for (const [px, py] of [[c.x1, c.y1], [c.x2, c.y2]]) {
+      if (hor) el('line', { x1: px, y1: py - tick, x2: px, y2: py + tick }, g);
+      else el('line', { x1: px - tick, y1: py, x2: px + tick, y2: py }, g);
+    }
+    const t = el('text', { x: (c.x1 + c.x2) / 2, y: (c.y1 + c.y2) / 2, 'font-size': fs, 'stroke-width': 3.5 * k }, g);
+    t.textContent = fmt(c.gap);
+  }
+}
+
+function aplicarOpcoes() {
+  gGrade.style.display = estado.op.grade ? '' : 'none';
+  for (const a of gPortas.querySelectorAll('.area-porta')) a.style.display = estado.op.portas ? '' : 'none';
+  for (const i of document.querySelectorAll('[data-op]')) i.checked = !!estado.op[i.dataset.op];
+}
+
+/* ============================================================
+   VISTA (zoom / arrastar a planta)
+   ============================================================ */
+function tamanho() { const r = svg.getBoundingClientRect(); return { w: r.width || 1, h: r.height || 1, l: r.left, t: r.top }; }
+function aplicarVista() {
+  const t = tamanho();
+  svg.setAttribute('viewBox', `${view.x} ${view.y} ${t.w * view.k} ${t.h * view.k}`);
+  renderSel(); renderCotas();
+}
+function telaParaPlanta(cx, cy) {
+  const t = tamanho();
+  return { x: view.x + (cx - t.l) * view.k, y: view.y + (cy - t.t) * view.k };
+}
+function ajustar() {
+  const t = tamanho();
+  const bx1 = -E - 12, by1 = -E - 12, bx2 = W + E + 16, by2 = H + E + 12;
+  const reservaTopo = 44; // espaço do quadro de status
+  const k = Math.max((bx2 - bx1) / (t.w - 16), (by2 - by1) / (t.h - reservaTopo - 64));
+  view.k = k;
+  view.x = (bx1 + bx2) / 2 - t.w * k / 2;
+  view.y = (by1 + by2) / 2 - (t.h + reservaTopo - 64) * k / 2;
+  aplicarVista();
+}
+function zoomEm(fator, cx, cy) {
+  const t = tamanho();
+  if (cx == null) { cx = t.l + t.w / 2; cy = t.t + t.h / 2; }
+  const p = telaParaPlanta(cx, cy);
+  view.k = limitar(view.k * fator, 0.05, 6);
+  view.x = p.x - (cx - t.l) * view.k;
+  view.y = p.y - (cy - t.t) * view.k;
+  aplicarVista();
+}
+// Desloca a vista o mínimo necessário para o móvel aparecer inteiro (fora do painel e dos botões).
+function centrarEm(it) {
+  if (!it) return;
+  const t = tamanho(), b = caixa(itemPoly(it));
+  const m = 30 * view.k;
+  const v1 = telaParaPlanta(t.l + 12, t.t + 56), v2 = telaParaPlanta(t.l + t.w - 62, t.t + t.h - 12);
+  let dx = 0, dy = 0;
+  if (b.x2 - b.x1 + 2 * m > v2.x - v1.x) dx = (b.x1 + b.x2) / 2 - (v1.x + v2.x) / 2;
+  else if (b.x1 - m < v1.x) dx = b.x1 - m - v1.x;
+  else if (b.x2 + m > v2.x) dx = b.x2 + m - v2.x;
+  if (b.y2 - b.y1 + 2 * m > v2.y - v1.y) dy = (b.y1 + b.y2) / 2 - (v1.y + v2.y) / 2;
+  else if (b.y1 - m < v1.y) dy = b.y1 - m - v1.y;
+  else if (b.y2 + m > v2.y) dy = b.y2 + m - v2.y;
+  if (dx || dy) { view.x += dx; view.y += dy; aplicarVista(); }
+}
+// Quando a área muda de tamanho (painel abre/fecha) o canto de cima fica parado:
+// assim nada se desloca debaixo do dedo no meio de um toque.
+let vistaPronta = false;
+new ResizeObserver(() => { if (vistaPronta) aplicarVista(); else { vistaPronta = true; ajustar(); } }).observe(svg);
+window.addEventListener('orientationchange', () => setTimeout(ajustar, 300));
+
+/* ============================================================
+   ÍMÃ / ENCAIXE
+   ============================================================ */
+function encaixar(it, cx, cy) {
+  if (!estado.op.ima) return [arred(cx), arred(cy)];
+  const b = caixa(itemPoly(Object.assign({}, it, { x: cx, y: cy })));
+  const tol = 12 * view.k;
+  const obst = caixasObstaculos(it.id, it.sobrepor);
+  let dx = null, dy = null;
+  const cx_ = d => { if (Math.abs(d) <= tol && (dx === null || Math.abs(d) < Math.abs(dx))) dx = d; };
+  const cy_ = d => { if (Math.abs(d) <= tol && (dy === null || Math.abs(d) < Math.abs(dy))) dy = d; };
+  cx_(0 - b.x1); cx_(W - b.x2); cy_(0 - b.y1); cy_(H - b.y2);
+  for (const o of obst) {
+    if (o.y1 < b.y2 - 1 && o.y2 > b.y1 + 1) { cx_(o.x2 - b.x1); cx_(o.x1 - b.x2); }
+    if (o.x1 < b.x2 - 1 && o.x2 > b.x1 + 1) { cy_(o.y2 - b.y1); cy_(o.y1 - b.y2); }
+  }
+  // sem nada por perto: prende a borda na grade de 5 cm
+  if (dx === null) dx = Math.round(b.x1 / 5) * 5 - b.x1;
+  if (dy === null) dy = Math.round(b.y1 / 5) * 5 - b.y1;
+  return [arred(cx + dx, 10), arred(cy + dy, 10)];
+}
+
+/* ============================================================
+   TOQUE / MOUSE
+   ============================================================ */
+const toques = new Map();
+let gesto = null;
+
+svg.addEventListener('pointerdown', e => {
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  if (document.activeElement && document.activeElement.blur && document.activeElement !== document.body) document.activeElement.blur();
+  try { svg.setPointerCapture(e.pointerId); } catch (_) {}
+  toques.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  e.preventDefault();
+  if (toques.size === 2) { encerrarGesto(); iniciarPinca(); return; }
+  if (toques.size > 2) return;
+  const p = telaParaPlanta(e.clientX, e.clientY);
+  const alca = e.target.closest && e.target.closest('[data-handle]');
+  const g = e.target.closest && e.target.closest('[data-id]');
+  const base = { x0: e.clientX, y0: e.clientY, movido: false };
+  if (alca && sel && pegar(sel)) {
+    const it = pegar(sel);
+    const canto = girar(-it.w / 2, -it.h / 2, it.rot);
+    gesto = Object.assign(base, { tipo: alca.dataset.handle, id: sel, fixo: [it.x + canto[0], it.y + canto[1]] });
+  } else if (g) {
+    const id = g.dataset.id;
+    if (sel !== id) selecionar(id);
+    const it = pegar(id);
+    gesto = Object.assign(base, { tipo: 'mover', id, off: [it.x - p.x, it.y - p.y] });
+  } else {
+    gesto = Object.assign(base, { tipo: 'arrastar', v: { x: view.x, y: view.y } });
+  }
+});
+
+svg.addEventListener('pointermove', e => {
+  if (!toques.has(e.pointerId)) return;
+  toques.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (!gesto) return;
+  if (gesto.tipo === 'pinca') return moverPinca();
+  const dist = Math.hypot(e.clientX - gesto.x0, e.clientY - gesto.y0);
+  if (!gesto.movido && dist < (e.pointerType === 'mouse' ? 2 : 5)) return;
+  gesto.movido = true;
+  const p = telaParaPlanta(e.clientX, e.clientY);
+  const it = gesto.id && pegar(gesto.id);
+  if (gesto.tipo === 'arrastar') {
+    view.x = gesto.v.x - (e.clientX - gesto.x0) * view.k;
+    view.y = gesto.v.y - (e.clientY - gesto.y0) * view.k;
+    aplicarVista();
+    return;
+  }
+  if (!it) return;
+  if (gesto.tipo === 'mover') {
+    [it.x, it.y] = encaixar(it, p.x + gesto.off[0], p.y + gesto.off[1]);
+  } else if (gesto.tipo === 'girar') {
+    let a = Math.atan2(p.y - it.y, p.x - it.x) * 180 / Math.PI + 90;
+    const passo = estado.op.ima ? 15 : 1;
+    a = Math.round(a / passo) * passo;
+    if (!estado.op.ima) { const r90 = Math.round(a / 90) * 90; if (Math.abs(a - r90) < 3) a = r90; }
+    it.rot = ((a % 360) + 360) % 360;
+  } else if (gesto.tipo === 'redim') {
+    const passo = estado.op.ima ? 5 : 1;
+    if (redondo(it)) {
+      const d = Math.hypot(p.x - it.x, p.y - it.y);
+      it.w = it.h = Math.max(10, Math.round(2 * d / passo) * passo);
+    } else {
+      const [fx, fy] = gesto.fixo;
+      const [lx, ly] = girar(p.x - fx, p.y - fy, -it.rot);
+      it.w = Math.max(10, Math.round(lx / passo) * passo);
+      it.h = Math.max(10, Math.round(ly / passo) * passo);
+      const [dx, dy] = girar(it.w / 2, it.h / 2, it.rot);
+      it.x = arred(fx + dx, 10); it.y = arred(fy + dy, 10);
+    }
+  }
+  render(false);
+});
+
+function soltar(e) {
+  if (!toques.has(e.pointerId)) return;
+  toques.delete(e.pointerId);
+  if (!gesto) return;
+  if (gesto.tipo === 'pinca') { if (toques.size < 2) gesto = null; return; }
+  if (gesto.tipo === 'arrastar' && !gesto.movido && e.type === 'pointerup') selecionar(null);
+  const id = gesto.tipo !== 'arrastar' && gesto.id;
+  encerrarGesto();
+  if (id) requestAnimationFrame(() => centrarEm(pegar(id)));
+}
+svg.addEventListener('pointerup', soltar);
+svg.addEventListener('pointercancel', soltar);
+function encerrarGesto() {
+  if (gesto && gesto.movido && gesto.tipo !== 'arrastar' && gesto.tipo !== 'pinca') { confirmar(); render(); }
+  gesto = null;
+}
+function iniciarPinca() {
+  const [a, b] = [...toques.values()];
+  const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+  gesto = { tipo: 'pinca', d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, k0: view.k, p0: telaParaPlanta(mx, my) };
+}
+function moverPinca() {
+  if (toques.size < 2) return;
+  const [a, b] = [...toques.values()];
+  const t = tamanho();
+  const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+  const d = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+  view.k = limitar(gesto.k0 * gesto.d0 / d, 0.05, 6);
+  view.x = gesto.p0.x - (mx - t.l) * view.k;
+  view.y = gesto.p0.y - (my - t.t) * view.k;
+  aplicarVista();
+}
+svg.addEventListener('wheel', e => {
+  e.preventDefault();
+  if (e.ctrlKey || e.deltaMode !== 0 || Math.abs(e.deltaY) > 40 && Math.abs(e.deltaX) < 1) {
+    zoomEm(Math.exp(e.deltaY * (e.ctrlKey ? 0.01 : 0.0022)), e.clientX, e.clientY);
+  } else { // rolagem de trackpad: move a planta
+    view.x += e.deltaX * view.k; view.y += e.deltaY * view.k; aplicarVista();
+  }
+}, { passive: false });
+// Safari: impede o zoom da página inteira pela pinça
+document.addEventListener('gesturestart', e => e.preventDefault());
+document.addEventListener('gesturechange', e => e.preventDefault());
+
+/* ============================================================
+   AÇÕES
+   ============================================================ */
+function selecionar(id) {
+  sel = id;
+  render();
+}
+function adicionar(tipo, nome, w, h) {
+  const t = tamanho();
+  const c = telaParaPlanta(t.l + t.w / 2, t.t + t.h / 2);
+  const it = novoItem(tipo, nome, w, h);
+  it.x = limitar(c.x, 0, W); it.y = limitar(c.y, 0, H);
+  [it.x, it.y] = encaixar(it, it.x, it.y);
+  itens().push(it);
+  sel = it.id;
+  confirmar(); render();
+  fecharFolhas();
+  requestAnimationFrame(() => centrarEm(it));
+}
+function girar90(sentido) {
+  const it = pegar(sel); if (!it) return;
+  it.rot = ((Math.round(it.rot / 90) * 90 + 90 * sentido) % 360 + 360) % 360;
+  confirmar(); render();
+}
+function duplicar() {
+  const it = pegar(sel); if (!it) return;
+  const n = Object.assign({}, it, { id: uid(), x: it.x + 20, y: it.y + 20 });
+  itens().push(n); sel = n.id;
+  confirmar(); render();
+}
+function excluir() {
+  if (!sel) return;
+  layout().itens = itens().filter(i => i.id !== sel);
+  sel = null; confirmar(); render();
+}
+function paraFrente() {
+  const it = pegar(sel); if (!it) return;
+  layout().itens = itens().filter(i => i.id !== sel).concat(it);
+  confirmar(); render();
+}
+function trocarLayout(id) {
+  estado.atual = id; sel = null; desfazer = []; refazer = [];
+  ultimoSalvo = JSON.stringify(itens());
+  gravar(); botoesHistorico(); render(); preencherLayouts();
+}
+function nomeLivre(base) {
+  let n = base, i = 2;
+  while (estado.layouts.some(l => l.nome === n)) n = `${base} (${i++})`;
+  return n;
+}
+let tAviso;
+function avisar(msg) {
+  const a = $('#aviso'); a.textContent = msg; a.classList.add('on');
+  clearTimeout(tAviso); tAviso = setTimeout(() => a.classList.remove('on'), 2200);
+}
+
+/* ============================================================
+   RENDERIZAÇÃO GERAL
+   ============================================================ */
+function render(painel = true) {
+  renderMoveis(); renderSel(); renderCotas(); renderStatus();
+  if (painel) renderPainel(); else atualizarCamposPainel();
+}
+function renderStatus() {
+  const lista = itens();
+  const ruins = lista.filter(i => conflitos.get(i.id).duro.length).length;
+  const avisos = lista.filter(i => !conflitos.get(i.id).duro.length && conflitos.get(i.id).porta.length).length;
+  const it = sel && pegar(sel);
+  let h;
+  if (it) {
+    const med = redondo(it) ? `Ø${fmt(it.w)} cm` : `${fmt(it.w)} × ${fmt(it.h)} cm`;
+    h = `<b>${esc(it.nome)}</b> · ${med}${!redondo(it) && it.rot ? ' · ' + fmt(it.rot) + '°' : ''}`;
+  } else {
+    h = `<b>${lista.length}</b> ${lista.length === 1 ? 'móvel' : 'móveis'}`;
+  }
+  if (ruins) h += ` · <span class="ruim">${ruins} batendo</span>`;
+  if (avisos) h += ` · <span class="aviso">${avisos} na porta</span>`;
+  if (!ruins && !avisos && lista.length && !it) h += ' · <span class="ok">tudo cabe</span>';
+  $('#status').innerHTML = h;
+}
+function renderPainel() {
+  const it = sel && pegar(sel);
+  const painel = $('#painel');
+  painel.classList.toggle('vazio', !it);
+  document.body.classList.toggle('comSel', !!it);
+  if (!it) return;
+  $('#pNome').value = it.nome;
+  $('#pSobrepor').checked = !!it.sobrepor;
+  const redond = redondo(it);
+  $('#pGirarE').style.display = $('#pGirarD').style.display = redond ? 'none' : '';
+  $('#pH').parentElement.style.display = $('#pR').parentElement.style.display = redond ? 'none' : '';
+  $('#pW').parentElement.firstChild.textContent = redond ? 'Diâmetro (cm)' : 'Largura (cm)';
+  $('#pCores').innerHTML = PALETA.map(c => `<button class="cor${c.toLowerCase() === it.cor.toLowerCase() ? ' on' : ''}" data-cor="${c}" style="background:${c}" aria-label="Cor ${c}"></button>`).join('');
+  atualizarCamposPainel(true);
+}
+function atualizarCamposPainel(forcar) {
+  const it = sel && pegar(sel);
+  if (!it || $('#painel').classList.contains('vazio')) return;
+  const b = caixa(itemPoly(it));
+  const vals = { pW: it.w, pH: it.h, pX: b.x1, pY: b.y1, pR: it.rot };
+  for (const k in vals) { const i = $('#' + k); if (forcar || document.activeElement !== i) i.value = fmt(vals[k]); }
+  const c = conflitos.get(it.id), a = $('#pAlerta');
+  if (c.duro.length) { a.className = 'ruim'; a.textContent = 'Batendo em: ' + c.duro.join(', ') + '.'; }
+  else if (c.porta.length) { a.className = 'aviso'; a.textContent = 'No caminho da ' + c.porta.join(' e da ') + '.'; }
+  else { a.className = ''; a.textContent = ''; }
+}
+function preencherLayouts() {
+  const s = $('#selLayout');
+  s.innerHTML = estado.layouts.map(l => `<option value="${l.id}">${esc(l.nome)}</option>`).join('');
+  s.value = estado.atual;
+}
+function preencherListaMoveis() {
+  calcularConflitos();
+  const lista = itens();
+  $('#mLista').innerHTML = lista.length ? lista.map(i => {
+    const c = conflitos.get(i.id);
+    const marca = c.duro.length ? ' <span style="color:#d93025">● batendo</span>' : c.porta.length ? ' <span style="color:#e8710a">● porta</span>' : '';
+    return `<button data-ir="${i.id}"><span>${esc(i.nome)}${marca}</span><small>${redondo(i) ? 'Ø' + fmt(i.w) : fmt(i.w) + ' × ' + fmt(i.h)} cm</small></button>`;
+  }).join('') : '<p style="color:#5b6570;font-size:14px;margin:4px 0">Nenhum móvel ainda.</p>';
+}
+
+/* ============================================================
+   CATÁLOGO (miniaturas)
+   ============================================================ */
+function montarCatalogo() {
+  let h = '';
+  CATALOGO.forEach((grupo, gi) => {
+    h += `<h3>${grupo.cat}</h3><div class="grade-cat">`;
+    grupo.itens.forEach(([tipo, nome, w, hh], ii) => {
+      const it = { tipo, nome, w, h: hh, rot: 0, cor: COR_TIPO[tipo] };
+      const esc_ = 36 / Math.max(w, hh);
+      const salvaRot = estado.op.rotulos; estado.op.rotulos = false;
+      const des = desenhoMovel(it);
+      estado.op.rotulos = salvaRot;
+      h += `<button class="item-cat" data-cat="${gi}.${ii}"><svg width="40" height="40" viewBox="-20 -20 40 40"><style>.corpo{stroke:#4d5660;stroke-width:1px;vector-effect:non-scaling-stroke}.det,.detf{stroke:#0004;stroke-width:1px;vector-effect:non-scaling-stroke}.det{fill:none}</style><g transform="scale(${esc_})">${des}</g></svg>
+        <span>${esc(nome)}<small>${REDONDOS.has(tipo) ? 'Ø' + w : w + ' × ' + hh} cm</small></span></button>`;
+    });
+    h += '</div>';
+  });
+  $('#catalogo').innerHTML = h;
+}
+
+/* ============================================================
+   ARQUIVOS
+   ============================================================ */
+function baixar(blob, nome) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+async function compartilharOuBaixar(blob, nome) {
+  try {
+    const f = new File([blob], nome, { type: blob.type });
+    if (navigator.canShare && navigator.canShare({ files: [f] }) && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      await navigator.share({ files: [f], title: nome });
+      return;
+    }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  baixar(blob, nome);
+}
+function dataHoje() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+function exportarJson() {
+  const blob = new Blob([JSON.stringify({ app: 'simulador-moveis', versao: 1, layouts: estado.layouts }, null, 2)], { type: 'application/json' });
+  compartilharOuBaixar(blob, `layouts-apartamento-${dataHoje()}.json`);
+}
+function importarJson(texto) {
+  let d;
+  try { d = JSON.parse(texto); } catch (e) { avisar('Arquivo inválido.'); return; }
+  const lista = Array.isArray(d.layouts) ? d.layouts : Array.isArray(d.itens) ? [d] : Array.isArray(d) ? [{ nome: 'Importado', itens: d }] : null;
+  if (!lista) { avisar('Não encontrei layouts nesse arquivo.'); return; }
+  let ultimo = null, n = 0;
+  for (const l of lista) {
+    const itensOk = (l.itens || []).map(limparItem).filter(Boolean).map(i => Object.assign(i, { id: uid() }));
+    const novo = { id: uid(), nome: nomeLivre(String(l.nome || 'Importado').slice(0, 40)), itens: itensOk };
+    estado.layouts.push(novo); ultimo = novo.id; n++;
+  }
+  if (ultimo) trocarLayout(ultimo);
+  avisar(n === 1 ? 'Layout importado.' : `${n} layouts importados.`);
+}
+function salvarPng() {
+  const selAntes = sel;
+  sel = null; render(false);
+  const clone = svg.cloneNode(true);
+  sel = selAntes; render();
+  const bx = -E - 20, by = -E - 20, bw = W + 2 * E + 60, bh = H + 2 * E + 40;
+  const escala = 3;
+  clone.setAttribute('width', bw * escala); clone.setAttribute('height', bh * escala + 30 * escala);
+  clone.setAttribute('viewBox', `${bx} ${by} ${bw} ${bh + 30}`);
+  clone.removeAttribute('style'); clone.removeAttribute('id');
+  const fundo = document.createElementNS(NS, 'rect');
+  Object.entries({ x: bx, y: by, width: bw, height: bh + 30, fill: '#ffffff' }).forEach(([k, v]) => fundo.setAttribute(k, v));
+  clone.insertBefore(fundo, clone.firstChild.nextSibling);
+  const tit = document.createElementNS(NS, 'text');
+  Object.entries({ x: W / 2, y: H + E + 28, 'text-anchor': 'middle', 'font-size': 11, 'font-family': 'Helvetica,Arial,sans-serif', fill: '#44505c' }).forEach(([k, v]) => tit.setAttribute(k, v));
+  tit.textContent = `${layout().nome} · área interna 420 × 700 cm`;
+  clone.appendChild(tit);
+  const txt = new XMLSerializer().serializeToString(clone);
+  const img = new Image();
+  img.onload = () => {
+    const cv = document.createElement('canvas');
+    cv.width = bw * escala; cv.height = (bh + 30) * escala;
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
+    ctx.drawImage(img, 0, 0, cv.width, cv.height);
+    try {
+      cv.toBlob(b => b ? compartilharOuBaixar(b, `planta-${layout().nome.replace(/[^\wÀ-ú-]+/g, '-')}.png`) : avisar('Não foi possível gerar a imagem.'), 'image/png');
+    } catch (e) { avisar('O navegador bloqueou a imagem.'); }
+  };
+  img.onerror = () => avisar('Não foi possível gerar a imagem.');
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(txt);
+}
+
+/* ============================================================
+   FOLHAS
+   ============================================================ */
+function abrir(id) { fecharFolhas(); $(id).hidden = false; }
+function fecharFolhas() { for (const f of document.querySelectorAll('.fundo-folha')) f.hidden = true; }
+for (const f of document.querySelectorAll('.fundo-folha')) {
+  f.addEventListener('click', e => { if (e.target === f || e.target.closest('[data-fechar]')) f.hidden = true; });
+}
+
+/* ============================================================
+   LIGAÇÕES DA INTERFACE
+   ============================================================ */
+$('#fab').onclick = () => abrir('#fCatalogo');
+$('#btMenu').onclick = () => { preencherListaMoveis(); abrir('#fMenu'); };
+$('#btDesfazer').onclick = () => voltar(desfazer, refazer);
+$('#btRefazer').onclick = () => voltar(refazer, desfazer);
+$('#btMais').onclick = () => zoomEm(1 / 1.35);
+$('#btMenos').onclick = () => zoomEm(1.35);
+$('#btAjustar').onclick = ajustar;
+$('#selLayout').onchange = e => trocarLayout(e.target.value);
+
+$('#catalogo').addEventListener('click', e => {
+  const b = e.target.closest('[data-cat]'); if (!b) return;
+  const [gi, ii] = b.dataset.cat.split('.').map(Number);
+  const [tipo, nome, w, h] = CATALOGO[gi].itens[ii];
+  adicionar(tipo, nome, w, h);
+});
+$('#cAdd').onclick = () => {
+  const w = num($('#cW').value), h = num($('#cH').value);
+  if (!w || !h || w < 5 || h < 5) { avisar('Informe largura e profundidade em cm.'); return; }
+  const tipo = $('#cForma').value;
+  const nome = $('#cNome').value.trim() || 'Móvel';
+  adicionar(tipo, nome, limitar(w, 5, 1000), REDONDOS.has(tipo) ? limitar(w, 5, 1000) : limitar(h, 5, 1000));
+  $('#cNome').value = '';
+};
+
+$('#pFechar').onclick = () => selecionar(null);
+$('#pGirarE').onclick = () => girar90(-1);
+$('#pGirarD').onclick = () => girar90(1);
+$('#pDuplicar').onclick = duplicar;
+$('#pFrente').onclick = paraFrente;
+$('#pExcluir').onclick = excluir;
+$('#pNome').addEventListener('input', e => { const it = pegar(sel); if (it) { it.nome = e.target.value || 'Móvel'; render(false); } });
+$('#pNome').addEventListener('change', confirmar);
+const campoNum = (id, aplicar) => {
+  const i = $('#' + id);
+  i.addEventListener('input', () => { const it = pegar(sel); const v = num(i.value); if (it && v !== null) { aplicar(it, v); render(false); } });
+  i.addEventListener('change', () => { confirmar(); render(); });
+  i.addEventListener('keydown', e => { if (e.key === 'Enter') i.blur(); });
+};
+campoNum('pW', (it, v) => { it.w = limitar(v, 5, 1000); if (redondo(it)) it.h = it.w; });
+campoNum('pH', (it, v) => { it.h = limitar(v, 5, 1000); });
+campoNum('pR', (it, v) => { it.rot = ((v % 360) + 360) % 360; });
+campoNum('pX', (it, v) => { const b = caixa(itemPoly(it)); it.x += v - b.x1; });
+campoNum('pY', (it, v) => { const b = caixa(itemPoly(it)); it.y += v - b.y1; });
+$('#pCores').addEventListener('click', e => {
+  const b = e.target.closest('[data-cor]'); const it = pegar(sel); if (!b || !it) return;
+  it.cor = b.dataset.cor; confirmar(); render();
+});
+$('#pSobrepor').onchange = e => { const it = pegar(sel); if (it) { it.sobrepor = e.target.checked; confirmar(); render(); } };
+
+for (const i of document.querySelectorAll('[data-op]')) {
+  i.addEventListener('change', () => { estado.op[i.dataset.op] = i.checked; gravar(); aplicarOpcoes(); nosMoveis.forEach(n => n.assinatura = ''); render(); });
+}
+$('#mNovo').onclick = () => {
+  const l = { id: uid(), nome: nomeLivre('Layout ' + (estado.layouts.length + 1)), itens: [] };
+  estado.layouts.push(l); trocarLayout(l.id); fecharFolhas(); avisar('Layout novo criado.');
+};
+$('#mCopia').onclick = () => {
+  const l = { id: uid(), nome: nomeLivre(layout().nome + ' – cópia'), itens: JSON.parse(JSON.stringify(itens())).map(i => Object.assign(i, { id: uid() })) };
+  estado.layouts.push(l); trocarLayout(l.id); fecharFolhas(); avisar('Cópia criada: ' + l.nome);
+};
+$('#mRenomear').onclick = () => {
+  const n = prompt('Nome do layout:', layout().nome);
+  if (n && n.trim()) { layout().nome = n.trim().slice(0, 40); gravar(); preencherLayouts(); }
+};
+$('#mExcluirLayout').onclick = () => {
+  if (estado.layouts.length === 1) { avisar('É o único layout — não dá para excluir.'); return; }
+  if (!confirm(`Excluir o layout "${layout().nome}"?`)) return;
+  estado.layouts = estado.layouts.filter(l => l.id !== estado.atual);
+  trocarLayout(estado.layouts[0].id); fecharFolhas();
+};
+$('#mLista').addEventListener('click', e => {
+  const b = e.target.closest('[data-ir]'); if (!b) return;
+  fecharFolhas(); selecionar(b.dataset.ir); requestAnimationFrame(() => centrarEm(pegar(b.dataset.ir)));
+});
+$('#mPng').onclick = () => { fecharFolhas(); salvarPng(); };
+$('#mExportar').onclick = exportarJson;
+$('#mImportar').onclick = () => $('#mArquivo').click();
+$('#mArquivo').onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => { importarJson(r.result); fecharFolhas(); };
+  r.readAsText(f); e.target.value = '';
+};
+$('#mExemplo').onclick = () => {
+  if (itens().length && !confirm('Trocar os móveis deste layout pelo exemplo? (dá para desfazer)')) return;
+  layout().itens = exemplo(); sel = null; confirmar(); render(); fecharFolhas();
+};
+$('#mLimpar').onclick = () => {
+  if (!itens().length) return;
+  if (!confirm('Remover todos os móveis deste layout? (dá para desfazer)')) return;
+  layout().itens = []; sel = null; confirmar(); render(); fecharFolhas();
+};
+$('#mAjuda').onclick = () => abrir('#fAjuda');
+
+let tSeta;
+document.addEventListener('keydown', e => {
+  const alvo = e.target;
+  if (alvo.matches && alvo.matches('input, select, textarea')) return;
+  const ctrl = e.ctrlKey || e.metaKey;
+  if (ctrl && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? voltar(refazer, desfazer) : voltar(desfazer, refazer); return; }
+  if (ctrl && e.key.toLowerCase() === 'y') { e.preventDefault(); voltar(refazer, desfazer); return; }
+  if (e.key === 'Escape') { if (!document.querySelector('.fundo-folha:not([hidden])')) selecionar(null); fecharFolhas(); return; }
+  const it = pegar(sel);
+  if (!it) return;
+  if (ctrl && e.key.toLowerCase() === 'd') { e.preventDefault(); duplicar(); return; }
+  if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); excluir(); return; }
+  if (e.key.toLowerCase() === 'r' && !ctrl) { girar90(e.shiftKey ? -1 : 1); return; }
+  const passo = e.shiftKey ? 10 : 1;
+  const mov = { ArrowLeft: [-passo, 0], ArrowRight: [passo, 0], ArrowUp: [0, -passo], ArrowDown: [0, passo] }[e.key];
+  if (mov) { e.preventDefault(); it.x = arred(it.x + mov[0], 10); it.y = arred(it.y + mov[1], 10); render(false); clearTimeout(tSeta); tSeta = setTimeout(confirmar, 400); }
+});
+
+/* ============================================================
+   INÍCIO
+   ============================================================ */
+carregar();
+montarPlanta();
+montarCatalogo();
+preencherLayouts();
+aplicarOpcoes();
+botoesHistorico();
+if (window.matchMedia('(min-width: 900px)').matches) $('#pDetalhes').open = true;
+render();
+requestAnimationFrame(ajustar);
+</script>
+</body>
+</html>
