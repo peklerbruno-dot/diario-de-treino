@@ -37,7 +37,7 @@ export function FolhaDoDia({ dia, aoFechar }: { dia: DiaCalculado; aoFechar: () 
                   <button
                     type="button"
                     onClick={() => setEditando(l)}
-                    className="min-w-0 flex-1 text-left"
+                    className="min-w-0 flex-1 truncate text-left"
                   >
                     <Dinheiro
                       cents={l.valorCents}

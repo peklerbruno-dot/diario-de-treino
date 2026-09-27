@@ -432,18 +432,30 @@ function Situacao({ acimaDaBarra }: { acimaDaBarra: boolean }) {
       className="fixed inset-x-0 bottom-[var(--baixo)] z-30 px-4 lg:bottom-5 lg:left-[236px]"
     >
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 rounded-folha bg-cartao px-3.5 py-2.5 text-[12.5px] shadow-cartao">
-        <span className={situacao === "erro" ? "text-atencao" : "text-grafite"}>
+        <span
+          className={
+            situacao === "erro" || situacao === "sessao-vencida" ? "text-atencao" : "text-grafite"
+          }
+        >
           {RECADO_DA_SITUACAO[situacao]}
           {quantos > 0 && situacao !== "enviando" ? ` · ${quantos} para enviar` : ""}
         </span>
-        {situacao !== "enviando" && (
-          <button
-            type="button"
-            onClick={() => void loja.sincronizar()}
-            className="rounded-full bg-linha px-3 py-1 font-medium text-tinta"
-          >
-            Tentar agora
-          </button>
+        {situacao === "sessao-vencida" ? (
+          // Entrar de novo é uma navegação de verdade — mas escolhida, não
+          // imposta no meio de uma digitação.
+          <a href="/entrar" className="rounded-full bg-linha px-3 py-1 font-medium text-tinta">
+            Entrar
+          </a>
+        ) : (
+          situacao !== "enviando" && (
+            <button
+              type="button"
+              onClick={() => void loja.sincronizar()}
+              className="rounded-full bg-linha px-3 py-1 font-medium text-tinta"
+            >
+              Tentar agora
+            </button>
+          )
         )}
       </div>
     </div>

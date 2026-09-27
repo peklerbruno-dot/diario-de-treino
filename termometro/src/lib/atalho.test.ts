@@ -285,3 +285,35 @@ describe("o recado diz a categoria", () => {
     expect(recadoDoAtalho(um, 150000)).toBe("R$ 90 no diário. Saldo de hoje: R$ 1.500.");
   });
 });
+
+describe("centavos ditos por extenso", () => {
+  it('"38 reais e 5 centavos" é R$ 38,05, não R$ 38,50', () => {
+    const pedido = lerPedidoDoAtalho({ valor: "38 reais e 5 centavos", tipo: "diario" }, opcoes);
+    expect(pedido.ok).toBe(true);
+    if (pedido.ok) expect(pedido.lancamentos[0].valorCents).toBe(3800); // arredonda ao real
+  });
+
+  it('"38 reais e 5" sem a palavra continua decimal: R$ 38,50', () => {
+    const pedido = lerPedidoDoAtalho({ valor: "38 reais e 5", tipo: "diario" }, opcoes);
+    expect(pedido.ok).toBe(true);
+    if (pedido.ok) expect(pedido.lancamentos[0].valorCents).toBe(3900); // 38,50 → R$ 39
+  });
+
+  it('"38 reais e 50 centavos" segue R$ 38,50', () => {
+    const pedido = lerPedidoDoAtalho({ valor: "38 reais e 50 centavos", tipo: "diario" }, opcoes);
+    expect(pedido.ok).toBe(true);
+    if (pedido.ok) expect(pedido.lancamentos[0].valorCents).toBe(3900);
+  });
+});
+
+describe("o teto vale para o que é dito", () => {
+  it("um valor absurdo por extenso é recusado, não gravado", () => {
+    const pedido = lerPedidoDoAtalho({ valor: "999999999999 reais", tipo: "diario" }, opcoes);
+    expect(pedido.ok).toBe(false);
+  });
+
+  it("digitado com dígitos repetidos também", () => {
+    const pedido = lerPedidoDoAtalho({ valor: "38003800" }, opcoes);
+    expect(pedido.ok).toBe(false);
+  });
+});

@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { PartidaDoAtalho } from "@/lib/atalhos";
 import { avaliar } from "@/lib/calculadora";
 import { categoriasDoTipo } from "@/lib/categorias";
 import { paraOTeclado } from "@/lib/dinheiro";
-import { curta, porExtenso } from "@/lib/datas";
+import { curta, diasNoMes, partesDaData, porExtenso } from "@/lib/datas";
 import { categoriasDe, loja } from "@/lib/loja";
 import { EXPLICACAO_DO_TIPO, NOME_DO_TIPO, TIPOS, type Lancamento, type Tipo } from "@/lib/tipos";
 import { Botao, CampoDeTexto, Folha, Sobrescrito } from "./pecas";
@@ -51,6 +51,11 @@ export function FolhaDeLancamento({
     apartamento: !!lancamento?.apartamento,
   });
   const [erro, setErro] = useState<string | null>(null);
+  // Editar um previsto NÃO o confirma: mexer na nota da fatura não é dizer que
+  // ela foi paga. Confirmar é este chip, ou o "Aconteceu" da folha do dia.
+  const [aconteceu, setAconteceu] = useState(false);
+  // Dois toques rápidos no mesmo botão são um lançamento só, não dois.
+  const jaSalvou = useRef(false);
 
   const conta = avaliar(valor);
   const categorias = categoriasDe(useEstado());
@@ -61,17 +66,25 @@ export function FolhaDeLancamento({
   const escolhida = daColuna.some((c) => c.id === categoria) ? categoria : null;
 
   function salvar() {
+    if (jaSalvou.current) return;
     if (!conta) {
       setErro("Digite um valor.");
       return;
     }
+    if (!dataDeVerdade(quando)) {
+      // O campo de data deixa apagar o dia; salvar assim gravaria um
+      // lançamento com data vazia — dinheiro que some de todas as telas.
+      setErro("Escolha um dia.");
+      return;
+    }
+    jaSalvou.current = true;
 
     const comum = {
       data: quando,
       tipo,
       nota: nota.trim() || null,
       categoria: escolhida,
-      previsto: false,
+      previsto: editando ? !!lancamento.previsto && !aconteceu : false,
       rendaPropria: tipo === "ENTRADA" && marcado.rendaPropria,
       investimento: tipo === "SAIDA" && marcado.investimento,
       apartamento: tipo === "SAIDA" && marcado.apartamento,
@@ -113,7 +126,7 @@ export function FolhaDeLancamento({
 
         {daColuna.length > 0 && (
           <div className="!mt-4">
-            <Sobrescrito>Para onde foi</Sobrescrito>
+            <Sobrescrito>{tipo === "ENTRADA" ? "De onde veio" : "Para onde foi"}</Sobrescrito>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               {daColuna.map((c) => (
                 <Chip
@@ -129,7 +142,7 @@ export function FolhaDeLancamento({
         )}
 
         <div className="flex gap-2">
-          <CampoDeTexto valor={nota} aoMudar={setNota} placeholder="Observação (opcional)" />
+          <CampoDeTexto valor={nota} aoMudar={setNota} placeholder="Observação" maxLength={500} />
           <input
             type="date"
             value={quando}
@@ -140,6 +153,17 @@ export function FolhaDeLancamento({
         </div>
         {quando !== data && (
           <p className="!mt-1.5 text-[12.5px] text-fosco">{porExtenso(quando)}</p>
+        )}
+
+        {editando && lancamento.previsto && (
+          <Marcacoes>
+            <Chip ligado={aconteceu} aoTocar={() => setAconteceu(!aconteceu)}>
+              Aconteceu
+            </Chip>
+            <span className="text-[12.5px] leading-snug text-fosco">
+              Isto é uma previsão. Marque quando acontecer de verdade.
+            </span>
+          </Marcacoes>
         )}
 
         {tipo === "ENTRADA" && (
@@ -179,7 +203,10 @@ export function FolhaDeLancamento({
           </p>
         )}
 
-        <div className="flex gap-2 pt-1">
+        {/* Grudado no rodapé do que está visível: a folha inteira é mais alta
+            que a tela do iPhone, e o botão de confirmar ficava sempre abaixo
+            da dobra — lançar pedia uma rolagem às cegas. */}
+        <div className="sticky bottom-0 -mx-1 flex gap-2 bg-papel px-1 pb-1 pt-2">
           <Botao tipo="primario" onClick={salvar} className="flex-1">
             {editando ? "Salvar" : `Lançar em ${curta(quando)}`}
           </Botao>
@@ -227,5 +254,14 @@ function Chip({
       {ligado ? "✓ " : ""}
       {children}
     </button>
+  );
+}
+
+/** Um dia que existe no calendário — "2026-02-31" e campo apagado ficam de fora. */
+function dataDeVerdade(data: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(data)) return false;
+  const { ano, mes, dia } = partesDaData(data);
+  return (
+    ano >= 2000 && ano <= 2100 && mes >= 1 && mes <= 12 && dia >= 1 && dia <= diasNoMes(ano, mes)
   );
 }

@@ -155,7 +155,9 @@ function ListaDeDias({
   }, [mes.mes, mes.ano]);
 
   return (
-    <div className="overflow-hidden rounded-cartao bg-cartao px-2 pb-1 pt-2.5 shadow-cartao">
+    // Rola de lado quando não cabe: em 320px a coluna Saldo ficava cortada
+    // fora da tela, sem nenhum jeito de alcançá-la.
+    <div className="fileira overflow-y-hidden rounded-cartao bg-cartao px-2 pb-1 pt-2.5 shadow-cartao">
       {/* Larguras em proporção, e não conforme o conteúdo. Deixada solta, a
           coluna do dia engolia toda a sobra numa tela de computador e os
           números acabavam espalhados na borda direita, longe do dia a que
@@ -260,7 +262,7 @@ function Valor({ cents, classe, fraco }: { cents: number; classe: string; fraco:
   return (
     <td
       className={`whitespace-nowrap py-[3px] pl-1 text-right text-[12.5px] ${classe} ${
-        fraco ? "opacity-55" : ""
+        fraco ? "opacity-80" : ""
       }`}
     >
       {cents === 0 ? "" : emReais(cents)}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId } from "react";
+import { useEffect, useId, useRef } from "react";
 import { comCifrao } from "@/lib/dinheiro";
 
 /** O cartão branco que flutua sobre o fundo. É a única caixa do app. */
@@ -174,7 +174,7 @@ export function CampoDeValor({
       inputMode="decimal"
       enterKeyHint="done"
       autoFocus={autoFocus}
-      placeholder="0,00"
+      placeholder="0"
       value={valor}
       onChange={(e) => aoMudar(e.target.value)}
       className="tabular mt-1.5 w-full rounded-folha border border-regua bg-cartao px-4 py-3 text-[21px] outline-none focus:border-saldo"
@@ -186,11 +186,14 @@ export function CampoDeTexto({
   valor,
   aoMudar,
   placeholder,
+  maxLength,
   id,
 }: {
   valor: string;
   aoMudar: (v: string) => void;
   placeholder?: string;
+  /** O servidor tem limites; o campo avisa antes, em vez de a fila travar depois. */
+  maxLength?: number;
   id?: string;
 }) {
   return (
@@ -198,6 +201,7 @@ export function CampoDeTexto({
       id={id}
       type="text"
       value={valor}
+      maxLength={maxLength}
       placeholder={placeholder}
       onChange={(e) => aoMudar(e.target.value)}
       className="mt-1.5 w-full rounded-folha border border-regua bg-cartao px-4 py-3 outline-none focus:border-saldo"
@@ -272,16 +276,40 @@ export function Folha({
   children: React.ReactNode;
 }) {
   const tituloId = useId();
+  const caixa = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // O foco entra na folha ao abrir e volta para quem a abriu ao fechar. Sem
+    // isso o teclado e o leitor de tela continuavam presos na página de trás:
+    // Tab passeava por botões invisíveis embaixo da cortina.
+    const antes = document.activeElement as HTMLElement | null;
+    caixa.current?.focus();
+
     const tecla = (e: KeyboardEvent) => {
       if (e.key === "Escape") aoFechar();
+      if (e.key === "Tab" && caixa.current) {
+        const focaveis = caixa.current.querySelectorAll<HTMLElement>(
+          'button, input, select, textarea, a[href], [tabindex]:not([tabindex="-1"])',
+        );
+        if (focaveis.length === 0) return;
+        const primeiro = focaveis[0];
+        const ultimo = focaveis[focaveis.length - 1];
+        const dentro = caixa.current.contains(document.activeElement);
+        if (e.shiftKey && (document.activeElement === primeiro || !dentro)) {
+          e.preventDefault();
+          ultimo.focus();
+        } else if (!e.shiftKey && (document.activeElement === ultimo || !dentro)) {
+          e.preventDefault();
+          primeiro.focus();
+        }
+      }
     };
     document.addEventListener("keydown", tecla);
     document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", tecla);
       document.body.style.overflow = "";
+      antes?.focus?.();
     };
   }, [aoFechar]);
 
@@ -294,6 +322,8 @@ export function Folha({
         className="absolute inset-0 bg-black/35 backdrop-blur-[2px]"
       />
       <div
+        ref={caixa}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby={tituloId}

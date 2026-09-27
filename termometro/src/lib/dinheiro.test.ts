@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { avaliar } from "./calculadora";
-import { aoReal, comCifrao, emReais, paraCentavos, paraOTeclado, parcelas } from "./dinheiro";
+import {
+  aoReal,
+  comCifrao,
+  emReais,
+  paraCentavos,
+  paraOTeclado,
+  parcelas,
+  TETO_CENTS,
+} from "./dinheiro";
 
 describe("ler um valor digitado", () => {
   it("aceita a vírgula, que é a tecla decimal do teclado em português", () => {
@@ -99,5 +107,53 @@ describe("o valor que o teclado recebe pronto", () => {
     for (const cents of [100, 6600, 2700, 123400, 1400, 999900]) {
       expect(avaliar(paraOTeclado(cents))?.totalCents).toBe(cents);
     }
+  });
+});
+
+describe("os sinais que o campo simples não faz", () => {
+  it("recusa a soma em vez de colar os dígitos", () => {
+    // "1000+500" virava R$ 1.000.500 no saldo de abertura. Recusar avisa.
+    expect(paraCentavos("1000+500")).toBeNull();
+    expect(paraCentavos("50-30")).toBeNull();
+  });
+
+  it("o negativo continua valendo, só no começo", () => {
+    expect(paraCentavos("-35")).toBe(-3500);
+    expect(paraCentavos("35-")).toBeNull();
+  });
+});
+
+describe("o teto de valor", () => {
+  it("recusa o dedo que repetiu dígitos", () => {
+    // R$ 38.003.800 estourava o inteiro do banco e travava a sincronização.
+    expect(paraCentavos("38003800")).toBeNull();
+    expect(avaliar("38003800")).toBeNull();
+  });
+
+  it("aceita até o teto, recusa acima", () => {
+    expect(paraCentavos("10000000")).toBe(TETO_CENTS);
+    expect(paraCentavos("10000001")).toBeNull();
+  });
+});
+
+describe("o arredondamento no lado negativo", () => {
+  it("o meio vai para longe do zero dos dois lados", () => {
+    expect(aoReal(150)).toBe(200);
+    expect(aoReal(-150)).toBe(-200);
+  });
+});
+
+describe("a divisão no teclado", () => {
+  it("cada parcela sai redonda: o visor e o banco veem o mesmo número", () => {
+    // "100/3" mostrava R$ 100 na prévia e salvava R$ 99.
+    expect(avaliar("100/3")).toEqual({ parcelas: [3300], totalCents: 3300 });
+    expect(avaliar("100/3+100/3+100/3")).toEqual({
+      parcelas: [3300, 3300, 3300],
+      totalCents: 9900,
+    });
+  });
+
+  it("uma conta que dá menos de meio real não vira lançamento", () => {
+    expect(avaliar("1/3")).toBeNull();
   });
 });

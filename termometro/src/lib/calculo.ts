@@ -227,6 +227,60 @@ function ordemDeExibicao(a: Lancamento, b: Lancamento): number {
  * Onde o saldo passa a ser negativo daqui para a frente, se nada mudar.
  * É a pergunta que a planilha existia para responder: "dá até o fim do mês?"
  */
+/**
+ * O ano pedido, com o saldo herdado da corrente de anos anteriores.
+ *
+ * Um ano começa onde o anterior terminou: o app encadeia do ano mais antigo com
+ * dados até o pedido, em vez de esperar alguém digitar o saldo de abertura a
+ * cada virada. Um saldo digitado à mão vale mais que a herança e interrompe a
+ * corrente — é como se conserta uma diferença sem mexer no passado.
+ *
+ * É função pura de propósito: a tela (useAnoCalculado) e o atalho da Siri
+ * (/api/lancar) precisam da MESMA conta. Enquanto cada um fazia a sua, o
+ * recado da Siri esquecia a corrente e, na virada 2026→2027, respondia um
+ * saldo sem nada do que veio antes.
+ *
+ * Anos fora de 2000–2100 são ignorados na largada da corrente: uma data
+ * digitada errado ("0206-05-10") não pode arrastar o cálculo por dezoito
+ * séculos nem travar a tela.
+ */
+export function calcularAnoEncadeado(opcoes: {
+  ano: number;
+  /** Só os vivos: quem chama já filtrou os apagados. */
+  lancamentos: Lancamento[];
+  /** Os saldos de abertura digitados à mão, por ano. */
+  saldosIniciais: Record<number, number>;
+  rateioAptoPercent: number;
+}): AnoCalculado {
+  const { ano, lancamentos, saldosIniciais, rateioAptoPercent } = opcoes;
+
+  const saudavel = (a: number) => Number.isFinite(a) && a >= 2000 && a <= 2100;
+  const candidatos = [
+    ...lancamentos.map((l) => Number(l.data.slice(0, 4))),
+    ...Object.keys(saldosIniciais).map(Number),
+  ].filter((a) => saudavel(a) && a <= ano);
+  const primeiro = candidatos.length ? Math.min(ano, ...candidatos) : ano;
+
+  let calculado = calcularAno({
+    ano: primeiro,
+    lancamentos,
+    ajustes: { saldoInicialCents: saldosIniciais[primeiro] ?? 0, rateioAptoPercent },
+  });
+
+  for (let a = primeiro + 1; a <= ano; a++) {
+    calculado = calcularAno({
+      ano: a,
+      lancamentos,
+      ajustes: {
+        saldoInicialCents: saldosIniciais[a] ?? calculado.saldoFinalCents,
+        rateioAptoPercent,
+      },
+    });
+  }
+
+  return calculado;
+}
+
 export function primeiroDiaNoVermelho(ano: AnoCalculado, apartirDe: string): DiaCalculado | null {
   for (const mes of ano.meses) {
     for (const dia of mes.dias) {
@@ -246,8 +300,10 @@ export function diaDoAno(ano: AnoCalculado, data: string): DiaCalculado | null {
 
 /**
  * A previsão: pega o que se repete todo mês e escreve nos dias que ainda não
- * chegaram. Um fixo nunca é escrito duas vezes no mesmo dia — se já houver
- * lançamento nascido dele naquela data, ele é pulado.
+ * chegaram. Um fixo nunca é escrito duas vezes no mesmo dia nem, para regra
+ * mensal, duas vezes no mesmo mês — e lançamento APAGADO conta: apagar um
+ * previsto é uma decisão, não um convite para recriá-lo. Passe em `existentes`
+ * todos os lançamentos, inclusive os apagados.
  *
  * Fixo marcado para o dia 31 num mês de 30 caiu no dia 30. Na planilha ele caía
  * numa linha 31 que não existia em novembro: R$ 8.000 de investimento lançados
@@ -267,10 +323,21 @@ export function gerarPrevisao(opcoes: {
   const agora = opcoes.agora ?? new Date().toISOString();
   const novoId = opcoes.novoId ?? (() => crypto.randomUUID());
 
+  // Duas chaves de "já decidido", e as duas contam também os APAGADOS: um
+  // previsto que a pessoa apagou de propósito ("esse mês não pago") é uma
+  // decisão, e a previsão não pode desfazê-la recriando o lançamento.
+  //
+  // A chave por dia protege o TODO_DIA. A chave por mês protege as regras
+  // mensais: quando o dia do fixo muda (regra editada, ou o lançamento movido
+  // de data dentro do mês), o lançamento antigo está em outro dia — e sem a
+  // chave do mês a previsão escrevia o fixo de novo no dia novo, dobrando o
+  // aluguel do mês em silêncio.
   const jaExiste = new Set<string>();
+  const mesJaTem = new Set<string>();
   for (const l of opcoes.existentes) {
-    if (!vivo(l) || !l.fixoId) continue;
+    if (!l.fixoId) continue;
     jaExiste.add(`${l.fixoId}|${l.data}`);
+    mesJaTem.add(`${l.fixoId}|${l.data.slice(0, 7)}`);
   }
 
   const fixos = opcoes.fixos.filter((f) => !f.apagadoEm && f.ativo !== false && f.valorCents > 0);
@@ -285,13 +352,19 @@ export function gerarPrevisao(opcoes: {
 
     for (let mes = mesInicial; mes <= mesFinal; mes++) {
       for (const fixo of fixos) {
-        const diasAlvo = diasDoMes(lerRepeticao(fixo), ano, mes);
+        const regra = lerRepeticao(fixo);
+        const diasAlvo = diasDoMes(regra, ano, mes);
+        // Regra mensal acontece uma vez por mês: um lançamento do fixo em
+        // QUALQUER dia do mês já é a vez dele. Só o todo-dia olha dia a dia.
+        const umaPorMes = regra.tipo !== "TODO_DIA";
 
         for (const dia of diasAlvo) {
           const data = montarData(ano, mes, dia);
           if (data < de || data > ate) continue;
           if (jaExiste.has(`${fixo.id}|${data}`)) continue;
+          if (umaPorMes && mesJaTem.has(`${fixo.id}|${data.slice(0, 7)}`)) continue;
           jaExiste.add(`${fixo.id}|${data}`);
+          mesJaTem.add(`${fixo.id}|${data.slice(0, 7)}`);
 
           novos.push({
             id: novoId(),

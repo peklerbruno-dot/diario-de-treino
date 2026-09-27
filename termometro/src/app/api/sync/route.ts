@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { temSessao } from "@/lib/auth";
 import { bd } from "@/lib/bd";
+import { diasNoMes } from "@/lib/datas";
+import { TETO_CENTS } from "@/lib/dinheiro";
 
 /**
  * A sincronização inteira: um endereço só, que recebe o que mudou no aparelho e
@@ -27,14 +29,31 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const tipo = z.enum(["ENTRADA", "SAIDA", "DIARIO"]);
-const dataDeCaderno = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "data precisa ser AAAA-MM-DD");
+const dataDeCaderno = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "data precisa ser AAAA-MM-DD")
+  .refine((d) => {
+    // "2026-02-31" passa no regex e some de todas as telas: dinheiro gravado
+    // que nenhum mês mostra. Dia de caderno tem que existir no calendário.
+    const [ano, mes, dia] = d.split("-").map(Number);
+    return (
+      ano >= 2000 && ano <= 2100 && mes >= 1 && mes <= 12 && dia >= 1 && dia <= diasNoMes(ano, mes)
+    );
+  }, "esse dia não existe no calendário");
+
+/**
+ * O teto protege o banco: a coluna é um inteiro de 32 bits, e um valor acima
+ * dele derrubava o pedido inteiro com 500 — travando a sincronização do
+ * aparelho para sempre. Acima do teto a linha é recusada com nome e motivo.
+ */
+const valorComTeto = z.number().int().finite().min(-TETO_CENTS).max(TETO_CENTS);
 const instante = z.string().datetime();
 
 const zLancamento = z.object({
   id: z.string().min(1).max(64),
   data: dataDeCaderno,
   tipo,
-  valorCents: z.number().int().finite(),
+  valorCents: valorComTeto,
   nota: z.string().max(500).nullish(),
   categoria: z.string().max(80).nullish(),
   previsto: z.boolean().default(false),
@@ -52,7 +71,7 @@ const zFixo = z.object({
   tipo,
   dia: z.number().int().min(0).max(31),
   repeticao: z.string().max(40).nullish(),
-  valorCents: z.number().int().finite(),
+  valorCents: valorComTeto,
   nota: z.string().max(500).nullish(),
   categoria: z.string().max(80).nullish(),
   rendaPropria: z.boolean().default(false),
@@ -66,16 +85,58 @@ const zFixo = z.object({
 
 const zAjuste = z.object({
   chave: z.string().min(1).max(64),
-  valor: z.string().max(2000),
+  valor: z.string().max(20000),
   atualizadoEm: instante,
 });
 
+/**
+ * O envelope valida só a forma geral; cada linha é validada SOZINHA depois.
+ *
+ * Antes, uma linha inválida derrubava o pedido inteiro com 400 — e como o
+ * aparelho manda todos os pendentes juntos e só limpa a fila no sucesso, uma
+ * única linha envenenada travava a sincronização para sempre: nada mais subia.
+ * Agora as linhas boas entram, e as recusadas voltam com nome e motivo para o
+ * aparelho tirar da fila e avisar.
+ */
 const zCorpo = z.object({
   desde: instante.nullish(),
-  lancamentos: z.array(zLancamento).max(2000).default([]),
-  fixos: z.array(zFixo).max(500).default([]),
-  ajustes: z.array(zAjuste).max(100).default([]),
+  lancamentos: z.array(z.unknown()).max(2000).default([]),
+  fixos: z.array(z.unknown()).max(500).default([]),
+  ajustes: z.array(z.unknown()).max(100).default([]),
 });
+
+export interface Recusado {
+  id: string;
+  motivo: string;
+}
+
+function peneirar<E extends z.ZodTypeAny>(
+  brutos: unknown[],
+  esquema: E,
+  identidade: (bruto: unknown) => string,
+  recusados: Recusado[],
+): z.output<E>[] {
+  const bons: z.output<E>[] = [];
+  for (const bruto of brutos) {
+    const lido = esquema.safeParse(bruto);
+    if (lido.success) {
+      bons.push(lido.data);
+    } else {
+      const issue = lido.error.issues[0];
+      const onde = issue?.path?.join(".") ?? "";
+      recusados.push({
+        id: identidade(bruto),
+        motivo: onde ? `${onde}: ${issue.message}` : (issue?.message ?? "linha inválida"),
+      });
+    }
+  }
+  return bons;
+}
+
+const idDe = (campo: string) => (bruto: unknown) =>
+  typeof bruto === "object" && bruto !== null && campo in bruto
+    ? String((bruto as Record<string, unknown>)[campo]).slice(0, 64)
+    : "(sem id)";
 
 type Lancamento = z.infer<typeof zLancamento>;
 type Fixo = z.infer<typeof zFixo>;
@@ -96,9 +157,10 @@ export async function POST(pedido: Request) {
     return NextResponse.json({ erro: "Pedido malformado.", detalhe }, { status: 400 });
   }
 
-  await gravarLancamentos(corpo.lancamentos);
-  await gravarFixos(corpo.fixos);
-  await gravarAjustes(corpo.ajustes);
+  const recusados: Recusado[] = [];
+  await gravarLancamentos(peneirar(corpo.lancamentos, zLancamento, idDe("id"), recusados));
+  await gravarFixos(peneirar(corpo.fixos, zFixo, idDe("id"), recusados));
+  await gravarAjustes(peneirar(corpo.ajustes, zAjuste, idDe("chave"), recusados));
 
   const desde = emData(corpo.desde) ?? new Date(0);
   const [lancamentos, fixos, ajustes] = await Promise.all([
@@ -115,9 +177,19 @@ export async function POST(pedido: Request) {
     ...fixos.map((f) => f.servidorEm),
     ...ajustes.map((a) => a.servidorEm),
   ];
-  const ate = marcadores.length ? new Date(Math.max(...marcadores.map((d) => d.getTime()))) : desde;
+  // O marcador nunca avança até "agora": duas linhas gravadas no mesmo
+  // instante por aparelhos diferentes podiam ficar uma de cada lado da
+  // consulta, e a que ficou de fora nunca mais era vista — o marcador já tinha
+  // passado dela. Segurando o marcador cinco segundos atrás do relógio, a
+  // fresta é relida no próximo pedido; reler é inócuo, o aparelho descarta o
+  // que já tem.
+  const maisNovo = marcadores.length
+    ? Math.max(...marcadores.map((d) => d.getTime()))
+    : desde.getTime();
+  const ate = new Date(Math.max(desde.getTime(), Math.min(maisNovo, Date.now() - 5000)));
 
   return NextResponse.json({
+    recusados,
     ate: ate.toISOString(),
     lancamentos: lancamentos.map(limparLancamento),
     fixos: fixos.map(limparFixo),
@@ -179,11 +251,15 @@ async function gravarLancamentos(entrando: Lancamento[]) {
     });
   }
 
+  // O update é CONDICIONAL no próprio banco: só grava se a linha de lá ainda
+  // for mais velha. A comparação feita antes, em memória, deixava uma fresta —
+  // entre ler o relógio e escrever, o outro aparelho podia gravar uma edição
+  // mais nova, e a nossa, mais velha, passava por cima dela.
   for (const lote of emLotes(mudados, 25)) {
     await bd.$transaction(
       lote.map((l) =>
-        bd.lancamento.update({
-          where: { id: l.id },
+        bd.lancamento.updateMany({
+          where: { id: l.id, atualizadoEm: { lt: new Date(l.atualizadoEm) } },
           data: {
             data: l.data,
             tipo: l.tipo,
@@ -233,20 +309,34 @@ async function gravarFixos(entrando: Fixo[]) {
     if (anterior === undefined) {
       await bd.fixo.create({ data: { id: f.id, criadoEm: new Date(f.criadoEm), ...dados } });
     } else if (new Date(f.atualizadoEm).getTime() > anterior) {
-      await bd.fixo.update({ where: { id: f.id }, data: dados });
+      // Condicional pelo mesmo motivo dos lançamentos: a fresta entre ler e
+      // escrever não pode deixar uma edição velha vencer uma nova.
+      await bd.fixo.updateMany({
+        where: { id: f.id, atualizadoEm: { lt: new Date(f.atualizadoEm) } },
+        data: dados,
+      });
     }
   }
 }
 
 async function gravarAjustes(entrando: Ajuste[]) {
   for (const a of entrando) {
-    const atual = await bd.ajuste.findUnique({ where: { chave: a.chave } });
-    if (atual && atual.atualizadoEm.getTime() >= new Date(a.atualizadoEm).getTime()) continue;
-    await bd.ajuste.upsert({
-      where: { chave: a.chave },
-      create: { chave: a.chave, valor: a.valor, atualizadoEm: new Date(a.atualizadoEm) },
-      update: { valor: a.valor, atualizadoEm: new Date(a.atualizadoEm) },
+    const quando = new Date(a.atualizadoEm);
+    // Primeiro tenta atualizar SÓ se o que está lá for mais velho — a condição
+    // mora no banco, não numa leitura de antes. Se nada mudou, ou a chave não
+    // existe (aí cria), ou o que está lá já é mais novo (aí fica).
+    const mexidos = await bd.ajuste.updateMany({
+      where: { chave: a.chave, atualizadoEm: { lt: quando } },
+      data: { valor: a.valor, atualizadoEm: quando },
     });
+    if (mexidos.count === 0) {
+      await bd.ajuste
+        .createMany({
+          data: [{ chave: a.chave, valor: a.valor, atualizadoEm: quando }],
+          skipDuplicates: true,
+        })
+        .catch(() => {});
+    }
   }
 }
 

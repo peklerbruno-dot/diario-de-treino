@@ -11,7 +11,7 @@
  */
 import { diasNoMes, partesDaData } from "./datas";
 import { acharCategoria, type Categoria } from "./categorias";
-import { aoReal, comCifrao, paraCentavos, parcelas } from "./dinheiro";
+import { aoReal, comCifrao, paraCentavos, parcelas, TETO_CENTS } from "./dinheiro";
 import type { Lancamento, Tipo } from "./tipos";
 
 const TIPOS_ACEITOS: Record<string, Tipo> = {
@@ -197,7 +197,7 @@ const REAIS_NO_FIM = /^([0-9.,]+)\s*(?:reais|real)$/;
  *  frase que ensina a escolher a coluna, é a leitura do pedido, logo adiante. */
 const SO_NUMERO = /^-?[0-9.,]+$/;
 /** "38 reais e 50", "38 reais e 50 centavos", "38 reais 50". */
-const REAIS_E_CENTAVOS = /^(\d+)\s*(?:reais|real)\s*(?:e\s*)?(\d{1,2})\s*(?:centavos?)?$/;
+const REAIS_E_CENTAVOS = /^(\d+)\s*(?:reais|real)\s*(?:e\s*)?(\d{1,2})\s*(centavos?)?$/;
 /** "38 reais", "1 real". */
 const SO_REAIS = /^(\d+)\s*(?:reais|real)$/;
 
@@ -231,15 +231,33 @@ function lerValor(texto: string): { ok: true; valores: number[] } | { ok: false;
     return { ok: true, valores };
   }
 
+  const noTeto = (valores: number[]) => valores.every((v) => v <= TETO_CENTS);
+
   const comCentavos = REAIS_E_CENTAVOS.exec(limpo);
   if (comCentavos) {
     const reais = Number(comCentavos[1]);
-    const centavos = Number((comCentavos[2] + "0").slice(0, 2));
-    return { ok: true, valores: [reais * 100 + centavos] };
+    // Com a palavra "centavos" dita, o dígito é literal: "5 centavos" são
+    // R$ 0,05, completado à esquerda. Sem ela, vale a leitura decimal: "38
+    // reais e 5" é R$ 38,50. A leitura antiga completava sempre à direita e
+    // "38 reais e 5 centavos" virava R$ 38,50 — confirmado como R$ 39.
+    const digito = comCentavos[2];
+    const disseCentavos = !!comCentavos[3];
+    const centavos = disseCentavos
+      ? Number(digito.padStart(2, "0"))
+      : Number((digito + "0").slice(0, 2));
+    const valores = [reais * 100 + centavos];
+    if (!noTeto(valores)) return { ok: false, erro: NAO_ENTENDI(texto) };
+    return { ok: true, valores };
   }
 
   const redondos = SO_REAIS.exec(limpo);
-  if (redondos) return { ok: true, valores: [Number(redondos[1]) * 100] };
+  if (redondos) {
+    // O teto vale também para o que é dito: um valor absurdo estourava o
+    // inteiro do banco e envenenava a sincronização.
+    const valores = [Number(redondos[1]) * 100];
+    if (!noTeto(valores)) return { ok: false, erro: NAO_ENTENDI(texto) };
+    return { ok: true, valores };
+  }
 
   const numero = REAIS_NO_FIM.exec(limpo)?.[1] ?? (SO_NUMERO.test(limpo) ? limpo : null);
   if (numero === null) return { ok: false, erro: NAO_ENTENDI(texto) };

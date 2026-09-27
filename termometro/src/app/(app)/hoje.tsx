@@ -79,7 +79,9 @@ export function TelaDeHoje() {
                   key={l.id}
                   className="flex items-baseline justify-between gap-3 border-b border-linha py-2.5 last:border-b-0"
                 >
-                  <span className="min-w-0 text-[14.5px]">
+                  {/* `truncate`: uma observação comprida termina em …, em vez
+                      de esticar a página inteira para o lado. */}
+                  <span className="min-w-0 truncate text-[14.5px]">
                     <span className={l.previsto ? "text-grafite" : ""}>
                       {l.nota || NOME_DO_TIPO[l.tipo]}
                     </span>

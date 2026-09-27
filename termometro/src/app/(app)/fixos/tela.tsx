@@ -51,7 +51,9 @@ export function TelaDosFixos() {
       fixos,
       de: agora,
       ate: `${ateQuando}-12-31`,
-      existentes: lancamentosVivos(estado),
+      // Todos, inclusive os apagados: o previsto que a pessoa apagou é uma
+      // decisão que a previsão respeita em vez de recriar.
+      existentes: Object.values(estado.lancamentos),
     });
     loja.salvarVariosLancamentos(novos);
     setRecado(
@@ -174,7 +176,9 @@ function FolhaDeFixo({ fixo, aoFechar }: { fixo?: Fixo; aoFechar: () => void }) 
   function salvar() {
     const valores = parcelas(valor);
     const total = valores?.reduce((t, v) => t + v, 0) ?? 0;
-    if (!valores || total === 0) {
+    if (!valores || total <= 0) {
+      // Fixo negativo viraria uma "despesa que soma": as três colunas já
+      // dizem a direção do dinheiro, o valor é sempre positivo.
       setErro("Digite um valor.");
       return;
     }

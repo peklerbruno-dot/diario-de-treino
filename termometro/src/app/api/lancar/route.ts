@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { codigoConfere, temSessao } from "@/lib/auth";
 import { bd } from "@/lib/bd";
-import { calcularAno } from "@/lib/calculo";
+import { calcularAnoEncadeado } from "@/lib/calculo";
 import { camposDoEndereco, hojeNoFuso, lerPedidoDoAtalho, recadoDoAtalho } from "@/lib/atalho";
 import { CHAVE_DAS_CATEGORIAS, lerCategorias, nomeDaCategoria } from "@/lib/categorias";
 import { partesDaData } from "@/lib/datas";
@@ -85,28 +85,39 @@ export async function POST(pedido: Request) {
   const data = lancamentos[0].data;
   const { ano, mes, dia } = partesDaData(data);
 
-  const doAno = await bd.lancamento.findMany({
-    where: { apagadoEm: null, data: { startsWith: `${ano}-` } },
-    select: {
-      id: true,
-      data: true,
-      tipo: true,
-      valorCents: true,
-      rendaPropria: true,
-      investimento: true,
-      apartamento: true,
-      previsto: true,
-    },
-  });
-  const abertura = await bd.ajuste.findUnique({ where: { chave: `saldoInicial:${ano}` } });
+  // Todos os vivos, e não só os do ano: o saldo de um dia carrega a corrente
+  // dos anos anteriores. Sem ela, o recado da Siri na virada 2026→2027 saía
+  // como se a vida tivesse começado em janeiro.
+  const [vivos, aberturas, rateio] = await Promise.all([
+    bd.lancamento.findMany({
+      where: { apagadoEm: null },
+      select: {
+        id: true,
+        data: true,
+        tipo: true,
+        valorCents: true,
+        rendaPropria: true,
+        investimento: true,
+        apartamento: true,
+        previsto: true,
+      },
+    }),
+    bd.ajuste.findMany({ where: { chave: { startsWith: "saldoInicial:" } } }),
+    bd.ajuste.findUnique({ where: { chave: "rateioApto" } }),
+  ]);
 
-  const calculado = calcularAno({
+  const saldosIniciais: Record<number, number> = {};
+  for (const a of aberturas) {
+    const anoDaChave = Number(a.chave.slice(13));
+    const cents = Number(a.valor);
+    if (Number.isFinite(anoDaChave) && Number.isFinite(cents)) saldosIniciais[anoDaChave] = cents;
+  }
+
+  const calculado = calcularAnoEncadeado({
     ano,
-    lancamentos: doAno,
-    ajustes: {
-      saldoInicialCents: Number(abertura?.valor ?? 0) || 0,
-      rateioAptoPercent: 40,
-    },
+    lancamentos: vivos,
+    saldosIniciais,
+    rateioAptoPercent: Number.isFinite(Number(rateio?.valor)) ? Number(rateio?.valor) : 40,
   });
   const saldoDoDia = calculado.meses[mes - 1]?.dias[dia - 1]?.saldoCents ?? 0;
 

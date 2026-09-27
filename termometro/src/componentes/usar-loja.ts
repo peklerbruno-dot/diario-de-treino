@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useSyncExternalStore } from "react";
-import { calcularAno, type AnoCalculado } from "@/lib/calculo";
+import { calcularAnoEncadeado, type AnoCalculado } from "@/lib/calculo";
 import {
   lancamentosVivos,
   loja,
   rateioApto,
-  saldoInicialExplicito,
+  saldosIniciaisDigitados,
   type Estado,
 } from "@/lib/loja";
 
@@ -51,36 +51,14 @@ export function useIniciarLoja() {
 export function useAnoCalculado(ano: number): AnoCalculado {
   const estado = useEstado();
 
-  return useMemo(() => {
-    const lancamentos = lancamentosVivos(estado);
-    const rateioAptoPercent = rateioApto(estado);
-
-    const anosComLancamento = lancamentos
-      .map((l) => Number(l.data.slice(0, 4)))
-      .filter(Number.isFinite);
-    const primeiro = Math.min(ano, ...(anosComLancamento.length ? anosComLancamento : [ano]));
-
-    let calculado = calcularAno({
-      ano: primeiro,
-      lancamentos,
-      ajustes: {
-        saldoInicialCents: saldoInicialExplicito(estado, primeiro) ?? 0,
-        rateioAptoPercent,
-      },
-    });
-
-    for (let a = primeiro + 1; a <= ano; a++) {
-      const digitado = saldoInicialExplicito(estado, a);
-      calculado = calcularAno({
-        ano: a,
-        lancamentos,
-        ajustes: {
-          saldoInicialCents: digitado ?? calculado.saldoFinalCents,
-          rateioAptoPercent,
-        },
-      });
-    }
-
-    return calculado;
-  }, [estado, ano]);
+  return useMemo(
+    () =>
+      calcularAnoEncadeado({
+        ano,
+        lancamentos: lancamentosVivos(estado),
+        saldosIniciais: saldosIniciaisDigitados(estado),
+        rateioAptoPercent: rateioApto(estado),
+      }),
+    [estado, ano],
+  );
 }

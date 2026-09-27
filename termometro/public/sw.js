@@ -21,7 +21,7 @@
 // ficou guardado de antes. Foi preciso quando uma etiqueta do `<head>` mudou e
 // a página velha continuou sendo servida do cache — a correção existia no
 // servidor e não chegava no aparelho.
-const CACHE = "termometro-v2";
+const CACHE = "termometro-v3";
 
 self.addEventListener("install", (evento) => {
   evento.waitUntil(
@@ -46,14 +46,21 @@ self.addEventListener("fetch", (evento) => {
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith("/api/")) return;
 
+  // Só resposta BOA entra no cache. Sem este filtro, um 500 do servidor ou o
+  // redirecionamento para /entrar (sessão vencida) eram guardados POR CIMA da
+  // última cópia boa — e o modo offline passava a abrir uma tela de erro.
+  const guardavel = (resposta) => resposta.ok && !resposta.redirected && resposta.type === "basic";
+
   if (url.pathname.startsWith("/_next/static/")) {
     evento.respondWith(
       caches.match(pedido).then(
         (guardado) =>
           guardado ??
           fetch(pedido).then((resposta) => {
-            const copia = resposta.clone();
-            caches.open(CACHE).then((cache) => cache.put(pedido, copia));
+            if (guardavel(resposta)) {
+              const copia = resposta.clone();
+              caches.open(CACHE).then((cache) => cache.put(pedido, copia));
+            }
             return resposta;
           }),
       ),
@@ -65,11 +72,21 @@ self.addEventListener("fetch", (evento) => {
     evento.respondWith(
       fetch(pedido)
         .then((resposta) => {
-          const copia = resposta.clone();
-          caches.open(CACHE).then((cache) => cache.put(pedido, copia));
+          if (guardavel(resposta)) {
+            const copia = resposta.clone();
+            caches.open(CACHE).then((cache) => cache.put(pedido, copia));
+          }
           return resposta;
         })
-        .catch(async () => (await caches.match(pedido)) ?? (await caches.match("/")) ?? Response.error()),
+        .catch(async () => {
+          const guardado = await caches.match(pedido);
+          if (guardado) return guardado;
+          // Rota nunca visitada, sem internet. Servir a tela Hoje AQUI deixava
+          // a URL dizendo /totais com o conteúdo de Hoje — mentira dupla. O
+          // redirecionamento leva para "/" de verdade, que o cache tem.
+          if (url.pathname !== "/") return Response.redirect("/", 302);
+          return Response.error();
+        }),
     );
   }
 });

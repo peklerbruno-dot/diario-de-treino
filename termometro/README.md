@@ -177,6 +177,15 @@ propósito:
 O leitor da conta é puro e vive em
 [`src/lib/calculadora.ts`](src/lib/calculadora.ts) — ele recusa valor negativo e
 divisão por zero, e o teclado nunca deixa digitar dois operadores seguidos.
+Cada parcela sai arredondada ao real ainda na conta (`100/3` são três de R$ 33):
+o visor, a contagem de parcelas e o que vai para o banco são o mesmo número.
+
+Há um teto de valor, R$ 10 milhões (`TETO_CENTS` em `dinheiro.ts`), aplicado no
+teclado, nos campos simples, no atalho da Siri e no `/api/sync`. Não é frescura:
+a coluna do banco é um inteiro de 32 bits, e um dedo que repetia dígitos criava
+um lançamento que passava por tudo, estourava o banco ao subir e **travava a
+sincronização para sempre** — o lote inteiro falhava junto. Hoje o servidor
+valida linha a linha e devolve as recusadas com nome e motivo; as boas entram.
 
 **Esse teclado não tem tecla de vírgula**, e por isso `avaliar` lê o que está
 escrito como reais inteiros: `66` é R$ 66 e `1.234` é R$ 1.234. Quem preenche o

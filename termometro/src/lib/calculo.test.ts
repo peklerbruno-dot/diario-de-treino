@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calcularAno, gerarPrevisao, primeiroDiaNoVermelho } from "./calculo";
+import { calcularAno, calcularAnoEncadeado, gerarPrevisao, primeiroDiaNoVermelho } from "./calculo";
 import type { Fixo, Lancamento, Tipo } from "./tipos";
 
 let sequencia = 0;
@@ -164,10 +164,7 @@ describe("o termômetro", () => {
   it("aponta o primeiro dia em que o saldo fica negativo", () => {
     const ano = calcularAno({
       ano: 2026,
-      lancamentos: [
-        lancamento("2026-03-05", "SAIDA", 600),
-        lancamento("2026-03-20", "SAIDA", 600),
-      ],
+      lancamentos: [lancamento("2026-03-05", "SAIDA", 600), lancamento("2026-03-20", "SAIDA", 600)],
       ajustes: { ...semAjuste, saldoInicialCents: 100000 },
     });
 
@@ -325,5 +322,115 @@ describe("a previsão atravessa o Ano-Novo", () => {
       })(),
     });
     expect(novos.map((l) => l.data)).toEqual(["2027-02-28", "2027-03-31", "2027-04-30"]);
+  });
+});
+
+describe("a previsão respeita o que a pessoa decidiu", () => {
+  const fixo = (dia: number, tipo: Tipo, reais: number, extras: Partial<Fixo> = {}): Fixo => ({
+    id: `fixo-${dia}-${tipo}`,
+    tipo,
+    dia,
+    valorCents: Math.round(reais * 100),
+    ativo: true,
+    ...extras,
+  });
+
+  it("previsto apagado não ressuscita", () => {
+    const f = fixo(10, "SAIDA", 1000);
+    const primeira = gerarPrevisao({
+      fixos: [f],
+      de: "2026-10-01",
+      ate: "2026-12-31",
+      existentes: [],
+      novoId: proximoId,
+    });
+    // A pessoa apagou o de novembro: "esse mês não pago".
+    const decididos = primeira.map((l) =>
+      l.data === "2026-11-10" ? { ...l, apagadoEm: "2026-10-02T00:00:00.000Z" } : l,
+    );
+    const segunda = gerarPrevisao({
+      fixos: [f],
+      de: "2026-10-01",
+      ate: "2026-12-31",
+      existentes: decididos,
+      novoId: proximoId,
+    });
+    expect(segunda).toEqual([]);
+  });
+
+  it("mudar o dia do fixo não dobra o mês", () => {
+    const antes = fixo(10, "SAIDA", 1000);
+    const primeira = gerarPrevisao({
+      fixos: [antes],
+      de: "2026-10-01",
+      ate: "2026-10-31",
+      existentes: [],
+      novoId: proximoId,
+    });
+    // A regra mudou do dia 10 para o dia 15: outubro já tem a vez dele.
+    const segunda = gerarPrevisao({
+      fixos: [{ ...antes, dia: 15 }],
+      de: "2026-10-01",
+      ate: "2026-10-31",
+      existentes: primeira,
+      novoId: proximoId,
+    });
+    expect(segunda).toEqual([]);
+  });
+
+  it("o todo-dia continua olhando dia a dia", () => {
+    const f = fixo(0, "DIARIO", 60);
+    const primeira = gerarPrevisao({
+      fixos: [f],
+      de: "2026-11-01",
+      ate: "2026-11-02",
+      existentes: [],
+      novoId: proximoId,
+    });
+    const segunda = gerarPrevisao({
+      fixos: [f],
+      de: "2026-11-01",
+      ate: "2026-11-03",
+      existentes: primeira,
+      novoId: proximoId,
+    });
+    expect(segunda.map((l) => l.data)).toEqual(["2026-11-03"]);
+  });
+});
+
+describe("a corrente de anos", () => {
+  it("um saldo digitado para um ano sem lançamentos vale na corrente", () => {
+    const calculado = calcularAnoEncadeado({
+      ano: 2027,
+      lancamentos: [lancamento("2026-03-10", "ENTRADA", 1000)],
+      saldosIniciais: { 2027: 500000 },
+      rateioAptoPercent: 40,
+    });
+    expect(calculado.meses[0].dias[0].saldoCents).toBe(500000);
+  });
+
+  it("sem saldo digitado, 2027 começa onde 2026 terminou", () => {
+    const calculado = calcularAnoEncadeado({
+      ano: 2027,
+      lancamentos: [lancamento("2026-03-10", "ENTRADA", 1000)],
+      saldosIniciais: {},
+      rateioAptoPercent: 40,
+    });
+    expect(calculado.meses[0].dias[0].saldoCents).toBe(100000);
+  });
+
+  it("uma data digitada errado não arrasta a corrente por séculos", () => {
+    const calculado = calcularAnoEncadeado({
+      ano: 2026,
+      lancamentos: [
+        lancamento("0206-05-10", "ENTRADA", 50),
+        lancamento("2026-01-02", "ENTRADA", 10),
+      ],
+      saldosIniciais: {},
+      rateioAptoPercent: 40,
+    });
+    // Não trava, e o ano insano não vira o começo da corrente.
+    expect(calculado.ano).toBe(2026);
+    expect(calculado.meses[0].dias[1].saldoCents).toBe(1000);
   });
 });
