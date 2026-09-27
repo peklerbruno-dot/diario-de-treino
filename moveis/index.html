@@ -47,7 +47,7 @@ header select{flex:1;min-width:0;max-width:260px;background:#2c3947;border:1px s
 #zoom{position:absolute;right:calc(10px + var(--dir));top:10px;display:flex;flex-direction:column;gap:6px}
 .bt-flut{width:42px;height:42px;border-radius:10px;border:1px solid var(--borda);background:#fff;
   font-size:20px;box-shadow:0 1px 4px #0002;display:flex;align-items:center;justify-content:center}
-#fab{position:absolute;left:50%;transform:translateX(-50%);bottom:12px;background:var(--azul);color:#fff;
+#fab{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(12px + var(--base));background:var(--azul);color:#fff;
   border:0;border-radius:24px;padding:12px 20px;font-size:16px;font-weight:600;box-shadow:0 3px 10px #0004}
 #status{position:absolute;left:calc(10px + var(--esq));top:10px;max-width:calc(100% - 80px);background:#fffffff0;
   border:1px solid var(--borda);border-radius:10px;padding:6px 10px;font-size:13px;color:var(--sub);
@@ -140,7 +140,7 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
   #painel{width:330px;max-height:none;border-top:0;border-left:1px solid var(--borda);padding:14px 16px}
   .fundo-folha{align-items:center}
   .folha{border-radius:16px;max-height:84vh}
-  #fab{left:auto;right:calc(70px + var(--dir));transform:none;bottom:16px}
+  #fab{left:auto;right:calc(70px + var(--dir));transform:none;bottom:calc(16px + var(--base))}
 }
 </style>
 </head>
@@ -313,7 +313,7 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
     <div class="folha-cab"><h2 id="sTitulo">Salvar</h2><button class="bt" data-fechar>✕</button></div>
     <p id="sDica" style="font-size:14px;color:var(--sub);margin:0 0 10px"></p>
     <img id="sImg" alt="Planta" hidden style="width:100%;border:1px solid var(--borda);border-radius:8px;-webkit-touch-callout:default">
-    <textarea id="sTexto" hidden readonly style="width:100%;height:40vh;font:13px ui-monospace,Menlo,monospace;border:1px solid var(--borda);border-radius:8px;padding:8px"></textarea>
+    <textarea id="sTexto" hidden readonly style="width:100%;height:40vh;font:16px ui-monospace,Menlo,monospace;border:1px solid var(--borda);border-radius:8px;padding:8px"></textarea>
     <div class="fila" style="margin-top:10px">
       <button class="bt prim" id="sCopiar" hidden>Copiar texto</button>
       <a class="bt" id="sAbrir" hidden target="_blank" rel="noopener" style="text-decoration:none">↗ Abrir o link</a>
@@ -542,7 +542,8 @@ function girar(px, py, graus) {
   const a = graus * Math.PI / 180, c = Math.cos(a), s = Math.sin(a);
   return [px * c - py * s, px * s + py * c];
 }
-const profL = it => limitar(it.p || 50, 20, Math.max(20, Math.min(it.w, it.h) - 10));
+const profL = it => { const m = Math.min(it.w, it.h), piso = Math.min(20, m / 2); return limitar(it.p || 50, piso, Math.max(piso, m - 10)); };
+const minLado = it => it.tipo === 'cantoL' ? 30 : 5;
 const retLocal = (x1, y1, x2, y2) => [[x1, y1], [x2, y1], [x2, y2], [x1, y2]];
 function paraMundo(it, pts) {
   return pts.map(([lx, ly]) => { const [dx, dy] = girar(lx, ly, it.rot); return [it.x + dx, it.y + dy]; });
@@ -557,7 +558,7 @@ function itemPartes(it) {
 }
 // Contorno do móvel (para desenho, caixas e cotas).
 function itemPoly(it) {
-  if (redondo(it)) return circPoly(it.x, it.y, it.w / 2);
+  if (redondo(it)) return circPoly(it.x, it.y, it.w / 2 / Math.cos(Math.PI / 48), 48); // circunscrito: erra para o lado seguro
   if (it.tipo === 'cantoL') {
     const w = it.w, h = it.h, p = profL(it);
     return paraMundo(it, [[-w / 2, -h / 2], [w / 2, -h / 2], [w / 2, -h / 2 + p], [-w / 2 + p, -h / 2 + p], [-w / 2 + p, h / 2], [-w / 2, h / 2]]);
@@ -601,9 +602,11 @@ function setorPorta(p, n = 10) {
 }
 const OBST_FIXOS = [
   ...PAREDES.map(p => ({ nome: 'parede', poly: retPoly(p.x1, p.y1, p.x2, p.y2) })),
-  ...FIXOS.map(f => ({ nome: f.nome.toLowerCase(), poly: f.circ ? circPoly(f.circ[0], f.circ[1], f.circ[2], 16) : retPoly(f.x1, f.y1, f.x2, f.y2) }))
+  ...FIXOS.map(f => ({ nome: f.nome.toLowerCase(), poly: f.circ ? circPoly(f.circ[0], f.circ[1], f.circ[2] / Math.cos(Math.PI / 32), 32) : retPoly(f.x1, f.y1, f.x2, f.y2) }))
 ].map(o => Object.assign(o, { cx: caixa(o.poly) }));
 const OBST_PORTAS = PORTAS.map(p => ({ nome: p.nome.toLowerCase(), poly: setorPorta(p).pts }));
+// o vão na espessura da parede também não pode receber móvel (a porta não fecha)
+OBST_PORTAS.push({ nome: 'porta do dormitório', poly: retPoly(222, 450, 300, 460) }, { nome: 'porta do banho', poly: retPoly(310, 450, 380, 460) });
 
 // Conjuntos: peças com o mesmo "grupo" se movem, giram e duplicam juntas.
 const membros = it => it && it.grupo ? itens().filter(i => i.grupo === it.grupo) : (it ? [it] : []);
@@ -923,7 +926,7 @@ function renderMoveis() {
       no = { g, assinatura: '' };
       nosMoveis.set(it.id, no);
     }
-    const assinatura = [it.tipo, it.w, it.h, it.nome, it.cor, it.rot, estado.op.rotulos].join('|');
+    const assinatura = [it.tipo, it.w, it.h, it.nome, it.cor, it.rot, it.tipo === 'cantoL' ? profL(it) : 0, estado.op.rotulos].join('|');
     if (assinatura !== no.assinatura) { no.g.innerHTML = desenhoMovel(it); no.assinatura = assinatura; }
     no.g.setAttribute('transform', `translate(${it.x} ${it.y}) rotate(${it.rot})`);
     const c = conflitos.get(it.id);
@@ -938,6 +941,25 @@ function renderMoveis() {
   for (const [id, no] of nosMoveis) if (!vivos.has(id)) { no.g.remove(); nosMoveis.delete(id); }
 }
 
+// Onde fica a bolinha de redimensionar: canto de baixo/direita do retângulo, borda do círculo,
+// e no L a ponta do braço 1 (o canto de dentro do L é onde os conjuntos põem a mesa).
+function posAlcaRedim(it) {
+  if (redondo(it)) { const r = it.w / 2; return [it.x + r * 0.7071, it.y + r * 0.7071]; }
+  const [dx, dy] = girar(it.w / 2, it.tipo === 'cantoL' ? -it.h / 2 : it.h / 2, it.rot);
+  return [it.x + dx, it.y + dy];
+}
+// O móvel (não tapete) mais acima sob o ponto; se só houver tapete, ele.
+function movelEm(px, py) {
+  const lista = itens();
+  let tapete = null;
+  for (let i = lista.length - 1; i >= 0; i--) {
+    const it = lista[i];
+    if (!itemPartes(it).some(pt => dentroConvexo(px, py, pt))) continue;
+    if (!it.sobrepor) return it;
+    if (!tapete) tapete = it;
+  }
+  return tapete;
+}
 function renderSel() {
   const it = sel && pegar(sel);
   if (!it) { gSel.style.display = 'none'; return; }
@@ -946,15 +968,8 @@ function renderSel() {
   const poly = itemPoly(it);
   gSel.querySelector('.contorno').setAttribute('points', (redondo(it) ? circPoly(it.x, it.y, it.w / 2 + 3 * k, 32) : poly).map(p => p.join(',')).join(' '));
   const pos = (lx, ly) => { const [dx, dy] = girar(lx, ly, it.rot); return [it.x + dx, it.y + dy]; };
-  let pr, pg;
-  if (redondo(it)) {
-    const r = it.w / 2;
-    pr = [it.x + r * 0.7071, it.y + r * 0.7071];
-    pg = null;
-  } else {
-    pr = pos(it.w / 2, it.h / 2);
-    pg = pos(0, -it.h / 2 - 30 * k);
-  }
+  const pr = posAlcaRedim(it);
+  const pg = redondo(it) ? null : pos(0, -it.h / 2 - 30 * k);
   const hg = gSel.querySelector('[data-handle=girar]'), hr = gSel.querySelector('[data-handle=redim]');
   const haste = gSel.querySelector('.haste');
   const posHandle = (g, p) => {
@@ -973,43 +988,53 @@ function renderSel() {
   } else haste.style.display = 'none';
 }
 
-// Distâncias livres nos quatro lados do móvel selecionado.
+// Extremo de um polígono convexo dentro de uma faixa: a maior (ou menor) coordenada `eixo` (0 = x, 1 = y)
+// entre os pontos do polígono cuja outra coordenada cai em [a, b]. `at` é onde isso acontece na outra coordenada.
+function extremoNaFaixa(poly, eixo, maior, a, b) {
+  const outro = 1 - eixo, pts = [];
+  for (let i = 0; i < poly.length; i++) {
+    const p = poly[i], q = poly[(i + 1) % poly.length];
+    if (p[outro] >= a - 1e-6 && p[outro] <= b + 1e-6) pts.push(p);
+    for (const c of [a, b]) if ((p[outro] - c) * (q[outro] - c) < 0) {
+      const t = (c - p[outro]) / (q[outro] - p[outro]), r = [0, 0];
+      r[outro] = c; r[eixo] = p[eixo] + t * (q[eixo] - p[eixo]); pts.push(r);
+    }
+  }
+  if (!pts.length) return null;
+  let v = maior ? -Infinity : Infinity;
+  for (const p of pts) v = maior ? Math.max(v, p[eixo]) : Math.min(v, p[eixo]);
+  const no = pts.filter(p => Math.abs(p[eixo] - v) < 0.01);
+  return { v, at: no.reduce((t, p) => t + p[outro], 0) / no.length };
+}
+// Distâncias livres nos quatro lados do móvel selecionado, medidas do material real
+// (cada braço do L, o losango de um móvel girado), não da caixa envolvente.
 function calcularCotas(it) {
-  const b = caixa(itemPoly(it));
+  const partes = itemPartes(it);
   const obst = caixasObstaculos(it.id, false);
   const res = [];
-  const sobrepoe = (a1, a2, c1, c2) => Math.min(a2, c2) - Math.max(a1, c1) > 0.5;
-  const busca = (lado) => {
+  for (const lado of ['e', 'd', 'c', 'b']) {
+    const hor = lado === 'e' || lado === 'd', eixo = hor ? 0 : 1, maior = lado === 'd' || lado === 'b';
     let melhor = null;
-    const considerar = (gap, meio, o) => { if (gap >= -0.5 && (!melhor || gap < melhor.gap)) melhor = { gap: Math.max(0, gap), meio, o }; };
-    if (lado === 'd') considerar(W - b.x2, (b.y1 + b.y2) / 2);
-    if (lado === 'e') considerar(b.x1, (b.y1 + b.y2) / 2);
-    if (lado === 'b') considerar(H - b.y2, (b.x1 + b.x2) / 2);
-    if (lado === 'c') considerar(b.y1, (b.x1 + b.x2) / 2);
-    for (const o of obst) {
-      if (lado === 'd' || lado === 'e') {
-        if (!sobrepoe(b.y1, b.y2, o.y1, o.y2)) continue;
-        const meio = (Math.max(b.y1, o.y1) + Math.min(b.y2, o.y2)) / 2;
-        if (lado === 'd' && o.x1 >= b.x2 - 0.5) considerar(o.x1 - b.x2, meio);
-        if (lado === 'e' && o.x2 <= b.x1 + 0.5) considerar(b.x1 - o.x2, meio);
-      } else {
-        if (!sobrepoe(b.x1, b.x2, o.x1, o.x2)) continue;
-        const meio = (Math.max(b.x1, o.x1) + Math.min(b.x2, o.x2)) / 2;
-        if (lado === 'b' && o.y1 >= b.y2 - 0.5) considerar(o.y1 - b.y2, meio);
-        if (lado === 'c' && o.y2 <= b.y1 + 0.5) considerar(b.y1 - o.y2, meio);
+    const considerar = (gap, ex) => {
+      if (gap < -0.5 || (melhor && gap >= melhor.gap)) return;
+      const g = Math.max(0, gap);
+      const seg = hor ? (maior ? [ex.v, ex.at, ex.v + g, ex.at] : [ex.v - g, ex.at, ex.v, ex.at])
+                      : (maior ? [ex.at, ex.v, ex.at, ex.v + g] : [ex.at, ex.v - g, ex.at, ex.v]);
+      melhor = { gap: g, x1: seg[0], y1: seg[1], x2: seg[2], y2: seg[3] };
+    };
+    for (const parte of partes) {
+      const b = caixa(parte);
+      const ex0 = extremoNaFaixa(parte, eixo, maior, hor ? b.y1 : b.x1, hor ? b.y2 : b.x2);
+      if (ex0) { const lim = maior ? (hor ? W : H) : 0; considerar(maior ? lim - ex0.v : ex0.v - lim, ex0); }
+      for (const o of obst) {
+        const a = hor ? Math.max(b.y1, o.y1) : Math.max(b.x1, o.x1), c = hor ? Math.min(b.y2, o.y2) : Math.min(b.x2, o.x2);
+        if (c - a <= 0.5) continue;
+        const ex = extremoNaFaixa(parte, eixo, maior, a, c); if (!ex) continue;
+        const borda = maior ? (hor ? o.x1 : o.y1) : (hor ? o.x2 : o.y2);
+        considerar(maior ? borda - ex.v : ex.v - borda, ex);
       }
     }
-    return melhor;
-  };
-  for (const lado of ['e', 'd', 'c', 'b']) {
-    const m = busca(lado);
-    if (!m || m.gap < 1) continue;
-    let x1, y1, x2, y2;
-    if (lado === 'e') { x1 = b.x1 - m.gap; x2 = b.x1; y1 = y2 = m.meio; }
-    if (lado === 'd') { x1 = b.x2; x2 = b.x2 + m.gap; y1 = y2 = m.meio; }
-    if (lado === 'c') { y1 = b.y1 - m.gap; y2 = b.y1; x1 = x2 = m.meio; }
-    if (lado === 'b') { y1 = b.y2; y2 = b.y2 + m.gap; x1 = x2 = m.meio; }
-    res.push({ lado, gap: m.gap, x1, y1, x2, y2 });
+    if (melhor && melhor.gap >= 1) res.push(Object.assign({ lado }, melhor));
   }
   return res;
 }
@@ -1273,20 +1298,25 @@ window.addEventListener('orientationchange', () => setTimeout(ajustar, 300));
    ============================================================ */
 function encaixar(it, cx, cy) {
   if (!estado.op.ima) return [arred(cx), arred(cy)];
-  const b = caixa(itemPoly(Object.assign({}, it, { x: cx, y: cy })));
+  // todas as partes de todas as peças do conjunto, já deslocadas para onde o dedo quer
+  const ms = [it, ...membros(it).filter(m => m !== it)];
+  const dxm = cx - it.x, dym = cy - it.y;
+  const caixas = ms.flatMap(m => itemPartes(Object.assign({}, m, { x: m.x + dxm, y: m.y + dym })).map(caixa));
   const tol = 12 * view.k;
-  const obst = caixasObstaculos(new Set(membros(it).map(m => m.id)), it.sobrepor);
+  const obst = caixasObstaculos(new Set(ms.map(m => m.id)), it.sobrepor);
   let dx = null, dy = null;
   const cx_ = d => { if (Math.abs(d) <= tol && (dx === null || Math.abs(d) < Math.abs(dx))) dx = d; };
   const cy_ = d => { if (Math.abs(d) <= tol && (dy === null || Math.abs(d) < Math.abs(dy))) dy = d; };
-  cx_(0 - b.x1); cx_(W - b.x2); cy_(0 - b.y1); cy_(H - b.y2);
-  for (const o of obst) {
-    if (o.y1 < b.y2 - 1 && o.y2 > b.y1 + 1) { cx_(o.x2 - b.x1); cx_(o.x1 - b.x2); }
-    if (o.x1 < b.x2 - 1 && o.x2 > b.x1 + 1) { cy_(o.y2 - b.y1); cy_(o.y1 - b.y2); }
+  for (const b of caixas) {
+    cx_(0 - b.x1); cx_(W - b.x2); cy_(0 - b.y1); cy_(H - b.y2);
+    for (const o of obst) {
+      if (o.y1 < b.y2 - 1 && o.y2 > b.y1 + 1) { cx_(o.x2 - b.x1); cx_(o.x1 - b.x2); }
+      if (o.x1 < b.x2 - 1 && o.x2 > b.x1 + 1) { cy_(o.y2 - b.y1); cy_(o.y1 - b.y2); }
+    }
   }
-  // sem nada por perto: prende a borda na grade de 5 cm
-  if (dx === null) dx = Math.round(b.x1 / 5) * 5 - b.x1;
-  if (dy === null) dy = Math.round(b.y1 / 5) * 5 - b.y1;
+  // sem nada por perto: prende a borda da peça arrastada na grade de 5 cm
+  if (dx === null) dx = Math.round(caixas[0].x1 / 5) * 5 - caixas[0].x1;
+  if (dy === null) dy = Math.round(caixas[0].y1 / 5) * 5 - caixas[0].y1;
   return [arred(cx + dx, 10), arred(cy + dy, 10)];
 }
 
@@ -1302,25 +1332,48 @@ svg.addEventListener('pointerdown', e => {
   try { svg.setPointerCapture(e.pointerId); } catch (_) {}
   toques.set(e.pointerId, { x: e.clientX, y: e.clientY });
   e.preventDefault();
-  if (toques.size === 2) { encerrarGesto(); iniciarPinca(); return; }
+  if (toques.size === 2) { desfazerGestoParcial(); iniciarPinca(); return; }
   if (toques.size > 2) return;
   const p = telaParaPlanta(e.clientX, e.clientY);
-  const alca = e.target.closest && e.target.closest('[data-handle]');
-  const g = e.target.closest && e.target.closest('[data-id]');
-  const base = { x0: e.clientX, y0: e.clientY, movido: false };
+  let alca = e.target.closest && e.target.closest('[data-handle]');
+  let id = null;
+  const noG = e.target.closest && e.target.closest('[data-id]');
+  if (noG) id = noG.dataset.id;
   if (alca && sel && pegar(sel)) {
+    // a alça de redimensionar só vale perto da bolinha: o alvo maior serve para o dedo, mas não
+    // pode roubar o toque de um móvel pequeno ou do vizinho que está embaixo
+    if (alca.dataset.handle === 'redim') {
+      const hc = posAlcaRedim(pegar(sel));
+      if (Math.hypot(p.x - hc[0], p.y - hc[1]) / view.k > 14) { const sob = movelEm(p.x, p.y); if (sob) { alca = null; id = sob.id; } }
+    }
+  } else alca = null;
+  const base = { x0: e.clientX, y0: e.clientY, movido: false, selAntes: sel };
+  if (alca) {
     const it = pegar(sel);
-    const canto = girar(-it.w / 2, -it.h / 2, it.rot);
-    gesto = Object.assign(base, { tipo: alca.dataset.handle, id: sel, fixo: [it.x + canto[0], it.y + canto[1]] });
-  } else if (g) {
-    const id = g.dataset.id;
-    if (sel !== id) selecionar(id);
+    const cantoFixo = it.tipo === 'cantoL' ? girar(-it.w / 2, it.h / 2, it.rot) : girar(-it.w / 2, -it.h / 2, it.rot);
+    gesto = Object.assign(base, { tipo: alca.dataset.handle, id: sel, fixo: [it.x + cantoFixo[0], it.y + cantoFixo[1]],
+      pivo: [it.x, it.y], rot0: it.rot, ini: retrato(it) });
+  } else if (id) {
+    // seleciona já, mas o painel só abre ao soltar (no celular ele encolhe a área da planta)
+    if (sel !== id) { sel = id; render(false); }
     const it = pegar(id);
-    gesto = Object.assign(base, { tipo: 'mover', id, off: [it.x - p.x, it.y - p.y] });
+    gesto = Object.assign(base, { tipo: 'mover', id, off: [it.x - p.x, it.y - p.y], ini: retrato(it) });
   } else {
     gesto = Object.assign(base, { tipo: 'arrastar', v: { x: view.x, y: view.y } });
   }
 });
+// Estado inicial das peças de um gesto (para desfazer o começo de uma pinça e para girar o conjunto).
+const retrato = it => membros(it).map(m => ({ id: m.id, x: m.x, y: m.y, rot: m.rot, w: m.w, h: m.h }));
+function restaurar(ini) {
+  for (const r of ini) { const m = pegar(r.id); if (m) Object.assign(m, { x: r.x, y: r.y, rot: r.rot, w: r.w, h: r.h }); }
+}
+// O primeiro dedo de uma pinça pode ter caído num móvel e até andado um pouco: volta tudo como estava.
+function desfazerGestoParcial() {
+  if (!gesto) return;
+  if (gesto.ini) { restaurar(gesto.ini); sel = gesto.selAntes; }
+  gesto = null;
+  render(false);
+}
 
 svg.addEventListener('pointermove', e => {
   if (!toques.has(e.pointerId)) return;
@@ -1343,22 +1396,32 @@ svg.addEventListener('pointermove', e => {
     const [nx, ny] = encaixar(it, p.x + gesto.off[0], p.y + gesto.off[1]);
     moverJunto(it, nx - it.x, ny - it.y);
   } else if (gesto.tipo === 'girar') {
-    let a = Math.atan2(p.y - it.y, p.x - it.x) * 180 / Math.PI + 90;
+    const [px, py] = gesto.pivo;
+    let a = Math.atan2(p.y - py, p.x - px) * 180 / Math.PI + 90;
     const passo = estado.op.ima ? 15 : 1;
     a = Math.round(a / passo) * passo;
     if (!estado.op.ima) { const r90 = Math.round(a / 90) * 90; if (Math.abs(a - r90) < 3) a = r90; }
-    it.rot = ((a % 360) + 360) % 360;
+    // o conjunto inteiro gira em volta da peça segurada, sempre a partir do estado inicial (sem acumular arredondamento)
+    const delta = a - gesto.rot0;
+    for (const r of gesto.ini) {
+      const m = pegar(r.id); if (!m) continue;
+      const [dx, dy] = girar(r.x - px, r.y - py, delta);
+      m.x = arred(px + dx, 10); m.y = arred(py + dy, 10);
+      m.rot = (((r.rot + delta) % 360) + 360) % 360;
+    }
   } else if (gesto.tipo === 'redim') {
-    const passo = estado.op.ima ? 5 : 1;
+    const passo = estado.op.ima ? 5 : 1, minimo = Math.max(10, minLado(it));
     if (redondo(it)) {
       const d = Math.hypot(p.x - it.x, p.y - it.y);
-      it.w = it.h = Math.max(10, Math.round(2 * d / passo) * passo);
+      it.w = it.h = Math.max(minimo, Math.round(2 * d / passo) * passo);
     } else {
+      // ponto fixo: canto oposto à alça (no L, a ponta do braço 2)
+      const L = it.tipo === 'cantoL';
       const [fx, fy] = gesto.fixo;
       const [lx, ly] = girar(p.x - fx, p.y - fy, -it.rot);
-      it.w = Math.max(10, Math.round(lx / passo) * passo);
-      it.h = Math.max(10, Math.round(ly / passo) * passo);
-      const [dx, dy] = girar(it.w / 2, it.h / 2, it.rot);
+      it.w = Math.max(minimo, Math.round(lx / passo) * passo);
+      it.h = Math.max(minimo, Math.round((L ? -ly : ly) / passo) * passo);
+      const [dx, dy] = girar(it.w / 2, L ? -it.h / 2 : it.h / 2, it.rot);
       it.x = arred(fx + dx, 10); it.y = arred(fy + dy, 10);
     }
   }
@@ -1373,13 +1436,13 @@ function soltar(e) {
   if (gesto.tipo === 'arrastar' && !gesto.movido && e.type === 'pointerup') selecionar(null);
   const id = gesto.tipo !== 'arrastar' && gesto.id;
   encerrarGesto();
-  if (id) requestAnimationFrame(() => centrarEm(pegar(id)));
+  if (id) { render(); requestAnimationFrame(() => centrarEm(pegar(id))); }
 }
 svg.addEventListener('pointerup', soltar);
 svg.addEventListener('pointercancel', soltar);
 function encerrarGesto() {
-  if (gesto && gesto.movido && gesto.tipo !== 'arrastar' && gesto.tipo !== 'pinca') { confirmar(); render(); }
-  gesto = null;
+  const g = gesto; gesto = null; // zera antes de renderizar: o mapa de passagens só recalcula sem gesto
+  if (g && g.movido && g.tipo !== 'arrastar' && g.tipo !== 'pinca') { confirmar(); render(); }
 }
 function iniciarPinca() {
   const [a, b] = [...toques.values()];
@@ -1420,13 +1483,21 @@ function adicionar(tipo, nome, w, h, extra) {
   const t = tamanho();
   const c = telaParaPlanta(t.l + t.w / 2, t.t + t.h / 2);
   const it = novoItem(tipo, nome, w, h, extra);
-  it.x = limitar(c.x, 0, W); it.y = limitar(c.y, 0, H);
+  it.x = c.x; it.y = c.y;
+  dentroDaPlanta([it]);
   [it.x, it.y] = encaixar(it, it.x, it.y);
   itens().push(it);
   sel = it.id;
   confirmar(); render();
   fecharFolhas();
   requestAnimationFrame(() => centrarEm(it));
+}
+// Empurra um grupo de peças para dentro da planta, pela caixa do conjunto (múltiplos de 5 cm).
+function dentroDaPlanta(pecas) {
+  const b = caixa(pecas.flatMap(itemPoly));
+  const dx = Math.round((limitar(b.x1, 0, Math.max(0, W - (b.x2 - b.x1))) - b.x1) / 5) * 5;
+  const dy = Math.round((limitar(b.y1, 0, Math.max(0, H - (b.y2 - b.y1))) - b.y1) / 5) * 5;
+  for (const m of pecas) { m.x += dx; m.y += dy; }
 }
 function girar90(sentido) {
   const it = pegar(sel); if (!it) return;
@@ -1438,7 +1509,7 @@ function girar90(sentido) {
       m.x = arred(cx + dx, 10); m.y = arred(cy + dy, 10);
       m.rot = ((m.rot + 90 * sentido) % 360 + 360) % 360;
     }
-  } else it.rot = ((Math.round(it.rot / 90) * 90 + 90 * sentido) % 360 + 360) % 360;
+  } else it.rot = (((sentido > 0 ? Math.floor(it.rot / 90 + 1e-9) * 90 + 90 : Math.ceil(it.rot / 90 - 1e-9) * 90 - 90) % 360) + 360) % 360;
   confirmar(); render();
 }
 // Espelha o canto alemão: o L(w,h) espelhado é o L(h,w) girado 90°, com o mesmo retângulo ocupado.
@@ -1467,8 +1538,10 @@ function adicionarConjunto(cj) {
   const b = caixa(pecas.flatMap(itemPoly));
   const t = tamanho();
   const c = telaParaPlanta(t.l + t.w / 2, t.t + t.h / 2);
-  const dx = Math.round((limitar(c.x, 0, W) - (b.x1 + b.x2) / 2) / 5) * 5, dy = Math.round((limitar(c.y, 0, H) - (b.y1 + b.y2) / 2) / 5) * 5;
-  for (const m of pecas) { m.x += dx; m.y += dy; itens().push(m); }
+  const dx = Math.round((c.x - (b.x1 + b.x2) / 2) / 5) * 5, dy = Math.round((c.y - (b.y1 + b.y2) / 2) / 5) * 5;
+  for (const m of pecas) { m.x += dx; m.y += dy; }
+  dentroDaPlanta(pecas);
+  for (const m of pecas) itens().push(m);
   sel = pecas[0].id;
   confirmar(); render(); fecharFolhas();
   requestAnimationFrame(() => centrarEm(pecas[0]));
@@ -1817,8 +1890,8 @@ const campoNum = (id, aplicar) => {
   i.addEventListener('change', () => { confirmar(); render(); });
   i.addEventListener('keydown', e => { if (e.key === 'Enter') i.blur(); });
 };
-campoNum('pW', (it, v) => { it.w = limitar(v, 5, 1000); if (redondo(it)) it.h = it.w; });
-campoNum('pH', (it, v) => { it.h = limitar(v, 5, 1000); });
+campoNum('pW', (it, v) => { it.w = limitar(v, minLado(it), 1000); if (redondo(it)) it.h = it.w; });
+campoNum('pH', (it, v) => { it.h = limitar(v, minLado(it), 1000); });
 campoNum('pR', (it, v) => { it.rot = ((v % 360) + 360) % 360; });
 campoNum('pX', (it, v) => { const b = caixa(itemPoly(it)); moverJunto(it, v - b.x1, 0); });
 campoNum('pY', (it, v) => { const b = caixa(itemPoly(it)); moverJunto(it, 0, v - b.y1); });
