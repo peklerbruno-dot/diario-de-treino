@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Cartao, Sobrescrito, Titulo } from "@/componentes/pecas";
-import { IconeAjustes, IconeAno, IconeFixos } from "@/componentes/icones";
+import { IconeAjustes, IconeAno, IconeBusca, IconeFixos } from "@/componentes/icones";
 
 /**
  * O que não é de olhar com o celular na mão.
@@ -14,6 +14,12 @@ import { IconeAjustes, IconeAno, IconeFixos } from "@/componentes/icones";
  * um toque a mais não custa nada para quem já sentou.
  */
 const DESTINOS = [
+  {
+    href: "/buscar",
+    Icone: IconeBusca,
+    titulo: "Buscar",
+    descricao: "Quando foi a última vez que paguei o seguro?",
+  },
   {
     href: "/ano",
     Icone: IconeAno,

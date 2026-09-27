@@ -16,7 +16,7 @@ import {
 } from "@/componentes/pecas";
 import { useAnoCalculado, useEstado } from "@/componentes/usar-loja";
 import type { DiaCalculado, MesCalculado } from "@/lib/calculo";
-import { hoje, nomeDoDiaDaSemana, nomeDoMes, partesDaData } from "@/lib/datas";
+import { curta, hoje, nomeDoDiaDaSemana, nomeDoMes, partesDaData } from "@/lib/datas";
 import { comCifrao, emReais } from "@/lib/dinheiro";
 import { classeDoSaldo, corDoSaldo, faixaDoMes } from "@/lib/escala";
 
@@ -311,6 +311,7 @@ function Rodape({ mes }: { mes: MesCalculado }) {
             </span>
           </Linha>
         )}
+        {t.aptoCents > 0 && <CopiarAcerto mes={mes} />}
         <Linha rotulo="Saldo no fim do mês" forte>
           <Dinheiro cents={t.saldoFechamentoCents} papel="saldo" />
         </Linha>
@@ -323,5 +324,42 @@ function Rodape({ mes }: { mes: MesCalculado }) {
         </p>
       )}
     </section>
+  );
+}
+
+/**
+ * O acerto do apartamento, pronto para colar na conversa.
+ *
+ * Todo mês a mesma tarefa: somar as saídas do apartamento, aplicar o rateio e
+ * digitar a lista para a outra pessoa. O texto sai daqui inteiro — itens,
+ * total e a parte dela — e vai para a área de transferência num toque.
+ */
+function CopiarAcerto({ mes }: { mes: MesCalculado }) {
+  const [copiado, setCopiado] = useState(false);
+  const t = mes.totais;
+
+  function copiar() {
+    const itens = mes.dias
+      .flatMap((d) => d.lancamentos)
+      .filter((l) => l.apartamento && l.tipo === "SAIDA")
+      .map((l) => `- ${curta(l.data)} ${l.nota ? l.nota + ": " : ""}${comCifrao(l.valorCents)}`);
+    const texto = [
+      `Apartamento em ${nomeDoMes(mes.mes)} de ${mes.ano}`,
+      ...itens,
+      `Total: ${comCifrao(t.aptoCents)}`,
+      `Sua parte: ${comCifrao(t.aptoParteDoOutroCents)}`,
+    ].join("\n");
+    void navigator.clipboard?.writeText(texto).then(() => {
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2500);
+    });
+  }
+
+  return (
+    <div className="border-b border-linha py-2">
+      <button type="button" onClick={copiar} className="text-[13.5px] text-grafite underline">
+        {copiado ? "Copiado — é só colar na conversa" : "Copiar o acerto para mandar"}
+      </button>
+    </div>
   );
 }

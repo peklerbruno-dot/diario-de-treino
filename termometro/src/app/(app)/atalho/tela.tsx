@@ -230,6 +230,20 @@ export function TelaDoAtalho() {
       </section>
 
       <section className="mt-6">
+        <Subtitulo className="mb-2">Perguntar sem lançar nada</Subtitulo>
+        <Cartao className="px-4 py-1">
+          <Jeito titulo="“E aí Siri, como estou de dinheiro?”">
+            Um quarto atalho, mais simples que os outros: só uma ação <b>Obter Conteúdo de URL</b>{" "}
+            com o método <b>GET</b>, o endereço{" "}
+            <code>{endereco.replace("/api/lancar?valor=", "/api/saldo")}</code>, e o mesmo cabeçalho{" "}
+            <code>x-codigo</code>. Depois, <b>Mostrar Notificação</b> com o campo{" "}
+            <code>recado</code>. A resposta é uma frase: quanto você tem, em quanto o mês fecha se
+            nada mudar, e quanto dá por dia até lá.
+          </Jeito>
+        </Cartao>
+      </section>
+
+      <section className="mt-6">
         <Subtitulo className="mb-2">Se a Siri não achar o atalho</Subtitulo>
         <p className="mb-3 text-[14.5px] leading-relaxed text-grafite">
           Ela procurou na internet, disse que não conhece, ou fez outra coisa. Antes de mexer em

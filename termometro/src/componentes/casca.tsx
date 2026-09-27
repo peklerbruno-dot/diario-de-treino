@@ -15,6 +15,7 @@ import {
   IconeMais,
   IconeMes,
   IconeTotais,
+  IconeBusca,
 } from "./icones";
 import { Botao } from "./pecas";
 import { useEstado, useIniciarLoja } from "./usar-loja";
@@ -58,6 +59,7 @@ const DESTINOS = [
   { href: "/totais", rotulo: "Totais", Icone: IconeTotais, naBarra: true },
   { href: "/agenda", rotulo: "O que vem", Icone: IconeAgenda, naBarra: true },
   { href: "/mais", rotulo: "Mais", Icone: IconeMais, naBarra: true },
+  { href: "/buscar", rotulo: "Buscar", Icone: IconeBusca, naBarra: false },
   { href: "/ano", rotulo: "Ano", Icone: IconeAno, naBarra: false },
   { href: "/fixos", rotulo: "Fixos", Icone: IconeFixos, naBarra: false },
   { href: "/ajustes", rotulo: "Ajustes", Icone: IconeAjustes, naBarra: false },
@@ -66,6 +68,7 @@ const DESTINOS = [
 /** "Mais" acende quando se está em qualquer uma das telas que ele guarda. */
 const GUARDADAS_POR_MAIS = [
   "/mais",
+  "/buscar",
   "/ano",
   "/fixos",
   "/ajustes",
@@ -121,6 +124,7 @@ export function Casca({ children }: { children: React.ReactNode }) {
           )}
         </div>
         {temBarraDeLancar && <BarraDeLancar />}
+        <Desfazer acimaDaBarra={temBarraDeLancar} />
         <Situacao acimaDaBarra={temBarraDeLancar} />
         <Navegacao caminho={caminho} />
       </div>
@@ -416,6 +420,41 @@ function BarraDeLancar() {
  * O aviso de sincronização só aparece quando há o que dizer. Um selo permanente
  * de "tudo certo" vira ruído: o normal não precisa de aviso.
  */
+/**
+ * A janela de arrependimento: alguns segundos para desfazer um Apagar. Sem
+ * ela, um toque errado custava digitar o lançamento inteiro de novo — e
+ * confirmação antes de apagar seria um toque a mais TODA vez, pagando adiantado
+ * pelo erro raro.
+ */
+function Desfazer({ acimaDaBarra }: { acimaDaBarra: boolean }) {
+  const { ultimaExclusao } = useEstado();
+  if (!ultimaExclusao) return null;
+
+  return (
+    <div
+      style={
+        {
+          "--baixo": acimaDaBarra ? ALTURA.avisoAcimaDaBarra : ALTURA.avisoSozinho,
+        } as React.CSSProperties
+      }
+      // Acima da folha (z-50): apagar acontece DENTRO da folha do dia, e um
+      // Desfazer escondido atrás dela é o mesmo que nenhum.
+      className="fixed inset-x-0 bottom-[var(--baixo)] z-[60] px-4 lg:bottom-5 lg:left-[236px]"
+    >
+      <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 rounded-folha bg-heroi px-3.5 py-2.5 text-[13px] text-heroi-tinta shadow-cartao">
+        <span className="min-w-0 truncate">Apagado: {ultimaExclusao.rotulo}</span>
+        <button
+          type="button"
+          onClick={() => loja.desfazerExclusao()}
+          className="shrink-0 rounded-full bg-heroi-tinta/15 px-3.5 py-1 font-semibold"
+        >
+          Desfazer
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function Situacao({ acimaDaBarra }: { acimaDaBarra: boolean }) {
   const { situacao, pendentes } = useEstado();
   if (situacao === "guardado") return null;

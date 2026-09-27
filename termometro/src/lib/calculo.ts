@@ -389,3 +389,71 @@ export function gerarPrevisao(opcoes: {
 
   return novos;
 }
+
+/**
+ * O termômetro em uma frase: quanto dá para gastar POR DIA até o fim do mês
+ * sem terminar no vermelho.
+ *
+ * A conta é honesta com a previsão: `saldoFechamentoCents` já desconta tudo o
+ * que ainda vai acontecer (fixos, previstos) e soma o que já foi gasto hoje.
+ * O que sobra dividido pelos dias que faltam — hoje incluso, porque hoje ainda
+ * dá tempo — é o número que o README prometia desde o primeiro dia e nenhuma
+ * tela mostrava.
+ */
+export interface SobraPorDia {
+  /** Quanto dá por dia. Zero quando o mês já fecha no vermelho. */
+  porDiaCents: number;
+  diasRestantes: number;
+  fechamentoCents: number;
+  /** O gasto do dia a dia já feito hoje. */
+  gastoDeHojeCents: number;
+}
+
+export function sobraPorDia(ano: AnoCalculado, hoje: string): SobraPorDia | null {
+  const dia = diaDoAno(ano, hoje);
+  if (!dia) return null;
+  const { mes } = partesDaData(hoje);
+  const doMes = ano.meses[mes - 1];
+  const diasRestantes = doMes.dias.length - partesDaData(hoje).dia + 1;
+  const fechamentoCents = doMes.totais.saldoFechamentoCents;
+  return {
+    porDiaCents: fechamentoCents > 0 ? Math.floor(fechamentoCents / diasRestantes / 100) * 100 : 0,
+    diasRestantes,
+    fechamentoCents,
+    gastoDeHojeCents: dia.diarioCents,
+  };
+}
+
+/**
+ * Os previstos cuja data já passou (ou é hoje) e ninguém disse se aconteceram.
+ *
+ * Um previsto vencido fica distorcendo o saldo em silêncio: o dinheiro talvez
+ * nem tenha saído, e a tela jura que saiu. A lista alimenta o cartão de
+ * conferência da tela Hoje — mais antigo primeiro, que é o que está mais
+ * errado há mais tempo.
+ */
+export function previstosVencidos(lancamentos: readonly Lancamento[], hoje: string): Lancamento[] {
+  return lancamentos
+    .filter((l) => vivo(l) && l.previsto && l.data <= hoje)
+    .sort((a, b) => a.data.localeCompare(b.data));
+}
+
+/**
+ * Quanto os fixos somam num mês como o pedido, por direção do dinheiro.
+ * O todo-dia conta uma vez por dia; as regras mensais, uma por mês.
+ */
+export function somaDosFixosNoMes(
+  fixos: readonly Fixo[],
+  ano: number,
+  mes: number,
+): { entraCents: number; saiCents: number } {
+  let entraCents = 0;
+  let saiCents = 0;
+  for (const f of fixos) {
+    if (f.apagadoEm || f.ativo === false || f.valorCents <= 0) continue;
+    const vezes = diasDoMes(lerRepeticao(f), ano, mes).length;
+    if (f.tipo === "ENTRADA") entraCents += f.valorCents * vezes;
+    else saiCents += f.valorCents * vezes;
+  }
+  return { entraCents, saiCents };
+}

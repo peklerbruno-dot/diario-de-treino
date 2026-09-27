@@ -1,0 +1,57 @@
+import { bd } from "./bd";
+import { calcularAnoEncadeado, sobraPorDia, type AnoCalculado, type SobraPorDia } from "./calculo";
+import { partesDaData } from "./datas";
+
+/**
+ * O saldo de um dia calculado no servidor — a MESMA conta da tela.
+ *
+ * É o que o atalho da Siri responde ("lançar gasto" devolve o saldo) e o que
+ * "como estou de dinheiro" pergunta sem lançar nada. Vive num lugar só para
+ * os dois endereços não divergirem: todos os lançamentos vivos (a corrente de
+ * anos precisa deles), os saldos de abertura digitados e o rateio de verdade.
+ */
+export async function saldoNoServidor(data: string): Promise<{
+  ano: AnoCalculado;
+  saldoDoDiaCents: number;
+  sobra: SobraPorDia | null;
+}> {
+  const { ano, mes, dia } = partesDaData(data);
+
+  const [vivos, aberturas, rateio] = await Promise.all([
+    bd.lancamento.findMany({
+      where: { apagadoEm: null },
+      select: {
+        id: true,
+        data: true,
+        tipo: true,
+        valorCents: true,
+        rendaPropria: true,
+        investimento: true,
+        apartamento: true,
+        previsto: true,
+      },
+    }),
+    bd.ajuste.findMany({ where: { chave: { startsWith: "saldoInicial:" } } }),
+    bd.ajuste.findUnique({ where: { chave: "rateioApto" } }),
+  ]);
+
+  const saldosIniciais: Record<number, number> = {};
+  for (const a of aberturas) {
+    const anoDaChave = Number(a.chave.slice(13));
+    const cents = Number(a.valor);
+    if (Number.isFinite(anoDaChave) && Number.isFinite(cents)) saldosIniciais[anoDaChave] = cents;
+  }
+
+  const calculado = calcularAnoEncadeado({
+    ano,
+    lancamentos: vivos,
+    saldosIniciais,
+    rateioAptoPercent: Number.isFinite(Number(rateio?.valor)) ? Number(rateio?.valor) : 40,
+  });
+
+  return {
+    ano: calculado,
+    saldoDoDiaCents: calculado.meses[mes - 1]?.dias[dia - 1]?.saldoCents ?? 0,
+    sobra: sobraPorDia(calculado, data),
+  };
+}

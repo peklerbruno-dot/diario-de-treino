@@ -223,6 +223,45 @@ sincroniza entre o celular e o computador: é uma lista curta, e uma tabela
 própria cobraria uma junção em toda leitura e uma linha órfã a cada renomeação.
 Ver [`src/lib/atalhos.ts`](src/lib/atalhos.ts).
 
+## O que a tela Hoje sabe dizer
+
+Quem abre o app está com o celular na mão depois de gastar e quer uma resposta,
+não um relatório. O cartão preto responde em três linhas:
+
+- **Saldo agora** — o de ontem mais o que entrou menos o que saiu.
+- **No fim do mês, se nada mudar** — com fixos e previstos já descontados.
+- **Dá R$ X por dia até o fim do mês** — o fechamento previsto dividido pelos
+  dias que faltam (hoje incluso), e quanto já foi hoje. É `sobraPorDia` em
+  `src/lib/calculo.ts`, a conta que o README prometia desde o começo.
+
+Embaixo do cartão, quando a previsão cruza o zero, uma linha diz **em que dia**
+(`primeiroDiaNoVermelho`). E quando um previsto passou da data sem ninguém dizer
+se aconteceu, o cartão **"Aconteceu mesmo?"** cobra: um toque confirma, outro
+apaga (com desfazer), e "aconteceram todos" resolve a lista de uma vez — porque
+previsto vencido distorce o saldo em silêncio.
+
+## Pequenas coisas que economizam toques
+
+- **Desfazer** por seis segundos depois de apagar um lançamento. Apagar já era
+  marcar `apagadoEm`; desfazer é limpar a marca. Sem confirmação antes — seria
+  um toque a mais toda vez, pagando adiantado pelo erro raro.
+- **"Lançar um igual hoje"**, dentro da edição: o gasto que se repete sem ser
+  fixo.
+- **Sugestão de categoria pela nota**: "ifood" foi Comida quarenta vezes; na
+  quadragésima primeira a tela oferece, e o dedo decide (`categoriaPelaNota`).
+- **Em N vezes**, na saída: o valor digitado é o da parcela, um lançamento por
+  mês no mesmo dia (`mesesDepois` prende o 31 ao tamanho do mês), os futuros
+  nascem previstos — e o "Aconteceu mesmo?" cobra cada um na data.
+- **Buscar** (em Mais): nota ou categoria, sem acento, mais recente primeiro;
+  tocar abre para editar.
+- **Totais** mostra o período anterior em cinza ao lado de cada categoria — o
+  número só diz algo comparado.
+- **Fixos** soma o mês: quanto entra, quanto sai, o todo-dia contado dia a dia.
+- **Mês → "Copiar o acerto"**: as saídas do apartamento, o total e a parte da
+  outra pessoa, prontos para colar na conversa.
+- **"E aí Siri, como estou de dinheiro?"** — `GET /api/saldo` com o mesmo
+  cabeçalho `x-codigo`, sem lançar nada; a receita está na página do atalho.
+
 ## Trazer a planilha para dentro
 
 Em **Ajustes → Importar planilha**, escolhendo o `.xlsx`. O arquivo é lido no
@@ -429,6 +468,9 @@ cor. A tabela dos doze meses logo abaixo é o mesmo dado em números.
     src/lib/datas.ts         dia de caderno: texto, sem fuso
     src/lib/atalho.ts        o que o atalho do iPhone manda → lançamentos
     src/lib/atalhos.ts       os botões de lançamento rápido da tela Hoje
+    src/lib/busca.ts         buscar por nota/categoria; a categoria que a nota levou
+    src/lib/backup.ts        ler de volta o backup JSON que o app baixou
+    src/lib/saldo-no-servidor.ts  a conta da tela, para a Siri responder o mesmo
     src/lib/loja.ts          o estado no aparelho, a fila e a sincronização
     src/lib/auth.ts          a porta: um código, um cookie assinado
     src/app/api/sync         o único endereço que o app chama

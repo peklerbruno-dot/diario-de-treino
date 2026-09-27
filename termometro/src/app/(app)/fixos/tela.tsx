@@ -22,9 +22,9 @@ import {
   lerRepeticao,
   type Repeticao,
 } from "@/lib/repeticao";
-import { gerarPrevisao } from "@/lib/calculo";
-import { hoje, partesDaData } from "@/lib/datas";
-import { parcelas } from "@/lib/dinheiro";
+import { gerarPrevisao, somaDosFixosNoMes } from "@/lib/calculo";
+import { hoje, nomeDoMes, partesDaData } from "@/lib/datas";
+import { comCifrao, parcelas } from "@/lib/dinheiro";
 import { categoriasDe, fixosVivos, lancamentosVivos, loja } from "@/lib/loja";
 import { EXPLICACAO_DO_TIPO, NOME_DO_TIPO, TIPOS, type Fixo, type Tipo } from "@/lib/tipos";
 
@@ -44,6 +44,11 @@ export function TelaDosFixos() {
   // atravesse o Ano-Novo, e a vida atravessa. Esticando até o dezembro
   // seguinte, a pergunta "dá?" sempre tem pelo menos doze meses de resposta.
   const ateQuando = partesDaData(hoje()).ano + 1;
+
+  // O que os compromissos somam num mês como este — o "quanto eu já devo
+  // antes de acordar" que todo app de assinatura vende como recurso pago.
+  const { ano: anoDeAgora, mes: mesDeAgora } = partesDaData(hoje());
+  const soma = somaDosFixosNoMes(fixos, anoDeAgora, mesDeAgora);
 
   function preencherAPrevisao() {
     const agora = hoje();
@@ -72,6 +77,14 @@ export function TelaDosFixos() {
         </div>
         <Botao onClick={() => setEditando("novo")}>Novo</Botao>
       </header>
+
+      {fixos.length > 0 && (soma.entraCents > 0 || soma.saiCents > 0) && (
+        <p className="tabular mt-2 text-[13.5px] leading-snug text-grafite">
+          Num mês como {nomeDoMes(mesDeAgora)}: entra{" "}
+          <b className="text-tinta">{comCifrao(soma.entraCents)}</b>, sai{" "}
+          <b className="text-tinta">{comCifrao(soma.saiCents)}</b> — o todo-dia contado dia a dia.
+        </p>
+      )}
 
       <p className="mt-2 text-[15px] leading-relaxed text-grafite">
         O salário do dia 5, a fatura do dia 10, os 60 reais de todo dia. O app usa esses valores

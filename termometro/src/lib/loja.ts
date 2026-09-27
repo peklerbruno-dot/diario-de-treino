@@ -42,6 +42,12 @@ export interface Estado {
   ultimaSincronizacao: string | null;
   recadoDeErro: string | null;
   carregado: boolean;
+  /**
+   * O último lançamento apagado, enquanto ainda dá para desfazer. Efêmero de
+   * propósito: não é gravado no aparelho nem sincronizado — é só a janela de
+   * arrependimento de alguns segundos depois do toque em Apagar.
+   */
+  ultimaExclusao: { id: string; rotulo: string } | null;
 }
 
 const ESTADO_VAZIO: Estado = {
@@ -54,6 +60,7 @@ const ESTADO_VAZIO: Estado = {
   ultimaSincronizacao: null,
   recadoDeErro: null,
   carregado: false,
+  ultimaExclusao: null,
 };
 
 const agora = () => new Date().toISOString();
@@ -192,12 +199,35 @@ export class Loja {
     this.agendarEnvio();
   }
 
+  private relogioDoDesfazer: ReturnType<typeof setTimeout> | null = null;
+
   apagarLancamento(id: string) {
     const atual = this.estado.lancamentos[id];
     if (!atual) return;
     const l: Lancamento = { ...atual, apagadoEm: agora(), atualizadoEm: agora() };
-    this.publicar({ lancamentos: { ...this.estado.lancamentos, [id]: l } });
+    this.publicar({
+      lancamentos: { ...this.estado.lancamentos, [id]: l },
+      // Apagar é soft-delete, então desfazer é barato — e um toque errado em
+      // Apagar deixa de custar o valor inteiro digitado de novo.
+      ultimaExclusao: { id, rotulo: atual.nota?.trim() || "lançamento" },
+    });
     this.marcarPendente(`l:${id}`);
+
+    if (this.relogioDoDesfazer) clearTimeout(this.relogioDoDesfazer);
+    this.relogioDoDesfazer = setTimeout(() => {
+      if (this.estado.ultimaExclusao?.id === id) this.publicar({ ultimaExclusao: null }, false);
+    }, 6000);
+  }
+
+  desfazerExclusao() {
+    const alvo = this.estado.ultimaExclusao;
+    if (!alvo) return;
+    const morto = this.estado.lancamentos[alvo.id];
+    this.publicar({ ultimaExclusao: null }, false);
+    if (!morto?.apagadoEm) return;
+    // Volta como era, inclusive `previsto`: desfazer não é relançar.
+    const { apagadoEm: _, atualizadoEm: __, criadoEm: ___, ...resto } = morto;
+    this.salvarLancamento(resto);
   }
 
   /** Confirmar é dizer "aconteceu mesmo, e foi este valor". */

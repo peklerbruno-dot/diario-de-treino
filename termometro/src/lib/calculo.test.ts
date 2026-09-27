@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { calcularAno, calcularAnoEncadeado, gerarPrevisao, primeiroDiaNoVermelho } from "./calculo";
+import {
+  calcularAno,
+  calcularAnoEncadeado,
+  gerarPrevisao,
+  previstosVencidos,
+  primeiroDiaNoVermelho,
+  sobraPorDia,
+  somaDosFixosNoMes,
+} from "./calculo";
 import type { Fixo, Lancamento, Tipo } from "./tipos";
 
 let sequencia = 0;
@@ -432,5 +440,70 @@ describe("a corrente de anos", () => {
     // Não trava, e o ano insano não vira o começo da corrente.
     expect(calculado.ano).toBe(2026);
     expect(calculado.meses[0].dias[1].saldoCents).toBe(1000);
+  });
+});
+
+describe("quanto dá por dia", () => {
+  it("é o fechamento previsto dividido pelos dias que faltam, hoje incluso", () => {
+    const ano = calcularAno({
+      ano: 2026,
+      lancamentos: [lancamento("2026-11-01", "ENTRADA", 3000)],
+      ajustes: semAjuste,
+    });
+    // 10 de novembro: faltam 21 dias (10 a 30). 3000 / 21 = 142,85… → R$ 142.
+    const sobra = sobraPorDia(ano, "2026-11-10");
+    expect(sobra).not.toBeNull();
+    expect(sobra!.diasRestantes).toBe(21);
+    expect(sobra!.porDiaCents).toBe(14200);
+  });
+
+  it("mês que já fecha no vermelho dá zero por dia, sem número negativo", () => {
+    const ano = calcularAno({
+      ano: 2026,
+      lancamentos: [lancamento("2026-11-01", "SAIDA", 3000)],
+      ajustes: semAjuste,
+    });
+    expect(sobraPorDia(ano, "2026-11-10")!.porDiaCents).toBe(0);
+  });
+
+  it("fora do ano calculado, não inventa resposta", () => {
+    const ano = calcularAno({ ano: 2026, lancamentos: [], ajustes: semAjuste });
+    expect(sobraPorDia(ano, "2027-01-01")).toBeNull();
+  });
+});
+
+describe("previstos vencidos", () => {
+  it("lista o que passou (e o de hoje), mais antigo primeiro", () => {
+    const vencidos = previstosVencidos(
+      [
+        lancamento("2026-09-25", "SAIDA", 100, { previsto: true }),
+        lancamento("2026-09-27", "SAIDA", 200, { previsto: true }),
+        lancamento("2026-09-28", "SAIDA", 300, { previsto: true }),
+        lancamento("2026-09-20", "SAIDA", 400, {
+          previsto: true,
+          apagadoEm: "2026-09-21T00:00:00.000Z",
+        }),
+        lancamento("2026-09-01", "SAIDA", 500),
+      ],
+      "2026-09-27",
+    );
+    expect(vencidos.map((l) => l.data)).toEqual(["2026-09-25", "2026-09-27"]);
+  });
+});
+
+describe("a soma dos fixos num mês", () => {
+  it("regra mensal conta uma vez, todo-dia conta por dia", () => {
+    const soma = somaDosFixosNoMes(
+      [
+        { id: "a", tipo: "ENTRADA", dia: 5, valorCents: 210000, ativo: true },
+        { id: "b", tipo: "SAIDA", dia: 10, valorCents: 90000, ativo: true },
+        { id: "c", tipo: "DIARIO", dia: 0, valorCents: 6000, ativo: true },
+        { id: "d", tipo: "SAIDA", dia: 1, valorCents: 99999, ativo: false },
+      ],
+      2026,
+      11,
+    );
+    expect(soma.entraCents).toBe(210000);
+    expect(soma.saiCents).toBe(90000 + 6000 * 30);
   });
 });
