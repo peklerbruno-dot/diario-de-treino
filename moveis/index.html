@@ -709,7 +709,6 @@ function montarPlanta() {
   el('rect', { x: 0, y: 0, width: W, height: H, fill: 'url(#gradeFina)' }, gGrade);
   el('rect', { x: 0, y: 0, width: W, height: H, fill: 'url(#gradeGrossa)' }, gGrade);
 
-  gPassagens = el('g', { 'pointer-events': 'none' }, svg);
   gRotulos = el('g', {}, svg);
   for (const a of AMBIENTES) {
     const area = ((a.x2 - a.x1) * (a.y2 - a.y1) / 10000).toFixed(2).replace('.', ',');
@@ -769,6 +768,7 @@ function montarPlanta() {
   el('text', { x: W + E + 4, y: (ENTRADA[0] + ENTRADA[1]) / 2, class: 'amb', 'font-size': 7, transform: `rotate(90 ${W + E + 4} ${(ENTRADA[0] + ENTRADA[1]) / 2})` }, svg).textContent = 'ENTRADA';
 
   gMoveis = el('g', {}, svg);
+  gPassagens = el('g', { 'pointer-events': 'none' }, svg); // por cima dos móveis: só cobre piso livre (e tapete)
   gCotas = el('g', {}, svg);
   gSel = el('g', { style: 'display:none' }, svg);
   el('polygon', { class: 'contorno', fill: 'none', stroke: '#1f6feb', 'stroke-dasharray': '5 4', 'stroke-width': 1.3, 'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none' }, gSel);
