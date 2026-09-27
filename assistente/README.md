@@ -1,8 +1,8 @@
 # Assistente
 
 Um assistente pessoal que mora no seu WhatsApp. Você escreve para um número, e
-quem responde é o Claude — com memória, lembretes, listas e pesquisa na
-internet.
+quem responde é o Gemini, do Google — com memória, lembretes, listas e pesquisa
+na internet. **Custo zero**: todas as peças usam planos gratuitos.
 
 Quem quer só colocar no ar, sem mexer em código: [`docs/COLOCAR-NO-AR.md`](docs/COLOCAR-NO-AR.md).
 
@@ -27,7 +27,7 @@ Quem quer só colocar no ar, sem mexer em código: [`docs/COLOCAR-NO-AR.md`](doc
 
 ## Como funciona
 
-    WhatsApp ──► Meta (Cloud API) ──► /api/whatsapp ──► Claude ──► ferramentas (banco)
+    WhatsApp ──► Meta (Cloud API) ──► /api/whatsapp ──► Gemini ──► ferramentas (banco)
                                            │                           │
                                            ◄──────── resposta ─────────┘
 
@@ -40,10 +40,38 @@ Quem quer só colocar no ar, sem mexer em código: [`docs/COLOCAR-NO-AR.md`](doc
   do app, então ninguém consegue se passar por ela.
 - **Responde depois de confirmar.** A Meta reenvia o aviso se não receber
   resposta rápido; por isso o app responde "recebido" na hora e só depois
-  chama o Claude (`after()` do Next). E guarda o id de cada mensagem, para um
+  chama o Gemini (`after()` do Next). E guarda o id de cada mensagem, para um
   reenvio não virar resposta dobrada.
 - **Lembretes que não tocam duas vezes.** Cada lembrete é "reservado" no banco
   antes de sair; se duas chamadas do relógio se cruzarem, só uma manda.
+
+## Por que é de graça, e o que isso custa
+
+| Peça | Plano gratuito |
+|---|---|
+| Gemini (o cérebro) | cota diária gratuita do Google AI Studio, sem cartão |
+| WhatsApp Cloud API | mensagens em resposta a você não são cobradas |
+| Vercel | plano Hobby |
+| Banco (Postgres da Vercel/Neon) | plano gratuito |
+| cron-job.org | gratuito |
+
+Três coisas vêm junto com o "grátis":
+
+1. **O Google pode ler.** No plano gratuito, o que passa pelo Gemini pode ser
+   usado para melhorar os produtos do Google e revisado por pessoas (os termos
+   dizem que desligam os dados da sua conta antes). Por isso o assistente foi
+   instruído a recusar guardar senha, cartão, CPF e documentos. Não mande
+   para ele o que você não mandaria para um desconhecido.
+2. **Há um limite por dia e por minuto.** Para uma pessoa, sobra. Se estourar,
+   ele avisa ("acabou a minha cota") e volta sozinho — a cota diária renova
+   de madrugada, no horário de Brasília. Os lembretes não gastam cota: quem
+   manda é o próprio app.
+3. **Ele é menos esperto que um modelo pago.** O "flash-lite" é o modelo
+   com a cota mais folgada. Se um dia quiser mais capricho, `GEMINI_MODELO`
+   troca o modelo (os maiores têm cota gratuita bem menor).
+
+O único ponto que pode cobrar: o modelo de mensagem do lembrete depois de 24
+horas sem conversa (abaixo). Sem ele, custo zero.
 
 ## A janela de 24 horas
 
@@ -64,7 +92,7 @@ Duas saídas, e dá para usar as duas:
     src/app/api/whatsapp/route.ts   recebe as mensagens da Meta e responde
     src/app/api/lembretes/route.ts  o relógio: manda os lembretes vencidos
     src/app/page.tsx                página que diz o que falta configurar
-    src/lib/claude.ts               o laço com o Claude e o prompt
+    src/lib/cerebro.ts              o laço com o Gemini, a pesquisa e o prompt
     src/lib/ferramentas.ts          memórias, lembretes e listas
     src/lib/whatsapp.ts             chamadas à API da Meta
     src/lib/formato.ts              assinatura, leitura do aviso, formatação
@@ -73,14 +101,20 @@ Duas saídas, e dá para usar as duas:
 
 ## O jeito dele
 
-O prompt está em `src/lib/claude.ts` (`INSTRUCOES`). É texto comum: dá para
+O prompt está em `src/lib/cerebro.ts` (`INSTRUCOES`). É texto comum: dá para
 mudar o tom, o que ele deve ou não fazer, e publicar de novo.
 
 Duas variáveis opcionais mudam o motor:
 
-- `ANTHROPIC_MODELO` — padrão `claude-opus-5`.
-- `ANTHROPIC_ESFORCO` — quanto ele pensa antes de responder: `low`, `medium`
-  (padrão) ou `high`. Mais esforço, respostas mais cuidadosas e mais lentas.
+- `GEMINI_MODELO` — o da conversa. Padrão `gemini-flash-lite-latest`, o de
+  cota gratuita mais folgada, sempre na versão estável mais nova.
+- `GEMINI_MODELO_PESQUISA` — o da pesquisa no Google. Padrão
+  `gemini-2.5-flash-lite`: no plano gratuito, a pesquisa só vem incluída em
+  alguns modelos, e este é um deles. Ela roda numa chamada à parte, e a
+  resposta volta para a conversa como o resultado de uma ferramenta.
+
+Os limites e o que cada modelo inclui mudam sem muito aviso; os seus, de
+verdade, aparecem em https://aistudio.google.com/rate-limit.
 
 ## Rodar no computador
 

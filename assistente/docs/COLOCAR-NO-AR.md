@@ -1,8 +1,8 @@
 # Como colocar o Assistente no ar
 
-Guia para quem não programa. Uns 40 minutos, tudo em site. São quatro contas:
-**GitHub** e **Vercel** (você já tem), **Anthropic** (o Claude) e **Meta for
-Developers** (o WhatsApp).
+Guia para quem não programa. Uns 40 minutos, tudo em site, **sem pagar nada e
+sem cadastrar cartão**. São quatro contas: **GitHub** e **Vercel** (você já
+tem), **Google** (o Gemini) e **Meta for Developers** (o WhatsApp).
 
 Por que tantas: o WhatsApp não deixa um programa entrar no seu número pessoal.
 O caminho oficial é a Meta dar ao assistente um número dele, e você conversar
@@ -13,15 +13,17 @@ com esse número como conversa com qualquer contato.
 
 ---
 
-## Passo 1 — A chave do Claude
+## Passo 1 — A chave do Gemini
 
-1. Entre em https://console.anthropic.com e crie a conta.
-2. **Billing** → coloque um cartão e alguns dólares de crédito. Uma mensagem
-   comum custa por volta de 2 a 5 centavos de dólar; uma com pesquisa na
-   internet ou foto, um pouco mais.
-3. **API Keys** → **Create Key** → copie e guarde. Ela começa com `sk-ant-`.
+1. Entre em https://aistudio.google.com com a sua conta do Google.
+2. **Get API key** → **Create API key** → copie e guarde. Ela começa com
+   `AIza`.
+3. **Não** ative o faturamento (billing) no projeto. Sem ele, a chave fica no
+   plano gratuito e nunca cobra — no máximo, bate no limite do dia e para até
+   a madrugada.
 
-Dica: em **Limits** dá para pôr um teto de gasto por mês.
+Lembre: no plano gratuito, o Google pode ler o que passa pelo assistente (ver
+o [README](../README.md)).
 
 ## Passo 2 — O banco de dados
 
@@ -74,7 +76,7 @@ dure:
 
    | Nome | Valor |
    |---|---|
-   | `ANTHROPIC_API_KEY` | a chave do passo 1 |
+   | `GEMINI_API_KEY` | a chave do passo 1 |
    | `WHATSAPP_TOKEN` | o token que não vence |
    | `WHATSAPP_NUMERO_ID` | o identificador do número de teste |
    | `META_APP_SECRET` | a chave secreta do app |
@@ -112,9 +114,13 @@ lembrete. Quem chama o relógio a cada minuto é o https://cron-job.org
 
 Teste: "me lembra daqui a 2 minutos de beber água".
 
-## Passo 7 — Lembretes depois de 24 horas sem conversa (opcional)
+## Passo 7 — Lembretes depois de 24 horas sem conversa (opcional, pode cobrar)
 
-Ver "A janela de 24 horas" no [README](../README.md). Para cadastrar o modelo:
+Ver "A janela de 24 horas" no [README](../README.md). Este é o único passo que
+pode gerar cobrança da Meta (alguns centavos por lembrete enviado pelo
+modelo), e ela só cobra se houver um cartão cadastrado na conta do WhatsApp.
+Quem quer custo zero pula este passo e conversa com o assistente pelo menos
+uma vez por dia. Para cadastrar o modelo:
 
 1. https://business.facebook.com/wa/manage/message-templates →
    **Criar modelo**.
@@ -131,10 +137,17 @@ Ver "A janela de 24 horas" no [README](../README.md). Para cadastrar o modelo:
 - **Mandei "oi" e nada.** Abra o projeto na Vercel → **Logs**. Sem nenhuma
   linha de `/api/whatsapp`: o webhook não está assinado em **messages**
   (passo 5.5). Com "número não autorizado": o `DONO_WHATSAPP` está diferente
-  do número que mandou. Com erro de "invalid x-api-key": a chave do Claude.
+  do número que mandou. Com "API key not valid": a chave do Gemini.
+- **Chegou "Acabou a minha cota gratuita".** É o limite do plano gratuito do
+  Gemini. O do minuto passa em instantes; o do dia renova de madrugada. Os
+  seus limites aparecem em https://aistudio.google.com/rate-limit.
 - **Chegou "Tive um problema para responder".** O motivo está nos Logs, na
-  linha logo acima. Os mais comuns: crédito do Claude acabou, ou o token do
-  WhatsApp venceu (use o do usuário do sistema).
+  linha logo acima. O mais comum: o token do WhatsApp venceu (use o do usuário
+  do sistema, passo 3).
+- **Erro dizendo que o modelo não existe.** O Google aposenta modelos de vez
+  em quando. Cadastre `GEMINI_MODELO` (ou `GEMINI_MODELO_PESQUISA`) com um
+  nome atual da lista em https://ai.google.dev/gemini-api/docs/models e faça
+  **Redeploy**.
 - **O lembrete não chegou.** Confira no cron-job.org se as chamadas estão
   voltando `200`. Se voltam `401`, a `chave=` não bate com o `CRON_SECRET`. Se
   aparece `falhas` com "re-engagement", é a janela de 24 horas (passo 7).

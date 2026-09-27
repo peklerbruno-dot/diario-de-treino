@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 const PECAS: [string, string][] = [
   ["DATABASE_URL", "Banco de dados"],
-  ["ANTHROPIC_API_KEY", "Chave do Claude"],
+  ["GEMINI_API_KEY", "Chave do Gemini"],
   ["WHATSAPP_TOKEN", "Token do WhatsApp"],
   ["WHATSAPP_NUMERO_ID", "Id do número do WhatsApp"],
   ["WHATSAPP_TOKEN_VERIFICACAO", "Token de verificação do webhook"],

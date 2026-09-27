@@ -1,17 +1,30 @@
 import "server-only";
-import type Anthropic from "@anthropic-ai/sdk";
 import { bd } from "./bd";
 import { REPETICOES, localParaUtc, utcParaLocal, type Repeticao } from "./datas";
 
 /**
  * O que o assistente consegue fazer além de conversar. Cada ferramenta é uma
- * descrição que o Claude lê e uma função que roda aqui, no servidor.
+ * descrição que o Gemini lê e uma função que roda aqui, no servidor.
  *
- * As respostas voltam em texto curto e com os ids à vista: é assim que o Claude
+ * As respostas voltam em texto curto e com os ids à vista: é assim que o Gemini
  * consegue, na mesma conversa, cancelar o lembrete que acabou de listar.
  */
 
-export const FERRAMENTAS: Anthropic.Beta.BetaTool[] = [
+/** O formato das declarações: nome, descrição e parâmetros em JSON Schema. */
+export type Declaracao = { name: string; description: string; parameters: object };
+
+export const FERRAMENTAS: Declaracao[] = [
+  {
+    name: "pesquisar_na_internet",
+    description:
+      "Pesquisa no Google e devolve um resumo com as fontes. Use quando a resposta depender de algo " +
+      "atual ou que você não sabe com certeza: notícias, clima, preços, horários, resultados, endereços.",
+    parameters: {
+      type: "object",
+      properties: { pergunta: { type: "string", description: "O que pesquisar, como uma pergunta completa." } },
+      required: ["pergunta"],
+    },
+  },
   {
     name: "guardar_memoria",
     description:
@@ -19,7 +32,7 @@ export const FERRAMENTAS: Anthropic.Beta.BetaTool[] = [
       "(preferências, pessoas, datas importantes, dados que ele pediu para guardar). " +
       "Use quando ele pedir para lembrar de algo, ou quando contar algo claramente útil no futuro. " +
       "Um fato por chamada, escrito de forma autossuficiente.",
-    input_schema: {
+    parameters: {
       type: "object",
       properties: { texto: { type: "string", description: "O fato, numa frase." } },
       required: ["texto"],
@@ -28,7 +41,7 @@ export const FERRAMENTAS: Anthropic.Beta.BetaTool[] = [
   {
     name: "apagar_memoria",
     description: "Apaga uma memória guardada, pelo id (os ids aparecem na seção de memórias do prompt). Use quando o fato mudou ou o usuário pedir para esquecer.",
-    input_schema: {
+    parameters: {
       type: "object",
       properties: { id: { type: "string" } },
       required: ["id"],
@@ -40,7 +53,7 @@ export const FERRAMENTAS: Anthropic.Beta.BetaTool[] = [
       "Agenda uma mensagem que você mesmo vai mandar ao usuário no WhatsApp na hora marcada. " +
       "Use para 'me lembra de…', 'me avisa amanhã…', compromissos, remédios. " +
       "Se o usuário não disser a hora, escolha uma razoável e diga qual escolheu.",
-    input_schema: {
+    parameters: {
       type: "object",
       properties: {
         texto: {
@@ -63,12 +76,12 @@ export const FERRAMENTAS: Anthropic.Beta.BetaTool[] = [
   {
     name: "listar_lembretes",
     description: "Lista os lembretes ainda pendentes, com id, horário e repetição.",
-    input_schema: { type: "object", properties: {} },
+    parameters: { type: "object", properties: {} },
   },
   {
     name: "cancelar_lembrete",
     description: "Cancela um lembrete pendente pelo id (use listar_lembretes para achar o id).",
-    input_schema: {
+    parameters: {
       type: "object",
       properties: { id: { type: "string" } },
       required: ["id"],
@@ -77,7 +90,7 @@ export const FERRAMENTAS: Anthropic.Beta.BetaTool[] = [
   {
     name: "adicionar_a_lista",
     description: "Adiciona itens a uma lista do usuário (compras, filmes, tarefas, presentes…). A lista é criada se não existir.",
-    input_schema: {
+    parameters: {
       type: "object",
       properties: {
         lista: { type: "string", description: "Nome curto da lista, ex.: 'compras'." },
@@ -89,7 +102,7 @@ export const FERRAMENTAS: Anthropic.Beta.BetaTool[] = [
   {
     name: "ver_listas",
     description: "Mostra os itens de uma lista, com ids. Sem 'lista', mostra o nome de todas as listas e quantos itens cada uma tem.",
-    input_schema: {
+    parameters: {
       type: "object",
       properties: { lista: { type: "string" } },
     },
@@ -97,7 +110,7 @@ export const FERRAMENTAS: Anthropic.Beta.BetaTool[] = [
   {
     name: "tirar_da_lista",
     description: "Remove itens de uma lista pelos ids (de ver_listas), ou esvazia a lista inteira com tudo=true.",
-    input_schema: {
+    parameters: {
       type: "object",
       properties: {
         lista: { type: "string" },
@@ -109,7 +122,7 @@ export const FERRAMENTAS: Anthropic.Beta.BetaTool[] = [
   },
 ];
 
-/** Os erros que voltam ao Claude como `is_error`, para ele se corrigir. */
+/** Os erros que voltam ao Gemini como `erro`, para ele se corrigir. */
 export class ErroDeFerramenta extends Error {}
 
 const texto = (v: unknown, campo: string): string => {
@@ -118,7 +131,7 @@ const texto = (v: unknown, campo: string): string => {
 };
 const nomeDaLista = (v: unknown) => texto(v, "lista").toLowerCase();
 
-/** Roda uma ferramenta e devolve o texto que o Claude vai ler. */
+/** Roda uma ferramenta e devolve o texto que o Gemini vai ler. */
 export async function executar(nome: string, entrada: Record<string, unknown>, agora = new Date()): Promise<string> {
   switch (nome) {
     case "guardar_memoria": {

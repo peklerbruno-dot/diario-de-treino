@@ -1,6 +1,6 @@
 // Assistente — a memória de quem conversa com você pelo WhatsApp.
 //
-// O Claude não guarda nada entre uma mensagem e outra: tudo o que ele "lembra"
+// O Gemini não guarda nada entre uma mensagem e outra: tudo o que ele "lembra"
 // está aqui. A conversa recente, os fatos que você pediu para ele guardar, os
 // lembretes que ele marcou e as listas.
 
@@ -16,7 +16,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// Uma fala da conversa, já em texto. É o que volta para o Claude como
+/// Uma fala da conversa, já em texto. É o que volta para o Gemini como
 /// histórico na mensagem seguinte.
 ///
 /// Só o texto final de cada lado: as chamadas de ferramenta de uma resposta
@@ -24,7 +24,7 @@ datasource db {
 /// `Memoria`, `Lembrete` ou `Item`.
 model Mensagem {
   id       String   @id @default(cuid())
-  /// "user" ou "assistant", os nomes que a API do Claude usa.
+  /// "user" ou "assistant" (que vira "model" na hora de ir para o Gemini).
   papel    String
   texto    String
   criadoEm DateTime @default(now())

@@ -1,6 +1,6 @@
 /**
  * O que dá para testar sem rede e sem banco: ler o aviso da Meta, conferir a
- * assinatura, reconhecer o seu número e deixar o texto do Claude com a cara do
+ * assinatura, reconhecer o seu número e deixar o texto do Gemini com a cara do
  * WhatsApp.
  */
 import { createHmac, timingSafeEqual } from "node:crypto";

@@ -1,7 +1,7 @@
 import { after, NextResponse } from "next/server";
-import type Anthropic from "@anthropic-ai/sdk";
+import type { Part } from "@google/genai";
 import { bd } from "@/lib/bd";
-import { esquecerConversa, responder } from "@/lib/claude";
+import { CotaEsgotada, esquecerConversa, responder } from "@/lib/cerebro";
 import { assinaturaValida, extrairMensagens, mesmoNumero, type Recebida } from "@/lib/formato";
 import { baixarMidia, enviarTexto, lembrarNumeroDoDono, marcarComoLida } from "@/lib/whatsapp";
 
@@ -10,7 +10,7 @@ import { baixarMidia, enviarTexto, lembrarNumeroDoDono, marcarComoLida } from "@
  * que o endereço é seu; `POST` a cada mensagem que chega.
  */
 
-// Uma resposta com pesquisa na internet pode levar bem mais que os 10 s padrão.
+// Uma resposta com pesquisa na internet pode levar mais que os 10 s padrão.
 export const maxDuration = 300;
 export const dynamic = "force-dynamic";
 
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     return new Response("JSON inválido.", { status: 400 });
   }
 
-  // A Meta quer um 200 rápido; se demorar, ela reenvia. O Claude pensa depois
+  // A Meta quer um 200 rápido; se demorar, ela reenvia. O Gemini pensa depois
   // que a resposta já saiu.
   const mensagens = extrairMensagens(aviso);
   if (mensagens.length) after(() => processarTodas(mensagens));
@@ -62,6 +62,13 @@ async function processarTodas(mensagens: Recebida[]) {
     try {
       await processar(m);
     } catch (e) {
+      if (e instanceof CotaEsgotada) {
+        await enviarTexto(
+          m.de,
+          "😴 Acabou a minha cota gratuita por agora. Se for o limite por minuto, tenta de novo daqui a pouco; se for o do dia, ela volta de madrugada.",
+        ).catch(() => {});
+        continue;
+      }
       console.error("[whatsapp] falha ao responder", e);
       await enviarTexto(m.de, "⚠️ Tive um problema para responder agora. Tenta de novo daqui a pouco?").catch(() => {});
     }
@@ -90,13 +97,13 @@ async function processar(m: Recebida) {
     return;
   }
 
-  let conteudo: Anthropic.Beta.BetaContentBlockParam[];
+  let conteudo: Part[];
   let resumo: string;
 
   switch (m.tipo) {
     case "texto":
       if (!m.texto.trim()) return;
-      conteudo = [{ type: "text", text: m.texto }];
+      conteudo = [{ text: m.texto }];
       resumo = m.texto;
       break;
 
@@ -106,14 +113,14 @@ async function processar(m: Recebida) {
       const legenda = m.legenda.trim();
       if (m.tipo === "imagem" && /^image\/(jpeg|png|gif|webp)$/.test(midia.mime)) {
         conteudo = [
-          { type: "image", source: { type: "base64", media_type: midia.mime as "image/jpeg", data: midia.base64 } },
-          { type: "text", text: legenda || "(mandou esta foto, sem legenda)" },
+          { inlineData: { mimeType: midia.mime, data: midia.base64 } },
+          { text: legenda || "(mandou esta foto, sem legenda)" },
         ];
         resumo = `[mandou uma foto]${legenda ? ` ${legenda}` : ""}`;
       } else if (midia.mime === "application/pdf") {
         conteudo = [
-          { type: "document", source: { type: "base64", media_type: "application/pdf", data: midia.base64 }, title: m.tipo === "documento" ? m.nome : undefined },
-          { type: "text", text: legenda || "(mandou este PDF, sem comentário)" },
+          { inlineData: { mimeType: "application/pdf", data: midia.base64 } },
+          { text: legenda || "(mandou este PDF, sem comentário)" },
         ];
         resumo = `[mandou o PDF ${(m.tipo === "documento" && m.nome) || ""}]${legenda ? ` ${legenda}` : ""}`;
       } else {

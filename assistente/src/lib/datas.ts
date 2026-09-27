@@ -1,7 +1,7 @@
 /**
  * Horas de relógio de parede ↔ instantes em UTC.
  *
- * O Claude pensa em "amanhã às 9h" do jeito que você fala — hora de São Paulo.
+ * O Gemini pensa em "amanhã às 9h" do jeito que você fala — hora de São Paulo.
  * O banco guarda o instante em UTC. A conversão passa pelo `Intl`, e não por um
  * "-3" fixo: se o horário de verão voltar, ou se o assistente for usado noutro
  * fuso (`FUSO`), a conta continua certa.
@@ -70,7 +70,7 @@ export function utcParaLocal(instante: Date, fuso = FUSO): string {
 
 const SEMANA = ["domingo", "segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira", "sábado"];
 
-/** "sábado, 27/09/2026, 14:05" — o que o Claude recebe como "agora". */
+/** "sábado, 27/09/2026, 14:05" — o que o Gemini recebe como "agora". */
 export function agoraPorExtenso(instante = new Date(), fuso = FUSO): string {
   const p = partesNoFuso(instante, fuso);
   return `${SEMANA[p.diaDaSemana]}, ${dois(p.dia)}/${dois(p.mes)}/${p.ano}, ${dois(p.hora)}:${dois(p.minuto)}`;

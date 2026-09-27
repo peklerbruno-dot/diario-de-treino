@@ -61,14 +61,14 @@ export async function enviarModelo(para: string, nome: string, idioma: string, p
 }
 
 /**
- * Mostra os dois tiques azuis e o "digitando…" enquanto o Claude pensa.
+ * Mostra os dois tiques azuis e o "digitando…" enquanto o Gemini pensa.
  * É cortesia: se falhar, a resposta chega do mesmo jeito.
  */
 export async function marcarComoLida(mensagemId: string): Promise<void> {
   await postar({ status: "read", message_id: mensagemId, typing_indicator: { type: "text" } }).catch(() => {});
 }
 
-/** Baixa uma foto ou um PDF que chegou, em base64, para ir direto ao Claude. */
+/** Baixa uma foto ou um PDF que chegou, em base64, para ir direto ao Gemini. */
 export async function baixarMidia(midiaId: string): Promise<{ mime: string; base64: string }> {
   const { token } = credenciais();
   const auth = { Authorization: `Bearer ${token}` };
