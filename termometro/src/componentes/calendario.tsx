@@ -87,7 +87,12 @@ export function Calendario({
               </span>
 
               <span className="tabular absolute inset-x-1 bottom-1 text-right text-[11px] font-semibold lg:inset-x-2 lg:text-[13px]">
-                {emReais(dia.saldoCents)}
+                {/* No celular a célula tem ~34px úteis e "145.405" não cabe:
+                    o último dígito era cortado e o saldo lido errado. O valor
+                    encurtado é honesto sobre ser aproximado ("145 mil"), e o
+                    exato está a um toque, na folha do dia. */}
+                <span className="lg:hidden">{curtinho(dia.saldoCents)}</span>
+                <span className="hidden lg:inline">{emReais(dia.saldoCents)}</span>
               </span>
             </button>
           );
@@ -95,4 +100,17 @@ export function Calendario({
       </div>
     </div>
   );
+}
+
+/**
+ * "145.405" não cabe numa célula de calendário de celular; "145 mil" cabe e
+ * diz o que importa. Abaixo de mil reais o valor exato é curto e fica inteiro.
+ */
+function curtinho(centavos: number): string {
+  const reais = Math.round(Math.abs(centavos) / 100);
+  const sinal = centavos < 0 ? "−" : "";
+  if (reais >= 1_000_000) return `${sinal}${(reais / 1_000_000).toFixed(1).replace(".", ",")} mi`;
+  if (reais >= 10_000) return `${sinal}${Math.round(reais / 1000)} mil`;
+  if (reais >= 1_000) return `${sinal}${(reais / 1000).toFixed(1).replace(".", ",")} mil`;
+  return `${sinal}${reais}`;
 }

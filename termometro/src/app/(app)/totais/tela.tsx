@@ -31,8 +31,21 @@ export function TelaDosTotais() {
 
   const estado = useEstado();
   const categorias = categoriasDe(estado);
-  const lancamentos = doPeriodo(lancamentosVivos(estado), ano, mes);
+  const vivos = lancamentosVivos(estado);
+  const lancamentos = doPeriodo(vivos, ano, mes);
   const totais = totaisPorCategoria(lancamentos, categorias, tipo);
+
+  // O período anterior, para o número ter com o que se comparar: "Mercado
+  // R$ 950" não diz nada sozinho; "mês passado 720" diz tudo. Só o número, em
+  // cinza — sem seta vermelha, sem alarme.
+  const anterior = mes === null ? { ano: ano - 1, mes: null } : passoAtras(ano, mes);
+  const totaisAnteriores = totaisPorCategoria(
+    doPeriodo(vivos, anterior.ano, anterior.mes),
+    categorias,
+    tipo,
+  );
+  const anteriorDe = new Map(totaisAnteriores.categorias.map((c) => [c.id, c.centavos]));
+  const rotuloAnterior = mes === null ? String(ano - 1) : "mês passado";
 
   function andar(passos: number) {
     if (mes === null) {
@@ -93,6 +106,11 @@ export function TelaDosTotais() {
             <p className="tabular mt-1 text-[32px] font-bold leading-none tracking-tight">
               {comCifrao(totais.totalCents)}
             </p>
+            {totaisAnteriores.totalCents > 0 && (
+              <p className="tabular mt-1.5 text-[12.5px] text-fosco">
+                {rotuloAnterior}: {comCifrao(totaisAnteriores.totalCents)}
+              </p>
+            )}
           </Cartao>
         </div>
 
@@ -125,8 +143,15 @@ export function TelaDosTotais() {
                       ) : (
                         <span className="min-w-0 truncate text-[15px] font-medium">{c.nome}</span>
                       )}
-                      <span className="tabular shrink-0 text-[15px] font-semibold">
-                        {comCifrao(c.centavos)}
+                      <span className="shrink-0 text-right">
+                        <span className="tabular block text-[15px] font-semibold">
+                          {comCifrao(c.centavos)}
+                        </span>
+                        {anteriorDe.has(c.id) && (
+                          <span className="tabular block text-[11.5px] text-fosco">
+                            {rotuloAnterior}: {comCifrao(anteriorDe.get(c.id) ?? 0)}
+                          </span>
+                        )}
                       </span>
                     </div>
                     <div className="mt-1.5 flex items-center gap-2">
@@ -165,4 +190,9 @@ function Barra({ parte }: { parte: number }) {
       />
     </span>
   );
+}
+
+/** O mês de antes, virando o ano quando precisa. */
+function passoAtras(ano: number, mes: number): { ano: number; mes: number } {
+  return mes === 1 ? { ano: ano - 1, mes: 12 } : { ano, mes: mes - 1 };
 }

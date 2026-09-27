@@ -7,6 +7,7 @@ import { MESES_CURTOS, hoje } from "@/lib/datas";
 import { comCifrao, emReais } from "@/lib/dinheiro";
 import { guardarSaldoInicial, lancamentosVivos, loja } from "@/lib/loja";
 import { abasDeAno, lerPlanilha, type ResultadoImportacao } from "@/lib/planilha";
+import { lerBackup, type BackupLido } from "@/lib/backup";
 
 /**
  * Trazer a planilha para dentro do app.
@@ -25,6 +26,7 @@ export function TelaDeImportacao() {
   const [nomeDoArquivo, setNomeDoArquivo] = useState<string | null>(null);
   const [substituir, setSubstituir] = useState(true);
   const [pronto, setPronto] = useState<string | null>(null);
+  const [backup, setBackup] = useState<BackupLido | null>(null);
 
   const jaExistentes = lido
     ? lancamentosVivos(estado).filter((l) => l.data.startsWith(String(lido.ano)))
@@ -33,8 +35,24 @@ export function TelaDeImportacao() {
   async function abrirArquivo(entrada: File) {
     setLendo(true);
     setErro(null);
+    setBackup(null);
     try {
       setNomeDoArquivo(entrada.name);
+
+      // O backup do próprio app (Ajustes → Backup JSON) volta por aqui também.
+      if (entrada.name.toLowerCase().endsWith(".json")) {
+        const lidoDoBackup = lerBackup(await entrada.text());
+        if ("erro" in lidoDoBackup) {
+          setErro(lidoDoBackup.erro);
+        } else {
+          setBackup(lidoDoBackup);
+          setLido(null);
+          setArquivo(null);
+          setPronto(null);
+        }
+        return;
+      }
+
       const bytes = await entrada.arrayBuffer();
       // O SheetJS só é baixado quando alguém importa de verdade — são umas
       // centenas de kB que não fazem falta no dia a dia do app.
@@ -66,6 +84,23 @@ export function TelaDeImportacao() {
     }
   }
 
+  function restaurarBackup() {
+    if (!backup) return;
+    // Sem o carimbo antigo: `salvarVariosLancamentos` carimba agora(), e é
+    // esse carimbo novo que faz a linha restaurada GANHAR no servidor da
+    // versão apagada/editada que está lá. Com o carimbo do backup, o servidor
+    // ignorava tudo em silêncio e o aparelho jurava "Tudo sincronizado".
+    loja.salvarVariosLancamentos(backup.lancamentos.map(({ atualizadoEm: _, ...l }) => l));
+    for (const f of backup.fixos) loja.salvarFixo(f);
+    for (const a of backup.ajustes) loja.definirAjuste(a.chave, a.valor);
+    setPronto(
+      `Backup restaurado: ${backup.lancamentos.length} lançamentos, ${backup.fixos.length} fixos ` +
+        `e ${backup.ajustes.length} ajustes. Tudo já está subindo para o servidor.` +
+        (backup.ignoradas > 0 ? ` ${backup.ignoradas} linha(s) quebradas foram ignoradas.` : ""),
+    );
+    setBackup(null);
+  }
+
   function confirmar() {
     if (!lido) return;
     if (substituir) {
@@ -85,20 +120,25 @@ export function TelaDeImportacao() {
     <div>
       <h1 className="text-[22px] font-semibold tracking-tight">Importar planilha</h1>
       <p className="mt-2 text-[15px] leading-relaxed text-grafite">
-        Escolha o arquivo do Termômetro (.xlsx). O app lê a aba do ano, separa cada valor em um
-        lançamento e traz junto os comentários das células.
+        Escolha a planilha do Termômetro (.xlsx) — o app lê a aba do ano, separa cada valor em um
+        lançamento e traz junto os comentários das células — ou um backup baixado em Ajustes
+        (.json), que volta inteiro.
       </p>
 
       {/* O botão nativo de arquivo escreve "Choose File" em inglês em boa parte
           dos navegadores. Aqui ele fica escondido atrás de um rótulo que diz, em
           português, o que vai acontecer. */}
       <label className="mt-4 flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-folha border border-tinta bg-tinta px-4 py-2.5 text-[17px] text-papel">
-        Escolher o arquivo da planilha
+        Escolher a planilha ou o backup
         <input
           type="file"
-          accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          accept=".xlsx,.json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/json"
           onChange={(e) => {
             const f = e.target.files?.[0];
+            // Zerar o campo deixa o MESMO arquivo ser escolhido de novo: sem
+            // isso o navegador não dispara nada na segunda escolha, e a tela
+            // fica muda.
+            e.target.value = "";
             if (f) void abrirArquivo(f);
           }}
           className="sr-only"
@@ -114,6 +154,25 @@ export function TelaDeImportacao() {
         <div className="mt-4">
           <Aviso tom="atencao">{erro}</Aviso>
         </div>
+      )}
+
+      {backup && (
+        <section className="mt-5 rounded-cartao bg-cartao px-4 py-4 shadow-cartao">
+          <h2 className="text-[17px] font-semibold">O que tem neste backup</h2>
+          <p className="mt-1 text-[15px] leading-relaxed text-grafite">
+            {backup.lancamentos.length} lançamentos, {backup.fixos.length} fixos e{" "}
+            {backup.ajustes.length} ajustes
+            {backup.ignoradas > 0 ? ` (${backup.ignoradas} linhas quebradas serão ignoradas)` : ""}.
+            Restaurar escreve por cima do que houver com o mesmo registro; o que só existe aqui no
+            aparelho continua intocado.
+          </p>
+          <div className="mt-3 flex gap-2">
+            <Botao tipo="primario" onClick={restaurarBackup}>
+              Restaurar backup
+            </Botao>
+            <Botao onClick={() => setBackup(null)}>Cancelar</Botao>
+          </div>
+        </section>
       )}
 
       {pronto && (

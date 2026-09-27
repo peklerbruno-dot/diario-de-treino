@@ -21,6 +21,9 @@ import { paraCentavos } from "@/lib/dinheiro";
 import {
   ajustesDoAno,
   anosComDados,
+  saldoInicialExplicito,
+  saldosIniciaisDigitados,
+  rateioApto,
   arredondarTudo,
   categoriasDe,
   guardarCategorias,
@@ -34,6 +37,7 @@ import {
 } from "@/lib/loja";
 import { categoriasDoTipo, idDoNome, type Categoria } from "@/lib/categorias";
 import { quantosSemCategoria } from "@/lib/classificar";
+import { calcularAnoEncadeado } from "@/lib/calculo";
 import { NOME_DO_TIPO, TIPOS, type Tipo } from "@/lib/tipos";
 
 export function TelaDeAjustes() {
@@ -42,9 +46,23 @@ export function TelaDeAjustes() {
   const ajustes = ajustesDoAno(estado, ano);
   const anos = anosComDados(estado, [partesDaData(hoje()).ano]);
 
-  const [saldo, setSaldo] = useState(
-    (ajustes.saldoInicialCents / 100).toFixed(2).replace(".", ","),
-  );
+  // O campo mostra o saldo que o app REALMENTE usa para o ano: o digitado, ou
+  // o herdado do fechamento do ano anterior. Mostrar "0,00" para um ano
+  // herdado convidava a tocar em Salvar e zerar a corrente sem querer.
+  const emUso = (a: number) => {
+    const explicito = saldoInicialExplicito(estado, a);
+    if (explicito !== null) return { cents: explicito, herdado: false };
+    const calculado = calcularAnoEncadeado({
+      ano: a,
+      lancamentos: lancamentosVivos(estado),
+      saldosIniciais: saldosIniciaisDigitados(estado),
+      rateioAptoPercent: rateioApto(estado),
+    });
+    return { cents: calculado.saldoInicialCents, herdado: true };
+  };
+  const [saldo, setSaldo] = useState((emUso(ano).cents / 100).toFixed(2).replace(".", ","));
+  const [erroSaldo, setErroSaldo] = useState<string | null>(null);
+  const saldoHerdado = emUso(ano).herdado;
   const [rateio, setRateio] = useState(String(ajustes.rateioAptoPercent));
   const [confirmandoApagar, setConfirmandoApagar] = useState(false);
 
@@ -82,9 +100,8 @@ export function TelaDeAjustes() {
             onChange={(e) => {
               const novo = Number(e.target.value);
               setAno(novo);
-              setSaldo(
-                (ajustesDoAno(estado, novo).saldoInicialCents / 100).toFixed(2).replace(".", ","),
-              );
+              setSaldo((emUso(novo).cents / 100).toFixed(2).replace(".", ","));
+              setErroSaldo(null);
             }}
             className="ml-2 rounded-folha border border-regua bg-cartao px-3 py-2"
           >
@@ -97,13 +114,38 @@ export function TelaDeAjustes() {
         </label>
 
         <div className="mt-3">
-          <Campo rotulo={`Saldo em 1º de janeiro de ${ano}`}>
-            <CampoDeValor valor={saldo} aoMudar={setSaldo} />
+          <Campo
+            rotulo={`Saldo em 1º de janeiro de ${ano}`}
+            dica={
+              saldoHerdado
+                ? `Herdado do fechamento de ${ano - 1}. Salvar aqui fixa este valor e interrompe a herança.`
+                : undefined
+            }
+          >
+            <CampoDeValor
+              valor={saldo}
+              aoMudar={(v) => {
+                setSaldo(v);
+                setErroSaldo(null);
+              }}
+            />
           </Campo>
+          {erroSaldo && (
+            <p role="alert" className="mt-2 text-[14px] text-atencao">
+              {erroSaldo}
+            </p>
+          )}
           <Botao
             onClick={() => {
               const cents = paraCentavos(saldo);
-              if (cents !== null) guardarSaldoInicial(ano, cents);
+              if (cents === null) {
+                // Recusar em silêncio parecia "salvou": o leigo saía achando
+                // que o saldo tinha entrado.
+                setErroSaldo("Não entendi o valor. Digite só o número, como 1500 ou 1.500,00.");
+                return;
+              }
+              guardarSaldoInicial(ano, cents);
+              setSaldo((cents / 100).toFixed(2).replace(".", ","));
             }}
             className="mt-2"
           >
@@ -142,7 +184,7 @@ export function TelaDeAjustes() {
         <Subtitulo>Levar os dados embora</Subtitulo>
         <p className="mt-1 text-[15px] leading-relaxed text-grafite">
           Tudo o que está aqui sai em arquivo, a qualquer momento. A planilha abre no Excel e no
-          Numbers; o backup serve para guardar ou para voltar atrás.
+          Numbers; o backup volta inteiro por “Importar planilha”, quando precisar.
         </p>
         <div className="mt-2 flex flex-wrap gap-2">
           <Botao onClick={() => baixarPlanilha(estado)}>Planilha (CSV)</Botao>
@@ -317,8 +359,13 @@ function Categorias({ estado }: { estado: EstadoDoApp }) {
    * desligaria a categoria de todo o passado dela. Assim, corrigir "Mercado"
    * para "Supermercado" renomeia também nos totais de janeiro.
    */
-  const renomear = (id: string, nome: string) =>
-    guardarCategorias(categorias.map((c) => (c.id === id ? { ...c, nome } : c)));
+  // Só persiste nome de verdade. Um campo momentaneamente vazio (a pessoa
+  // selecionou tudo para reescrever) apagava a categoria na hora: a leitura
+  // descarta categoria sem nome, e o próximo salvamento a sumia para sempre.
+  const renomear = (id: string, nome: string) => {
+    if (!nome.trim()) return;
+    guardarCategorias(categorias.map((c) => (c.id === id ? { ...c, nome: nome.trim() } : c)));
+  };
 
   function alternarTipo(c: Categoria, tipo: Tipo) {
     const tipos = c.tipos.includes(tipo) ? c.tipos.filter((t) => t !== tipo) : [...c.tipos, tipo];
@@ -338,20 +385,8 @@ function Categorias({ estado }: { estado: EstadoDoApp }) {
         {categorias.map((c) => (
           <div key={c.id} className="border-b border-linha py-3 last:border-b-0">
             <div className="flex items-center justify-between gap-3">
-              <input
-                value={c.nome}
-                onChange={(e) => renomear(c.id, e.target.value)}
-                aria-label={`Nome da categoria ${c.nome}`}
-                className="min-w-0 flex-1 bg-transparent text-[15px] font-medium outline-none focus:underline"
-              />
-              <button
-                type="button"
-                onClick={() => apagar(c.id)}
-                aria-label={`Apagar a categoria ${c.nome}`}
-                className="shrink-0 text-[13px] text-atencao"
-              >
-                Apagar
-              </button>
+              <NomeDaCategoria categoria={c} aoRenomear={(nome) => renomear(c.id, nome)} />
+              <ApagarComCerteza nome={c.nome} aoApagar={() => apagar(c.id)} />
             </div>
             <div className="mt-1.5 flex gap-1.5">
               {TIPOS.map((t) => (
@@ -374,7 +409,7 @@ function Categorias({ estado }: { estado: EstadoDoApp }) {
 
       <div className="mt-3">
         <Campo rotulo="Nova categoria">
-          <CampoDeTexto valor={nova} aoMudar={setNova} placeholder="farmácia" />
+          <CampoDeTexto valor={nova} aoMudar={setNova} placeholder="farmácia" maxLength={40} />
         </Campo>
         <div className="mt-2 flex gap-1.5">
           {TIPOS.map((t) => (
@@ -412,6 +447,87 @@ function Categorias({ estado }: { estado: EstadoDoApp }) {
         com o mesmo nome. Ela só deixa de aparecer na hora de escolher.
       </p>
     </section>
+  );
+}
+
+/**
+ * O campo de nome com memória própria: o que se digita fica local, e só vai
+ * para a lista (que sincroniza) ao sair do campo, com nome não vazio. Digitar
+ * direto na lista fazia cada tecla virar um salvamento — e um instante de campo
+ * vazio apagava a categoria.
+ */
+function NomeDaCategoria({
+  categoria,
+  aoRenomear,
+}: {
+  categoria: Categoria;
+  aoRenomear: (nome: string) => void;
+}) {
+  const [nome, setNome] = useState(categoria.nome);
+  // Se o nome mudou por fora (renomeado no outro aparelho, sincronizado agora),
+  // o campo acompanha — em vez de regravar o nome velho por cima no próximo
+  // blur.
+  const [nomeVisto, setNomeVisto] = useState(categoria.nome);
+  if (categoria.nome !== nomeVisto) {
+    setNomeVisto(categoria.nome);
+    setNome(categoria.nome);
+  }
+
+  return (
+    <input
+      value={nome}
+      maxLength={40}
+      onChange={(e) => setNome(e.target.value)}
+      onBlur={() => {
+        if (!nome.trim()) {
+          setNome(categoria.nome); // vazio não vale: volta o que era
+        } else if (nome.trim() !== categoria.nome) {
+          aoRenomear(nome); // só grava se mudou de verdade
+        }
+      }}
+      aria-label={`Nome da categoria ${categoria.nome}`}
+      className="min-w-0 flex-1 bg-transparent text-[15px] font-medium outline-none focus:underline"
+    />
+  );
+}
+
+/**
+ * Apagar em dois toques. Um toque só, num alvo de 20px colado no campo de
+ * nome, apagava categoria por acidente — e não havia desfazer.
+ */
+function ApagarComCerteza({ nome, aoApagar }: { nome: string; aoApagar: () => void }) {
+  const [confirmando, setConfirmando] = useState(false);
+
+  if (confirmando) {
+    return (
+      <span className="flex shrink-0 items-center gap-2">
+        <button
+          type="button"
+          onClick={aoApagar}
+          className="min-h-[40px] rounded-full bg-cartao px-3 text-[13px] font-medium text-atencao shadow-baixa"
+        >
+          Apagar mesmo
+        </button>
+        <button
+          type="button"
+          onClick={() => setConfirmando(false)}
+          className="min-h-[40px] px-2 text-[13px] text-grafite"
+        >
+          Deixa
+        </button>
+      </span>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setConfirmando(true)}
+      aria-label={`Apagar a categoria ${nome}`}
+      className="min-h-[40px] shrink-0 px-3 text-[13px] text-atencao"
+    >
+      Apagar
+    </button>
   );
 }
 
@@ -493,7 +609,7 @@ function baixarPlanilha(estado: EstadoDoApp) {
       l.data,
       NOME_DO_TIPO[l.tipo],
       (l.valorCents / 100).toFixed(2).replace(".", ","),
-      (l.nota ?? "").replace(/[;\n]/g, " "),
+      l.nota ?? "",
       l.previsto ? "sim" : "não",
       l.rendaPropria ? "sim" : "não",
       l.investimento ? "sim" : "não",
@@ -502,10 +618,21 @@ function baixarPlanilha(estado: EstadoDoApp) {
   }
   // O BOM faz o Excel abrir os acentos certos.
   baixar(
-    "﻿" + linhas.map((l) => l.join(";")).join("\r\n"),
+    "﻿" + linhas.map((l) => l.map(campoCsv).join(";")).join("\r\n"),
     `termometro-${hoje()}.csv`,
     "text/csv;charset=utf-8",
   );
+}
+
+/**
+ * Escapa um campo do jeito que o CSV manda (RFC 4180): aspas em volta quando há
+ * ; aspas ou quebra de linha, e aspas internas dobradas. A higienização antiga
+ * só trocava ; e \n por espaço — uma nota começando com aspas desalinhava o
+ * arquivo inteiro dali para baixo.
+ */
+function campoCsv(texto: string): string {
+  const limpo = texto.replace(/\r?\n|\r/g, " ");
+  return /[;"]/.test(limpo) ? `"${limpo.replace(/"/g, '""')}"` : limpo;
 }
 
 function baixarBackup(estado: EstadoDoApp) {

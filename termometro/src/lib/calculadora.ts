@@ -19,6 +19,8 @@
  * Então "195+3×50" são dois lançamentos: 195 e 150.
  */
 
+import { aoReal, TETO_CENTS } from "./dinheiro";
+
 const OPERADORES = ["+", "-", "*", "/"] as const;
 
 /** O que o teclado guarda é texto cru; estes são os sinais que ele usa. */
@@ -102,7 +104,12 @@ export function avaliar(texto: string): Conta | null {
     if (parcela.trim() === "") continue;
     const valor = avaliarParcela(parcela);
     if (valor === null) return null;
-    const cents = Math.round(valor * 100);
+    // Cada parcela já sai arredondada ao real. Era aqui que a divisão traía o
+    // visor: "100/3" somava três parcelas de R$ 33,33 na prévia (R$ 100) e
+    // salvava três lançamentos de R$ 33 (R$ 99). Arredondando cada parcela na
+    // origem, a prévia, a contagem e o que vai para o banco são o mesmo número.
+    const cents = aoReal(Math.round(valor * 100));
+    if (cents > TETO_CENTS) return null;
     if (cents !== 0) parcelas.push(cents);
   }
 

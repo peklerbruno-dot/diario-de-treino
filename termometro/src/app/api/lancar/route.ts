@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import { codigoConfere, temSessao } from "@/lib/auth";
 import { bd } from "@/lib/bd";
-import { calcularAno } from "@/lib/calculo";
 import { camposDoEndereco, hojeNoFuso, lerPedidoDoAtalho, recadoDoAtalho } from "@/lib/atalho";
 import { CHAVE_DAS_CATEGORIAS, lerCategorias, nomeDaCategoria } from "@/lib/categorias";
-import { partesDaData } from "@/lib/datas";
+import { saldoNoServidor } from "@/lib/saldo-no-servidor";
 
 /**
  * A porta de trás: um lançamento, sem abrir o app.
@@ -83,32 +82,8 @@ export async function POST(pedido: Request) {
   });
 
   const data = lancamentos[0].data;
-  const { ano, mes, dia } = partesDaData(data);
 
-  const doAno = await bd.lancamento.findMany({
-    where: { apagadoEm: null, data: { startsWith: `${ano}-` } },
-    select: {
-      id: true,
-      data: true,
-      tipo: true,
-      valorCents: true,
-      rendaPropria: true,
-      investimento: true,
-      apartamento: true,
-      previsto: true,
-    },
-  });
-  const abertura = await bd.ajuste.findUnique({ where: { chave: `saldoInicial:${ano}` } });
-
-  const calculado = calcularAno({
-    ano,
-    lancamentos: doAno,
-    ajustes: {
-      saldoInicialCents: Number(abertura?.valor ?? 0) || 0,
-      rateioAptoPercent: 40,
-    },
-  });
-  const saldoDoDia = calculado.meses[mes - 1]?.dias[dia - 1]?.saldoCents ?? 0;
+  const { saldoDoDiaCents: saldoDoDia } = await saldoNoServidor(data);
 
   return NextResponse.json({
     ok: true,

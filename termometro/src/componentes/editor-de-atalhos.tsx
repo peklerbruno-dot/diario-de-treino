@@ -172,7 +172,12 @@ function Formulario({
   return (
     <div className="space-y-3">
       <Campo rotulo="Nome do botão">
-        <CampoDeTexto valor={titulo} aoMudar={setTitulo} placeholder="Almoço FFLCH" />
+        <CampoDeTexto
+          valor={titulo}
+          aoMudar={setTitulo}
+          placeholder="Almoço FFLCH"
+          maxLength={40}
+        />
       </Campo>
 
       <div>
@@ -216,7 +221,12 @@ function Formulario({
       )}
 
       <Campo rotulo="Observação" dica="É o que vai escrito na linha do lançamento.">
-        <CampoDeTexto valor={observacao} aoMudar={setObservacao} placeholder="Bandejão" />
+        <CampoDeTexto
+          valor={observacao}
+          aoMudar={setObservacao}
+          placeholder="Bandejão"
+          maxLength={80}
+        />
       </Campo>
 
       <Campo

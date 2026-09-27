@@ -7,6 +7,7 @@ import {
   lerCategorias,
   type Categoria,
 } from "./categorias";
+import { hoje as dataDeHoje } from "./datas";
 import { aoReal } from "./dinheiro";
 import type { Ajustes, Fixo, Lancamento, Tipo } from "./tipos";
 import { AJUSTES_PADRAO } from "./tipos";
@@ -27,7 +28,7 @@ import { AJUSTES_PADRAO } from "./tipos";
 const CHAVE = "termometro.v2";
 const ESPERA_ANTES_DE_SINCRONIZAR_MS = 1500;
 
-export type Situacao = "guardado" | "enviando" | "sem-internet" | "erro";
+export type Situacao = "guardado" | "enviando" | "sem-internet" | "erro" | "sessao-vencida";
 
 export interface Estado {
   lancamentos: Record<string, Lancamento>;
@@ -37,10 +38,21 @@ export interface Estado {
   ate: string | null;
   /** O que ainda não subiu. */
   pendentes: string[];
+  /**
+   * O que o servidor recusou de vez, com o motivo. Fica gravado até a linha
+   * ser editada ou apagada — um aviso que some no próximo sync não é aviso.
+   */
+  recusados: { id: string; motivo: string }[];
   situacao: Situacao;
   ultimaSincronizacao: string | null;
   recadoDeErro: string | null;
   carregado: boolean;
+  /**
+   * O último lançamento apagado, enquanto ainda dá para desfazer. Efêmero de
+   * propósito: não é gravado no aparelho nem sincronizado — é só a janela de
+   * arrependimento de alguns segundos depois do toque em Apagar.
+   */
+  ultimaExclusao: { id: string; rotulo: string } | null;
 }
 
 const ESTADO_VAZIO: Estado = {
@@ -49,10 +61,12 @@ const ESTADO_VAZIO: Estado = {
   ajustes: {},
   ate: null,
   pendentes: [],
+  recusados: [],
   situacao: "guardado",
   ultimaSincronizacao: null,
   recadoDeErro: null,
   carregado: false,
+  ultimaExclusao: null,
 };
 
 const agora = () => new Date().toISOString();
@@ -66,6 +80,8 @@ export class Loja {
   private ouvintes = new Set<() => void>();
   private relogioDoEnvio: ReturnType<typeof setTimeout> | null = null;
   private enviando = false;
+  /** Alguém pediu para sincronizar enquanto um envio estava no meio. */
+  private pedidoDuranteEnvio = false;
 
   // ---------------------------------------------------------------- leitura
 
@@ -122,10 +138,19 @@ export class Loja {
 
   private guardarNoAparelho() {
     try {
-      const { lancamentos, fixos, ajustes, ate, pendentes, ultimaSincronizacao } = this.estado;
+      const { lancamentos, fixos, ajustes, ate, pendentes, recusados, ultimaSincronizacao } =
+        this.estado;
       localStorage.setItem(
         CHAVE,
-        JSON.stringify({ lancamentos, fixos, ajustes, ate, pendentes, ultimaSincronizacao }),
+        JSON.stringify({
+          lancamentos,
+          fixos,
+          ajustes,
+          ate,
+          pendentes,
+          recusados,
+          ultimaSincronizacao,
+        }),
       );
     } catch {
       // Sem espaço para guardar: o que está na tela continua valendo, e a
@@ -139,6 +164,11 @@ export class Loja {
     const pendentes = this.estado.pendentes.includes(chave)
       ? this.estado.pendentes
       : [...this.estado.pendentes, chave];
+    // Mexer na linha é a chance de ela passar: a recusa antiga sai daqui.
+    const id = chave.slice(2);
+    if (this.estado.recusados.some((r) => r.id === id)) {
+      this.publicar({ recusados: this.estado.recusados.filter((r) => r.id !== id) }, false);
+    }
     // A fila é gravada junto com o dado. Enquanto ela só existia na memória,
     // um lançamento feito no metrô e o app fechado antes de o sinal voltar
     // ficava para sempre só naquele aparelho: o valor estava salvo, mas nada
@@ -162,6 +192,9 @@ export class Loja {
       // entra: arredondar aqui é o que faz a soma das partes bater com o total
       // em toda tela, sem cada tela precisar lembrar disso.
       valorCents: aoReal(dados.valorCents),
+      // O servidor recusa nota acima de 500 letras; cortar aqui evita criar
+      // uma linha que nunca conseguiria subir.
+      nota: dados.nota ? dados.nota.slice(0, 500) : dados.nota,
       criadoEm: anterior?.criadoEm ?? agora(),
       atualizadoEm: agora(),
       apagadoEm: null,
@@ -188,12 +221,35 @@ export class Loja {
     this.agendarEnvio();
   }
 
+  private relogioDoDesfazer: ReturnType<typeof setTimeout> | null = null;
+
   apagarLancamento(id: string) {
     const atual = this.estado.lancamentos[id];
     if (!atual) return;
     const l: Lancamento = { ...atual, apagadoEm: agora(), atualizadoEm: agora() };
-    this.publicar({ lancamentos: { ...this.estado.lancamentos, [id]: l } });
+    this.publicar({
+      lancamentos: { ...this.estado.lancamentos, [id]: l },
+      // Apagar é soft-delete, então desfazer é barato — e um toque errado em
+      // Apagar deixa de custar o valor inteiro digitado de novo.
+      ultimaExclusao: { id, rotulo: atual.nota?.trim() || "lançamento" },
+    });
     this.marcarPendente(`l:${id}`);
+
+    if (this.relogioDoDesfazer) clearTimeout(this.relogioDoDesfazer);
+    this.relogioDoDesfazer = setTimeout(() => {
+      if (this.estado.ultimaExclusao?.id === id) this.publicar({ ultimaExclusao: null }, false);
+    }, 6000);
+  }
+
+  desfazerExclusao() {
+    const alvo = this.estado.ultimaExclusao;
+    if (!alvo) return;
+    const morto = this.estado.lancamentos[alvo.id];
+    this.publicar({ ultimaExclusao: null }, false);
+    if (!morto?.apagadoEm) return;
+    // Volta como era, inclusive `previsto`: desfazer não é relançar.
+    const { apagadoEm: _, atualizadoEm: __, criadoEm: ___, ...resto } = morto;
+    this.salvarLancamento(resto);
   }
 
   /** Confirmar é dizer "aconteceu mesmo, e foi este valor". */
@@ -214,6 +270,7 @@ export class Loja {
       ...dados,
       id,
       valorCents: aoReal(dados.valorCents),
+      nota: dados.nota ? dados.nota.slice(0, 500) : dados.nota,
       criadoEm: anterior?.criadoEm ?? agora(),
       atualizadoEm: agora(),
       apagadoEm: null,
@@ -223,12 +280,30 @@ export class Loja {
     return f;
   }
 
+  /**
+   * Apagar um fixo leva junto os lançamentos PREVISTOS e futuros que nasceram
+   * dele. Sem isso, apagar e recriar um fixo deixava quinze meses de previsão
+   * órfã na tela, sem nenhum jeito de limpar. O que já aconteceu (confirmado)
+   * e o que já passou ficam: são história, não previsão.
+   */
   apagarFixo(id: string) {
     const atual = this.estado.fixos[id];
     if (!atual) return;
-    const f: Fixo = { ...atual, apagadoEm: agora(), atualizadoEm: agora() };
-    this.publicar({ fixos: { ...this.estado.fixos, [id]: f } });
+    const quando = agora();
+    const f: Fixo = { ...atual, apagadoEm: quando, atualizadoEm: quando };
+
+    const hojeStr = dataDeHoje();
+    const lancamentos = { ...this.estado.lancamentos };
+    const orfaos: string[] = [];
+    for (const l of Object.values(lancamentos)) {
+      if (l.fixoId !== id || !l.previsto || l.apagadoEm || l.data < hojeStr) continue;
+      lancamentos[l.id] = { ...l, apagadoEm: quando, atualizadoEm: quando };
+      orfaos.push(l.id);
+    }
+
+    this.publicar({ fixos: { ...this.estado.fixos, [id]: f }, lancamentos });
     this.marcarPendente(`f:${id}`);
+    for (const lid of orfaos) this.marcarPendente(`l:${lid}`);
   }
 
   definirAjuste(chave: string, valor: string) {
@@ -252,7 +327,11 @@ export class Loja {
         { ...f, apagadoEm: quando, atualizadoEm: quando },
       ]),
     );
+    // Os ajustes pendentes (categorias recém-mexidas, saldo de abertura) não
+    // têm nada a ver com o apagão e continuam na fila — substituí-la inteira
+    // descartava essas mudanças em silêncio.
     const pendentes = [
+      ...this.estado.pendentes.filter((c) => c.startsWith("a:")),
       ...Object.keys(lancamentos).map((id) => `l:${id}`),
       ...Object.keys(fixos).map((id) => `f:${id}`),
     ];
@@ -263,14 +342,21 @@ export class Loja {
   // --------------------------------------------------------- sincronização
 
   async sincronizar(): Promise<void> {
-    if (this.enviando) return;
+    if (this.enviando) {
+      this.pedidoDuranteEnvio = true;
+      return;
+    }
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       this.publicar({ situacao: "sem-internet" }, false);
       return;
     }
 
     this.enviando = true;
-    const enviados = [...this.estado.pendentes];
+    this.pedidoDuranteEnvio = false;
+    // Em lotes: o servidor aceita até 2000 lançamentos por pedido, e um backup
+    // restaurado pode ter mais. Um pedido acima do teto era 400 determinístico
+    // — e a fila travava para sempre. O que sobrar vai no próximo envio.
+    const enviados = primeirosDaFila(this.estado.pendentes);
     const relogioNoEnvio = new Map<string, string | undefined>();
     for (const chave of enviados) relogioNoEnvio.set(chave, this.relogioDe(chave));
 
@@ -301,8 +387,11 @@ export class Loja {
         }),
       });
 
-      if (resposta.status === 401) {
-        window.location.href = "/entrar";
+      if (resposta.status === 401 || resposta.redirected) {
+        // A sessão venceu no meio do uso. Navegar à força para /entrar jogava
+        // fora o que estava sendo digitado; o dado está salvo no aparelho, e
+        // um aviso na tela resolve sem destruir nada.
+        this.publicar({ situacao: "sessao-vencida" }, false);
         return;
       }
       if (!resposta.ok) {
@@ -311,10 +400,17 @@ export class Loja {
 
       const vindo = (await resposta.json()) as {
         ate: string;
+        recusados?: { id: string; motivo: string }[];
         lancamentos: Lancamento[];
         fixos: Fixo[];
         ajustes: { chave: string; valor: string; atualizadoEm: string }[];
       };
+
+      // O que o servidor recusou de vez (valor impossível, data que não
+      // existe) sai da fila — reenviar daria a mesma recusa para sempre, e a
+      // fila travada era pior que a linha perdida: nada mais subia. A linha
+      // continua no aparelho, e o recado diz qual foi e por quê.
+      const recusadas = new Set((vindo.recusados ?? []).map((r) => r.id));
 
       const lancamentos = { ...this.estado.lancamentos };
       for (const l of vindo.lancamentos) {
@@ -337,15 +433,23 @@ export class Loja {
       // Sai da fila só o que não foi mexido de novo enquanto o pedido ia e
       // voltava. O que mudou no meio do caminho fica, e sobe no próximo envio.
       const pendentes = this.estado.pendentes.filter((chave) => {
+        if (recusadas.has(chave.slice(2))) return false;
         if (!relogioNoEnvio.has(chave)) return true;
         return this.relogioDe(chave) !== relogioNoEnvio.get(chave);
       });
+
+      const recusadosAgora = vindo.recusados ?? [];
+      const recusados = [
+        ...this.estado.recusados.filter((r) => !recusadas.has(r.id)),
+        ...recusadosAgora,
+      ];
 
       this.publicar({
         lancamentos,
         fixos,
         ajustes,
         pendentes,
+        recusados,
         ate: vindo.ate,
         situacao: "guardado",
         ultimaSincronizacao: agora(),
@@ -362,6 +466,16 @@ export class Loja {
       );
     } finally {
       this.enviando = false;
+      // Reagendar só quando faz sentido: o envio deu certo e sobrou fila (o
+      // próximo lote, ou algo que mudou no meio), ou alguém bateu na porta
+      // durante o envio. Em ERRO, não: reagendar a cada 1,5 s para sempre era
+      // martelar um servidor caído, e um pedido que o servidor recusa de forma
+      // determinística viraria um loop eterno. O erro espera a próxima
+      // escrita, a volta da internet ou a tela ficar visível — como sempre.
+      const deuCerto = this.estado.situacao === "guardado";
+      if ((deuCerto && this.estado.pendentes.length > 0) || (deuCerto && this.pedidoDuranteEnvio)) {
+        this.agendarEnvio();
+      }
     }
   }
 
@@ -374,6 +488,20 @@ export class Loja {
 }
 
 export const loja = new Loja();
+
+/** O quanto cabe num pedido, folgado abaixo dos tetos do servidor (2000/500/100). */
+const LOTE = { "l:": 500, "f:": 100, "a:": 50 } as const;
+
+function primeirosDaFila(pendentes: string[]): string[] {
+  const contagem: Record<string, number> = { "l:": 0, "f:": 0, "a:": 0 };
+  return pendentes.filter((chave) => {
+    const tipo = chave.slice(0, 2) as keyof typeof LOTE;
+    if (!(tipo in LOTE)) return false;
+    if (contagem[tipo] >= LOTE[tipo]) return false;
+    contagem[tipo]++;
+    return true;
+  });
+}
 
 // ------------------------------------------------------------------ leitura
 
@@ -421,6 +549,18 @@ export function saldoInicialExplicito(estado: Estado, ano: number): number | nul
   if (bruto === undefined) return null;
   const n = Number(bruto);
   return Number.isFinite(n) ? n : null;
+}
+
+/** Todos os saldos de abertura digitados à mão, por ano — o combustível da corrente. */
+export function saldosIniciaisDigitados(estado: Estado): Record<number, number> {
+  const saldos: Record<number, number> = {};
+  for (const [chave, a] of Object.entries(estado.ajustes)) {
+    if (!chave.startsWith("saldoInicial:")) continue;
+    const ano = Number(chave.slice(13));
+    const cents = Number(a.valor);
+    if (Number.isFinite(ano) && Number.isFinite(cents)) saldos[ano] = cents;
+  }
+  return saldos;
 }
 
 export function rateioApto(estado: Estado): number {
@@ -539,6 +679,7 @@ export const RECADO_DA_SITUACAO: Record<Situacao, string> = {
   enviando: "Sincronizando…",
   "sem-internet": "Sem internet — guardado no aparelho",
   erro: "Não consegui sincronizar agora",
+  "sessao-vencida": "A sessão venceu — entre de novo para sincronizar",
 };
 
 export type { Tipo };

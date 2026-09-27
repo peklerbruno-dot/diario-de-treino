@@ -17,6 +17,20 @@
  * escrever "195+15+83" quando foram três gastos no mesmo dia.
  */
 
+/**
+ * O maior valor que o app aceita: R$ 10 milhões.
+ *
+ * Não é frescura de produto, é proteção de dado: a coluna `valorCents` é um
+ * inteiro de 32 bits no Postgres (teto ≈ R$ 21,4 milhões). Um dedo que repete
+ * dígitos — "38003800" em vez de "3800" — criava um lançamento que passava por
+ * toda validação, estourava o banco na hora de subir, e **travava a
+ * sincronização inteira para sempre**: o lote com a linha impossível falhava
+ * completo, e nada mais saía do aparelho. O teto barra o valor absurdo na
+ * porta, com folga enorme para a vida real e margem segura até o limite do
+ * banco.
+ */
+export const TETO_CENTS = 1_000_000_000;
+
 /** Só os dígitos, a vírgula, o ponto e os sinais de soma/subtração interessam. */
 const LIMPEZA = /[^0-9.,+\-]/g;
 
@@ -31,9 +45,13 @@ export function paraCentavos(texto: string): number | null {
   const limpo = texto.replace(LIMPEZA, "").trim();
   if (!limpo) return null;
 
+  // Um sinal no meio do texto não é ruído, é uma conta que este campo não
+  // faz: apagá-lo colava os números — "1000+500" virava R$ 1.000.500 no saldo
+  // de abertura, e "50-30" virava R$ 5.030 num fixo. Melhor recusar e deixar o
+  // campo avisar do que gravar um número que ninguém digitou.
   const negativo = limpo.startsWith("-");
-  const corpo = limpo.replace(/[+\-]/g, "");
-  if (!corpo) return null;
+  const corpo = negativo ? limpo.slice(1) : limpo;
+  if (!corpo || corpo.includes("+") || corpo.includes("-")) return null;
 
   const ultimaVirgula = corpo.lastIndexOf(",");
   const ultimoPonto = corpo.lastIndexOf(".");
@@ -54,7 +72,7 @@ export function paraCentavos(texto: string): number | null {
   if (!/^\d*$/.test(inteiro) || !/^\d*$/.test(fracao)) return null;
 
   const centavos = Number(inteiro || "0") * 100 + Number((fracao + "00").slice(0, 2));
-  if (!Number.isFinite(centavos)) return null;
+  if (!Number.isFinite(centavos) || centavos > TETO_CENTS) return null;
   return negativo ? -centavos : centavos;
 }
 
@@ -84,10 +102,18 @@ export function parcelas(texto: string): number[] | null {
 
 const FORMATO = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 });
 
-/** Ao real mais próximo. É por aqui que todo valor passa antes de ser guardado. */
+/**
+ * Ao real mais próximo. É por aqui que todo valor passa antes de ser guardado.
+ *
+ * O arredondamento é pelo módulo, preservando o sinal: R$ 1,50 vira R$ 2 e
+ * R$ −1,50 vira R$ −2. O `Math.round` puro arredondava o meio "para cima" na
+ * reta dos números — −150 ia para −100 — e o mesmo dinheiro mudava de tamanho
+ * conforme o lado do zero em que estivesse.
+ */
 export function aoReal(centavos: number): number {
   if (!Number.isFinite(centavos)) return 0;
-  return Math.round(centavos / 100) * 100;
+  const sinal = centavos < 0 ? -1 : 1;
+  return sinal * Math.round(Math.abs(centavos) / 100) * 100;
 }
 
 /** 123456 → "1.235" */

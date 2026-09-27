@@ -45,7 +45,7 @@ export function Teclado({ valor, aoMudar }: { valor: string; aoMudar: (novo: str
           className="tabular min-h-[34px] text-[27px] font-semibold tracking-tight"
           aria-live="off"
         >
-          {paraOVisor(valor) || <span className="text-fosco">0,00</span>}
+          {paraOVisor(valor) || <span className="text-fosco">0</span>}
         </p>
         <p className="mt-0.5 text-[13px] text-grafite" aria-live="polite">
           {conta ? (

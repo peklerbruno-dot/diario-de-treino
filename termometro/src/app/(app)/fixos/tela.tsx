@@ -22,9 +22,9 @@ import {
   lerRepeticao,
   type Repeticao,
 } from "@/lib/repeticao";
-import { gerarPrevisao } from "@/lib/calculo";
-import { hoje, partesDaData } from "@/lib/datas";
-import { parcelas } from "@/lib/dinheiro";
+import { gerarPrevisao, somaDosFixosNoMes } from "@/lib/calculo";
+import { hoje, nomeDoMes, partesDaData } from "@/lib/datas";
+import { comCifrao, parcelas } from "@/lib/dinheiro";
 import { categoriasDe, fixosVivos, lancamentosVivos, loja } from "@/lib/loja";
 import { EXPLICACAO_DO_TIPO, NOME_DO_TIPO, TIPOS, type Fixo, type Tipo } from "@/lib/tipos";
 
@@ -45,13 +45,20 @@ export function TelaDosFixos() {
   // seguinte, a pergunta "dá?" sempre tem pelo menos doze meses de resposta.
   const ateQuando = partesDaData(hoje()).ano + 1;
 
+  // O que os compromissos somam num mês como este — o "quanto eu já devo
+  // antes de acordar" que todo app de assinatura vende como recurso pago.
+  const { ano: anoDeAgora, mes: mesDeAgora } = partesDaData(hoje());
+  const soma = somaDosFixosNoMes(fixos, anoDeAgora, mesDeAgora);
+
   function preencherAPrevisao() {
     const agora = hoje();
     const novos = gerarPrevisao({
       fixos,
       de: agora,
       ate: `${ateQuando}-12-31`,
-      existentes: lancamentosVivos(estado),
+      // Todos, inclusive os apagados: o previsto que a pessoa apagou é uma
+      // decisão que a previsão respeita em vez de recriar.
+      existentes: Object.values(estado.lancamentos),
     });
     loja.salvarVariosLancamentos(novos);
     setRecado(
@@ -70,6 +77,14 @@ export function TelaDosFixos() {
         </div>
         <Botao onClick={() => setEditando("novo")}>Novo</Botao>
       </header>
+
+      {fixos.length > 0 && (soma.entraCents > 0 || soma.saiCents > 0) && (
+        <p className="tabular mt-2 text-[13.5px] leading-snug text-grafite">
+          Num mês como {nomeDoMes(mesDeAgora)}: entra{" "}
+          <b className="text-tinta">{comCifrao(soma.entraCents)}</b>, sai{" "}
+          <b className="text-tinta">{comCifrao(soma.saiCents)}</b> — o todo-dia contado dia a dia.
+        </p>
+      )}
 
       <p className="mt-2 text-[15px] leading-relaxed text-grafite">
         O salário do dia 5, a fatura do dia 10, os 60 reais de todo dia. O app usa esses valores
@@ -153,7 +168,8 @@ export function TelaDosFixos() {
 }
 
 function FolhaDeFixo({ fixo, aoFechar }: { fixo?: Fixo; aoFechar: () => void }) {
-  const categorias = categoriasDe(useEstado());
+  const estadoDaFolha = useEstado();
+  const categorias = categoriasDe(estadoDaFolha);
   const [tipo, setTipo] = useState<Tipo>(fixo?.tipo ?? "SAIDA");
   const [regra, setRegra] = useState<Repeticao>(
     fixo ? lerRepeticao(fixo) : { tipo: "DIA_DO_MES", dia: 5 },
@@ -170,11 +186,18 @@ function FolhaDeFixo({ fixo, aoFechar }: { fixo?: Fixo; aoFechar: () => void }) 
   const [erro, setErro] = useState<string | null>(null);
 
   const daColuna = categoriasDoTipo(categorias, tipo);
+  const previstosFuturos = fixo
+    ? Object.values(estadoDaFolha.lancamentos).filter(
+        (l) => l.fixoId === fixo.id && l.previsto && !l.apagadoEm && l.data >= hoje(),
+      ).length
+    : 0;
 
   function salvar() {
     const valores = parcelas(valor);
     const total = valores?.reduce((t, v) => t + v, 0) ?? 0;
-    if (!valores || total === 0) {
+    if (!valores || total <= 0) {
+      // Fixo negativo viraria uma "despesa que soma": as três colunas já
+      // dizem a direção do dinheiro, o valor é sempre positivo.
       setErro("Digite um valor.");
       return;
     }
@@ -314,21 +337,20 @@ function FolhaDeFixo({ fixo, aoFechar }: { fixo?: Fixo; aoFechar: () => void }) 
             Salvar
           </Botao>
           {fixo && (
-            <Botao
-              tipo="perigo"
-              onClick={() => {
+            <ApagarFixo
+              fixo={fixo}
+              previstosFuturos={previstosFuturos}
+              aoApagar={() => {
                 loja.apagarFixo(fixo.id);
                 aoFechar();
               }}
-            >
-              Apagar
-            </Botao>
+            />
           )}
         </div>
 
         <p className="text-[13px] leading-snug text-fosco">
-          Apagar um fixo não apaga o que ele já escreveu nos dias. Os lançamentos previstos
-          continuam lá, e você apaga os que não quiser.
+          Apagar um fixo apaga também os lançamentos previstos dele de hoje em diante. O que já
+          aconteceu (confirmado) e o que já passou ficam.
         </p>
       </div>
     </Folha>
@@ -453,5 +475,35 @@ function QuandoCai({ regra, aoMudar }: { regra: Repeticao; aoMudar: (r: Repetica
               : `Cai ${descreverRepeticao(regra)}.`}
       </p>
     </div>
+  );
+}
+
+/**
+ * Apagar um fixo leva os previstos futuros dele junto — vários lançamentos de
+ * uma vez, sem Desfazer. Por isso pede um segundo toque, dizendo quantos.
+ */
+function ApagarFixo({
+  fixo,
+  previstosFuturos,
+  aoApagar,
+}: {
+  fixo: Fixo;
+  previstosFuturos: number;
+  aoApagar: () => void;
+}) {
+  const [confirmando, setConfirmando] = useState(false);
+  if (!confirmando) {
+    return (
+      <Botao tipo="perigo" onClick={() => setConfirmando(true)}>
+        Apagar
+      </Botao>
+    );
+  }
+  return (
+    <Botao tipo="perigo" onClick={aoApagar}>
+      {previstosFuturos > 0
+        ? `Apagar ${fixo.nota?.trim() || "o fixo"} e ${previstosFuturos} previsto${previstosFuturos === 1 ? "" : "s"}?`
+        : "Apagar mesmo?"}
+    </Botao>
   );
 }

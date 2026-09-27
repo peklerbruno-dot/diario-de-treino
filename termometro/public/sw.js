@@ -21,11 +21,24 @@
 // ficou guardado de antes. Foi preciso quando uma etiqueta do `<head>` mudou e
 // a página velha continuou sendo servida do cache — a correção existia no
 // servidor e não chegava no aparelho.
-const CACHE = "termometro-v2";
+const CACHE = "termometro-v3";
+
+// Só resposta BOA entra no cache. Sem este filtro, um 500 do servidor ou o
+// redirecionamento para /entrar (sessão vencida) eram guardados POR CIMA da
+// última cópia boa — e o modo offline passava a abrir uma tela de erro.
+const guardavel = (resposta) => resposta.ok && !resposta.redirected && resposta.type === "basic";
 
 self.addEventListener("install", (evento) => {
   evento.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(["/"]).catch(() => undefined)),
+    caches
+      .open(CACHE)
+      .then(async (cache) => {
+        // `addAll` guardaria a página de login se o SW novo fosse instalado
+        // com a sessão vencida — a mesma envenenação, por outra porta.
+        const resposta = await fetch("/");
+        if (guardavel(resposta)) await cache.put("/", resposta);
+      })
+      .catch(() => undefined),
   );
 });
 
@@ -52,8 +65,10 @@ self.addEventListener("fetch", (evento) => {
         (guardado) =>
           guardado ??
           fetch(pedido).then((resposta) => {
-            const copia = resposta.clone();
-            caches.open(CACHE).then((cache) => cache.put(pedido, copia));
+            if (guardavel(resposta)) {
+              const copia = resposta.clone();
+              caches.open(CACHE).then((cache) => cache.put(pedido, copia));
+            }
             return resposta;
           }),
       ),
@@ -65,11 +80,21 @@ self.addEventListener("fetch", (evento) => {
     evento.respondWith(
       fetch(pedido)
         .then((resposta) => {
-          const copia = resposta.clone();
-          caches.open(CACHE).then((cache) => cache.put(pedido, copia));
+          if (guardavel(resposta)) {
+            const copia = resposta.clone();
+            caches.open(CACHE).then((cache) => cache.put(pedido, copia));
+          }
           return resposta;
         })
-        .catch(async () => (await caches.match(pedido)) ?? (await caches.match("/")) ?? Response.error()),
+        .catch(async () => {
+          const guardado = await caches.match(pedido);
+          if (guardado) return guardado;
+          // Rota nunca visitada, sem internet. Servir a tela Hoje AQUI deixava
+          // a URL dizendo /totais com o conteúdo de Hoje — mentira dupla. O
+          // redirecionamento leva para "/" de verdade, que o cache tem.
+          if (url.pathname !== "/") return Response.redirect("/", 302);
+          return Response.error();
+        }),
     );
   }
 });

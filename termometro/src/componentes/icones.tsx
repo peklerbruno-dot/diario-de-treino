@@ -97,3 +97,11 @@ export const IconeMais = () => (
     <circle cx="19" cy="12" r="1.3" />
   </Traco>
 );
+
+/** Buscar: a lupa de sempre. */
+export const IconeBusca = () => (
+  <Traco>
+    <circle cx="11" cy="11" r="6" />
+    <path d="M20 20l-4.2-4.2" />
+  </Traco>
+);

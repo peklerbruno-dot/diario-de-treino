@@ -25,6 +25,14 @@ export function middleware(req: NextRequest) {
     pathname === "/apple-touch-icon.png" ||
     pathname.startsWith("/icone");
 
+  // Uma API sem sessão responde 401, e não um desvio para a página de entrada:
+  // o app lê a resposta como JSON, e um HTML de login no lugar virava "erro"
+  // genérico — com o aparelho tentando de novo a cada segundo, para sempre,
+  // em vez de dizer "a sessão venceu, entre de novo".
+  if (!temCookie && pathname.startsWith("/api/")) {
+    return NextResponse.json({ erro: "Sem sessão." }, { status: 401 });
+  }
+
   if (!temCookie && !publica) {
     const url = req.nextUrl.clone();
     url.pathname = "/entrar";
@@ -35,8 +43,9 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  // /api/lancar fica de fora: o atalho do iPhone não tem cookie nenhum, e o
-  // desvio para /entrar transformaria o lançamento numa página de login que
-  // ninguém vê.
-  matcher: ["/((?!api/saude|api/lancar|favicon.ico).*)"],
+  // /api/lancar e /api/saldo ficam de fora: o atalho do iPhone não tem cookie
+  // nenhum, e o desvio para /entrar transformaria o lançamento (ou a pergunta
+  // "como estou?") numa página de login que ninguém vê. Os dois conferem o
+  // código de acesso por conta própria.
+  matcher: ["/((?!api/saude|api/lancar|api/saldo|favicon.ico).*)"],
 };

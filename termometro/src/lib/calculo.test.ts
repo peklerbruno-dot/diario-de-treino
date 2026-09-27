@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { calcularAno, gerarPrevisao, primeiroDiaNoVermelho } from "./calculo";
+import {
+  calcularAno,
+  calcularAnoEncadeado,
+  gerarPrevisao,
+  previstosVencidos,
+  primeiroDiaNoVermelho,
+  sobraPorDia,
+  somaDosFixosNoMes,
+} from "./calculo";
 import type { Fixo, Lancamento, Tipo } from "./tipos";
 
 let sequencia = 0;
@@ -164,10 +172,7 @@ describe("o termômetro", () => {
   it("aponta o primeiro dia em que o saldo fica negativo", () => {
     const ano = calcularAno({
       ano: 2026,
-      lancamentos: [
-        lancamento("2026-03-05", "SAIDA", 600),
-        lancamento("2026-03-20", "SAIDA", 600),
-      ],
+      lancamentos: [lancamento("2026-03-05", "SAIDA", 600), lancamento("2026-03-20", "SAIDA", 600)],
       ajustes: { ...semAjuste, saldoInicialCents: 100000 },
     });
 
@@ -325,5 +330,216 @@ describe("a previsão atravessa o Ano-Novo", () => {
       })(),
     });
     expect(novos.map((l) => l.data)).toEqual(["2027-02-28", "2027-03-31", "2027-04-30"]);
+  });
+});
+
+describe("a previsão respeita o que a pessoa decidiu", () => {
+  const fixo = (dia: number, tipo: Tipo, reais: number, extras: Partial<Fixo> = {}): Fixo => ({
+    id: `fixo-${dia}-${tipo}`,
+    tipo,
+    dia,
+    valorCents: Math.round(reais * 100),
+    ativo: true,
+    ...extras,
+  });
+
+  it("previsto apagado não ressuscita", () => {
+    const f = fixo(10, "SAIDA", 1000);
+    const primeira = gerarPrevisao({
+      fixos: [f],
+      de: "2026-10-01",
+      ate: "2026-12-31",
+      existentes: [],
+      novoId: proximoId,
+    });
+    // A pessoa apagou o de novembro: "esse mês não pago".
+    const decididos = primeira.map((l) =>
+      l.data === "2026-11-10" ? { ...l, apagadoEm: "2026-10-02T00:00:00.000Z" } : l,
+    );
+    const segunda = gerarPrevisao({
+      fixos: [f],
+      de: "2026-10-01",
+      ate: "2026-12-31",
+      existentes: decididos,
+      novoId: proximoId,
+    });
+    expect(segunda).toEqual([]);
+  });
+
+  it("mudar o dia do fixo não dobra o mês", () => {
+    const antes = fixo(10, "SAIDA", 1000);
+    const primeira = gerarPrevisao({
+      fixos: [antes],
+      de: "2026-10-01",
+      ate: "2026-10-31",
+      existentes: [],
+      novoId: proximoId,
+    });
+    // A regra mudou do dia 10 para o dia 15: outubro já tem a vez dele.
+    const segunda = gerarPrevisao({
+      fixos: [{ ...antes, dia: 15 }],
+      de: "2026-10-01",
+      ate: "2026-10-31",
+      existentes: primeira,
+      novoId: proximoId,
+    });
+    expect(segunda).toEqual([]);
+  });
+
+  it("o todo-dia continua olhando dia a dia", () => {
+    const f = fixo(0, "DIARIO", 60);
+    const primeira = gerarPrevisao({
+      fixos: [f],
+      de: "2026-11-01",
+      ate: "2026-11-02",
+      existentes: [],
+      novoId: proximoId,
+    });
+    const segunda = gerarPrevisao({
+      fixos: [f],
+      de: "2026-11-01",
+      ate: "2026-11-03",
+      existentes: primeira,
+      novoId: proximoId,
+    });
+    expect(segunda.map((l) => l.data)).toEqual(["2026-11-03"]);
+  });
+});
+
+describe("a corrente de anos", () => {
+  it("um saldo digitado para um ano sem lançamentos vale na corrente", () => {
+    const calculado = calcularAnoEncadeado({
+      ano: 2027,
+      lancamentos: [lancamento("2026-03-10", "ENTRADA", 1000)],
+      saldosIniciais: { 2027: 500000 },
+      rateioAptoPercent: 40,
+    });
+    expect(calculado.meses[0].dias[0].saldoCents).toBe(500000);
+  });
+
+  it("sem saldo digitado, 2027 começa onde 2026 terminou", () => {
+    const calculado = calcularAnoEncadeado({
+      ano: 2027,
+      lancamentos: [lancamento("2026-03-10", "ENTRADA", 1000)],
+      saldosIniciais: {},
+      rateioAptoPercent: 40,
+    });
+    expect(calculado.meses[0].dias[0].saldoCents).toBe(100000);
+  });
+
+  it("uma data digitada errado não arrasta a corrente por séculos", () => {
+    const calculado = calcularAnoEncadeado({
+      ano: 2026,
+      lancamentos: [
+        lancamento("0206-05-10", "ENTRADA", 50),
+        lancamento("2026-01-02", "ENTRADA", 10),
+      ],
+      saldosIniciais: {},
+      rateioAptoPercent: 40,
+    });
+    // Não trava, e o ano insano não vira o começo da corrente.
+    expect(calculado.ano).toBe(2026);
+    expect(calculado.meses[0].dias[1].saldoCents).toBe(1000);
+  });
+});
+
+describe("quanto dá por dia", () => {
+  it("é o fechamento previsto dividido pelos dias que faltam, hoje incluso", () => {
+    const ano = calcularAno({
+      ano: 2026,
+      lancamentos: [lancamento("2026-11-01", "ENTRADA", 3000)],
+      ajustes: semAjuste,
+    });
+    // 10 de novembro: faltam 21 dias (10 a 30). 3000 / 21 = 142,85… → R$ 142.
+    const sobra = sobraPorDia(ano, "2026-11-10");
+    expect(sobra).not.toBeNull();
+    expect(sobra!.diasRestantes).toBe(21);
+    expect(sobra!.porDiaCents).toBe(14200);
+  });
+
+  it("o diário PREVISTO não conta: a pergunta é 'sem gastar nada, quanto sobra?'", () => {
+    // Entrou 3000; o fixo "gasto do dia" prevê 60 por dia de 10 a 30 (21 dias = 1260).
+    const previstos = Array.from({ length: 21 }, (_, i) =>
+      lancamento(`2026-11-${String(10 + i).padStart(2, "0")}`, "DIARIO", 60, { previsto: true }),
+    );
+    const ano = calcularAno({
+      ano: 2026,
+      lancamentos: [
+        lancamento("2026-11-01", "ENTRADA", 3000),
+        lancamento("2026-11-10", "DIARIO", 25), // o que já foi hoje, de verdade
+        ...previstos,
+      ],
+      ajustes: semAjuste,
+    });
+    const sobra = sobraPorDia(ano, "2026-11-10")!;
+    // O fechamento da tela é 3000 − 25 − 1260 = 1715; para o "dá por dia" o
+    // previsto volta: 2975 / 21 = 141,6 → R$ 141.
+    expect(sobra.fechamentoCents).toBe(297500);
+    expect(sobra.porDiaCents).toBe(14100);
+    expect(sobra.gastoDeHojeCents).toBe(2500);
+    expect(sobra.noVermelho).toBe(false);
+  });
+
+  it("fechamento positivo pequeno não é vermelho, só não dá um real por dia", () => {
+    const ano = calcularAno({
+      ano: 2026,
+      lancamentos: [lancamento("2026-11-01", "ENTRADA", 20)],
+      ajustes: semAjuste,
+    });
+    const sobra = sobraPorDia(ano, "2026-11-01")!;
+    expect(sobra.porDiaCents).toBe(0);
+    expect(sobra.noVermelho).toBe(false);
+  });
+
+  it("mês que já fecha no vermelho dá zero por dia, sem número negativo", () => {
+    const ano = calcularAno({
+      ano: 2026,
+      lancamentos: [lancamento("2026-11-01", "SAIDA", 3000)],
+      ajustes: semAjuste,
+    });
+    const sobra = sobraPorDia(ano, "2026-11-10")!;
+    expect(sobra.porDiaCents).toBe(0);
+    expect(sobra.noVermelho).toBe(true);
+  });
+
+  it("fora do ano calculado, não inventa resposta", () => {
+    const ano = calcularAno({ ano: 2026, lancamentos: [], ajustes: semAjuste });
+    expect(sobraPorDia(ano, "2027-01-01")).toBeNull();
+  });
+});
+
+describe("previstos vencidos", () => {
+  it("lista o que passou (e o de hoje), mais antigo primeiro", () => {
+    const vencidos = previstosVencidos(
+      [
+        lancamento("2026-09-25", "SAIDA", 100, { previsto: true }),
+        lancamento("2026-09-27", "SAIDA", 200, { previsto: true }),
+        lancamento("2026-09-28", "SAIDA", 300, { previsto: true }),
+        lancamento("2026-09-20", "SAIDA", 400, {
+          previsto: true,
+          apagadoEm: "2026-09-21T00:00:00.000Z",
+        }),
+        lancamento("2026-09-01", "SAIDA", 500),
+      ],
+      "2026-09-27",
+    );
+    expect(vencidos.map((l) => l.data)).toEqual(["2026-09-25", "2026-09-27"]);
+  });
+});
+
+describe("a soma dos fixos num mês", () => {
+  it("regra mensal conta uma vez, todo-dia conta por dia", () => {
+    const soma = somaDosFixosNoMes(
+      [
+        { id: "a", tipo: "ENTRADA", dia: 5, valorCents: 210000, ativo: true },
+        { id: "b", tipo: "SAIDA", dia: 10, valorCents: 90000, ativo: true },
+        { id: "c", tipo: "DIARIO", dia: 0, valorCents: 6000, ativo: true },
+        { id: "d", tipo: "SAIDA", dia: 1, valorCents: 99999, ativo: false },
+      ],
+      2026,
+      11,
+    );
+    expect(soma.entraCents).toBe(210000);
+    expect(soma.saiCents).toBe(90000 + 6000 * 30);
   });
 });
