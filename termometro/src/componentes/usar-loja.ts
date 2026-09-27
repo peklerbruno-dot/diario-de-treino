@@ -23,6 +23,7 @@ const VAZIO: Estado = {
   ajustes: {},
   ate: null,
   pendentes: [],
+  recusados: [],
   situacao: "guardado",
   ultimaSincronizacao: null,
   recadoDeErro: null,

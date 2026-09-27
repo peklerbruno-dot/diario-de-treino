@@ -131,10 +131,28 @@ function DaPorDia({ ano, agora }: { ano: AnoCalculado; agora: string }) {
   const sobra = sobraPorDia(ano, agora);
   if (!sobra) return null;
 
-  if (sobra.porDiaCents === 0) {
+  if (sobra.noVermelho) {
     return (
       <p className="mt-1 text-[13px] text-heroi-fosco">
         O mês já fecha abaixo de zero — cada gasto agora aprofunda.
+      </p>
+    );
+  }
+
+  if (sobra.porDiaCents === 0) {
+    // Fecha em zero ou com uns trocados: não é vermelho, mas não dá um real
+    // por dia. Dizer "abaixo de zero" aqui seria mentira; dizer "dá R$ 0" também.
+    return (
+      <p className="mt-1 text-[13px] text-heroi-fosco">
+        Sobra menos de R$ 1 por dia até o fim do mês
+        {sobra.gastoDeHojeCents > 0 ? (
+          <>
+            {" "}
+            — hoje já foi{" "}
+            <b className="tabular text-heroi-tinta">{comCifrao(sobra.gastoDeHojeCents)}</b>
+          </>
+        ) : null}
+        .
       </p>
     );
   }

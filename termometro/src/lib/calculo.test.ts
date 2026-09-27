@@ -457,13 +457,49 @@ describe("quanto dá por dia", () => {
     expect(sobra!.porDiaCents).toBe(14200);
   });
 
+  it("o diário PREVISTO não conta: a pergunta é 'sem gastar nada, quanto sobra?'", () => {
+    // Entrou 3000; o fixo "gasto do dia" prevê 60 por dia de 10 a 30 (21 dias = 1260).
+    const previstos = Array.from({ length: 21 }, (_, i) =>
+      lancamento(`2026-11-${String(10 + i).padStart(2, "0")}`, "DIARIO", 60, { previsto: true }),
+    );
+    const ano = calcularAno({
+      ano: 2026,
+      lancamentos: [
+        lancamento("2026-11-01", "ENTRADA", 3000),
+        lancamento("2026-11-10", "DIARIO", 25), // o que já foi hoje, de verdade
+        ...previstos,
+      ],
+      ajustes: semAjuste,
+    });
+    const sobra = sobraPorDia(ano, "2026-11-10")!;
+    // O fechamento da tela é 3000 − 25 − 1260 = 1715; para o "dá por dia" o
+    // previsto volta: 2975 / 21 = 141,6 → R$ 141.
+    expect(sobra.fechamentoCents).toBe(297500);
+    expect(sobra.porDiaCents).toBe(14100);
+    expect(sobra.gastoDeHojeCents).toBe(2500);
+    expect(sobra.noVermelho).toBe(false);
+  });
+
+  it("fechamento positivo pequeno não é vermelho, só não dá um real por dia", () => {
+    const ano = calcularAno({
+      ano: 2026,
+      lancamentos: [lancamento("2026-11-01", "ENTRADA", 20)],
+      ajustes: semAjuste,
+    });
+    const sobra = sobraPorDia(ano, "2026-11-01")!;
+    expect(sobra.porDiaCents).toBe(0);
+    expect(sobra.noVermelho).toBe(false);
+  });
+
   it("mês que já fecha no vermelho dá zero por dia, sem número negativo", () => {
     const ano = calcularAno({
       ano: 2026,
       lancamentos: [lancamento("2026-11-01", "SAIDA", 3000)],
       ajustes: semAjuste,
     });
-    expect(sobraPorDia(ano, "2026-11-10")!.porDiaCents).toBe(0);
+    const sobra = sobraPorDia(ano, "2026-11-10")!;
+    expect(sobra.porDiaCents).toBe(0);
+    expect(sobra.noVermelho).toBe(true);
   });
 
   it("fora do ano calculado, não inventa resposta", () => {

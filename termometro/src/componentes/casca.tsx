@@ -456,10 +456,35 @@ function Desfazer({ acimaDaBarra }: { acimaDaBarra: boolean }) {
 }
 
 function Situacao({ acimaDaBarra }: { acimaDaBarra: boolean }) {
-  const { situacao, pendentes } = useEstado();
-  if (situacao === "guardado") return null;
+  const { situacao, pendentes, recusados, lancamentos } = useEstado();
+  if (situacao === "guardado" && recusados.length === 0) return null;
 
   const quantos = pendentes.length;
+
+  // Uma linha recusada pelo servidor fica só neste aparelho, contando nos
+  // totais como se estivesse em todos. O aviso diz QUAL é e por quê, e só
+  // sai quando a linha for corrigida ou apagada.
+  if (situacao === "guardado") {
+    const r = recusados[0];
+    const l = lancamentos[r.id];
+    const quem = l ? `${l.data} · ${l.nota?.trim() || l.tipo.toLowerCase()}` : r.id;
+    return (
+      <div
+        style={
+          {
+            "--baixo": acimaDaBarra ? ALTURA.avisoAcimaDaBarra : ALTURA.avisoSozinho,
+          } as React.CSSProperties
+        }
+        className="fixed inset-x-0 bottom-[var(--baixo)] z-30 px-4 lg:bottom-5 lg:left-[236px]"
+      >
+        <div className="mx-auto max-w-2xl rounded-folha bg-cartao px-3.5 py-2.5 text-[12.5px] text-atencao shadow-cartao">
+          O servidor recusou {recusados.length === 1 ? "uma linha" : `${recusados.length} linhas`} (
+          {quem}: {r.motivo}). Ela{recusados.length === 1 ? " fica" : "s ficam"} só neste aparelho
+          até você abrir e corrigir, ou apagar.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

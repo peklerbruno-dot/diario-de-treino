@@ -401,11 +401,14 @@ export function gerarPrevisao(opcoes: {
  * tela mostrava.
  */
 export interface SobraPorDia {
-  /** Quanto dá por dia. Zero quando o mês já fecha no vermelho. */
+  /** Quanto dá por dia, em reais inteiros. Zero quando não sobra nem um real por dia. */
   porDiaCents: number;
   diasRestantes: number;
+  /** O fechamento do mês SEM o diário previsto — é sobre isto que a conta é feita. */
   fechamentoCents: number;
-  /** O gasto do dia a dia já feito hoje. */
+  /** O mês fecha abaixo de zero mesmo sem gastar mais nada no dia a dia. */
+  noVermelho: boolean;
+  /** O gasto do dia a dia já CONFIRMADO hoje. */
   gastoDeHojeCents: number;
 }
 
@@ -415,12 +418,28 @@ export function sobraPorDia(ano: AnoCalculado, hoje: string): SobraPorDia | null
   const { mes } = partesDaData(hoje);
   const doMes = ano.meses[mes - 1];
   const diasRestantes = doMes.dias.length - partesDaData(hoje).dia + 1;
-  const fechamentoCents = doMes.totais.saldoFechamentoCents;
+
+  // O fechamento já desconta o diário PREVISTO (o fixo "gasto do dia" de hoje
+  // em diante). Contá-lo aqui seria descontar duas vezes: uma na previsão,
+  // outra no "dá por dia" que ela mesma vai substituir. A pergunta é "sem
+  // nenhum gasto do dia a dia, quanto sobra?" — então o previsto volta.
+  const diarioPrevistoRestante = doMes.dias
+    .filter((d) => d.data >= hoje)
+    .flatMap((d) => d.lancamentos)
+    .filter((l) => l.tipo === "DIARIO" && l.previsto)
+    .reduce((t, l) => t + l.valorCents, 0);
+  const fechamentoCents = doMes.totais.saldoFechamentoCents + diarioPrevistoRestante;
+
+  const gastoDeHojeCents = dia.lancamentos
+    .filter((l) => l.tipo === "DIARIO" && !l.previsto)
+    .reduce((t, l) => t + l.valorCents, 0);
+
   return {
     porDiaCents: fechamentoCents > 0 ? Math.floor(fechamentoCents / diasRestantes / 100) * 100 : 0,
     diasRestantes,
     fechamentoCents,
-    gastoDeHojeCents: dia.diarioCents,
+    noVermelho: fechamentoCents < 0,
+    gastoDeHojeCents,
   };
 }
 

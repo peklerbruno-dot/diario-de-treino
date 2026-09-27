@@ -6,7 +6,7 @@ import { avaliar } from "@/lib/calculadora";
 import { categoriaPelaNota } from "@/lib/busca";
 import { categoriasDoTipo, nomeDaCategoria } from "@/lib/categorias";
 import { paraOTeclado } from "@/lib/dinheiro";
-import { curta, diasNoMes, hoje, mesesDepois, partesDaData, porExtenso } from "@/lib/datas";
+import { curta, dataExiste, hoje, mesesDepois, porExtenso } from "@/lib/datas";
 import { categoriasDe, lancamentosVivos, loja } from "@/lib/loja";
 import { EXPLICACAO_DO_TIPO, NOME_DO_TIPO, TIPOS, type Lancamento, type Tipo } from "@/lib/tipos";
 import { Botao, CampoDeTexto, Folha, Sobrescrito } from "./pecas";
@@ -63,6 +63,7 @@ export function FolhaDeLancamento({
   const [vezes, setVezes] = useState(1);
 
   const conta = avaliar(valor);
+  const dataOk = dataExiste(quando);
   const estado = useEstado();
   const categorias = categoriasDe(estado);
   const daColuna = categoriasDoTipo(categorias, tipo);
@@ -89,7 +90,7 @@ export function FolhaDeLancamento({
       setErro("Parcelado não combina com soma de valores: digite só o valor da parcela.");
       return;
     }
-    if (!dataDeVerdade(quando)) {
+    if (!dataExiste(quando)) {
       // O campo de data deixa apagar o dia; salvar assim gravaria um
       // lançamento com data vazia — dinheiro que some de todas as telas.
       setErro("Escolha um dia.");
@@ -197,7 +198,7 @@ export function FolhaDeLancamento({
             className="tabular mt-1.5 w-[150px] shrink-0 rounded-folha border border-regua bg-cartao px-3 py-3 text-[15px] outline-none focus:border-saldo"
           />
         </div>
-        {quando !== data && (
+        {dataOk && quando !== data && (
           <p className="!mt-1.5 text-[12.5px] text-fosco">{porExtenso(quando)}</p>
         )}
 
@@ -219,8 +220,8 @@ export function FolhaDeLancamento({
             </label>
             {vezes > 1 && (
               <span className="text-[12.5px] leading-snug text-fosco">
-                O valor é o de cada parcela. Uma por mês a partir de {curta(quando)}; as futuras
-                entram como previstas.
+                O valor é o de cada parcela. Uma por mês a partir de {dataOk ? curta(quando) : "…"};
+                as futuras entram como previstas.
               </span>
             )}
           </Marcacoes>
@@ -306,7 +307,7 @@ export function FolhaDeLancamento({
             da dobra — lançar pedia uma rolagem às cegas. */}
         <div className="sticky bottom-0 -mx-1 flex gap-2 bg-papel px-1 pb-1 pt-2">
           <Botao tipo="primario" onClick={salvar} className="flex-1">
-            {editando ? "Salvar" : `Lançar em ${curta(quando)}`}
+            {editando ? "Salvar" : dataOk ? `Lançar em ${curta(quando)}` : "Escolha um dia"}
           </Botao>
           {editando && (
             <Botao
@@ -352,14 +353,5 @@ function Chip({
       {ligado ? "✓ " : ""}
       {children}
     </button>
-  );
-}
-
-/** Um dia que existe no calendário — "2026-02-31" e campo apagado ficam de fora. */
-function dataDeVerdade(data: string): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(data)) return false;
-  const { ano, mes, dia } = partesDaData(data);
-  return (
-    ano >= 2000 && ano <= 2100 && mes >= 1 && mes <= 12 && dia >= 1 && dia <= diasNoMes(ano, mes)
   );
 }

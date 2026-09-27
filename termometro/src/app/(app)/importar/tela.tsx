@@ -86,7 +86,11 @@ export function TelaDeImportacao() {
 
   function restaurarBackup() {
     if (!backup) return;
-    loja.salvarVariosLancamentos(backup.lancamentos);
+    // Sem o carimbo antigo: `salvarVariosLancamentos` carimba agora(), e é
+    // esse carimbo novo que faz a linha restaurada GANHAR no servidor da
+    // versão apagada/editada que está lá. Com o carimbo do backup, o servidor
+    // ignorava tudo em silêncio e o aparelho jurava "Tudo sincronizado".
+    loja.salvarVariosLancamentos(backup.lancamentos.map(({ atualizadoEm: _, ...l }) => l));
     for (const f of backup.fixos) loja.salvarFixo(f);
     for (const a of backup.ajustes) loja.definirAjuste(a.chave, a.valor);
     setPronto(

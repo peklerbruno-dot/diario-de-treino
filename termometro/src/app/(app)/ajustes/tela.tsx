@@ -21,6 +21,9 @@ import { paraCentavos } from "@/lib/dinheiro";
 import {
   ajustesDoAno,
   anosComDados,
+  saldoInicialExplicito,
+  saldosIniciaisDigitados,
+  rateioApto,
   arredondarTudo,
   categoriasDe,
   guardarCategorias,
@@ -34,6 +37,7 @@ import {
 } from "@/lib/loja";
 import { categoriasDoTipo, idDoNome, type Categoria } from "@/lib/categorias";
 import { quantosSemCategoria } from "@/lib/classificar";
+import { calcularAnoEncadeado } from "@/lib/calculo";
 import { NOME_DO_TIPO, TIPOS, type Tipo } from "@/lib/tipos";
 
 export function TelaDeAjustes() {
@@ -42,9 +46,23 @@ export function TelaDeAjustes() {
   const ajustes = ajustesDoAno(estado, ano);
   const anos = anosComDados(estado, [partesDaData(hoje()).ano]);
 
-  const [saldo, setSaldo] = useState(
-    (ajustes.saldoInicialCents / 100).toFixed(2).replace(".", ","),
-  );
+  // O campo mostra o saldo que o app REALMENTE usa para o ano: o digitado, ou
+  // o herdado do fechamento do ano anterior. Mostrar "0,00" para um ano
+  // herdado convidava a tocar em Salvar e zerar a corrente sem querer.
+  const emUso = (a: number) => {
+    const explicito = saldoInicialExplicito(estado, a);
+    if (explicito !== null) return { cents: explicito, herdado: false };
+    const calculado = calcularAnoEncadeado({
+      ano: a,
+      lancamentos: lancamentosVivos(estado),
+      saldosIniciais: saldosIniciaisDigitados(estado),
+      rateioAptoPercent: rateioApto(estado),
+    });
+    return { cents: calculado.saldoInicialCents, herdado: true };
+  };
+  const [saldo, setSaldo] = useState((emUso(ano).cents / 100).toFixed(2).replace(".", ","));
+  const [erroSaldo, setErroSaldo] = useState<string | null>(null);
+  const saldoHerdado = emUso(ano).herdado;
   const [rateio, setRateio] = useState(String(ajustes.rateioAptoPercent));
   const [confirmandoApagar, setConfirmandoApagar] = useState(false);
 
@@ -82,9 +100,8 @@ export function TelaDeAjustes() {
             onChange={(e) => {
               const novo = Number(e.target.value);
               setAno(novo);
-              setSaldo(
-                (ajustesDoAno(estado, novo).saldoInicialCents / 100).toFixed(2).replace(".", ","),
-              );
+              setSaldo((emUso(novo).cents / 100).toFixed(2).replace(".", ","));
+              setErroSaldo(null);
             }}
             className="ml-2 rounded-folha border border-regua bg-cartao px-3 py-2"
           >
@@ -97,13 +114,38 @@ export function TelaDeAjustes() {
         </label>
 
         <div className="mt-3">
-          <Campo rotulo={`Saldo em 1º de janeiro de ${ano}`}>
-            <CampoDeValor valor={saldo} aoMudar={setSaldo} />
+          <Campo
+            rotulo={`Saldo em 1º de janeiro de ${ano}`}
+            dica={
+              saldoHerdado
+                ? `Herdado do fechamento de ${ano - 1}. Salvar aqui fixa este valor e interrompe a herança.`
+                : undefined
+            }
+          >
+            <CampoDeValor
+              valor={saldo}
+              aoMudar={(v) => {
+                setSaldo(v);
+                setErroSaldo(null);
+              }}
+            />
           </Campo>
+          {erroSaldo && (
+            <p role="alert" className="mt-2 text-[14px] text-atencao">
+              {erroSaldo}
+            </p>
+          )}
           <Botao
             onClick={() => {
               const cents = paraCentavos(saldo);
-              if (cents !== null) guardarSaldoInicial(ano, cents);
+              if (cents === null) {
+                // Recusar em silêncio parecia "salvou": o leigo saía achando
+                // que o saldo tinha entrado.
+                setErroSaldo("Não entendi o valor. Digite só o número, como 1500 ou 1.500,00.");
+                return;
+              }
+              guardarSaldoInicial(ano, cents);
+              setSaldo((cents / 100).toFixed(2).replace(".", ","));
             }}
             className="mt-2"
           >
@@ -422,6 +464,14 @@ function NomeDaCategoria({
   aoRenomear: (nome: string) => void;
 }) {
   const [nome, setNome] = useState(categoria.nome);
+  // Se o nome mudou por fora (renomeado no outro aparelho, sincronizado agora),
+  // o campo acompanha — em vez de regravar o nome velho por cima no próximo
+  // blur.
+  const [nomeVisto, setNomeVisto] = useState(categoria.nome);
+  if (categoria.nome !== nomeVisto) {
+    setNomeVisto(categoria.nome);
+    setNome(categoria.nome);
+  }
 
   return (
     <input
@@ -429,10 +479,10 @@ function NomeDaCategoria({
       maxLength={40}
       onChange={(e) => setNome(e.target.value)}
       onBlur={() => {
-        if (nome.trim()) {
-          aoRenomear(nome);
-        } else {
+        if (!nome.trim()) {
           setNome(categoria.nome); // vazio não vale: volta o que era
+        } else if (nome.trim() !== categoria.nome) {
+          aoRenomear(nome); // só grava se mudou de verdade
         }
       }}
       aria-label={`Nome da categoria ${categoria.nome}`}

@@ -23,9 +23,22 @@
 // servidor e não chegava no aparelho.
 const CACHE = "termometro-v3";
 
+// Só resposta BOA entra no cache. Sem este filtro, um 500 do servidor ou o
+// redirecionamento para /entrar (sessão vencida) eram guardados POR CIMA da
+// última cópia boa — e o modo offline passava a abrir uma tela de erro.
+const guardavel = (resposta) => resposta.ok && !resposta.redirected && resposta.type === "basic";
+
 self.addEventListener("install", (evento) => {
   evento.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(["/"]).catch(() => undefined)),
+    caches
+      .open(CACHE)
+      .then(async (cache) => {
+        // `addAll` guardaria a página de login se o SW novo fosse instalado
+        // com a sessão vencida — a mesma envenenação, por outra porta.
+        const resposta = await fetch("/");
+        if (guardavel(resposta)) await cache.put("/", resposta);
+      })
+      .catch(() => undefined),
   );
 });
 
@@ -45,11 +58,6 @@ self.addEventListener("fetch", (evento) => {
   const url = new URL(pedido.url);
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith("/api/")) return;
-
-  // Só resposta BOA entra no cache. Sem este filtro, um 500 do servidor ou o
-  // redirecionamento para /entrar (sessão vencida) eram guardados POR CIMA da
-  // última cópia boa — e o modo offline passava a abrir uma tela de erro.
-  const guardavel = (resposta) => resposta.ok && !resposta.redirected && resposta.type === "basic";
 
   if (url.pathname.startsWith("/_next/static/")) {
     evento.respondWith(

@@ -168,7 +168,8 @@ export function TelaDosFixos() {
 }
 
 function FolhaDeFixo({ fixo, aoFechar }: { fixo?: Fixo; aoFechar: () => void }) {
-  const categorias = categoriasDe(useEstado());
+  const estadoDaFolha = useEstado();
+  const categorias = categoriasDe(estadoDaFolha);
   const [tipo, setTipo] = useState<Tipo>(fixo?.tipo ?? "SAIDA");
   const [regra, setRegra] = useState<Repeticao>(
     fixo ? lerRepeticao(fixo) : { tipo: "DIA_DO_MES", dia: 5 },
@@ -185,6 +186,11 @@ function FolhaDeFixo({ fixo, aoFechar }: { fixo?: Fixo; aoFechar: () => void }) 
   const [erro, setErro] = useState<string | null>(null);
 
   const daColuna = categoriasDoTipo(categorias, tipo);
+  const previstosFuturos = fixo
+    ? Object.values(estadoDaFolha.lancamentos).filter(
+        (l) => l.fixoId === fixo.id && l.previsto && !l.apagadoEm && l.data >= hoje(),
+      ).length
+    : 0;
 
   function salvar() {
     const valores = parcelas(valor);
@@ -331,21 +337,20 @@ function FolhaDeFixo({ fixo, aoFechar }: { fixo?: Fixo; aoFechar: () => void }) 
             Salvar
           </Botao>
           {fixo && (
-            <Botao
-              tipo="perigo"
-              onClick={() => {
+            <ApagarFixo
+              fixo={fixo}
+              previstosFuturos={previstosFuturos}
+              aoApagar={() => {
                 loja.apagarFixo(fixo.id);
                 aoFechar();
               }}
-            >
-              Apagar
-            </Botao>
+            />
           )}
         </div>
 
         <p className="text-[13px] leading-snug text-fosco">
-          Apagar um fixo não apaga o que ele já escreveu nos dias. Os lançamentos previstos
-          continuam lá, e você apaga os que não quiser.
+          Apagar um fixo apaga também os lançamentos previstos dele de hoje em diante. O que já
+          aconteceu (confirmado) e o que já passou ficam.
         </p>
       </div>
     </Folha>
@@ -470,5 +475,35 @@ function QuandoCai({ regra, aoMudar }: { regra: Repeticao; aoMudar: (r: Repetica
               : `Cai ${descreverRepeticao(regra)}.`}
       </p>
     </div>
+  );
+}
+
+/**
+ * Apagar um fixo leva os previstos futuros dele junto — vários lançamentos de
+ * uma vez, sem Desfazer. Por isso pede um segundo toque, dizendo quantos.
+ */
+function ApagarFixo({
+  fixo,
+  previstosFuturos,
+  aoApagar,
+}: {
+  fixo: Fixo;
+  previstosFuturos: number;
+  aoApagar: () => void;
+}) {
+  const [confirmando, setConfirmando] = useState(false);
+  if (!confirmando) {
+    return (
+      <Botao tipo="perigo" onClick={() => setConfirmando(true)}>
+        Apagar
+      </Botao>
+    );
+  }
+  return (
+    <Botao tipo="perigo" onClick={aoApagar}>
+      {previstosFuturos > 0
+        ? `Apagar ${fixo.nota?.trim() || "o fixo"} e ${previstosFuturos} previsto${previstosFuturos === 1 ? "" : "s"}?`
+        : "Apagar mesmo?"}
+    </Botao>
   );
 }

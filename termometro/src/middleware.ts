@@ -25,6 +25,14 @@ export function middleware(req: NextRequest) {
     pathname === "/apple-touch-icon.png" ||
     pathname.startsWith("/icone");
 
+  // Uma API sem sessão responde 401, e não um desvio para a página de entrada:
+  // o app lê a resposta como JSON, e um HTML de login no lugar virava "erro"
+  // genérico — com o aparelho tentando de novo a cada segundo, para sempre,
+  // em vez de dizer "a sessão venceu, entre de novo".
+  if (!temCookie && pathname.startsWith("/api/")) {
+    return NextResponse.json({ erro: "Sem sessão." }, { status: 401 });
+  }
+
   if (!temCookie && !publica) {
     const url = req.nextUrl.clone();
     url.pathname = "/entrar";

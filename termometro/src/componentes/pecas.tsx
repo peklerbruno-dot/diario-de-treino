@@ -277,16 +277,30 @@ export function Folha({
 }) {
   const tituloId = useId();
   const caixa = useRef<HTMLDivElement>(null);
+  // O fechar mais recente, lido na hora da tecla. Os pais passam `aoFechar`
+  // como função nova a cada render, e um efeito dependente dela religava tudo
+  // a cada publicação da loja — inclusive roubando o foco do campo em
+  // digitação: o teclado do iPhone fechava no meio da nota.
+  const fechar = useRef(aoFechar);
+  fechar.current = aoFechar;
 
   useEffect(() => {
     // O foco entra na folha ao abrir e volta para quem a abriu ao fechar. Sem
     // isso o teclado e o leitor de tela continuavam presos na página de trás:
-    // Tab passeava por botões invisíveis embaixo da cortina.
+    // Tab passeava por botões invisíveis embaixo da cortina. UMA vez, na
+    // abertura — nunca a cada render.
     const antes = document.activeElement as HTMLElement | null;
     caixa.current?.focus();
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+      antes?.focus?.();
+    };
+  }, []);
 
+  useEffect(() => {
     const tecla = (e: KeyboardEvent) => {
-      if (e.key === "Escape") aoFechar();
+      if (e.key === "Escape") fechar.current();
       if (e.key === "Tab" && caixa.current) {
         const focaveis = caixa.current.querySelectorAll<HTMLElement>(
           'button, input, select, textarea, a[href], [tabindex]:not([tabindex="-1"])',
@@ -305,13 +319,8 @@ export function Folha({
       }
     };
     document.addEventListener("keydown", tecla);
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", tecla);
-      document.body.style.overflow = "";
-      antes?.focus?.();
-    };
-  }, [aoFechar]);
+    return () => document.removeEventListener("keydown", tecla);
+  }, []);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">

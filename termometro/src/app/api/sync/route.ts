@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { temSessao } from "@/lib/auth";
 import { bd } from "@/lib/bd";
-import { diasNoMes } from "@/lib/datas";
+import { dataExiste } from "@/lib/datas";
 import { TETO_CENTS } from "@/lib/dinheiro";
 
 /**
@@ -32,14 +32,9 @@ const tipo = z.enum(["ENTRADA", "SAIDA", "DIARIO"]);
 const dataDeCaderno = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, "data precisa ser AAAA-MM-DD")
-  .refine((d) => {
-    // "2026-02-31" passa no regex e some de todas as telas: dinheiro gravado
-    // que nenhum mês mostra. Dia de caderno tem que existir no calendário.
-    const [ano, mes, dia] = d.split("-").map(Number);
-    return (
-      ano >= 2000 && ano <= 2100 && mes >= 1 && mes <= 12 && dia >= 1 && dia <= diasNoMes(ano, mes)
-    );
-  }, "esse dia não existe no calendário");
+  // "2026-02-31" passa no regex e some de todas as telas: dinheiro gravado
+  // que nenhum mês mostra. Dia de caderno tem que existir no calendário.
+  .refine(dataExiste, "esse dia não existe no calendário");
 
 /**
  * O teto protege o banco: a coluna é um inteiro de 32 bits, e um valor acima

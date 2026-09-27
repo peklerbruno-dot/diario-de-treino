@@ -31,9 +31,11 @@ export async function GET(pedido: Request) {
       `${capitalizar(nomeDoMes(mes))} fecha em ${comCifrao(sobra.fechamentoCents)} se nada mudar.`,
     );
     partes.push(
-      sobra.porDiaCents > 0
-        ? `Dá ${comCifrao(sobra.porDiaCents)} por dia até o fim do mês.`
-        : "O mês já fecha abaixo de zero.",
+      sobra.noVermelho
+        ? "O mês já fecha abaixo de zero."
+        : sobra.porDiaCents > 0
+          ? `Dá ${comCifrao(sobra.porDiaCents)} por dia até o fim do mês.`
+          : "Sobra menos de um real por dia até o fim do mês.",
     );
   }
 

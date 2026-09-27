@@ -53,6 +53,22 @@ export function partesDaData(data: string): { ano: number; mes: number; dia: num
   return { ano, mes, dia };
 }
 
+/**
+ * Um dia que existe no calendário — e num ano que faz sentido.
+ *
+ * "2026-02-31" tem a forma certa e não existe; "0206-05-10" existe e é um dedo
+ * errado que arrastaria a corrente de anos por dezoito séculos. As três portas
+ * de entrada (folha, atalho da Siri, /api/sync) usam ESTA regra, para nenhuma
+ * aceitar o que as outras recusam.
+ */
+export function dataExiste(data: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(data)) return false;
+  const { ano, mes, dia } = partesDaData(data);
+  return (
+    ano >= 2000 && ano <= 2100 && mes >= 1 && mes <= 12 && dia >= 1 && dia <= diasNoMes(ano, mes)
+  );
+}
+
 /** Hoje segundo o relógio do aparelho, que é o relógio que a pessoa vê. */
 export function hoje(): string {
   const agora = new Date();

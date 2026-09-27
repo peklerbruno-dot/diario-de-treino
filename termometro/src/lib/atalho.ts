@@ -9,7 +9,7 @@
  * Aqui mora só a parte que não depende de banco nem de rede: ler o que o atalho
  * mandou e montar os lançamentos. É o que dá para testar sem servidor nenhum.
  */
-import { diasNoMes, partesDaData } from "./datas";
+import { dataExiste } from "./datas";
 import { acharCategoria, type Categoria } from "./categorias";
 import { aoReal, comCifrao, paraCentavos, parcelas, TETO_CENTS } from "./dinheiro";
 import type { Lancamento, Tipo } from "./tipos";
@@ -151,8 +151,7 @@ export function lerPedidoDoAtalho(
   // Ter a forma AAAA-MM-DD não basta: "2026-02-30" tem a forma certa e não
   // existe no calendário. Um lançamento num dia inexistente sumiria da tela do
   // mês, que só desenha os dias de verdade.
-  const { ano, mes, dia } = partesDaData(data);
-  if (mes < 1 || mes > 12 || dia < 1 || dia > diasNoMes(ano, mes)) {
+  if (!dataExiste(data)) {
     return { ok: false, erro: `A data "${data}" não existe.` };
   }
 
