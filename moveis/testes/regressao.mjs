@@ -10,12 +10,13 @@ import { abrir, verificar } from './harness.mjs';
 
   // arrastar o sofá pelo mouse
   const sofaId = await noApp(() => itens().find(i => i.tipo === 'sofa').id);
+  const x0 = await noApp(id => pegar(id).x, sofaId);
   const c = await t.centroMovel(sofaId);
   await t.arrastar(c.x, c.y, c.x + 40, c.y + 10);
   const dep = await noApp(id => { const i = pegar(id); return [i.x, i.y]; }, sofaId);
-  verificar(dep[0] !== 100, 'arrastar move o sofá');
+  verificar(dep[0] !== x0, 'arrastar move o sofá');
   await page.keyboard.press('Control+z');
-  verificar((await noApp(id => pegar(id).x, sofaId)) === 100, 'desfazer volta o sofá');
+  verificar((await noApp(id => pegar(id).x, sofaId)) === x0, 'desfazer volta o sofá');
 
   // catálogo
   await page.click('#fab'); await page.click('text=Poltrona');

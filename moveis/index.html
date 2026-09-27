@@ -18,6 +18,7 @@
   --esq:env(safe-area-inset-left,0px); --dir:env(safe-area-inset-right,0px);
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0;height:100%}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   background:var(--fundo);color:var(--texto);overflow:hidden;-webkit-text-size-adjust:100%;
@@ -172,7 +173,9 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
           <li>Use <b>＋ Móvel</b> para trazer peças do catálogo.</li>
           <li>Arraste o fundo para andar pela planta; a roda do mouse dá zoom.</li>
           <li>Contorno vermelho: batendo. Laranja: no caminho de uma porta.</li>
+          <li>Listras vermelhas no piso: passagem com menos de 60 cm.</li>
         </ul>
+        <p id="pOcupacao" style="margin:10px 0 0"></p>
       </div>
       <div id="pConteudo">
       <div class="pcab">
@@ -182,6 +185,7 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
       <div class="acoes">
         <button class="bt" id="pGirarE" title="Girar 90° anti-horário (Shift+R)" aria-label="Girar 90° anti-horário">↺ 90°</button>
         <button class="bt" id="pGirarD" title="Girar 90° horário (R)" aria-label="Girar 90° horário">↻ 90°</button>
+        <button class="bt" id="pEspelhar" title="Espelhar o L (canto para o outro lado)" aria-label="Espelhar">⇋<span class="txt-bt"> Espelhar</span></button>
         <button class="bt" id="pDuplicar" title="Duplicar (Ctrl+D)" aria-label="Duplicar">⧉<span class="txt-bt"> Duplicar</span></button>
         <button class="bt" id="pFrente" title="Trazer para a frente" aria-label="Trazer para a frente">⬆<span class="txt-bt"> Frente</span></button>
         <button class="bt perigo" id="pExcluir" title="Excluir (Delete)">🗑 Excluir</button>
@@ -245,14 +249,17 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
       <label><input type="checkbox" data-op="ima"> Ímã: encaixar nas paredes e móveis (grade de 5 cm)</label>
       <label><input type="checkbox" data-op="cotas"> Distâncias até paredes e móveis (do selecionado)</label>
       <label><input type="checkbox" data-op="portas"> Área de abertura das portas</label>
+      <label><input type="checkbox" data-op="passagens"> Passagens apertadas (menos de 60 cm para passar)</label>
       <label><input type="checkbox" data-op="grade"> Grade (10 cm / 1 m)</label>
       <label><input type="checkbox" data-op="rotulos"> Nomes e medidas nos móveis</label>
     </div>
     <h3>Móveis neste layout</h3>
+    <p id="mOcupacao" style="font-size:14px;color:var(--sub);margin:0 0 8px"></p>
     <div class="lista-moveis" id="mLista"></div>
     <h3>Arquivo</h3>
     <div class="fila">
       <button class="bt" id="mPng">🖼 Salvar imagem</button>
+      <button class="bt" id="mLink">🔗 Enviar este layout por link</button>
       <button class="bt" id="mExportar">⬇ Exportar layouts (.json)</button>
       <button class="bt" id="mImportar">⬆ Importar arquivo</button>
       <button class="bt" id="mColar">📋 Importar colando texto</button>
@@ -277,10 +284,11 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
       <li>Com um móvel selecionado: a <b>bolinha de cima</b> gira, a <b>bolinha do canto</b> muda o tamanho. As medidas exatas ficam no painel.</li>
       <li>Com o <b>ímã</b> ligado o móvel encosta sozinho nas paredes e nos outros móveis, e gira de 15 em 15°.</li>
       <li>As linhas azuis mostram <b>quanto sobra</b> de cada lado do móvel selecionado (em cm).</li>
+      <li><b>Listras vermelhas</b> no piso marcam uma passagem obrigatória com menos de 60 cm (a largura aparece no meio). Frestas sem saída, como atrás do sofá ou entre cadeiras, não são marcadas. Dá para desligar no menu.</li>
       <li>Móvel com contorno <b style="color:#d93025">vermelho</b> está batendo em parede, em peça fixa ou em outro móvel. <b style="color:#e8710a">Laranja</b>: está no caminho de uma porta abrindo.</li>
-      <li><b>Canto alemão:</b> há peças avulsas (L de vários tamanhos, reto, bancos e mesas) e <b>conjuntos</b> prontos. Peças de um conjunto andam, giram e duplicam juntas (contorno tracejado); desmarque "Move junto" no painel para soltar uma peça. No L, o "fundo do assento" muda a largura do banco, e girar 90° leva o L para qualquer canto.</li>
+      <li><b>Canto alemão:</b> há peças avulsas (L de vários tamanhos, reto, bancos e mesas) e <b>conjuntos</b> prontos. Peças de um conjunto andam, giram e duplicam juntas (contorno tracejado); desmarque "Move junto" no painel para soltar uma peça. No L, o "fundo do assento" muda a largura do banco; girar 90° leva o L para qualquer canto e <b>Espelhar</b> troca o lado do braço maior.</li>
       <li>Em cada móvel o lado de cima do desenho é o fundo (encosto do sofá, cabeceira da cama, costas do armário).</li>
-      <li>Tudo é salvo sozinho neste aparelho/navegador. Para levar a outro aparelho, use <b>Exportar</b> e <b>Importar</b> no menu.</li>
+      <li>Tudo é salvo sozinho neste aparelho/navegador. Para levar a outro aparelho, o mais fácil é <b>Enviar por link</b> no menu (cole o link no WhatsApp ou nas Notas e abra no outro aparelho); também há <b>Exportar</b> e <b>Importar</b>.</li>
       <li>Teclado: setas movem 1 cm (<kbd>Shift</kbd> = 10 cm), <kbd>R</kbd> gira, <kbd>Ctrl</kbd>+<kbd>D</kbd> duplica, <kbd>Delete</kbd> exclui, <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz, <kbd>Esc</kbd> tira a seleção.</li>
     </ul>
     <p style="color:#5b6570;font-size:13px">Medidas internas: 420 × 700 cm. Sala/jantar 18,90 m² · Dormitório 7,20 m² · Banho 2,64 m².</p>
@@ -308,6 +316,7 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
     <textarea id="sTexto" hidden readonly style="width:100%;height:40vh;font:13px ui-monospace,Menlo,monospace;border:1px solid var(--borda);border-radius:8px;padding:8px"></textarea>
     <div class="fila" style="margin-top:10px">
       <button class="bt prim" id="sCopiar" hidden>Copiar texto</button>
+      <a class="bt" id="sAbrir" hidden target="_blank" rel="noopener" style="text-decoration:none">↗ Abrir o link</a>
       <button class="bt" id="sBaixar">⬇ Baixar arquivo</button>
     </div>
   </div>
@@ -424,7 +433,7 @@ const REDONDOS = new Set(['redondo', 'planta']);
    ESTADO
    ============================================================ */
 const CHAVE = 'simuladorMoveis.v1';
-const OP_PADRAO = { ima: true, cotas: true, portas: true, grade: true, rotulos: true };
+const OP_PADRAO = { ima: true, cotas: true, portas: true, grade: true, rotulos: true, passagens: true };
 let estado;          // { layouts:[{id,nome,itens}], atual, op }
 let sel = null;      // id do móvel selecionado
 let desfazer = [], refazer = [], ultimoSalvo = '';
@@ -454,16 +463,17 @@ function mk(tipo, nome, w, h, x1, y1, rot = 0, extra) {
 }
 function exemplo() {
   return [
-    mk('tapete', 'Tapete 1,50 × 2,00', 200, 150, 0, 80),
-    mk('rack', 'Rack de TV', 180, 45, 20, 0),
-    mk('mesa', 'Mesa de centro', 100, 60, 50, 120),
-    mk('sofa', 'Sofá 2 lugares', 160, 90, 20, 240, 180),
-    mk('mesa', 'Mesa 4 lugares', 120, 80, 220, 290),
-    mk('cadeira', 'Cadeira', 45, 50, 235, 240), mk('cadeira', 'Cadeira', 45, 50, 280, 240),
-    mk('cadeira', 'Cadeira', 45, 50, 235, 370, 180), mk('cadeira', 'Cadeira', 45, 50, 280, 370, 180),
+    mk('tapete', 'Tapete 1,50 × 2,00', 200, 150, 0, 50),
+    mk('rack', 'Rack de TV', 180, 45, 10, 0),
+    mk('mesa', 'Mesa de centro', 100, 60, 50, 95),
+    mk('sofa', 'Sofá 2 lugares', 160, 90, 0, 190, 180),
+    mk('mesa', 'Mesa 4 lugares', 120, 80, 220, 260),
+    mk('cadeira', 'Cadeira', 45, 50, 235, 210), mk('cadeira', 'Cadeira', 45, 50, 280, 210),
+    mk('cadeira', 'Cadeira', 45, 50, 235, 340, 180), mk('cadeira', 'Cadeira', 45, 50, 280, 340, 180),
     mk('planta', 'Vaso de planta', 45, 45, 330, 5),
-    mk('armario', 'Guarda-roupa 3 portas', 150, 55, 0, 460),
-    mk('cama', 'Cama de casal', 145, 200, 100, 555, 90)
+    mk('cama', 'Cama de casal', 145, 200, 0, 460),
+    mk('criado', 'Criado-mudo', 45, 40, 150, 460),
+    mk('armario', 'Guarda-roupa 3 portas', 150, 55, 150, 645)
   ];
 }
 
@@ -664,8 +674,10 @@ const ESTILO_SVG = `
   .cota text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;fill:#0b4fbf;font-weight:700;
     text-anchor:middle;dominant-baseline:central;paint-order:stroke;stroke:#fff;stroke-linejoin:round}
   .cota.aperto line{stroke:#d93025}.cota.aperto text{fill:#b3261e}
+  .passo{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;fill:#b3261e;font-weight:700;
+    text-anchor:middle;dominant-baseline:central;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
 `;
-let gMoveis, gCotas, gSel, gPortas, gGrade, gRotulos;
+let gMoveis, gCotas, gSel, gPortas, gGrade, gRotulos, gPassagens;
 const nosMoveis = new Map(); // id -> { g, assinatura }
 
 function montarPlanta() {
@@ -676,6 +688,9 @@ function montarPlanta() {
   el('path', { d: 'M10 0H0V10', fill: 'none', stroke: '#00000012', 'stroke-width': 0.6 }, p1);
   const p2 = el('pattern', { id: 'gradeGrossa', width: 100, height: 100, patternUnits: 'userSpaceOnUse' }, defs);
   el('path', { d: 'M100 0H0V100', fill: 'none', stroke: '#00000026', 'stroke-width': 1 }, p2);
+  const p4 = el('pattern', { id: 'listras', width: 8, height: 8, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
+  el('rect', { width: 8, height: 8, fill: '#d9302512' }, p4);
+  el('line', { x1: 0, y1: 0, x2: 0, y2: 8, stroke: '#d9302570', 'stroke-width': 2.5 }, p4);
   const p3 = el('pattern', { id: 'hachura', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
   el('rect', { width: 6, height: 6, fill: '#c9ced4' }, p3);
   el('line', { x1: 0, y1: 0, x2: 0, y2: 6, stroke: '#7d858e', 'stroke-width': 1.5 }, p3);
@@ -691,6 +706,7 @@ function montarPlanta() {
   el('rect', { x: 0, y: 0, width: W, height: H, fill: 'url(#gradeFina)' }, gGrade);
   el('rect', { x: 0, y: 0, width: W, height: H, fill: 'url(#gradeGrossa)' }, gGrade);
 
+  gPassagens = el('g', { 'pointer-events': 'none' }, svg);
   gRotulos = el('g', {}, svg);
   for (const a of AMBIENTES) {
     const area = ((a.x2 - a.x1) * (a.y2 - a.y1) / 10000).toFixed(2).replace('.', ',');
@@ -1022,6 +1038,184 @@ function aplicarOpcoes() {
 }
 
 /* ============================================================
+   MAPA DO PISO: passagens apertadas e ocupação
+   O piso vira uma grade de células de 5 cm. Uma célula é "folgada" quando cabe
+   nela um círculo de 60 cm (ninguém precisa virar de lado). Uma passagem
+   apertada é uma faixa de células não folgadas que é o único caminho entre
+   duas áreas folgadas: frestas entre cadeiras ou atrás do sofá não contam.
+   ============================================================ */
+const CEL = 5, NX = W / CEL, NY = H / CEL, RAIO = 30;
+let mapaPiso = null; // { grade: Uint8Array (0 livre, 1 móvel, 2 fixo), passagens: [{cells, largura, cx, cy}], ocupacao: [{nome, pct}] }
+function distPontoSeg(px, py, ax, ay, bx, by) {
+  const dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy;
+  let t = l2 ? ((px - ax) * dx + (py - ay) * dy) / l2 : 0; t = limitar(t, 0, 1);
+  return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+}
+function dentroConvexo(px, py, poly) {
+  let sinal = 0;
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i], b = poly[(i + 1) % poly.length];
+    const cr = (b[0] - a[0]) * (py - a[1]) - (b[1] - a[1]) * (px - a[0]);
+    if (Math.abs(cr) < 1e-9) continue;
+    if (!sinal) sinal = Math.sign(cr); else if (Math.sign(cr) !== sinal) return false;
+  }
+  return true;
+}
+// Distância (cm) do ponto até o obstáculo mais perto (paredes externas incluídas), limitada a `teto`.
+function distLivre(px, py, obst, teto) {
+  let d = Math.min(px, W - px, py, H - py, teto);
+  for (const o of obst) {
+    const b = o.cx;
+    if (px < b.x1 - d || px > b.x2 + d || py < b.y1 - d || py > b.y2 + d) continue;
+    if (dentroConvexo(px, py, o.poly)) return 0;
+    const P = o.poly;
+    for (let i = 0; i < P.length; i++) { const dd = distPontoSeg(px, py, P[i][0], P[i][1], P[(i + 1) % P.length][0], P[(i + 1) % P.length][1]); if (dd < d) d = dd; }
+  }
+  return d;
+}
+function calcularMapaPiso() {
+  const grade = new Uint8Array(NX * NY);
+  const dist = new Float32Array(NX * NY);
+  const obst = [];
+  for (const o of OBST_FIXOS) obst.push({ poly: o.poly, val: 2, cx: o.cx });
+  for (const it of itens()) if (!it.sobrepor) for (const parte of itemPartes(it)) obst.push({ poly: parte, val: 1, cx: caixa(parte) });
+  const T = RAIO + 1;
+  for (let iy = 0; iy < NY; iy++) for (let ix = 0; ix < NX; ix++) {
+    const px = (ix + 0.5) * CEL, py = (iy + 0.5) * CEL, k = iy * NX + ix;
+    let val = 0;
+    for (const o of obst) { const b = o.cx; if (px >= b.x1 && px <= b.x2 && py >= b.y1 && py <= b.y2 && dentroConvexo(px, py, o.poly)) val = Math.max(val, o.val); }
+    grade[k] = val; dist[k] = val ? 0 : distLivre(px, py, obst, T);
+  }
+  // "folgada" = cabe um círculo de 60 cm em algum ponto da célula. Perto do limiar, confere também as bordas da célula.
+  const folgada = new Uint8Array(NX * NY), coberta = new Uint8Array(NX * NY);
+  const MEIA = CEL / 2, cantos = [[-MEIA, -MEIA], [MEIA, -MEIA], [-MEIA, MEIA], [MEIA, MEIA], [0, -MEIA], [0, MEIA], [-MEIA, 0], [MEIA, 0]];
+  for (let iy = 0; iy < NY; iy++) for (let ix = 0; ix < NX; ix++) {
+    const k = iy * NX + ix; if (grade[k]) continue;
+    const d = dist[k];
+    if (d >= RAIO - 0.01) { folgada[k] = 1; continue; }
+    if (d < RAIO - MEIA * 1.42) continue;
+    const px = (ix + 0.5) * CEL, py = (iy + 0.5) * CEL;
+    for (const [ox, oy] of cantos) if (distLivre(px + ox, py + oy, obst, T) >= RAIO - 0.01) { folgada[k] = 1; break; }
+  }
+  const R = RAIO / CEL, viz = [];
+  for (let dy = -Math.ceil(R); dy <= Math.ceil(R); dy++) for (let dx = -Math.ceil(R); dx <= Math.ceil(R); dx++) if (dx * dx + dy * dy <= R * R) viz.push([dx, dy]);
+  for (let iy = 0; iy < NY; iy++) for (let ix = 0; ix < NX; ix++) {
+    if (!folgada[iy * NX + ix]) continue;
+    for (const [dx, dy] of viz) { const x = ix + dx, y = iy + dy; if (x >= 0 && y >= 0 && x < NX && y < NY) coberta[y * NX + x] = 1; }
+  }
+  // Frestas com menos de 25 cm não são passagem: contam como parede. Assim as listras não grudam nas paredes
+  // e um vão de 20 cm atrás do sofá não vira "caminho".
+  const MIN_FRESTA = 12.5;
+  const rotulo = new Int32Array(NX * NY).fill(-1);
+  const componentes = [];
+  const inundar = (k0, aceita) => {
+    const cells = [], pilha = [k0]; rotulo[k0] = componentes.length;
+    while (pilha.length) {
+      const k = pilha.pop(); cells.push(k);
+      const x = k % NX, y = (k - x) / NX;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= NX || ny >= NY) continue;
+        const nk = ny * NX + nx; if (rotulo[nk] !== -1 || !aceita(nk)) continue;
+        rotulo[nk] = componentes.length; pilha.push(nk);
+      }
+    }
+    componentes.push(cells); return cells;
+  };
+  const livre = k => !grade[k] && dist[k] >= MIN_FRESTA;
+  const eCoberta = k => livre(k) && coberta[k], eApertada = k => livre(k) && !coberta[k];
+  const cobertasGrandes = new Set();
+  for (let k = 0; k < NX * NY; k++) if (rotulo[k] === -1 && eCoberta(k)) { const c = inundar(k, eCoberta); if (c.length >= 144) cobertasGrandes.add(componentes.length - 1); }
+  const passagens = [];
+  const VIZ4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  for (let k = 0; k < NX * NY; k++) if (rotulo[k] === -1 && eApertada(k)) {
+    const cells = inundar(k, eApertada);
+    const adj = new Map(); // célula -> áreas folgadas grandes que ela toca
+    const vizinhas = new Set();
+    for (const c of cells) {
+      const x = c % NX, y = (c - x) / NX;
+      for (const [dx, dy] of VIZ4) {
+        const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= NX || ny >= NY) continue;
+        const r = rotulo[ny * NX + nx];
+        if (r !== -1 && cobertasGrandes.has(r)) { vizinhas.add(r); if (!adj.has(c)) adj.set(c, new Set()); adj.get(c).add(r); }
+      }
+    }
+    if (vizinhas.size < 2) continue;
+    // Largura = diâmetro do maior círculo que consegue atravessar a faixa. A folga de cada célula é
+    // refinada de 1 em 1 cm (a borda entre células é onde costuma estar o ponto mais largo), e uma
+    // busca binária acha a maior folga com que ainda existe caminho entre duas áreas folgadas.
+    const fino = new Map();
+    for (const c of cells) {
+      const cx0 = ((c % NX) + 0.5) * CEL, cy0 = (Math.floor(c / NX) + 0.5) * CEL;
+      let m = 0;
+      for (let oy = -2.5; oy <= 2.5; oy += 0.5) for (let ox = -2.5; ox <= 2.5; ox += 0.5) { const d = distLivre(cx0 + ox, cy0 + oy, obst, T); if (d > m) m = d; }
+      fino.set(c, m);
+    }
+    const noComp = new Set(cells);
+    const origem = [...vizinhas][0];
+    const atravessa = r => { // com folga >= r, dá para ir da área "origem" até outra área folgada?
+      const visto = new Set(), pilha = [];
+      for (const [c, s] of adj) if (s.has(origem) && fino.get(c) >= r) { pilha.push(c); visto.add(c); }
+      while (pilha.length) {
+        const c = pilha.pop();
+        const s = adj.get(c); if (s) for (const r2 of s) if (r2 !== origem) return visto;
+        const x = c % NX, y = (c - x) / NX;
+        for (const [dx, dy] of VIZ4) {
+          const nk = (y + dy) * NX + x + dx;
+          if (noComp.has(nk) && !visto.has(nk) && fino.get(nk) >= r) { visto.add(nk); pilha.push(nk); }
+        }
+      }
+      return null;
+    };
+    const valores = [...new Set([...fino.values()])].sort((a, b) => a - b);
+    if (!atravessa(valores[0])) continue; // as áreas não se ligam por esta faixa (só a tocam)
+    let lo = 0, hi = valores.length - 1;
+    while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (atravessa(valores[mid])) lo = mid; else hi = mid - 1; }
+    const raio = valores[lo];
+    const caminho = atravessa(raio);
+    // o rótulo vai numa célula do caminho que esteja no estreitamento
+    let kMelhor = null;
+    for (const c of caminho) if (fino.get(c) <= raio + 0.01) { kMelhor = c; break; }
+    if (kMelhor === null) kMelhor = [...caminho][0];
+    passagens.push({ cells, largura: Math.round(2 * raio), cx: ((kMelhor % NX) + 0.5) * CEL, cy: (Math.floor(kMelhor / NX) + 0.5) * CEL });
+  }
+  const ocupacao = AMBIENTES.map(a => {
+    let tot = 0, mov = 0;
+    for (let iy = a.y1 / CEL; iy < a.y2 / CEL; iy++) for (let ix = a.x1 / CEL; ix < a.x2 / CEL; ix++) { const v = grade[iy * NX + ix]; if (v === 2) continue; tot++; if (v === 1) mov++; }
+    return { nome: a.nome, pct: tot ? Math.round(100 * mov / tot) : 0 };
+  });
+  mapaPiso = { grade, passagens, ocupacao, _dep: { dist, folgada, coberta, rotulo } };
+  return mapaPiso;
+}
+function renderPassagens() {
+  if (gesto) return; // durante um arrasto o mapa anterior fica na tela; recalcula ao soltar
+  calcularMapaPiso();
+  gPassagens.innerHTML = '';
+  if (!estado.op.passagens) return;
+  for (const p of mapaPiso.passagens) {
+    // funde células vizinhas na mesma linha em retângulos
+    const porLinha = new Map();
+    for (const k of p.cells) { const x = k % NX, y = (k - x) / NX; if (!porLinha.has(y)) porLinha.set(y, []); porLinha.get(y).push(x); }
+    let d = '';
+    for (const [y, xs] of porLinha) {
+      xs.sort((a, b) => a - b);
+      let ini = xs[0], ant = xs[0];
+      for (let i = 1; i <= xs.length; i++) {
+        if (i < xs.length && xs[i] === ant + 1) { ant = xs[i]; continue; }
+        d += `M${ini * CEL},${y * CEL}h${(ant - ini + 1) * CEL}v${CEL}h${-(ant - ini + 1) * CEL}z`;
+        if (i < xs.length) { ini = xs[i]; ant = xs[i]; }
+      }
+    }
+    el('path', { d, fill: 'url(#listras)' }, gPassagens);
+    if (p.cells.length >= 12) el('text', { x: p.cx, y: p.cy, class: 'passo', 'font-size': 9 }, gPassagens).textContent = p.largura + ' cm';
+  }
+}
+function textoOcupacao() {
+  if (!mapaPiso) return '';
+  const nomeCurto = { 'SALA / JANTAR': 'Sala', 'DORMITÓRIO 01': 'Dormitório', 'BANHO': 'Banho' };
+  return 'Piso ocupado por móveis: ' + mapaPiso.ocupacao.map(o => `${nomeCurto[o.nome] || o.nome} ${o.pct}%`).join(' · ');
+}
+
+/* ============================================================
    VISTA (zoom / arrastar a planta)
    ============================================================ */
 function tamanho() { const r = svg.getBoundingClientRect(); return { w: r.width || 1, h: r.height || 1, l: r.left, t: r.top }; }
@@ -1247,6 +1441,13 @@ function girar90(sentido) {
   } else it.rot = ((Math.round(it.rot / 90) * 90 + 90 * sentido) % 360 + 360) % 360;
   confirmar(); render();
 }
+// Espelha o canto alemão: o L(w,h) espelhado é o L(h,w) girado 90°, com o mesmo retângulo ocupado.
+function espelhar() {
+  const it = pegar(sel); if (!it || it.tipo !== 'cantoL') return;
+  [it.w, it.h] = [it.h, it.w];
+  it.rot = ((it.rot + 90) % 360 + 360) % 360;
+  confirmar(); render();
+}
 function duplicar() {
   const it = pegar(sel); if (!it) return;
   const grupo = it.grupo ? uid() : undefined;
@@ -1326,7 +1527,7 @@ function avisar(msg) {
    RENDERIZAÇÃO GERAL
    ============================================================ */
 function render(painel = true) {
-  renderMoveis(); renderSel(); renderCotas(); renderStatus();
+  renderMoveis(); renderPassagens(); renderSel(); renderCotas(); renderStatus();
   if (painel) renderPainel(); else atualizarCamposPainel();
 }
 function renderStatus() {
@@ -1341,10 +1542,13 @@ function renderStatus() {
   } else {
     h = `<b>${lista.length}</b> ${lista.length === 1 ? 'móvel' : 'móveis'}`;
   }
+  const passagens = estado.op.passagens && mapaPiso ? mapaPiso.passagens.length : 0;
   if (ruins) h += ` · <span class="ruim">${ruins} batendo</span>`;
   if (avisos) h += ` · <span class="aviso">${avisos} na porta</span>`;
-  if (!ruins && !avisos && lista.length && !it) h += ' · <span class="ok">tudo cabe</span>';
+  if (passagens && !it) h += ` · <span class="aviso">${passagens} ${passagens === 1 ? 'passagem apertada' : 'passagens apertadas'}</span>`;
+  if (!ruins && !avisos && !passagens && lista.length && !it) h += ' · <span class="ok">tudo cabe</span>';
   $('#status').innerHTML = h;
+  $('#pOcupacao').textContent = textoOcupacao();
 }
 function renderPainel() {
   const it = sel && pegar(sel);
@@ -1361,6 +1565,7 @@ function renderPainel() {
   $('#pW').parentElement.firstChild.textContent = redond ? 'Diâmetro (cm)' : L ? 'Braço 1 (cm)' : 'Largura (cm)';
   $('#pH').parentElement.firstChild.textContent = L ? 'Braço 2 (cm)' : 'Profundidade (cm)';
   $('#pP').parentElement.style.display = L ? '' : 'none';
+  $('#pEspelhar').style.display = L ? '' : 'none';
   const ms = membros(it);
   $('#pGrupo').hidden = ms.length < 2;
   $('#pGrupoN').textContent = ms.length;
@@ -1387,6 +1592,7 @@ function preencherLayouts() {
 function preencherListaMoveis() {
   calcularConflitos();
   const lista = itens();
+  $('#mOcupacao').textContent = textoOcupacao();
   $('#mLista').innerHTML = lista.length ? lista.map(i => {
     const c = conflitos.get(i.id);
     const marca = c.duro.length ? ' <span style="color:#d93025">● batendo</span>' : c.porta.length ? ' <span style="color:#e8710a">● porta</span>' : '';
@@ -1441,7 +1647,7 @@ function mostrarSaida(blob, nome, texto) {
   $('#sDica').textContent = texto
     ? 'Copie o texto e guarde (Notas, e-mail…). Para importar em outro aparelho: Menu → Importar, escolhendo o arquivo ou colando o texto.'
     : 'No iPhone: toque e segure a imagem → Salvar em Fotos. No computador: botão direito → Salvar imagem.';
-  img.hidden = !!texto; ta.hidden = !texto; $('#sCopiar').hidden = !texto;
+  img.hidden = !!texto; ta.hidden = !texto; $('#sCopiar').hidden = !texto; $('#sAbrir').hidden = true; $('#sBaixar').hidden = false; ta.style.height = '';
   if (!texto) img.src = URL.createObjectURL(blob);
   else ta.value = texto;
   $('#sBaixar').onclick = () => compartilharOuBaixar(blob, nome);
@@ -1462,6 +1668,52 @@ async function compartilharOuBaixar(blob, nome) {
   baixar(blob, nome);
 }
 function dataHoje() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+// ---- Layout dentro do link (#l=...) para passar do computador ao celular sem arquivo ----
+const b64url = bytes => btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const deB64url = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - s.length % 4) % 4)), c => c.charCodeAt(0));
+async function comprimir(texto) {
+  const bytes = new TextEncoder().encode(texto);
+  if (typeof CompressionStream === 'undefined') return 'j' + b64url(bytes);
+  try {
+    const st = new Blob([bytes]).stream().pipeThrough(new CompressionStream('deflate-raw'));
+    return 'z' + b64url(new Uint8Array(await new Response(st).arrayBuffer()));
+  } catch (e) { return 'j' + b64url(bytes); }
+}
+async function descomprimir(cod) {
+  const bytes = deB64url(cod.slice(1));
+  if (cod[0] === 'j') return new TextDecoder().decode(bytes);
+  const st = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+  return new TextDecoder().decode(await new Response(st).arrayBuffer());
+}
+// Endereço público do app, usado quando o arquivo foi aberto do próprio computador (file://).
+const URL_PUBLICA = 'https://raw.githack.com/peklerbruno-dot/diario-de-treino/claude/furniture-layout-simulator-2mjj57/moveis/index.html';
+async function enviarPorLink() {
+  const l = layout();
+  const dados = JSON.stringify({ app: 'simulador-moveis', versao: 1, layouts: [{ nome: l.nome, itens: l.itens }] });
+  const base = /^https?:/.test(location.href) ? location.href.split('#')[0] : URL_PUBLICA;
+  const link = base + '#l=' + await comprimir(dados);
+  $('#sTitulo').textContent = 'Enviar por link';
+  $('#sDica').textContent = `Copie o link e mande para você mesmo (WhatsApp, e-mail, Notas). Ao abrir no outro aparelho, o layout "${l.nome}" entra como um layout novo. O link tem ${Math.round(link.length / 1000 * 10) / 10} mil caracteres.`;
+  const img = $('#sImg'), ta = $('#sTexto');
+  img.hidden = true; ta.hidden = false; ta.value = link; ta.style.height = '22vh';
+  $('#sCopiar').hidden = false; $('#sBaixar').hidden = true;
+  const a = $('#sAbrir'); a.hidden = false; a.href = link;
+  $('#sCopiar').onclick = () => {
+    const fallback = () => { ta.focus(); ta.select(); avisar('Link selecionado: copie com Ctrl+C / Copiar.'); };
+    try { navigator.clipboard.writeText(link).then(() => avisar('Link copiado.'), fallback); } catch (e) { fallback(); }
+  };
+  abrir('#fSaida');
+}
+async function receberDoLink() {
+  const m = /[#&]l=([A-Za-z0-9_\-]+)/.exec(location.hash);
+  if (!m) return;
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* file:// pode recusar */ }
+  let texto;
+  try { texto = await descomprimir(m[1]); } catch (e) { avisar('Não consegui ler o layout do link.'); return; }
+  let d; try { d = JSON.parse(texto); } catch (e) { avisar('Não consegui ler o layout do link.'); return; }
+  const nome = d && d.layouts && d.layouts[0] && d.layouts[0].nome || 'layout';
+  if (await pergunta(`Este link traz o layout "${nome}". Adicionar aos seus layouts?`)) importarJson(texto);
+}
 function exportarJson() {
   const blob = new Blob([JSON.stringify({ app: 'simulador-moveis', versao: 1, layouts: estado.layouts }, null, 2)], { type: 'application/json' });
   mostrarSaida(blob, `layouts-apartamento-${dataHoje()}.json`, JSON.stringify({ app: 'simulador-moveis', versao: 1, layouts: estado.layouts }));
@@ -1554,6 +1806,7 @@ $('#pFechar').onclick = () => selecionar(null);
 $('#pGirarE').onclick = () => girar90(-1);
 $('#pGirarD').onclick = () => girar90(1);
 $('#pDuplicar').onclick = duplicar;
+$('#pEspelhar').onclick = espelhar;
 $('#pFrente').onclick = paraFrente;
 $('#pExcluir').onclick = excluir;
 $('#pNome').addEventListener('input', e => { const it = pegar(sel); if (it) { it.nome = e.target.value || 'Móvel'; render(false); } });
@@ -1614,6 +1867,7 @@ $('#mLista').addEventListener('click', e => {
   fecharFolhas(); selecionar(b.dataset.ir); requestAnimationFrame(() => centrarEm(pegar(b.dataset.ir)));
 });
 $('#mPng').onclick = () => { fecharFolhas(); salvarPng(); };
+$('#mLink').onclick = enviarPorLink;
 $('#mExportar').onclick = exportarJson;
 $('#mImportar').onclick = () => $('#mArquivo').click();
 $('#mColar').onclick = async () => {
@@ -1650,6 +1904,7 @@ document.addEventListener('keydown', e => {
   if (ctrl && e.key.toLowerCase() === 'd') { e.preventDefault(); duplicar(); return; }
   if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); excluir(); return; }
   if (e.key.toLowerCase() === 'r' && !ctrl) { girar90(e.shiftKey ? -1 : 1); return; }
+  if (e.key.toLowerCase() === 'e' && !ctrl) { espelhar(); return; }
   const passo = e.shiftKey ? 10 : 1;
   const mov = { ArrowLeft: [-passo, 0], ArrowRight: [passo, 0], ArrowUp: [0, -passo], ArrowDown: [0, passo] }[e.key];
   if (mov) { e.preventDefault(); moverJunto(it, mov[0], mov[1]); render(false); clearTimeout(tSeta); tSeta = setTimeout(confirmar, 400); }
@@ -1667,6 +1922,7 @@ botoesHistorico();
 if (window.matchMedia('(min-width: 900px)').matches) $('#pDetalhes').open = true;
 render();
 requestAnimationFrame(ajustar);
+receberDoLink();
 </script>
 </body>
 </html>
