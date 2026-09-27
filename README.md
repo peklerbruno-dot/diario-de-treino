@@ -149,3 +149,8 @@ o seu próprio deploy na Vercel (pasta escolhida em *Root Directory*).
   Veja [`cej/README.md`](cej/README.md) e, para publicar,
   [`cej/docs/COLOCAR-NO-AR.md`](cej/docs/COLOCAR-NO-AR.md) e
   [`cej/docs/BOLETIM.md`](cej/docs/BOLETIM.md).
+- `assistente/` — um assistente pessoal no WhatsApp, com o Claude por trás:
+  conversa, guarda memórias, manda lembretes na hora marcada, cuida de listas,
+  pesquisa na internet e lê fotos e PDFs. Só responde ao seu número.
+  Veja [`assistente/README.md`](assistente/README.md) e, para publicar,
+  [`assistente/docs/COLOCAR-NO-AR.md`](assistente/docs/COLOCAR-NO-AR.md).

@@ -1,0 +1,84 @@
+// Assistente — a memória de quem conversa com você pelo WhatsApp.
+//
+// O Claude não guarda nada entre uma mensagem e outra: tudo o que ele "lembra"
+// está aqui. A conversa recente, os fatos que você pediu para ele guardar, os
+// lembretes que ele marcou e as listas.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+/// Uma variável só, `DATABASE_URL` — a conexão sem intermediário, que a criação
+/// de tabelas exige no Neon, é trocada na hora da migração por
+/// `scripts/build-vercel.mjs`, como nos outros apps deste repositório.
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Uma fala da conversa, já em texto. É o que volta para o Claude como
+/// histórico na mensagem seguinte.
+///
+/// Só o texto final de cada lado: as chamadas de ferramenta de uma resposta
+/// servem àquela resposta e não precisam voltar. O que tem de durar vira
+/// `Memoria`, `Lembrete` ou `Item`.
+model Mensagem {
+  id       String   @id @default(cuid())
+  /// "user" ou "assistant", os nomes que a API do Claude usa.
+  papel    String
+  texto    String
+  criadoEm DateTime @default(now())
+
+  @@index([criadoEm])
+}
+
+/// O id de cada mensagem que chegou do WhatsApp.
+///
+/// A Meta reenvia o mesmo aviso quando não recebe resposta a tempo — e às
+/// vezes mesmo quando recebe. Sem esta tabela, uma pergunta sua teria duas
+/// respostas e um lembrete seria marcado duas vezes.
+model Recebida {
+  id       String   @id
+  criadoEm DateTime @default(now())
+}
+
+/// Algo que você pediu para o assistente guardar: "meu CPF é…", "a Ana é
+/// alérgica a camarão". Vai inteiro no começo de toda conversa.
+model Memoria {
+  id       String   @id @default(cuid())
+  texto    String
+  criadoEm DateTime @default(now())
+}
+
+/// Um aviso que o assistente manda sozinho, na hora marcada.
+model Lembrete {
+  id          String    @id @default(cuid())
+  texto       String
+  /// A próxima vez que ele deve tocar, em UTC.
+  quando      DateTime
+  /// Nulo = uma vez só. "diario", "semanal", "mensal" ou "dias-uteis".
+  repetir     String?
+  enviadoEm   DateTime?
+  canceladoEm DateTime?
+  criadoEm    DateTime  @default(now())
+
+  @@index([quando])
+}
+
+/// Um item de uma lista: compras, filmes, presentes, o que for.
+model Item {
+  id       String   @id @default(cuid())
+  /// O nome da lista, sempre em minúsculas: "compras", "filmes".
+  lista    String
+  texto    String
+  criadoEm DateTime @default(now())
+
+  @@index([lista])
+}
+
+/// Chave e valor para o que é um só. Hoje, o número do WhatsApp como a Meta o
+/// entrega (ver `numeroDoDono` em `src/lib/whatsapp.ts`).
+model Ajuste {
+  chave String @id
+  valor String
+}
