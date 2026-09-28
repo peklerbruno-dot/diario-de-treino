@@ -9,7 +9,7 @@ import { abrir, verificar } from './harness.mjs';
   verificar((await t.status()).includes('tudo cabe'), 'exemplo abre sem conflitos');
 
   // arrastar o sofá pelo mouse
-  const sofaId = await noApp(() => itens().find(i => i.tipo === 'sofa').id);
+  const sofaId = await noApp(() => itens().find(i => i.tipo === 'sofa' || i.tipo === 'chaise').id);
   const x0 = await noApp(id => pegar(id).x, sofaId);
   const c = await t.centroMovel(sofaId);
   await t.arrastar(c.x, c.y, c.x + 40, c.y + 10);
@@ -49,10 +49,11 @@ import { abrir, verificar } from './harness.mjs';
   const { page, noApp } = t;
   const camaId = await noApp(() => itens().find(i => i.tipo === 'cama').id);
   const c = await t.centroMovel(camaId);
+  const yCama = await noApp(id => pegar(id).y, camaId);
   await t.toque(c.x, c.y);
   verificar((await t.status()).includes('Cama'), 'toque seleciona a cama');
   await t.arrastar(c.x, c.y, c.x - 20, c.y - 40);
-  verificar((await noApp(id => pegar(id).y, camaId)) < 655, 'arrastar com o dedo move a cama');
+  verificar((await noApp(id => pegar(id).y, camaId)) < yCama, 'arrastar com o dedo move a cama');
   const vb0 = await page.getAttribute('#planta', 'viewBox');
   await t.pinca(200, 400, 2);
   verificar(vb0 !== await page.getAttribute('#planta', 'viewBox'), 'pinça muda o zoom');

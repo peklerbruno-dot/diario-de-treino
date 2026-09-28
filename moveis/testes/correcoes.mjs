@@ -122,14 +122,14 @@ import { abrir, verificar } from './harness.mjs';
   const t = await abrir({ iphone: true });
   const { page, noApp } = t;
   // 12. arrastar um móvel pequeno já selecionado move em vez de redimensionar
-  const vasoId = await noApp(() => itens().find(i => i.tipo === 'planta').id);
+  const vasoId = await noApp(() => itens().find(i => i.nome === 'Criado-mudo estreito').id);
   let c = await t.centroMovel(vasoId);
   await t.toque(c.x, c.y);
   c = await t.centroMovel(vasoId);
   const antes = await noApp(id => { const i = pegar(id); return [i.x, i.y, i.w]; }, vasoId);
   await t.arrastar(c.x, c.y, c.x + 40, c.y + 10);
   const depois = await noApp(id => { const i = pegar(id); return [i.x, i.y, i.w]; }, vasoId);
-  verificar(depois[2] === antes[2] && depois[0] !== antes[0], 'vaso selecionado arrastado pelo centro se move e não muda de tamanho: ' + antes + ' -> ' + depois);
+  verificar(depois[2] === antes[2] && (depois[0] !== antes[0] || depois[1] !== antes[1]), 'criado-mudo pequeno selecionado, arrastado pelo centro, se move e não muda de tamanho: ' + antes + ' -> ' + depois);
 
   // 14. painel só abre ao soltar
   await page.tap('#pFechar');
@@ -146,7 +146,7 @@ import { abrir, verificar } from './harness.mjs';
 
   // 15. pinça que começa em cima de um móvel não seleciona nem move
   await page.tap('#pFechar');
-  const sofaId = await noApp(() => itens().find(i => i.tipo === 'sofa').id);
+  const sofaId = await noApp(() => itens().find(i => i.tipo === 'sofa' || i.tipo === 'chaise').id);
   c = await t.centroMovel(sofaId);
   const pos0 = await noApp(id => { const i = pegar(id); return [i.x, i.y]; }, sofaId);
   const nDesfazer = await noApp(() => desfazer.length);

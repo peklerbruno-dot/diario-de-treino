@@ -160,4 +160,4 @@ o seu próprio deploy na Vercel (pasta escolhida em *Root Directory*).
   e contras, lista de compras, vários layouts salvos no navegador, enviar
   layout por link, exportar/importar `.json` e salvar imagem PNG.
   Testes no Chromium (Playwright, que precisa estar instalado no npm global):
-  `node moveis/testes/regressao.mjs`, `correcoes.mjs` e `novidades.mjs`.
+  `node moveis/testes/regressao.mjs`, `correcoes.mjs`, `novidades.mjs` e `pedidos.mjs`.

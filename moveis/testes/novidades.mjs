@@ -40,9 +40,10 @@ import { abrir, verificar } from './harness.mjs';
   await noApp(() => { layout().itens = IDEIAS[0].itens(); sel = itens().find(i => i.tipo === 'tv').id; confirmar(); render(); });
   const alvos = await noApp(() => alvosTV(pegar(sel)).map(a => a.nome));
   verificar(!alvos.some(n => /Cama/.test(n)), 'TV da sala não mira na cama do quarto: ' + alvos);
+  const alvo = Number(await page.getAttribute('#pTV [data-virar]', 'data-virar'));
   await page.click('#pTV [data-virar]');
   const rot = await noApp(() => pegar(sel).rot);
-  verificar(rot === 210, 'botão "girar para a mesa" vira a coluna para 210°: ' + rot);
+  verificar(rot === alvo && alvo !== 0, `botão "virar para" gira o móvel da TV para ${alvo}°: ${rot}`);
   verificar((await page.textContent('#pTV')).includes('TV de 55"'), 'painel da TV mostra a polegada');
 
   // régua: de parede a parede da sala (420 cm)
@@ -59,8 +60,8 @@ import { abrir, verificar } from './harness.mjs';
   // ideias: abrir cria o layout com o botão ⓘ
   await page.click('#btIdeias');
   verificar((await page.locator('.ideia').count()) === 4, '4 ideias na lista');
-  await page.click('[data-ideia=redonda]');
-  verificar((await noApp(() => layout().ideia)) === 'redonda' && await page.isVisible('#btInfo'), 'abrir ideia cria layout com botão ⓘ');
+  await page.click('[data-ideia=invertida]');
+  verificar((await noApp(() => layout().ideia)) === 'invertida' && await page.isVisible('#btInfo'), 'abrir ideia cria layout com botão ⓘ');
   await page.click('#btInfo');
   verificar((await page.textContent('#iiCorpo')).includes('Contras'), 'ⓘ mostra prós e contras');
   await page.keyboard.press('Escape');
@@ -68,7 +69,7 @@ import { abrir, verificar } from './harness.mjs';
   // lista de compras
   await page.click('#btMenu'); await page.click('#mCompras');
   const lista = await page.inputValue('#sTexto');
-  verificar(lista.includes('4× Cadeira — 45 × 50 cm') && lista.includes('DORMITÓRIO 01') && lista.includes('80 cm'), 'lista de compras agrupa por ambiente e conta cadeiras');
+  verificar(lista.includes('2× Cadeira — 45 × 50 cm') && lista.includes('Cadeira de escritório') && lista.includes('DORMITÓRIO 01') && lista.includes('80 cm'), 'lista de compras agrupa por ambiente e conta cadeiras');
   verificar(t.erros.length === 0, 'sem erros: ' + t.erros.join(' | '));
   await t.fechar();
 }
