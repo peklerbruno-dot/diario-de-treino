@@ -84,7 +84,7 @@ import { abrir, verificar } from './harness.mjs';
 
   // 9. adicionar com a vista longe da planta
   await noApp(() => { layout().itens = []; view.x = -3000; aplicarVista(); });
-  await page.click('#fab'); await page.click('text=Sofá 3 lugares');
+  await page.click('#fab'); await page.click('#catalogo >> text=Sofá 3 lugares');
   const bs = await noApp(() => caixa(itemPoly(pegar(sel))));
   verificar(bs.x1 >= 0 && bs.x2 <= 420, 'sofá adicionado com a vista fora da planta nasce dentro: ' + JSON.stringify(bs));
   await noApp(() => ajustar());

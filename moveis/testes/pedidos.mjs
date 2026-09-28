@@ -63,18 +63,19 @@ const fundo = await noApp(() => IDEIAS.flatMap(i => { const l = i.itens(); retur
 verificar(fundo.every(v => v >= 10) && fundo.filter(v => v >= 20).length >= fundo.length - 2, 'cadeiras guardadas para dentro da mesa (as de cabeceira da mesa na janela, 10 cm): ' + fundo.join(','));
 // abas: uma por opção, um toque troca
 const abas = await t.page.locator('#abas .aba').count();
-verificar(abas >= 4, 'abas no topo com as opções: ' + abas);
-await t.page.click('#abas .aba >> nth=2');
-verificar((await noApp(() => layout().ideia)) === 'office-grande' && (await t.page.textContent('#legenda')).includes('140 × 70'), 'tocar na 3ª aba abre a opção 3 com o resumo');
+const nIdeias = await noApp(() => IDEIAS.length);
+verificar(abas >= nIdeias && nIdeias === 2, 'abas no topo só com as 2 opções escolhidas: ' + abas);
+await t.page.click('#abas .aba >> nth=1');
+verificar((await noApp(() => layout().ideia)) === 'invertida' && (await t.page.textContent('#legenda')).includes('chaise'), 'tocar na 2ª aba abre a opção 2 com o resumo');
 // opção salva numa versão anterior não é reaproveitada: vira "versão antiga" e a atual é recriada
 const sinc = await noApp(() => { const s = { layouts: [{ id: 'x', nome: 'Canto alemão na janela e sofá de 3', ideia: 'alemao', itens: [] }, { id: 'y', nome: 'TV no meio', ideia: 'meio', itens: [] }] }; sincronizarIdeias(s); return s.layouts.map(l => [l.nome, l.ideia || '', l.itens.length]); });
-verificar(sinc.filter(l => l[1]).length === 4 && sinc.some(l => /versão antiga/.test(l[0]) && !l[1]) && sinc.find(l => l[1] === 'office-janela')[2] > 5, 'opções antigas viram "versão antiga" e as atuais são recriadas: ' + JSON.stringify(sinc));
+verificar(sinc.filter(l => l[1]).length === 2 && sinc.some(l => /versão antiga/.test(l[0]) && !l[1]) && sinc.find(l => l[1] === 'office-grande')[2] > 5, 'opções antigas viram "versão antiga" e as atuais são recriadas: ' + JSON.stringify(sinc));
 // geladeira/fogão soltos de versões anteriores saem dos layouts salvos
 const mig2 = await noApp(() => { localStorage.setItem(CHAVE, JSON.stringify({ layouts: [{ id: 'z', nome: 'Antigo', itens: [{ tipo: 'geladeira', nome: 'Geladeira', w: 70, h: 75, x: 100, y: 100 }, { tipo: 'sofa', nome: 'Sofá', w: 160, h: 90, x: 100, y: 300 }] }], atual: 'z' })); carregar(); const l = estado.layouts.find(l => l.id === 'z'); return l.itens.map(i => i.tipo); });
 verificar(mig2.join() === 'sofa', 'geladeira solta de layout antigo é removida (a fixa fica na planta): ' + mig2);
 // quem estava no "Layout 1" antigo abre na Opção 1, e os antigos não aparecem nas abas
 const velho = await noApp(() => { localStorage.setItem(CHAVE, JSON.stringify({ layouts: [{ id: 'v', nome: 'Layout 1', itens: [{ tipo: 'planta', nome: 'Vaso de planta', w: 45, h: 45, x: 350, y: 30 }] }], atual: 'v' })); carregar(); preencherLayouts(); return { atual: layout().ideia, abas: [...document.querySelectorAll('#abas .aba')].map(b => b.textContent) }; });
-verificar(velho.atual === 'office-janela' && !velho.abas.some(a => /Layout 1/.test(a)), 'layout antigo sai das abas e o app abre na Opção 1: ' + JSON.stringify(velho));
+verificar(velho.atual === 'office-grande' && !velho.abas.some(a => /Layout 1/.test(a)), 'layout antigo sai das abas e o app abre na Opção 1: ' + JSON.stringify(velho));
 // trocar geladeira e fogão pelo menu
 const troca = await noApp(() => { aplicarCozinha('gel-cima'); const r = [FIXOS.find(f => f.nome === 'Geladeira').y1, COZINHA.cooktop.y1]; aplicarCozinha('fogao-cima'); return r; });
 verificar(troca[0] < 60 && troca[1] > 270, 'botão do menu inverte geladeira e cooktop: ' + troca);

@@ -62,7 +62,7 @@ import { abrir, verificar } from './harness.mjs';
 
   // ideias: abrir cria o layout com o botão ⓘ
   await page.click('#btIdeias');
-  verificar((await page.locator('.ideia').count()) === 4, '4 ideias na lista');
+  verificar((await page.locator('.ideia').count()) === (await noApp(() => IDEIAS.length)), 'as ideias aparecem na lista');
   await page.click('[data-ideia=invertida]');
   verificar((await noApp(() => layout().ideia)) === 'invertida' && await page.isVisible('#btInfo'), 'abrir ideia cria layout com botão ⓘ');
   await page.click('#btInfo');
