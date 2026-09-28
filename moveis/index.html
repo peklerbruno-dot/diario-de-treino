@@ -69,6 +69,7 @@ header select{flex:1;min-width:0;max-width:260px;background:#2c3947;border:1px s
 @media (max-width:899px){
   #painel.vazio{display:none}
   body.comSel #fab{display:none}
+  body.comSel #btSim:not(.on){display:none}
   #fab{left:auto;right:calc(12px + var(--dir));transform:none;padding:11px 16px}
   #painel .acoes{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
   #painel .acoes .bt{padding:8px 10px;flex:none}
@@ -134,6 +135,40 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
 #aviso{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(80px + var(--base));background:#1d2733;color:#fff;
   padding:9px 14px;border-radius:10px;font-size:14px;z-index:40;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
 #aviso.on{opacity:1}
+#btSim{position:absolute;left:calc(10px + var(--esq));bottom:calc(12px + var(--base));background:#fff;color:var(--texto);
+  border:1px solid var(--borda);border-radius:24px;padding:11px 16px;font-size:15px;font-weight:600;box-shadow:0 2px 8px #0003}
+#btSim.on{background:#1d2733;color:#fff;border-color:#1d2733}
+#simInfo{position:absolute;left:calc(10px + var(--esq));bottom:calc(64px + var(--base));max-width:min(360px,calc(100% - 20px));
+  background:#fffffff5;border:1px solid var(--borda);border-radius:12px;padding:9px 12px;font-size:13px;line-height:1.4;box-shadow:0 2px 10px #0002}
+#simInfo b{display:block;font-size:14px;margin-bottom:2px}
+#simInfo ul{margin:4px 0 0;padding-left:18px}
+#simInfo .ok{color:var(--verde);font-weight:600}
+.bt-flut.on{background:#1d2733;color:#fff;border-color:#1d2733}
+#pTV{margin-top:8px;font-size:14px;background:#f3f5f8;border-radius:10px;padding:8px 10px}
+#pTV .fila{margin-top:6px}
+#pTV .bt{padding:6px 10px;font-size:14px}
+#pUso{margin-top:8px;font-size:13px;border-radius:8px;padding:6px 9px;background:#eef4ff;color:#16427f}
+#pUso.ruim{background:#fce8e6;color:#a50e0e}
+#pUso:empty{display:none}
+.ideia{border:1px solid var(--borda);border-radius:14px;padding:12px;display:grid;grid-template-columns:120px 1fr;gap:12px;margin-bottom:12px;background:#fbfcfd}
+.ideia svg{width:120px;height:auto;border-radius:6px;background:#fff}
+.ideia h4{margin:0 0 4px;font-size:16px}
+.ideia p{margin:0 0 6px;font-size:14px;line-height:1.45;color:#333b44}
+.ideia ul{margin:2px 0 8px;padding-left:18px;font-size:14px;line-height:1.45}
+.ideia .rot-lista{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--sub);margin-top:6px}
+.ideia .pros li::marker{content:'＋ ';color:var(--verde)}
+.ideia .contras li::marker{content:'－ ';color:var(--verm)}
+.ideia .verif{font-size:13px;padding:6px 8px;border-radius:8px;background:#eef6ee;color:#1d5a2a;margin:6px 0 8px}
+.ideia .verif.aviso{background:#fef3e6;color:#8a4b00}
+@media (max-width:520px){ .ideia{grid-template-columns:1fr} .ideia svg{width:100%;max-width:220px;margin:0 auto;display:block} }
+.dica-passo{font-size:16px;line-height:1.5}
+.dica-passo .ico{font-size:34px;display:block;margin:4px 0 8px}
+.pontos{display:flex;gap:6px;justify-content:center;margin:12px 0}
+.pontos span{width:8px;height:8px;border-radius:50%;background:#cfd5db}.pontos span.on{background:var(--azul)}
+.ref-tab{width:100%;border-collapse:collapse;font-size:14px}
+.ref-tab td{padding:6px 4px;border-bottom:1px solid #eef0f2;vertical-align:top}
+.ref-tab td:last-child{text-align:right;white-space:nowrap;font-weight:600}
+@media (max-width:420px){ header h1{display:none} }
 
 @media (min-width:900px){
   #corpo{flex-direction:row}
@@ -152,6 +187,8 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
     <span class="esp"></span>
     <button class="bt-topo" id="btDesfazer" title="Desfazer (Ctrl+Z)" aria-label="Desfazer">↶</button>
     <button class="bt-topo" id="btRefazer" title="Refazer (Ctrl+Shift+Z)" aria-label="Refazer">↷</button>
+    <button class="bt-topo" id="btInfo" hidden title="Sobre esta opção" aria-label="Sobre esta opção">ⓘ</button>
+    <button class="bt-topo" id="btIdeias" title="Ideias de layout" aria-label="Ideias de layout">💡</button>
     <button class="bt-topo" id="btMenu" title="Menu" aria-label="Menu">☰</button>
   </header>
   <div id="corpo">
@@ -162,8 +199,11 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
         <button class="bt-flut" id="btMais" aria-label="Aproximar">+</button>
         <button class="bt-flut" id="btMenos" aria-label="Afastar">−</button>
         <button class="bt-flut" id="btAjustar" aria-label="Ver planta inteira" title="Ver planta inteira">⤢</button>
+        <button class="bt-flut" id="btRegua" aria-label="Régua" title="Régua: medir entre dois pontos">📏</button>
       </div>
       <button id="fab">＋ Móvel</button>
+      <button id="btSim" title="Mostra cadeiras saindo, portas abrindo e a TV girando">▶ Simular uso</button>
+      <div id="simInfo" hidden></div>
     </div>
     <aside id="painel" class="vazio">
       <div id="pVazio">
@@ -195,6 +235,8 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
         <button class="bt perigo" id="pExcluirGrupo">🗑 Excluir conjunto</button>
       </div>
       <div id="pAlerta"></div>
+      <div id="pUso"></div>
+      <div id="pTV" hidden></div>
       <details id="pDetalhes">
         <summary>Medidas, posição e cor</summary>
         <div class="campos">
@@ -250,6 +292,7 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
       <label><input type="checkbox" data-op="cotas"> Distâncias até paredes e móveis (do selecionado)</label>
       <label><input type="checkbox" data-op="portas"> Área de abertura das portas</label>
       <label><input type="checkbox" data-op="passagens"> Passagens apertadas (menos de 60 cm para passar)</label>
+      <label><input type="checkbox" data-op="uso"> Área de uso de todos os móveis (cadeira puxada, portas abertas)</label>
       <label><input type="checkbox" data-op="grade"> Grade (10 cm / 1 m)</label>
       <label><input type="checkbox" data-op="rotulos"> Nomes e medidas nos móveis</label>
     </div>
@@ -260,6 +303,7 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
     <div class="fila">
       <button class="bt" id="mPng">🖼 Salvar imagem</button>
       <button class="bt" id="mLink">🔗 Enviar este layout por link</button>
+      <button class="bt" id="mCompras">🛒 Lista de compras (medidas)</button>
       <button class="bt" id="mExportar">⬇ Exportar layouts (.json)</button>
       <button class="bt" id="mImportar">⬆ Importar arquivo</button>
       <button class="bt" id="mColar">📋 Importar colando texto</button>
@@ -270,6 +314,7 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
       <button class="bt" id="mExemplo">Carregar exemplo</button>
       <button class="bt perigo" id="mLimpar">Remover todos os móveis</button>
       <button class="bt" id="mAjuda">? Como usar</button>
+      <button class="bt" id="mDicas">Ver as dicas de novo</button>
     </div>
   </div>
 </div>
@@ -279,7 +324,12 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
   <div class="folha ajuda" role="dialog" aria-label="Como usar">
     <div class="folha-cab"><h2>Como usar</h2><button class="bt" data-fechar>✕</button></div>
     <ul>
+      <li><b>💡 Ideias</b> (no topo) traz layouts prontos para este apartamento, com prós e contras. Abra um e ajuste do seu jeito.</li>
       <li><b>＋ Móvel</b> abre o catálogo. O móvel entra no meio da tela.</li>
+      <li>Ao tocar num móvel aparece a <b>área de uso</b> em azul: cadeira puxada, portas e gavetas abertas, porta da geladeira. Em verde, a folga recomendada (lado da cama, pernas no sofá). Vermelho: não abre ou não sai direito.</li>
+      <li><b>▶ Simular uso</b> anima tudo ao mesmo tempo: cadeiras saem da mesa, portas abrem e a TV em coluna gira entre o sofá e a mesa.</li>
+      <li><b>📏</b> é a régua: arraste de um ponto a outro. As pontas grudam nas paredes e nos móveis.</li>
+      <li>Na <b>TV em coluna giratória</b>, o cone mostra para onde ela aponta e a faixa verde é a boa distância para o tamanho da tela. No painel há botões para virá-la para o sofá, a mesa etc.</li>
       <li><b>Arrastar</b> um móvel move. Arrastar o fundo move a planta. <b>Pinça</b> (ou roda do mouse) dá zoom.</li>
       <li>Com um móvel selecionado: a <b>bolinha de cima</b> gira, a <b>bolinha do canto</b> muda o tamanho. As medidas exatas ficam no painel.</li>
       <li>Com o <b>ímã</b> ligado o móvel encosta sozinho nas paredes e nos outros móveis, e gira de 15 em 15°.</li>
@@ -292,6 +342,34 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
       <li>Teclado: setas movem 1 cm (<kbd>Shift</kbd> = 10 cm), <kbd>R</kbd> gira, <kbd>Ctrl</kbd>+<kbd>D</kbd> duplica, <kbd>Delete</kbd> exclui, <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz, <kbd>Esc</kbd> tira a seleção.</li>
     </ul>
     <p style="color:#5b6570;font-size:13px">Medidas internas: 420 × 700 cm. Sala/jantar 18,90 m² · Dormitório 7,20 m² · Banho 2,64 m².</p>
+  </div>
+</div>
+
+<!-- Ideias de layout -->
+<div class="fundo-folha" id="fIdeias" hidden>
+  <div class="folha" role="dialog" aria-label="Ideias de layout" style="max-width:760px">
+    <div class="folha-cab"><h2>Ideias de layout</h2><button class="bt" data-fechar>✕</button></div>
+    <p style="font-size:14px;color:var(--sub);margin:0 0 12px;line-height:1.45">O apartamento tem cerca de 32 m²: 18,9 m² de sala e cozinha, 7,2 m² de quarto e 2,6 m² de banho. Todas as opções usam a mesma cozinha (geladeira entre a shaft e a pia, fogão abaixo da pia; se o seu for cooktop na bancada, é só excluir) e o mesmo quarto. A conferência de cada uma é feita pelo próprio app: o que bate, passagens com menos de 60 cm e o que não abre direito.</p>
+    <div id="listaIdeias"></div>
+    <h3>Referências de espaço usadas</h3>
+    <table class="ref-tab" id="tabRefs"></table>
+  </div>
+</div>
+<div class="fundo-folha" id="fIdeiaInfo" hidden>
+  <div class="folha" role="dialog" aria-label="Sobre esta opção" style="max-width:640px">
+    <div class="folha-cab"><h2 id="iiTitulo">Sobre esta opção</h2><button class="bt" data-fechar>✕</button></div>
+    <div id="iiCorpo"></div>
+  </div>
+</div>
+<!-- Dicas da primeira abertura -->
+<div class="fundo-folha" id="fDicas" hidden>
+  <div class="folha" role="dialog" aria-label="Primeiros passos" style="max-width:440px">
+    <div class="dica-passo" id="dPasso"></div>
+    <div class="pontos" id="dPontos"></div>
+    <div class="fila" style="justify-content:space-between">
+      <button class="bt" id="dPular">Pular</button>
+      <button class="bt prim" id="dProx">Próxima</button>
+    </div>
   </div>
 </div>
 
@@ -366,7 +444,9 @@ const CATALOGO = [
     ['mesa', 'Mesa de centro', 100, 60], ['redondo', 'Mesa lateral Ø50', 50, 50],
     ['rack', 'Rack de TV', 180, 45], ['estante', 'Estante', 120, 35],
     ['tapete', 'Tapete 2,00 × 2,50', 250, 200], ['tapete', 'Tapete 1,50 × 2,00', 200, 150],
-    ['planta', 'Vaso de planta', 45, 45], ['generico', 'Puff', 50, 50]
+    ['planta', 'Vaso de planta', 45, 45], ['generico', 'Puff', 50, 50],
+    ['tv', 'TV 50" em coluna giratória', 111, 8, { base: 20 }], ['tv', 'TV 55" em coluna giratória', 122, 8, { base: 20 }],
+    ['tv', 'TV 65" em coluna giratória', 144, 8, { base: 20 }], ['tv', 'TV 55" na parede ou no rack', 122, 8, { base: 0 }]
   ]},
   { cat: 'Jantar e cozinha', itens: [
     ['mesa', 'Mesa 4 lugares', 120, 80], ['mesa', 'Mesa 6 lugares', 160, 90],
@@ -396,16 +476,16 @@ const CATALOGO = [
       ['cadeira', 'Cadeira', 45, 50, 67, 130, 180], ['cadeira', 'Cadeira', 45, 50, 130, 67, 90]] },
     { nome: 'Canto 1,50 × 1,20 + mesa 110 × 75 + banco + cadeira', lugares: 6, pecas: [
       ['cantoL', 'Canto alemão 1,50 × 1,20', 150, 120, 0, 0, 0, { p: 50 }], ['mesa', 'Mesa 110 × 75', 110, 75, 50, 50],
-      ['banco', 'Banco sem encosto 1,00', 100, 35, 55, 125], ['cadeira', 'Cadeira', 45, 50, 160, 65, 90]] },
+      ['banco', 'Banco sem encosto 1,00', 100, 35, 55, 125, 180], ['cadeira', 'Cadeira', 45, 50, 160, 65, 90]] },
     { nome: 'Canto 1,60 × 1,30 + mesa 120 × 80 + banco + cadeira', lugares: '6 a 7', pecas: [
       ['cantoL', 'Canto alemão 1,60 × 1,30', 160, 130, 0, 0, 0, { p: 50 }], ['mesa', 'Mesa 4 lugares', 120, 80, 50, 50],
-      ['banco', 'Banco sem encosto 1,20', 120, 35, 50, 130], ['cadeira', 'Cadeira', 45, 50, 170, 67, 90]] },
+      ['banco', 'Banco sem encosto 1,20', 120, 35, 50, 130, 180], ['cadeira', 'Cadeira', 45, 50, 170, 67, 90]] },
     { nome: 'Canto 1,80 × 1,40 + mesa 140 × 85 + banco + cadeira', lugares: 8, pecas: [
       ['cantoL', 'Canto alemão 1,80 × 1,40', 180, 140, 0, 0, 0, { p: 50 }], ['mesa', 'Mesa 140 × 85', 140, 85, 50, 50],
-      ['banco', 'Banco sem encosto 1,40', 140, 35, 50, 135], ['cadeira', 'Cadeira', 45, 50, 190, 70, 90]] },
+      ['banco', 'Banco sem encosto 1,40', 140, 35, 50, 135, 180], ['cadeira', 'Cadeira', 45, 50, 190, 70, 90]] },
     { nome: 'Canto reto 1,50 + mesa 120 × 75 + banco 1,20', lugares: 6, pecas: [
       ['bancoEnc', 'Canto alemão reto 1,50', 150, 50, 0, 0], ['mesa', 'Mesa 120 × 75', 120, 75, 15, 50],
-      ['banco', 'Banco sem encosto 1,20', 120, 35, 15, 125]] }
+      ['banco', 'Banco sem encosto 1,20', 120, 35, 15, 125, 180]] }
   ]},
   { cat: 'Dormitório', itens: [
     ['cama', 'Cama de casal', 145, 200], ['cama', 'Cama queen', 165, 210],
@@ -424,7 +504,7 @@ const COR_TIPO = {
   cama: '#dfe7f0', sofa: '#b7c7d9', poltrona: '#b7c7d9', mesa: '#e9d8b4', redondo: '#e9d8b4',
   cadeira: '#c9a57a', armario: '#dcc7a5', rack: '#c9a57a', estante: '#c9a57a', criado: '#dcc7a5',
   cantoL: '#c9a57a', banco: '#c9a57a', bancoEnc: '#c9a57a', tapete: '#e6e0f2', planta: '#c8dcc0', geladeira: '#e6e9ec', fogao: '#e6e9ec', eletro: '#e6e9ec',
-  generico: '#d6dde4'
+  tv: '#2b3440', generico: '#d6dde4'
 };
 const PALETA = ['#e9d8b4', '#c9a57a', '#8d6e52', '#d6dde4', '#9aa5b1', '#b7c7d9', '#c8dcc0', '#efc9c0', '#e6e0f2', '#fff3c4', '#ffffff', '#44505c'];
 const REDONDOS = new Set(['redondo', 'planta']);
@@ -433,7 +513,7 @@ const REDONDOS = new Set(['redondo', 'planta']);
    ESTADO
    ============================================================ */
 const CHAVE = 'simuladorMoveis.v1';
-const OP_PADRAO = { ima: true, cotas: true, portas: true, grade: true, rotulos: true, passagens: true };
+const OP_PADRAO = { ima: true, cotas: true, portas: true, grade: true, rotulos: true, passagens: true, uso: false };
 let estado;          // { layouts:[{id,nome,itens}], atual, op }
 let sel = null;      // id do móvel selecionado
 let desfazer = [], refazer = [], ultimoSalvo = '';
@@ -461,20 +541,208 @@ function mk(tipo, nome, w, h, x1, y1, rot = 0, extra) {
   it.x = x1 - b.x1; it.y = y1 - b.y1;
   return it;
 }
-function exemplo() {
+function exemplo() { return IDEIAS[0].itens(); }
+
+/* ============================================================
+   IDEIAS DE LAYOUT (conferidas pelos testes: nada bate, passagens >= 60 cm)
+   ============================================================ */
+function cozinha() {
+  const g = uid();
   return [
-    mk('tapete', 'Tapete 1,50 × 2,00', 200, 150, 0, 50),
-    mk('rack', 'Rack de TV', 180, 45, 10, 0),
-    mk('mesa', 'Mesa de centro', 100, 60, 50, 95),
-    mk('sofa', 'Sofá 2 lugares', 160, 90, 0, 190, 180),
-    mk('mesa', 'Mesa 4 lugares', 120, 80, 220, 260),
-    mk('cadeira', 'Cadeira', 45, 50, 235, 210), mk('cadeira', 'Cadeira', 45, 50, 280, 210),
-    mk('cadeira', 'Cadeira', 45, 50, 235, 340, 180), mk('cadeira', 'Cadeira', 45, 50, 280, 340, 180),
-    mk('planta', 'Vaso de planta', 45, 45, 330, 5),
+    mk('geladeira', 'Geladeira', 70, 75, 345, 55, 90, { grupo: g }),
+    mk('fogao', 'Fogão 4 bocas', 55, 60, 360, 272, 90, { grupo: g })
+  ];
+}
+function quarto() {
+  return [
     mk('cama', 'Cama de casal', 145, 200, 0, 460),
     mk('criado', 'Criado-mudo', 45, 40, 150, 460),
-    mk('armario', 'Guarda-roupa 3 portas', 150, 55, 150, 645)
+    mk('armario', 'Guarda-roupa 3 portas', 150, 55, 245, 550, 90)
   ];
+}
+const cadeiras = (g, lista) => lista.map(([x, y, r]) => mk('cadeira', 'Cadeira', 45, 50, x, y, r, { grupo: g }));
+const IDEIAS = [
+  { id: 'meio', titulo: 'TV no meio, girando entre sofá e mesa',
+    resumo: 'A mesa de 4 lugares fica do lado da janela de cima, perto da cozinha, e o sofá encosta na parede do quarto. A coluna giratória fica entre os dois: vira para o sofá para ver filme e para a mesa na hora de comer.',
+    proporciona: ['4 lugares à mesa, com as cadeiras saindo livres dos dois lados', 'uma TV só para o sofá e para a mesa', 'caminho largo da entrada até a cozinha e até o quarto'],
+    pros: ['O centro da sala fica livre: da porta de entrada você vê a janela', 'A mesa fica a menos de 2 m da pia: servir e tirar a mesa é rápido', 'A coluna dispensa rack e deixa o piso mais limpo'],
+    contras: ['Sofá de 2 lugares: com 3 pessoas vendo TV fica apertado', 'A coluna aparece no meio da sala; escolha uma fina, piso-teto', 'Quem senta do lado da janela fica de costas para ela'],
+    tv: 'TV de 55" a 1,9 m do sofá, dentro da boa distância (1,4 a 2,3 m). Virando a coluna uns 145° ela fica de frente para a mesa, a 1,35 m: dá para ver comendo.',
+    itens: () => { const g = uid(); return [
+      mk('sofa', 'Sofá 2 lugares', 160, 90, 10, 360, 180),
+      mk('mesa', 'Mesa 4 lugares', 120, 80, 100, 40, 90, { grupo: g }),
+      ...cadeiras(g, [[50, 50, 270], [50, 105, 270], [180, 50, 90], [180, 105, 90]]),
+      mk('tv', 'TV 55" em coluna giratória', 122, 8, 9, 211, 0, { base: 20 }),
+      mk('planta', 'Vaso de planta', 45, 45, 330, 5),
+      ...cozinha(), ...quarto()]; } },
+  { id: 'alemao', titulo: 'Canto alemão na janela e sofá de 3',
+    resumo: 'O canto alemão em L ocupa o canto das janelas e dispensa o espaço de puxar cadeiras. Com isso sobra lugar para um sofá de 3 lugares. A TV gira entre o sofá e a mesa.',
+    proporciona: ['até 6 pessoas à mesa (4 no L, 1 no banco solto, 1 na cadeira)', 'sofá de 3 lugares', 'baú dentro do banco, se escolher modelo com tampa'],
+    pros: ['Banco encostado na parede não precisa de espaço para puxar: ganha uns 45 cm em cada lado', 'Cabe mais gente em dia de visita', 'A sala fica com cara de lugar para ficar, não de corredor'],
+    contras: ['Quem senta no fundo do L precisa que os outros levantem para sair', 'O encosto fica na frente da janela de cima: cortina e limpeza ficam mais chatas', 'Móvel sob medida costuma custar mais e não muda de lugar fácil'],
+    tv: 'TV de 50" a 1,6 m do sofá (boa distância: 1,3 a 2 m). Meia-volta na coluna e ela fica de frente para o canto alemão, também a 1,6 m.',
+    itens: () => { const g = uid(); return [
+      mk('cantoL', 'Canto alemão 1,50 × 1,20', 150, 120, 0, 0, 0, { p: 50, grupo: g }),
+      mk('mesa', 'Mesa 110 × 75', 110, 75, 50, 50, 0, { grupo: g }),
+      mk('banco', 'Banco sem encosto 1,00', 100, 35, 55, 125, 180, { grupo: g }),
+      mk('cadeira', 'Cadeira', 45, 50, 160, 65, 90, { grupo: g }),
+      mk('sofa', 'Sofá 3 lugares', 210, 90, 5, 360, 180),
+      mk('tv', 'TV 50" em coluna giratória', 111, 8, 54.5, 241, 0, { base: 20 }),
+      mk('planta', 'Vaso de planta', 45, 45, 330, 5),
+      ...cozinha(), ...quarto()]; } },
+  { id: 'redonda', titulo: 'Mesa redonda e sala fluida',
+    resumo: 'Uma mesa redonda de 90 cm com quatro cadeiras no meio da sala e o sofá de 3 lugares na parede do quarto. Sem quinas no caminho.',
+    proporciona: ['4 lugares numa mesa que ocupa pouco', 'dá para andar em volta da mesa por todos os lados', 'sofá de 3 lugares, com a TV perto da janela'],
+    pros: ['Mesa redonda deixa passar melhor: não tem quina para bater o quadril', 'Todo mundo se vê à mesa, bom para conversa', 'Fácil de reorganizar: tirando uma cadeira vira mesa de 2'],
+    contras: ['90 cm é justo para 4 pratos grandes', 'A TV fica perto da janela: pode refletir de dia (a coluna girando ajuda a fugir do reflexo)', 'A mesa no meio divide a sala em duas'],
+    tv: 'TV de 50" a 1,7 m do sofá (boa distância: 1,3 a 2 m). Girando uns 115° ela aponta para a mesa redonda, a 1,4 m.',
+    itens: () => { const g = uid(); return [
+      mk('redondo', 'Mesa redonda Ø90', 90, 90, 130, 105, 0, { grupo: g }),
+      ...cadeiras(g, [[152.5, 55, 0], [80, 127.5, 270], [220, 127.5, 90], [152.5, 195, 180]]),
+      mk('sofa', 'Sofá 3 lugares', 210, 90, 5, 360, 180),
+      mk('tv', 'TV 50" em coluna giratória', 111, 8, 14.5, 236, 0, { base: 20 }),
+      mk('planta', 'Vaso de planta', 45, 45, 330, 5),
+      ...cozinha(), ...quarto()]; } },
+  { id: 'office', titulo: 'Home office na janela',
+    resumo: 'A escrivaninha vai para a janela de cima, com boa luz de dia. A mesa de jantar vira uma de 2 lugares perto da cozinha. A TV gira para o sofá ou para a mesa.',
+    proporciona: ['um lugar fixo para trabalhar, com luz natural', 'mesa de 2 lugares (mais 2 com cadeiras extras em dia de visita)', 'sofá de 2 lugares'],
+    pros: ['Separa trabalho e descanso sem levar o computador para o quarto', 'Luz vindo do lado é a melhor para a tela: sem reflexo de frente', 'Sobra piso livre no meio da sala'],
+    contras: ['Mesa de jantar pequena: 4 pessoas ficam apertadas', 'A cadeira do escritório precisa de espaço atrás para sair', 'O trabalho fica à vista de quem está no sofá'],
+    tv: 'TV de 50" a 1,5 m do sofá. Virada para a mesa fica a 1,4 m, e dá para girar até a escrivaninha para usar como segunda tela numa chamada.',
+    itens: () => { const g = uid(); return [
+      mk('mesa', 'Escrivaninha', 120, 60, 0, 55, 270),
+      mk('cadeira', 'Cadeira de escritório', 60, 60, 60, 85, 90),
+      mk('mesa', 'Mesa 80 × 70', 80, 70, 185, 170, 0, { grupo: g }),
+      ...cadeiras(g, [[202.5, 120, 0], [202.5, 240, 180]]),
+      mk('sofa', 'Sofá 2 lugares', 160, 90, 5, 360, 180),
+      mk('tv', 'TV 50" em coluna giratória', 111, 8, 39.5, 251, 0, { base: 20 }),
+      mk('planta', 'Vaso de planta', 45, 45, 330, 5),
+      ...cozinha(), ...quarto()]; } }
+];
+// Confere uma lista de móveis sem mexer no layout atual: o que bate, passagens e uso.
+function conferir(lista) {
+  const l = layout(), antes = l.itens, mapaAntes = mapaPiso, confAntes = conflitos;
+  l.itens = lista;
+  try {
+    calcularConflitos();
+    const batendo = lista.filter(i => conflitos.get(i.id).duro.length).length;
+    const naPorta = lista.filter(i => !conflitos.get(i.id).duro.length && conflitos.get(i.id).porta.length).length;
+    const passagens = calcularMapaPiso().passagens;
+    const uso = calcularUso(lista);
+    const usoRuim = lista.filter(i => (uso.get(i.id) || []).some(p => p.grave));
+    const folga = lista.filter(i => (uso.get(i.id) || []).length && !(uso.get(i.id) || []).some(p => p.grave));
+    return { batendo, naPorta, passagens: passagens.length, menor: passagens.length ? Math.min(...passagens.map(p => p.largura)) : null, usoRuim, folga, ocup: textoOcupacao() };
+  } finally { l.itens = antes; mapaPiso = mapaAntes; conflitos = confAntes; }
+}
+function textoConferencia(v) {
+  const ok = !v.batendo && !v.naPorta && !v.passagens && !v.usoRuim.length;
+  const partes = [];
+  partes.push(v.batendo ? `${v.batendo} batendo` : 'nada bate');
+  if (v.naPorta) partes.push(`${v.naPorta} no caminho de porta`);
+  partes.push(v.passagens ? `${v.passagens} passagem(ns) apertada(s), a menor com ${v.menor} cm` : 'passagens com 60 cm ou mais');
+  partes.push(v.usoRuim.length ? `não abre/sai direito: ${v.usoRuim.map(i => i.nome).join(', ')}` : 'cadeiras e portas abrem livres');
+  if (v.folga.length) partes.push(`pouca folga em: ${v.folga.map(i => i.nome).join(', ')}`);
+  return { ok, texto: (ok ? '✓ ' : '⚠ ') + partes.join(' · ') + (v.ocup ? '. ' + v.ocup + '.' : '') };
+}
+function miniatura(lista, largura = 120) {
+  const vb = `${-E} ${-E} ${W + 2 * E} ${H + 2 * E}`;
+  const estilo = '<style>.corpo{stroke:#4d5660;stroke-width:.8px;vector-effect:non-scaling-stroke}.det,.detf{stroke:#0003;stroke-width:.6px;vector-effect:non-scaling-stroke}.det{fill:none}</style>';
+  let h = `<svg viewBox="${vb}" width="${largura}" xmlns="${NS}">${estilo}<rect x="${-E}" y="${-E}" width="${W + 2 * E}" height="${H + 2 * E}" fill="#2f353b"/>`;
+  for (const a of AMBIENTES) h += `<rect x="${a.x1}" y="${a.y1}" width="${a.x2 - a.x1}" height="${a.y2 - a.y1}" fill="${a.cor}"/>`;
+  h += `<rect x="222" y="450" width="78" height="10" fill="#f3eee4"/><rect x="310" y="450" width="70" height="10" fill="#eef1f0"/><rect x="${W}" y="${ENTRADA[0]}" width="${E}" height="${ENTRADA[1] - ENTRADA[0]}" fill="#efe9dc"/>`;
+  for (const f of FIXOS) h += f.circ ? `<circle cx="${f.circ[0]}" cy="${f.circ[1]}" r="${f.circ[2]}" fill="#d9dde2"/>` : `<rect x="${f.x1}" y="${f.y1}" width="${f.x2 - f.x1}" height="${f.y2 - f.y1}" fill="#d9dde2"/>`;
+  const salva = estado.op.rotulos; estado.op.rotulos = false;
+  for (const it of [...lista.filter(i => i.sobrepor), ...lista.filter(i => !i.sobrepor)]) h += `<g transform="translate(${it.x} ${it.y}) rotate(${it.rot})">${desenhoMovel(it)}</g>`;
+  estado.op.rotulos = salva;
+  return h + '</svg>';
+}
+const listaHtml = (classe, itens_) => `<ul class="${classe}">${itens_.map(t => `<li>${esc(t)}</li>`).join('')}</ul>`;
+function htmlIdeia(ideia, v) {
+  const c = textoConferencia(v);
+  return `<p>${esc(ideia.resumo)}</p>
+    <div class="rot-lista">O que proporciona</div>${listaHtml('', ideia.proporciona)}
+    <div class="rot-lista">Prós</div>${listaHtml('pros', ideia.pros)}
+    <div class="rot-lista">Contras</div>${listaHtml('contras', ideia.contras)}
+    <div class="rot-lista">TV giratória</div><p>${esc(ideia.tv)}</p>
+    <div class="verif${c.ok ? '' : ' aviso'}">${esc(c.texto)}</div>`;
+}
+function abrirIdeias() {
+  let h = '';
+  for (const ideia of IDEIAS) {
+    const lista = ideia.itens(), v = conferir(lista);
+    const ja = estado.layouts.find(l => l.ideia === ideia.id);
+    h += `<div class="ideia">${miniatura(lista)}<div><h4>${esc(ideia.titulo)}</h4>${htmlIdeia(ideia, v)}
+      <div class="fila"><button class="bt prim" data-ideia="${ideia.id}">${ja ? 'Abrir (já está nos seus layouts)' : 'Ver no app'}</button>${ja ? `<button class="bt" data-ideia-nova="${ideia.id}">Nova cópia do original</button>` : ''}</div></div></div>`;
+  }
+  $('#listaIdeias').innerHTML = h;
+  $('#tabRefs').innerHTML = REFS.map(([a, b]) => `<tr><td>${esc(a)}</td><td>${esc(b)}</td></tr>`).join('');
+  abrir('#fIdeias');
+}
+function usarIdeia(id, nova) {
+  const ideia = IDEIAS.find(i => i.id === id); if (!ideia) return;
+  const ja = !nova && estado.layouts.find(l => l.ideia === id);
+  if (ja) { trocarLayout(ja.id); fecharFolhas(); requestAnimationFrame(ajustar); return; }
+  const l = { id: uid(), nome: nomeLivre(ideia.titulo), itens: ideia.itens(), ideia: id };
+  estado.layouts.push(l); trocarLayout(l.id); fecharFolhas(); requestAnimationFrame(ajustar);
+  avisar('Layout criado: ' + l.nome + '. Toque em ⓘ para ver os prós e contras.');
+}
+function abrirInfoIdeia() {
+  const ideia = IDEIAS.find(i => i.id === layout().ideia); if (!ideia) return;
+  $('#iiTitulo').textContent = ideia.titulo;
+  $('#iiCorpo').innerHTML = `<div class="ideia" style="grid-template-columns:1fr;border:0;padding:0;background:none">${htmlIdeia(ideia, conferir(itens()))}</div>
+    <p style="font-size:13px;color:var(--sub)">A conferência acima é do layout como está agora, com as suas mudanças.</p>`;
+  abrir('#fIdeiaInfo');
+}
+function atualizarBotaoInfo() { $('#btInfo').hidden = !IDEIAS.some(i => i.id === layout().ideia); }
+
+/* ============================================================
+   LISTA DE COMPRAS
+   ============================================================ */
+function ambienteDe(it) {
+  const b = caixa(itemPoly(it)), cx = (b.x1 + b.x2) / 2, cy = (b.y1 + b.y2) / 2;
+  const a = AMBIENTES.find(a => cx >= a.x1 && cx <= a.x2 && cy >= a.y1 && cy <= a.y2);
+  return a ? a.nome : 'OUTROS';
+}
+function listaCompras() {
+  const grupos = new Map();
+  for (const it of itens()) {
+    const amb = ambienteDe(it), med = it.tipo === 'tv' ? `tela de ${Math.round(diagonalTV(it) / 2.54)}" (${fmt(it.w)} cm de largura)` : redondo(it) ? `Ø${fmt(it.w)} cm` : `${fmt(it.w)} × ${fmt(it.h)} cm`;
+    const extra = it.tipo === 'cantoL' ? `, assento de ${fmt(profL(it))} cm` : '';
+    const chave = `${it.nome} — ${med}${extra}`;
+    if (!grupos.has(amb)) grupos.set(amb, new Map());
+    grupos.get(amb).set(chave, (grupos.get(amb).get(chave) || 0) + 1);
+  }
+  let t = `Móveis do layout "${layout().nome}"\n(largura × profundidade, em cm)\n`;
+  for (const a of AMBIENTES.map(a => a.nome).concat('OUTROS')) {
+    const g = grupos.get(a); if (!g) continue;
+    t += `\n${a}\n`;
+    for (const [k, n] of g) t += `• ${n > 1 ? n + '× ' : ''}${k}\n`;
+  }
+  const grandes = itens().filter(i => !i.sobrepor && i.tipo !== 'tv' && Math.min(i.w, i.h) > 80);
+  t += `\nNa loja, confira também:\n• a porta de entrada tem 80 cm de vão: ${grandes.length ? grandes.map(i => i.nome).join(', ') + ' precisa(m) passar desmontado(s), de lado ou em pé' : 'os móveis maiores precisam passar por ela'}\n• a altura do tampo da mesa com as cadeiras (cadeira precisa entrar embaixo)\n• sofá: altura do braço e se o encosto sai (ajuda a passar pela porta)\n`;
+  return t;
+}
+
+/* ============================================================
+   DICAS DA PRIMEIRA ABERTURA
+   ============================================================ */
+const DICAS = [
+  ['✋', '<b>Arraste os móveis</b> com o dedo. Arraste o fundo para andar pela planta e use a pinça para o zoom.'],
+  ['🔵', '<b>Toque num móvel</b>: a bolinha de cima gira, a do canto muda o tamanho. A sombra azul mostra o espaço que ele precisa em uso: cadeira puxada, porta aberta.'],
+  ['▶', '<b>Simular uso</b> anima tudo: cadeiras saem, portas abrem, a TV gira. O que bater fica vermelho. <b>📏</b> mede qualquer distância.'],
+  ['💡', '<b>Ideias</b> (no topo) traz layouts prontos para este apartamento, com prós e contras. Comece por um e ajuste do seu jeito.']
+];
+let passoDica = 0;
+function mostrarDica(i) {
+  passoDica = i;
+  $('#dPasso').innerHTML = `<span class="ico">${DICAS[i][0]}</span>${DICAS[i][1]}`;
+  $('#dPontos').innerHTML = DICAS.map((_, j) => `<span class="${j === i ? 'on' : ''}"></span>`).join('');
+  $('#dProx').textContent = i === DICAS.length - 1 ? 'Começar' : 'Próxima';
+}
+function fimDicas() { try { localStorage.setItem(CHAVE + '.dicas', '1'); } catch (e) {} fecharFolhas(); }
+function talvezDicas() {
+  let visto = false; try { visto = !!localStorage.getItem(CHAVE + '.dicas'); } catch (e) { visto = true; }
+  if (!visto && !/[#&]l=/.test(location.hash)) { mostrarDica(0); abrir('#fDicas'); }
 }
 
 function carregar() {
@@ -498,7 +766,7 @@ function limparItem(i) {
     nome: String(i.nome || 'Móvel').slice(0, 60), w: limitar(w, 5, 1000), h: limitar(h, 5, 1000),
     x: num(i.x) ?? W / 2, y: num(i.y) ?? H / 2, rot: ((num(i.rot) || 0) % 360 + 360) % 360,
     cor: /^#[0-9a-f]{3,8}$/i.test(i.cor) ? i.cor : (COR_TIPO[i.tipo] || COR_TIPO.generico), sobrepor: !!i.sobrepor,
-    ...(num(i.p) ? { p: limitar(num(i.p), 20, 200) } : {}), ...(typeof i.grupo === 'string' ? { grupo: i.grupo } : {}) };
+    ...(num(i.p) ? { p: limitar(num(i.p), 20, 200) } : {}), ...(i.tipo === 'tv' ? { base: limitar(num(i.base) ?? 20, 0, 80) } : {}), ...(typeof i.grupo === 'string' ? { grupo: i.grupo } : {}) };
 }
 function gravar() {
   try { localStorage.setItem(CHAVE, JSON.stringify(estado)); } catch (e) { /* sem armazenamento: segue sem salvar */ }
@@ -550,6 +818,8 @@ function paraMundo(it, pts) {
 }
 // Partes convexas usadas na colisão (o canto alemão em L vira dois retângulos).
 function itemPartes(it) {
+  // a tela da TV fica no alto: no piso só conta a base da coluna (ou nada, se for na parede/rack)
+  if (it.tipo === 'tv') { const b = (it.base || 0) / 2; return b ? [paraMundo(it, retLocal(-b, -b, b, b))] : []; }
   if (it.tipo === 'cantoL') {
     const w = it.w, h = it.h, p = profL(it);
     return [paraMundo(it, retLocal(-w / 2, -h / 2, w / 2, -h / 2 + p)), paraMundo(it, retLocal(-w / 2, -h / 2 + p, -w / 2 + p, h / 2))];
@@ -677,10 +947,22 @@ const ESTILO_SVG = `
   .cota text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;fill:#0b4fbf;font-weight:700;
     text-anchor:middle;dominant-baseline:central;paint-order:stroke;stroke:#fff;stroke-linejoin:round}
   .cota.aperto line{stroke:#d93025}.cota.aperto text{fill:#b3261e}
+  .uso-mov{fill:#1f6feb22;stroke:#1f6feb;stroke-width:1px;stroke-dasharray:4 3;vector-effect:non-scaling-stroke}
+  .uso-folga{fill:#1e8e3e14;stroke:#1e8e3e;stroke-width:1px;stroke-dasharray:2 3;vector-effect:non-scaling-stroke}
+  .uso-ruim{fill:#d9302533;stroke:#d93025;stroke-width:1.5px;stroke-dasharray:none;vector-effect:non-scaling-stroke}
+  .porta-folha{stroke:#1f6feb;stroke-width:2px;vector-effect:non-scaling-stroke}
+  .uso-txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;fill:#16427f;font-weight:600;
+    text-anchor:middle;dominant-baseline:central;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
+  .cone{fill:#5aa9e618;stroke:#5aa9e6;stroke-width:1px;vector-effect:non-scaling-stroke}
+  .cone-bom{fill:#1e8e3e1f;stroke:none}
+  .giro{fill:none;stroke:#44505c;stroke-width:1px;stroke-dasharray:3 3;vector-effect:non-scaling-stroke}
+  .regua line{stroke:#b3261e;stroke-width:2px;vector-effect:non-scaling-stroke}
+  .regua text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;fill:#b3261e;font-weight:700;
+    text-anchor:middle;dominant-baseline:central;paint-order:stroke;stroke:#fff;stroke-linejoin:round}
   .passo{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;fill:#b3261e;font-weight:700;
     text-anchor:middle;dominant-baseline:central;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
 `;
-let gMoveis, gCotas, gSel, gPortas, gGrade, gRotulos, gPassagens;
+let gMoveis, gCotas, gSel, gPortas, gGrade, gRotulos, gPassagens, gUso, gRegua;
 const nosMoveis = new Map(); // id -> { g, assinatura }
 
 function montarPlanta() {
@@ -767,9 +1049,12 @@ function montarPlanta() {
   el('rect', { x: W, y: ENTRADA[0], width: E, height: ENTRADA[1] - ENTRADA[0], fill: '#efe9dc', stroke: '#2f353b', class: 'fina' }, svg);
   el('text', { x: W + E + 4, y: (ENTRADA[0] + ENTRADA[1]) / 2, class: 'amb', 'font-size': 7, transform: `rotate(90 ${W + E + 4} ${(ENTRADA[0] + ENTRADA[1]) / 2})` }, svg).textContent = 'ENTRADA';
 
+  const clip = el('clipPath', { id: 'interior' }, defs); el('rect', { x: 0, y: 0, width: W, height: H }, clip);
+  gUso = el('g', { 'pointer-events': 'none', 'clip-path': 'url(#interior)' }, svg);
   gMoveis = el('g', {}, svg);
   gPassagens = el('g', { 'pointer-events': 'none' }, svg); // por cima dos móveis: só cobre piso livre (e tapete)
   gCotas = el('g', {}, svg);
+  gRegua = el('g', { 'pointer-events': 'none' }, svg);
   gSel = el('g', { style: 'display:none' }, svg);
   el('polygon', { class: 'contorno', fill: 'none', stroke: '#1f6feb', 'stroke-dasharray': '5 4', 'stroke-width': 1.3, 'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none' }, gSel);
   el('line', { class: 'haste', stroke: '#1f6feb', 'stroke-width': 1.3, 'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none' }, gSel);
@@ -875,6 +1160,14 @@ function desenhoMovel(it) {
       s += `<line class="det" x1="${x}" y1="${y + h - 6}" x2="${x + w}" y2="${y + h - 6}"/>`;
       break;
     }
+    case 'tv': {
+      const b = it.base || 0;
+      if (b) s += `<rect class="corpo" x="${-b / 2}" y="${-b / 2}" width="${b}" height="${b}" rx="3" fill="#9aa5b1" fill-opacity=".85"/>`;
+      s += `<rect class="corpo" x="${x}" y="${y}" width="${w}" height="${h}" rx="2" fill="${c}"/>`;
+      s += `<line x1="${x + 4}" y1="${y + h}" x2="${x + w - 4}" y2="${y + h}" stroke="#5aa9e6" stroke-width="2.5" vector-effect="non-scaling-stroke"/>`;
+      if (b) s += `<circle r="${Math.min(5, b / 3)}" fill="#44505c"/>`;
+      break;
+    }
     case 'tapete': {
       s += ret(2);
       s += `<rect class="det" x="${x + 6}" y="${y + 6}" width="${Math.max(0, w - 12)}" height="${Math.max(0, h - 12)}" rx="1"/>`;
@@ -885,7 +1178,7 @@ function desenhoMovel(it) {
   return s + rotuloMovel(it);
 }
 function rotuloMovel(it) {
-  if (!estado.op.rotulos) return '';
+  if (!estado.op.rotulos || it.tipo === 'tv') return '';
   const r = redondo(it), L = it.tipo === 'cantoL';
   const estreito = !r && !L && it.w < it.h * 0.7;
   let comp = r ? it.w * 0.8 : (estreito ? it.h : it.w);
@@ -926,7 +1219,7 @@ function renderMoveis() {
       no = { g, assinatura: '' };
       nosMoveis.set(it.id, no);
     }
-    const assinatura = [it.tipo, it.w, it.h, it.nome, it.cor, it.rot, it.tipo === 'cantoL' ? profL(it) : 0, estado.op.rotulos].join('|');
+    const assinatura = [it.tipo, it.w, it.h, it.nome, it.cor, it.rot, it.tipo === 'cantoL' ? profL(it) : 0, it.base || 0, estado.op.rotulos].join('|');
     if (assinatura !== no.assinatura) { no.g.innerHTML = desenhoMovel(it); no.assinatura = assinatura; }
     no.g.setAttribute('transform', `translate(${it.x} ${it.y}) rotate(${it.rot})`);
     const c = conflitos.get(it.id);
@@ -1241,6 +1534,271 @@ function textoOcupacao() {
 }
 
 /* ============================================================
+   ÁREA DE USO: o espaço que cada móvel precisa quando é usado
+   Coordenadas locais: o fundo do móvel é o lado de cima (-y), a frente é +y.
+   t vai de 0 (fechado/guardado) a 1 (em uso). Referências usadas:
+   cadeira puxada 45 cm, banco 35 cm, porta de armário = largura da folha,
+   porta da geladeira 100°, forno 45 cm, gaveta 35 cm, lado da cama 60 cm,
+   frente do sofá 40 cm.
+   ============================================================ */
+const REFS = [
+  ['Passagem entre móveis', 'mín. 60 cm · bom 80 cm'],
+  ['Atrás de cadeira (puxar e sentar)', '45 cm além da cadeira'],
+  ['Passar por trás de alguém sentado', '90 cm da mesa'],
+  ['Frente de guarda-roupa com porta de abrir', 'largura da porta (≈ 50 cm)'],
+  ['Porta da geladeira', '≈ largura da geladeira'],
+  ['Lado da cama para subir e arrumar', '60 cm'],
+  ['Pernas na frente do sofá', '40 cm até a mesa de centro'],
+  ['Distância da TV (4K)', '1 a 1,6 × a diagonal'],
+  ['Vão da porta de entrada', '80 cm (sofá precisa passar)']
+];
+function setorLocal(hx, hy, dx, dy, r, graus, n = 10) {
+  const pts = [[hx, hy]];
+  for (let i = 0; i <= n; i++) { const [vx, vy] = girar(dx * r, dy * r, graus * i / n); pts.push([hx + vx, hy + vy]); }
+  return pts;
+}
+// Devolve { desloc: [lx, ly] (quanto o próprio móvel anda, em coordenadas locais), zonas: [{poly, tipo, nome, folha?}] }
+function usoDoMovel(it, t) {
+  const w = it.w, h = it.h, z = [], M = pts => paraMundo(it, pts);
+  let desloc = null;
+  const nome = it.nome.toLowerCase();
+  switch (it.tipo) {
+    case 'cadeira': {
+      const d = 45 * t; desloc = [0, -d];
+      z.push({ poly: M(retLocal(-w / 2, -h / 2 - d, w / 2, h / 2 - d)), tipo: 'mov', nome: 'cadeira puxada', corpo: true });
+      break;
+    }
+    case 'banco': {
+      const d = 35 * t;
+      z.push({ poly: M(retLocal(-w / 2, -h / 2 - d, w / 2, -h / 2)), tipo: 'mov', nome: 'espaço para passar a perna no banco' });
+      break;
+    }
+    case 'geladeira': {
+      const a = 100 * t;
+      const pts = setorLocal(w / 2, h / 2, -1, 0, w - 2, -a);
+      z.push({ poly: M(pts), tipo: 'mov', nome: 'porta da geladeira', folha: M([[w / 2, h / 2], pts[pts.length - 1]]) });
+      break;
+    }
+    case 'eletro': {
+      const r = Math.min(45, w * 0.7), a = 90 * t;
+      const pts = setorLocal(-w / 2 + 5, h / 2, 1, 0, r, a);
+      z.push({ poly: M(pts), tipo: 'mov', nome: 'porta da máquina', folha: M([[-w / 2 + 5, h / 2], pts[pts.length - 1]]) });
+      break;
+    }
+    case 'fogao': z.push({ poly: M(retLocal(-w / 2 + 3, h / 2, w / 2 - 3, h / 2 + 45 * t)), tipo: 'mov', nome: 'porta do forno' }); break;
+    case 'armario': {
+      if (/c[oô]moda|sapateira/.test(nome)) { z.push({ poly: M(retLocal(-w / 2 + 2, h / 2, w / 2 - 2, h / 2 + 40 * t)), tipo: 'mov', nome: 'gavetas abertas' }); break; }
+      const n = Math.max(1, Math.round(w / 50)), dw = w / n, folhas = [];
+      for (let i = 0; i < n; i++) {
+        const esq = i % 2 === 0; // portas em pares: uma abre para a esquerda, a outra para a direita
+        const hx = esq ? -w / 2 + i * dw : -w / 2 + (i + 1) * dw;
+        const pts = setorLocal(hx, h / 2, esq ? 1 : -1, 0, dw - 1, (esq ? 90 : -90) * t, 8);
+        z.push({ poly: M(pts), tipo: 'mov', nome: 'portas abertas', folha: M([[hx, h / 2], pts[pts.length - 1]]) });
+      }
+      break;
+    }
+    case 'rack': case 'criado':
+      z.push({ poly: M(retLocal(-w / 2 + 2, h / 2, w / 2 - 2, h / 2 + (it.tipo === 'criado' ? 30 : 35) * t)), tipo: 'mov', nome: 'gaveta aberta' }); break;
+    case 'cama': {
+      const f = 60 * t;
+      z.push({ poly: M(retLocal(-w / 2 - f, -h / 2 + 45, -w / 2, h / 2)), tipo: 'folga', nome: 'lado da cama (60 cm)' });
+      z.push({ poly: M(retLocal(w / 2, -h / 2 + 45, w / 2 + f, h / 2)), tipo: 'folga', nome: 'lado da cama (60 cm)' });
+      z.push({ poly: M(retLocal(-w / 2, h / 2, w / 2, h / 2 + 50 * t)), tipo: 'folga', nome: 'pé da cama (50 cm)' });
+      break;
+    }
+    case 'sofa': case 'poltrona': {
+      const br = Math.min(18, w * 0.18);
+      z.push({ poly: M(retLocal(-w / 2 + br, h / 2, w / 2 - br, h / 2 + 40 * t)), tipo: 'folga', nome: 'espaço das pernas (40 cm)' });
+      break;
+    }
+    case 'tv': if (it.base) z.push({ poly: circPoly(it.x, it.y, w / 2, 32), tipo: 'giro', nome: 'giro da tela' }); break;
+  }
+  return { desloc, zonas: z };
+}
+const ALTOS = new Set(['cadeira', 'sofa', 'poltrona', 'armario', 'estante', 'geladeira', 'cantoL', 'bancoEnc', 'generico', 'planta']);
+// Problemas de uso, com tudo aberto (t = 1): o que bate quando se puxa, abre ou gira.
+function calcularUso(lista = itens()) {
+  const res = new Map(), partes = new Map(lista.map(i => [i.id, itemPartes(i)]));
+  const bate = (a, b) => a.some(pa => b.some(pb => colide(pa, pb)));
+  for (const it of lista) {
+    const { zonas } = usoDoMovel(it, 1), probs = [];
+    for (const zn of zonas) {
+      const com = [];
+      if (zn.tipo !== 'folga') {
+        if (zn.tipo === 'mov' && zn.poly.some(([x, y]) => x < -0.5 || y < -0.5 || x > W + 0.5 || y > H + 0.5)) com.push('parede');
+        if (zn.tipo === 'mov') for (const o of OBST_FIXOS) if (colide(zn.poly, o.poly) && !com.includes(o.nome)) com.push(o.nome);
+      }
+      for (const o of lista) {
+        if (o.id === it.id || o.sobrepor) continue;
+        if (zn.tipo === 'giro' && !ALTOS.has(o.tipo)) continue;
+        if (zn.tipo !== 'giro' && o.tipo === 'tv') continue;
+        if (bate([zn.poly], partes.get(o.id)) && !com.includes(o.nome)) com.push(o.nome);
+      }
+      zn.com = com;
+      if (com.length) probs.push({ zona: zn.nome, com, grave: zn.tipo !== 'folga' });
+    }
+    res.set(it.id, probs);
+  }
+  return res;
+}
+let usoProblemas = new Map();
+function textoUso(it) {
+  const ps = usoProblemas.get(it.id) || [];
+  if (!ps.length) return '';
+  const unicos = new Map();
+  for (const p of ps) { const k = p.zona; if (!unicos.has(k)) unicos.set(k, new Set()); p.com.forEach(c => unicos.get(k).add(c)); }
+  return [...unicos].map(([z, c]) => `${z[0].toUpperCase() + z.slice(1)}: bate em ${[...c].join(', ')}`).join('. ') + '.';
+}
+// ---- simulação animada ----
+let simulando = false, tSim = 0, simInicio = 0, simRaf = 0;
+const CICLO = [1100, 1500, 1100, 700]; // abrir, segurar, fechar, pausa (ms)
+function faseSim(ms) {
+  const tot = CICLO.reduce((a, b) => a + b, 0); let m = ms % tot;
+  const suave = x => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+  if (m < CICLO[0]) return suave(m / CICLO[0]); m -= CICLO[0];
+  if (m < CICLO[1]) return 1; m -= CICLO[1];
+  if (m < CICLO[2]) return 1 - suave(m / CICLO[2]);
+  return 0;
+}
+// Para onde a TV giratória vira: assentos ao alcance, com o ângulo de cada um.
+const ASSENTOS = new Set(['sofa', 'poltrona', 'cantoL', 'bancoEnc', 'cama', 'mesa', 'redondo']);
+function alvosTV(tv) {
+  const r = [];
+  for (const o of itens()) {
+    if (o.id === tv.id || !ASSENTOS.has(o.tipo) || (o.tipo === 'redondo' && o.w < 60) || ambienteDe(o) !== ambienteDe(tv)) continue;
+    const b = caixa(itemPoly(o)), cx = (b.x1 + b.x2) / 2, cy = (b.y1 + b.y2) / 2;
+    const d = Math.hypot(cx - tv.x, cy - tv.y); if (d > 450 || d < 40) continue;
+    // um conjunto conta uma vez só (pela mesa)
+    if (o.grupo && o.tipo !== 'mesa' && o.tipo !== 'redondo' && membros(o).some(m => m.tipo === 'mesa' || m.tipo === 'redondo')) continue;
+    const rot = ((Math.round(Math.atan2(-(cx - tv.x), cy - tv.y) * 180 / Math.PI / 5) * 5) % 360 + 360) % 360;
+    r.push({ id: o.id, nome: o.nome, rot, dist: d });
+  }
+  return r.sort((a, b) => a.dist - b.dist).slice(0, 4);
+}
+const difAng = (a, b) => { let d = ((b - a) % 360 + 540) % 360 - 180; return d; };
+function giroSimTV(tv) {
+  if (!tv.base) return 0;
+  const alvos = alvosTV(tv); if (!alvos.length) return 0;
+  let melhor = alvos[0];
+  for (const a of alvos) if (Math.abs(difAng(tv.rot, a.rot)) > Math.abs(difAng(tv.rot, melhor.rot))) melhor = a;
+  const d = difAng(tv.rot, melhor.rot);
+  return Math.abs(d) < 10 ? 45 : d;
+}
+function desenharUso(t) {
+  gUso.innerHTML = '';
+  const sel_ = sel && pegar(sel);
+  const mostrarTodos = simulando || estado.op.uso;
+  const tt = simulando ? t : 1;
+  for (const it of itens()) {
+    const selecionado = sel_ && (it.id === sel_.id || (sel_.grupo && it.grupo === sel_.grupo));
+    if (!mostrarTodos && !selecionado) continue;
+    const { zonas } = usoDoMovel(it, tt);
+    const probs = usoProblemas.get(it.id) || [];
+    for (const zn of zonas) {
+      if (zn.tipo === 'giro' && !selecionado && !simulando) continue;
+      const ruim = probs.some(p => p.zona === zn.nome) && tt > 0.95;
+      el('polygon', { points: zn.poly.map(q => q.join(',')).join(' '), class: zn.tipo === 'giro' ? 'giro' : ruim ? 'uso-ruim' : zn.tipo === 'folga' ? 'uso-folga' : 'uso-mov' }, gUso);
+      if (zn.folha) el('line', { x1: zn.folha[0][0], y1: zn.folha[0][1], x2: zn.folha[1][0], y2: zn.folha[1][1], class: 'porta-folha' }, gUso);
+    }
+  }
+  // TV: cone de visão (selecionada ou simulando)
+  for (const tv of itens().filter(i => i.tipo === 'tv')) {
+    if (!(simulando || (sel_ && sel_.id === tv.id))) continue;
+    const rot = tv.rot + (simulando ? giroSimTV(tv) * t : 0);
+    desenharConeTV(tv, rot);
+  }
+  // no simulador, as cadeiras andam e a TV gira de verdade na tela
+  for (const it of itens()) {
+    const no = nosMoveis.get(it.id); if (!no) continue;
+    let dx = 0, dy = 0, r = it.rot;
+    if (simulando) {
+      const { desloc } = usoDoMovel(it, t);
+      if (desloc) [dx, dy] = girar(desloc[0], desloc[1], it.rot);
+      if (it.tipo === 'tv') r = it.rot + giroSimTV(it) * t;
+    }
+    no.g.setAttribute('transform', `translate(${it.x + dx} ${it.y + dy}) rotate(${r})`);
+  }
+}
+function diagonalTV(tv) { return tv.w / 0.8716; } // 16:9
+function desenharConeTV(tv, rot) {
+  const diag = diagonalTV(tv), d1 = diag * 1.0, d2 = diag * 1.6, meio = 30;
+  const [fx, fy] = girar(0, tv.h / 2, rot); const ox = tv.x + fx, oy = tv.y + fy;
+  const arco = (r, a0, a1, n = 16) => { const pts = []; for (let i = 0; i <= n; i++) { const a = (a0 + (a1 - a0) * i / n); const [vx, vy] = girar(0, r, rot + a); pts.push([ox + vx, oy + vy]); } return pts; };
+  const cone = [[ox, oy], ...arco(d2 * 1.15, -meio, meio)];
+  el('polygon', { points: cone.map(q => q.join(',')).join(' '), class: 'cone' }, gUso);
+  const faixa = [...arco(d1, -meio, meio), ...arco(d2, meio, -meio)];
+  el('polygon', { points: faixa.map(q => q.join(',')).join(' '), class: 'cone-bom' }, gUso);
+  const [lx, ly] = girar(0, (d1 + d2) / 2, rot);
+  el('text', { x: ox + lx, y: oy + ly, class: 'uso-txt', 'font-size': 10 * Math.max(0.8, Math.min(1.6, view.k)) }, gUso).textContent = `boa distância ${fmt(d1 / 100)}–${fmt(d2 / 100)} m`;
+}
+function passoSim(agora) {
+  if (!simulando) return;
+  tSim = faseSim(agora - simInicio);
+  desenharUso(tSim);
+  simRaf = requestAnimationFrame(passoSim);
+}
+function alternarSim(liga = !simulando) {
+  simulando = liga;
+  $('#btSim').classList.toggle('on', simulando);
+  $('#btSim').textContent = simulando ? '■ Parar simulação' : '▶ Simular uso';
+  cancelAnimationFrame(simRaf);
+  if (simulando) { simInicio = performance.now(); simRaf = requestAnimationFrame(passoSim); }
+  render();
+}
+function renderSimInfo() {
+  const box = $('#simInfo');
+  if (!simulando) { box.hidden = true; return; }
+  const linhas = [];
+  for (const it of itens()) { const tx = textoUso(it); if (tx && (usoProblemas.get(it.id) || []).some(p => p.grave)) linhas.push(`<li><b style="display:inline;font-size:13px">${esc(it.nome)}</b> — ${esc(tx)}</li>`); }
+  const folgas = itens().filter(it => (usoProblemas.get(it.id) || []).length && !(usoProblemas.get(it.id) || []).some(p => p.grave));
+  box.innerHTML = `<b>Simulando o uso</b>` + (linhas.length
+    ? `<span style="color:#b3261e">${linhas.length} ${linhas.length === 1 ? 'móvel não abre/sai direito' : 'móveis não abrem/saem direito'}:</span><ul>${linhas.slice(0, 4).join('')}</ul>${linhas.length > 4 ? `<div>…e mais ${linhas.length - 4}.</div>` : ''}`
+    : '<span class="ok">Cadeiras saem, portas abrem e a TV gira sem bater em nada.</span>')
+    + (folgas.length ? `<div style="margin-top:4px;color:#8a4b00">Pouco espaço em volta de: ${folgas.map(f => esc(f.nome)).join(', ')}.</div>` : '');
+  box.hidden = false;
+}
+
+/* ============================================================
+   RÉGUA
+   ============================================================ */
+let modoRegua = false, medida = null;
+function pontoRegua(p) {
+  // gruda nas bordas próximas do dedo: cada borda só vale ao longo do seu próprio comprimento
+  const tol = 10 * view.k, caixas = [{ x1: 0, y1: 0, x2: W, y2: H }];
+  for (const p_ of PAREDES) caixas.push(p_);
+  for (const f of FIXOS) caixas.push(f.circ ? { x1: f.circ[0] - f.circ[2], y1: f.circ[1] - f.circ[2], x2: f.circ[0] + f.circ[2], y2: f.circ[1] + f.circ[2] } : f);
+  for (const it of itens()) {
+    if (redondo(it)) { caixas.push({ x1: it.x - it.w / 2, y1: it.y - it.w / 2, x2: it.x + it.w / 2, y2: it.y + it.w / 2 }); continue; }
+    for (const pt of itemPartes(it)) caixas.push(caixa(pt));
+  }
+  let x = Math.round(p.x), y = Math.round(p.y), mx = tol, my = tol;
+  for (const b of caixas) {
+    if (p.y >= b.y1 - tol && p.y <= b.y2 + tol) for (const v of [b.x1, b.x2]) if (Math.abs(v - p.x) < mx) { mx = Math.abs(v - p.x); x = v; }
+    if (p.x >= b.x1 - tol && p.x <= b.x2 + tol) for (const v of [b.y1, b.y2]) if (Math.abs(v - p.y) < my) { my = Math.abs(v - p.y); y = v; }
+  }
+  return { x, y };
+}
+function renderRegua() {
+  gRegua.innerHTML = '';
+  if (!modoRegua || !medida) return;
+  const { a, b } = medida, k = view.k, d = Math.hypot(b.x - a.x, b.y - a.y);
+  const g = el('g', { class: 'regua' }, gRegua);
+  el('line', { x1: a.x, y1: a.y, x2: b.x, y2: b.y }, g);
+  const ang = Math.atan2(b.y - a.y, b.x - a.x), nx = -Math.sin(ang) * 6 * k, ny = Math.cos(ang) * 6 * k;
+  for (const q of [a, b]) el('line', { x1: q.x - nx, y1: q.y - ny, x2: q.x + nx, y2: q.y + ny }, g);
+  if (d < 1) return;
+  const txt = d >= 100 ? `${fmt(Math.round(d) / 100)} m` : `${Math.round(d)} cm`;
+  el('text', { x: (a.x + b.x) / 2 - nx * 2.2, y: (a.y + b.y) / 2 - ny * 2.2, 'font-size': 14 * k, 'stroke-width': 4 * k }, g).textContent = txt;
+}
+function alternarRegua(liga = !modoRegua) {
+  modoRegua = liga; medida = null;
+  $('#btRegua').classList.toggle('on', modoRegua);
+  svg.style.cursor = modoRegua ? 'crosshair' : '';
+  if (modoRegua) avisar('Régua: arraste de um ponto a outro. As pontas grudam em paredes e móveis.');
+  render();
+}
+
+/* ============================================================
    VISTA (zoom / arrastar a planta)
    ============================================================ */
 function tamanho() { const r = svg.getBoundingClientRect(); return { w: r.width || 1, h: r.height || 1, l: r.left, t: r.top }; }
@@ -1248,6 +1806,8 @@ function aplicarVista() {
   const t = tamanho();
   svg.setAttribute('viewBox', `${view.x} ${view.y} ${t.w * view.k} ${t.h * view.k}`);
   renderSel(); renderCotas();
+  if (gRegua) renderRegua();
+  if (gUso && !simulando) desenharUso(1);
 }
 function telaParaPlanta(cx, cy) {
   const t = tamanho();
@@ -1301,7 +1861,8 @@ function encaixar(it, cx, cy) {
   // todas as partes de todas as peças do conjunto, já deslocadas para onde o dedo quer
   const ms = [it, ...membros(it).filter(m => m !== it)];
   const dxm = cx - it.x, dym = cy - it.y;
-  const caixas = ms.flatMap(m => itemPartes(Object.assign({}, m, { x: m.x + dxm, y: m.y + dym })).map(caixa));
+  let caixas = ms.flatMap(m => itemPartes(Object.assign({}, m, { x: m.x + dxm, y: m.y + dym })).map(caixa));
+  if (!caixas.length) caixas = [caixa(itemPoly(Object.assign({}, it, { x: cx, y: cy })))];
   const tol = 12 * view.k;
   const obst = caixasObstaculos(new Set(ms.map(m => m.id)), it.sobrepor);
   let dx = null, dy = null;
@@ -1335,6 +1896,7 @@ svg.addEventListener('pointerdown', e => {
   if (toques.size === 2) { desfazerGestoParcial(); iniciarPinca(); return; }
   if (toques.size > 2) return;
   const p = telaParaPlanta(e.clientX, e.clientY);
+  if (modoRegua) { const a = pontoRegua(p); gesto = { tipo: 'regua', x0: e.clientX, y0: e.clientY, movido: false }; medida = { a, b: a }; renderRegua(); return; }
   let alca = e.target.closest && e.target.closest('[data-handle]');
   let id = null;
   const noG = e.target.closest && e.target.closest('[data-id]');
@@ -1385,6 +1947,7 @@ svg.addEventListener('pointermove', e => {
   gesto.movido = true;
   const p = telaParaPlanta(e.clientX, e.clientY);
   const it = gesto.id && pegar(gesto.id);
+  if (gesto.tipo === 'regua') { medida.b = pontoRegua(p); renderRegua(); return; }
   if (gesto.tipo === 'arrastar') {
     view.x = gesto.v.x - (e.clientX - gesto.x0) * view.k;
     view.y = gesto.v.y - (e.clientY - gesto.y0) * view.k;
@@ -1433,6 +1996,7 @@ function soltar(e) {
   toques.delete(e.pointerId);
   if (!gesto) return;
   if (gesto.tipo === 'pinca') { if (toques.size < 2) gesto = null; return; }
+  if (gesto.tipo === 'regua') { if (!gesto.movido) medida = null; gesto = null; renderRegua(); return; }
   if (gesto.tipo === 'arrastar' && !gesto.movido && e.type === 'pointerup') selecionar(null);
   const id = gesto.tipo !== 'arrastar' && gesto.id;
   encerrarGesto();
@@ -1567,7 +2131,7 @@ function paraFrente() {
 function trocarLayout(id) {
   estado.atual = id; sel = null; desfazer = []; refazer = [];
   ultimoSalvo = JSON.stringify(itens());
-  gravar(); botoesHistorico(); render(); preencherLayouts();
+  gravar(); botoesHistorico(); render(); preencherLayouts(); atualizarBotaoInfo();
 }
 function nomeLivre(base) {
   let n = base, i = 2;
@@ -1600,7 +2164,10 @@ function avisar(msg) {
    RENDERIZAÇÃO GERAL
    ============================================================ */
 function render(painel = true) {
-  renderMoveis(); renderPassagens(); renderSel(); renderCotas(); renderStatus();
+  renderMoveis(); renderPassagens();
+  usoProblemas = calcularUso();
+  desenharUso(simulando ? tSim : 1);
+  renderSel(); renderCotas(); renderRegua(); renderStatus(); renderSimInfo();
   if (painel) renderPainel(); else atualizarCamposPainel();
 }
 function renderStatus() {
@@ -1639,6 +2206,8 @@ function renderPainel() {
   $('#pH').parentElement.firstChild.textContent = L ? 'Braço 2 (cm)' : 'Profundidade (cm)';
   $('#pP').parentElement.style.display = L ? '' : 'none';
   $('#pEspelhar').style.display = L ? '' : 'none';
+  $('#pTV').hidden = it.tipo !== 'tv';
+  if (it.tipo === 'tv') { $('#pW').parentElement.firstChild.textContent = 'Largura da tela (cm)'; $('#pH').parentElement.firstChild.textContent = 'Espessura (cm)'; }
   const ms = membros(it);
   $('#pGrupo').hidden = ms.length < 2;
   $('#pGrupoN').textContent = ms.length;
@@ -1652,10 +2221,26 @@ function atualizarCamposPainel(forcar) {
   const b = caixa(itemPoly(it));
   const vals = { pW: it.w, pH: it.h, pX: b.x1, pY: b.y1, pR: it.rot, pP: profL(it) };
   for (const k in vals) { const i = $('#' + k); if (forcar || document.activeElement !== i) i.value = fmt(vals[k]); }
+  const tu = textoUso(it), u = $('#pUso');
+  u.textContent = tu ? 'Em uso — ' + tu : '';
+  u.className = tu && (usoProblemas.get(it.id) || []).some(p => p.grave) ? 'ruim' : '';
+  if (it.tipo === 'tv') renderPainelTV(it);
   const c = conflitos.get(it.id), a = $('#pAlerta');
   if (c.duro.length) { a.className = 'ruim'; a.textContent = 'Batendo em: ' + c.duro.join(', ') + '.'; }
   else if (c.porta.length) { a.className = 'aviso'; a.textContent = 'No caminho da ' + c.porta.join(' e da ') + '.'; }
   else { a.className = ''; a.textContent = ''; }
+}
+// TV: quem vê bem daqui e para onde dá para virar a coluna
+function renderPainelTV(tv) {
+  const diag = diagonalTV(tv), pol = Math.round(diag / 2.54), d1 = diag, d2 = diag * 1.6;
+  const alvos = alvosTV(tv);
+  const [fx, fy] = girar(0, 1, tv.rot);
+  const vendo = alvos.filter(a => { const o = pegar(a.id), b = caixa(itemPoly(o)); const vx = (b.x1 + b.x2) / 2 - tv.x, vy = (b.y1 + b.y2) / 2 - tv.y; const cos = (vx * fx + vy * fy) / (Math.hypot(vx, vy) || 1); return cos > Math.cos(35 * Math.PI / 180); });
+  let h = `<b>TV de ${pol}"</b> · boa distância ${fmt(d1 / 100)} a ${fmt(d2 / 100)} m`;
+  if (vendo.length) h += `<div>De frente para: ${vendo.map(a => `${esc(a.nome)} (${fmt(Math.round(a.dist / 10) / 10)} m${a.dist < d1 * 0.85 ? ', perto demais' : a.dist > d2 * 1.25 ? ', longe' : ''})`).join(', ')}</div>`;
+  if (tv.base && alvos.length) h += `<div style="margin-top:6px">Girar a coluna para:</div><div class="fila">${alvos.map(a => `<button class="bt" data-virar="${a.rot}">${esc(a.nome)}</button>`).join('')}</div>`;
+  else if (!tv.base) h += `<div style="margin-top:4px;color:var(--sub)">TV fixa. As versões "em coluna giratória" do catálogo viram para vários lugares.</div>`;
+  $('#pTV').innerHTML = h;
 }
 function preencherLayouts() {
   const s = $('#selLayout');
@@ -1762,7 +2347,7 @@ async function descomprimir(cod) {
 const URL_PUBLICA = 'https://raw.githack.com/peklerbruno-dot/diario-de-treino/claude/furniture-layout-simulator-2mjj57/moveis/index.html';
 async function enviarPorLink() {
   const l = layout();
-  const dados = JSON.stringify({ app: 'simulador-moveis', versao: 1, layouts: [{ nome: l.nome, itens: l.itens }] });
+  const dados = JSON.stringify({ app: 'simulador-moveis', versao: 1, layouts: [{ nome: l.nome, itens: l.itens, ...(l.ideia ? { ideia: l.ideia } : {}) }] });
   const base = /^https?:/.test(location.href) ? location.href.split('#')[0] : URL_PUBLICA;
   const link = base + '#l=' + await comprimir(dados);
   $('#sTitulo').textContent = 'Enviar por link';
@@ -1799,7 +2384,7 @@ function importarJson(texto) {
   let ultimo = null, n = 0;
   for (const l of lista) {
     const itensOk = (l.itens || []).map(limparItem).filter(Boolean).map(i => Object.assign(i, { id: uid() }));
-    const novo = { id: uid(), nome: nomeLivre(String(l.nome || 'Importado').slice(0, 40)), itens: itensOk };
+    const novo = { id: uid(), nome: nomeLivre(String(l.nome || 'Importado').slice(0, 40)), itens: itensOk, ...(typeof l.ideia === 'string' ? { ideia: l.ideia } : {}) };
     estado.layouts.push(novo); ultimo = novo.id; n++;
   }
   if (ultimo) trocarLayout(ultimo);
@@ -1857,6 +2442,12 @@ $('#btRefazer').onclick = () => voltar(refazer, desfazer);
 $('#btMais').onclick = () => zoomEm(1 / 1.35);
 $('#btMenos').onclick = () => zoomEm(1.35);
 $('#btAjustar').onclick = ajustar;
+$('#btRegua').onclick = () => alternarRegua();
+$('#btSim').onclick = () => alternarSim();
+$('#pTV').addEventListener('click', e => {
+  const b = e.target.closest('[data-virar]'); const it = pegar(sel); if (!b || !it) return;
+  it.rot = Number(b.dataset.virar); confirmar(); render();
+});
 $('#selLayout').onchange = e => trocarLayout(e.target.value);
 
 $('#catalogo').addEventListener('click', e => {
@@ -1963,6 +2554,21 @@ $('#mLimpar').onclick = async () => {
   layout().itens = []; sel = null; confirmar(); render(); fecharFolhas();
 };
 $('#mAjuda').onclick = () => abrir('#fAjuda');
+$('#mDicas').onclick = () => { mostrarDica(0); abrir('#fDicas'); };
+$('#dProx').onclick = () => passoDica < DICAS.length - 1 ? mostrarDica(passoDica + 1) : fimDicas();
+$('#dPular').onclick = fimDicas;
+$('#btIdeias').onclick = abrirIdeias;
+$('#btInfo').onclick = abrirInfoIdeia;
+$('#listaIdeias').addEventListener('click', e => {
+  const b = e.target.closest('[data-ideia]'), n = e.target.closest('[data-ideia-nova]');
+  if (b) usarIdeia(b.dataset.ideia); else if (n) usarIdeia(n.dataset.ideiaNova, true);
+});
+$('#mCompras').onclick = () => {
+  const t = listaCompras();
+  mostrarSaida(new Blob([t], { type: 'text/plain' }), `lista-moveis-${dataHoje()}.txt`, t);
+  $('#sTitulo').textContent = 'Lista de compras';
+  $('#sDica').textContent = 'Medidas máximas de cada móvel, por ambiente. Copie e leve para a loja.';
+};
 
 let tSeta;
 document.addEventListener('keydown', e => {
@@ -1971,7 +2577,7 @@ document.addEventListener('keydown', e => {
   const ctrl = e.ctrlKey || e.metaKey;
   if (ctrl && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? voltar(refazer, desfazer) : voltar(desfazer, refazer); return; }
   if (ctrl && e.key.toLowerCase() === 'y') { e.preventDefault(); voltar(refazer, desfazer); return; }
-  if (e.key === 'Escape') { if (!document.querySelector('.fundo-folha:not([hidden])')) selecionar(null); fecharFolhas(); return; }
+  if (e.key === 'Escape') { if (modoRegua) { alternarRegua(false); return; } if (!document.querySelector('.fundo-folha:not([hidden])')) selecionar(null); fecharFolhas(); return; }
   const it = pegar(sel);
   if (!it) return;
   if (ctrl && e.key.toLowerCase() === 'd') { e.preventDefault(); duplicar(); return; }
@@ -1994,8 +2600,10 @@ aplicarOpcoes();
 botoesHistorico();
 if (window.matchMedia('(min-width: 900px)').matches) $('#pDetalhes').open = true;
 render();
+atualizarBotaoInfo();
 requestAnimationFrame(ajustar);
 receberDoLink();
+setTimeout(talvezDicas, 500);
 </script>
 </body>
 </html>

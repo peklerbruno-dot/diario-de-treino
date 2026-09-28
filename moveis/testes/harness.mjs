@@ -26,9 +26,11 @@ const { chromium, devices } = acharPlaywright();
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 export const URL_APP = 'file://' + path.resolve(AQUI, '..', 'index.html');
 
-export async function abrir({ iphone = false, largura = 1280, altura = 800 } = {}) {
+export async function abrir({ iphone = false, largura = 1280, altura = 800, dicas = false } = {}) {
   const browser = await chromium.launch();
   const ctx = await browser.newContext(iphone ? { ...devices['iPhone 13'] } : { viewport: { width: largura, height: altura } });
+  // as dicas da primeira abertura ficam de fora, a não ser que o cenário peça
+  if (!dicas) await ctx.addInitScript(() => { try { localStorage.setItem('simuladorMoveis.v1.dicas', '1'); } catch (e) {} });
   const page = await ctx.newPage();
   const erros = [];
   page.on('pageerror', e => erros.push('pageerror: ' + e.message));

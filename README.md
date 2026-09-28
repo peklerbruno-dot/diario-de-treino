@@ -154,8 +154,10 @@ o seu próprio deploy na Vercel (pasta escolhida em *Root Directory*).
   computador ou por link no iPhone (toque, pinça para zoom). Planta fixa em cm,
   catálogo de móveis (com canto alemão em L e conjuntos que se movem juntos),
   aviso de colisão com paredes, peças fixas e abertura de portas, distâncias
-  livres, mapa de passagens com menos de 60 cm, ocupação do piso por ambiente,
-  vários layouts salvos no navegador, enviar layout por link,
-  exportar/importar `.json` e salvar imagem PNG.
+  livres, mapa de passagens com menos de 60 cm, área de uso de cada móvel
+  (cadeira puxada, portas e gavetas abertas) com simulação animada, TV em
+  coluna giratória com cone de visão, régua, quatro ideias de layout com prós
+  e contras, lista de compras, vários layouts salvos no navegador, enviar
+  layout por link, exportar/importar `.json` e salvar imagem PNG.
   Testes no Chromium (Playwright, que precisa estar instalado no npm global):
-  `node moveis/testes/regressao.mjs` e `node moveis/testes/correcoes.mjs`.
+  `node moveis/testes/regressao.mjs`, `correcoes.mjs` e `novidades.mjs`.
