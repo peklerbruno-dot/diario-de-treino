@@ -14,6 +14,7 @@ import {
   Subtitulo,
   Titulo,
 } from "@/componentes/pecas";
+import { buscarAVersaoNova } from "@/componentes/casca";
 import { EditorDeAtalhos } from "@/componentes/editor-de-atalhos";
 import { useEstado } from "@/componentes/usar-loja";
 import { hoje, partesDaData } from "@/lib/datas";
@@ -34,6 +35,7 @@ import {
   loja,
   quantosComCentavos,
   RECADO_DA_SITUACAO,
+  VERSAO_DO_APP,
 } from "@/lib/loja";
 import { categoriasDoTipo, idDoNome, type Categoria } from "@/lib/categorias";
 import { quantosSemCategoria } from "@/lib/classificar";
@@ -235,6 +237,21 @@ export function TelaDeAjustes() {
         )}
         <Botao onClick={() => void loja.sincronizar()} className="mt-2">
           Sincronizar agora
+        </Botao>
+      </section>
+
+      <section className="mt-6">
+        <Subtitulo>Versão do app</Subtitulo>
+        <p className="mt-1 text-[15px] leading-relaxed text-grafite">
+          O app se atualiza sozinho quando sai uma versão nova. Se algum dia parecer preso numa
+          versão antiga, este botão limpa a cópia guardada no aparelho e busca a de agora — sem
+          perder nada do que você lançou.
+        </p>
+        <p className="tabular mt-1.5 text-[12.5px] text-fosco">
+          Versão neste aparelho: {VERSAO_DO_APP}
+        </p>
+        <Botao onClick={() => void buscarAVersaoNova()} className="mt-2">
+          Buscar a versão nova
         </Botao>
       </section>
 
