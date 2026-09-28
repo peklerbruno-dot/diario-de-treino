@@ -235,7 +235,7 @@ const ETIQUETA_DO_MODO_APP = 'meta[name="apple-mobile-web-app-capable"]';
  * for a versão velha, o ícone novo nasce velho igual, e não há como saber antes
  * de terminar. Este botão tira a dúvida em vez de repeti-la.
  */
-async function buscarAVersaoNova() {
+export async function buscarAVersaoNova() {
   try {
     if ("serviceWorker" in navigator) {
       const registros = await navigator.serviceWorker.getRegistrations();

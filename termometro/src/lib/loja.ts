@@ -133,6 +133,12 @@ export class Loja {
       document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible") void this.sincronizar();
       });
+      // O iPhone às vezes devolve o app da memória sem avisar a troca de
+      // visibilidade (volta do cache de páginas, retomada rápida). Os dois
+      // eventos abaixo cobrem essas voltas — cada uma é uma chance de o app
+      // descobrir que existe versão nova.
+      window.addEventListener("pageshow", () => void this.sincronizar());
+      window.addEventListener("focus", () => void this.sincronizar());
     }
   }
 
@@ -363,8 +369,15 @@ export class Loja {
     if (enviados.length > 0) this.publicar({ situacao: "enviando" }, false);
 
     try {
+      // Com prazo. O iPhone congela o app com o pedido no meio do caminho, e
+      // um pedido que nunca responde deixava `enviando` preso para sempre:
+      // nenhuma sincronização depois disso — nem a que descobriria a versão
+      // nova. Vinte segundos é muito mais do que um sync leva.
+      const prazo = new AbortController();
+      const relogioDoPrazo = setTimeout(() => prazo.abort(), 20_000);
       const resposta = await fetch("/api/sync", {
         method: "POST",
+        signal: prazo.signal,
         headers: { "content-type": "application/json", "x-versao": VERSAO_DO_APP },
         body: JSON.stringify({
           desde: this.estado.ate,
@@ -387,6 +400,7 @@ export class Loja {
         }),
       });
 
+      clearTimeout(relogioDoPrazo);
       if (resposta.status === 401 || resposta.redirected) {
         // A sessão venceu no meio do uso. Navegar à força para /entrar jogava
         // fora o que estava sendo digitado; o dado está salvo no aparelho, e
@@ -493,7 +507,7 @@ export class Loja {
 
 export const loja = new Loja();
 
-const VERSAO_DO_APP = process.env.NEXT_PUBLIC_VERSAO ?? "local";
+export const VERSAO_DO_APP = process.env.NEXT_PUBLIC_VERSAO ?? "local";
 const CHAVE_DO_RECARREGO = "termometro.recarregouPara";
 
 /**
