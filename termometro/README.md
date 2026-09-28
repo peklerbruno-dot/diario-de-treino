@@ -405,6 +405,18 @@ nem uma gravação perdida deixa algo para trás.
 
 ## Detalhes de iPhone que o código resolve
 
+**O app se atualiza sozinho.** Um app da tela de início no iPhone fica
+congelado em segundo plano e, ao voltar, retoma a página antiga sem recarregar
+— podia passar dias numa versão velha depois de uma atualização publicada. Cada
+build carrega uma etiqueta de versão (o commit, via `NEXT_PUBLIC_VERSAO` em
+`next.config.ts`), o aparelho a manda no `/api/sync` e o servidor devolve a
+dele. Diferentes, o aparelho se recarrega — mas só num momento que não custa
+nada: nunca com uma folha aberta nem com o dedo num campo, e uma vez só por
+versão, para não entrar em laço. Os aparelhos de antes deste mecanismo não
+mandam etiqueta nenhuma; para eles o servidor responde 401, e essa versão
+antiga já sabia reagir a 401 indo para a página de entrada — que, com a sessão
+válida, devolve para o app, agora novo. Nada da fila se perde no caminho.
+
 - O valor do lançamento tem **teclado próprio**, porque o do iPhone não tem a
   tecla de mais. De quebra ele não come metade da tela, não dá zoom ao focar e
   não tem tecla de letra para errar.
