@@ -54,6 +54,12 @@ verificar(forno.cadeira.some(z => /forno/.test(z)), 'cadeira puxada na frente do
 const porta = await noApp(() => { const l = estado.layouts.find(l => l.ideia === 'invertida'); trocarLayout(l.id); const p = itens().find(i => i.tipo === 'porta');
   simulando = true; desenharUso(1); const tr = nosMoveis.get(p.id).g.querySelector('.folhaCorrer').getAttribute('transform'); simulando = false; desenharUso(1); return tr; });
 verificar(/translate\(-9\d/.test(porta), 'porta de correr abre na simulação: ' + porta);
+// análise técnica: cada opção tem as 5 caixinhas e o botão na barra abre direto nelas
+const an = await noApp(() => IDEIAS.map(i => { const d = document.createElement('div'); d.innerHTML = htmlAnalise(i); return [i.id, d.querySelectorAll('details').length, /\/10/.test(d.textContent)]; }));
+verificar(an.every(([, n, nota]) => n === 5 && nota), 'cada opção tem análise técnica com 5 caixinhas e nota: ' + JSON.stringify(an));
+await t.page.click('#legenda [data-foco]'); await t.page.waitForTimeout(200);
+verificar(await t.page.isVisible('#fIdeiaInfo #analise'), 'botão "Análise técnica" abre a análise da opção');
+await t.page.keyboard.press('Escape');
 const lugares = r.map(x => x.sofa.join(' ')).join(' | ');
 verificar(/2 lugares/.test(lugares) && /3 lugares/.test(lugares), 'há opções com sofá de 2 e de 3 lugares: ' + lugares);
 // banheiro

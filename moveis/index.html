@@ -171,6 +171,21 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
 .ideia .contras li::marker{content:'－ ';color:var(--verm)}
 .ideia .verif{font-size:13px;padding:6px 8px;border-radius:8px;background:#eef6ee;color:#1d5a2a;margin:6px 0 8px}
 .ideia .verif.aviso{background:#fef3e6;color:#8a4b00}
+.analise{margin-top:14px;scroll-margin-top:80px}
+.analise h3{font-size:15px;margin:0 0 8px;text-transform:none;letter-spacing:0;color:var(--txt,#1d2329)}
+.analise details{border:1px solid var(--borda);border-radius:12px;margin-bottom:8px;background:#fbfcfd;overflow:hidden}
+.analise summary{cursor:pointer;padding:11px 12px;font-weight:600;font-size:14px;list-style:none;display:flex;align-items:center;gap:8px}
+.analise summary::-webkit-details-marker{display:none}
+.analise summary::after{content:'›';margin-left:auto;transition:transform .15s;color:var(--sub);font-size:18px}
+.analise details[open] summary::after{transform:rotate(90deg)}
+.analise .corpo-an{padding:0 12px 10px;font-size:14px;line-height:1.45;color:#333b44}
+.analise .sub-an{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--sub);margin:8px 0 2px}
+.analise ul{margin:2px 0 4px;padding-left:18px}
+.analise li{margin:2px 0}
+.analise .nota{display:inline-block;font-weight:700;border-radius:999px;padding:3px 10px;font-size:13px}
+.analise .nota.boa{background:#e6f4ea;color:#1d5a2a}.analise .nota.media{background:#fef3e6;color:#8a4b00}
+.analise .rodape-an{font-size:12px;color:var(--sub);margin-top:6px}
+#legenda u.an{margin-right:12px}
 @media (max-width:520px){ .ideia{grid-template-columns:1fr} .ideia svg{width:100%;max-width:220px;margin:0 auto;display:block} }
 .dica-passo{font-size:16px;line-height:1.5}
 .dica-passo .ico{font-size:34px;display:block;margin:4px 0 8px}
@@ -555,7 +570,7 @@ const REDONDOS = new Set(['redondo', 'planta']);
    ESTADO
    ============================================================ */
 const CHAVE = 'simuladorMoveis.v1';
-const VERSAO_APP = '28/09 · versão 14'; // aparece no menu: serve para conferir se o aparelho abriu a versão nova
+const VERSAO_APP = '28/09 · versão 15'; // aparece no menu: serve para conferir se o aparelho abriu a versão nova
 const OP_PADRAO = { ima: true, cotas: true, portas: true, grade: true, rotulos: true, passagens: true, uso: false, cozinha: 'fogao-cima' };
 let estado;          // { layouts:[{id,nome,itens}], atual, op }
 let sel = null;      // id do móvel selecionado
@@ -604,6 +619,105 @@ const escritorio = (x, y, rot, cx, cy, crot, w = 120, h = 60) => { const g = uid
   mk('cadeira', 'Cadeira de escritório', 60, 60, cx, cy, crot, { grupo: g })]; };
 const TV55 = (x, y, rot, giro) => mk('tv', 'Estante divisória 1,80 com TV 55" que gira 360°', 180, 45, x, y, rot, { tela: 122, estilo: 'divisoria', giro });
 const TV50 = (x, y, rot, giro) => mk('tv', 'Estante divisória 1,60 com TV 50" que gira 360°', 160, 45, x, y, rot, { tela: 111, estilo: 'divisoria', giro });
+/* ============================================================
+   ANÁLISE TÉCNICA (por opção): circulação, instalações, marcenaria, materiais e nota.
+   As medidas são da opção como ela vem (o botão ↺ volta a ela).
+   ============================================================ */
+// partes iguais nas duas opções (cozinha e banho são fixos)
+const AN_ELETRICA_COZINHA = [
+  ['Cooktop', 'por indução: circuito só dele, 220 V, disjuntor de 32 a 40 A, cabo de 6 mm², ponto no gabinete logo abaixo. A gás: tomada de 10 A para o acendimento.'],
+  ['Forno elétrico embutido', 'circuito só dele, 220 V, 20 A (cabo de 4 mm²), ponto a ~0,30 m do piso atrás do módulo.'],
+  ['Micro-ondas', 'tomada de 20 A: nicho no aéreo a ~1,60 m ou torre; se ficar na bancada, a ~1,10 m.'],
+  ['Bancada', '3 tomadas de 10 A a 1,10–1,20 m do piso (20 a 30 cm acima do tampo), fora da projeção do cooktop e da cuba.'],
+  ['Geladeira', 'tomada de 10 A só dela, atrás, a ~0,30 m ou a 1,90 m; com a folga de 10 cm o plugue não esmaga na parede.'],
+  ['Coifa / depurador', '65 cm acima do cooktop de indução (70 a 75 cm se for a gás); tomada a ~2,10 m.'],
+  ['Banho', 'chuveiro elétrico em circuito só dele (220 V, 40 A, cabo de 6 mm²); tomada de 20 A na bancada a ~1,10 m para secador.'],
+  ['Interruptores', 'a 1,00–1,10 m do piso, com paralelo (three-way) na entrada e na cabeceira da cama.']
+];
+const AN_HIDRAULICA = [
+  ['Pia', 'a cuba fica no eixo original (esgoto de 40–50 mm e água fria já existem): nada muda de lugar, a obra fica mais barata.'],
+  ['Gás', 'o cooktop fica junto da shaft, onde costuma passar a prumada; se for a gás, a descida é curta, com registro visível no gabinete. Confirmar na planta de instalações do prédio.'],
+  ['Lava-louças', 'uma de 45 cm cabe embaixo do trecho de 56 cm entre o forno e a cuba, colada na cuba (o ideal para água e esgoto). No trecho de 42 cm depois da cuba não cabe.'],
+  ['⚠ Lavanderia', 'a planta não tem área de serviço nem tanque. Uma lava e seca de 60 cm precisa de água, esgoto e 220 V próprios; hoje só caberia no lugar do forno. Confirmar onde fica a lavanderia do apartamento.']
+];
+const AN_FOLGAS_COZINHA = [
+  ['Geladeira', 'a porta abre 100° (raio de ~68 cm) no corredor sem bater em móvel; a dobradiça fica do lado livre, então as gavetas saem; 10 cm de folga atrás e do lado da bancada; no nicho em cima, deixar 5 cm ou mais para ventilar.'],
+  ['Forno', 'a porta abaixa ~50 cm; os 90 cm da frente (porta + quem se abaixa) ficam livres.'],
+  ['Cooktop', '20 cm de bancada até a ponta da shaft: apoio de panela e o cabo não bate na parede.'],
+  ['Guarda-roupa de correr', 'sem raio de abertura; 60 cm livres na frente.'],
+  ['Porta do quarto', 'abre rente ao guarda-roupa (~2 cm); um batedor evita que ela bata nele.']
+];
+const AN_MATERIAIS = [
+  ['Bancada', 'quartzo (tipo Silestone) ou granito escuro (São Gabriel, Preto Absoluto), 2 cm, com frontão de 10–15 cm. Evitar mármore perto do cooktop: mancha com ácido e gordura.'],
+  ['Parede da cozinha', 'entre a bancada e os aéreos, porcelanato de placa grande ou vidro: poucas juntas para limpar gordura.'],
+  ['Banho', 'piso do box em porcelanato antiderrapante (R10/R11) com rejunte epóxi; parede do box revestida até o teto; vidro temperado de 8 mm.'],
+  ['Piso da sala e do office', 'vinílico ou porcelanato amadeirado acetinado; no office, rodízios de poliuretano ou tapete protetor contra risco da cadeira.'],
+  ['Marcenaria', 'MDF 18 mm; embaixo da pia, MDF resistente à umidade (RU); gabinete do forno com ventilação atrás, como pede o fabricante.']
+];
+const ANALISE = {
+  'office-grande': {
+    nota: 8, notaTxt: 'Sobe para 9 com a mesa de jantar de 110 × 65.',
+    circulacao: [
+      ['Corredor da cozinha', '94 cm entre a mesa de jantar e a bancada: cabem os 60 cm de quem cozinha e alguém passando de lado. A porta do forno com quem se abaixa (90 cm) não encontra móvel.'],
+      ['Entrada e quarto', '118 cm da porta de correr até a frente da geladeira; o vão do quarto (78 cm) fica livre; a porta de entrada abre sem pegar em nada.'],
+      ['⚠ Ponto apertado', 'entre a quina da mesa de jantar e a ponta da estante sobram ~48 cm, por onde se chega à mesa do computador (o recomendado é 60). Trocar a mesa de 110 × 75 por 110 × 65 dá ~58 cm; descer a estante não dá, o giro da TV pegaria no sofá.'],
+      ['Sala de TV', '109 cm entre a frente do sofá e a estante; aberta, a porta de correr deixa ~97 cm.'],
+      ['Quarto', '57 cm do lado da janela, 60 cm do lado do guarda-roupa e 52 cm no pé da cama (no limite).'],
+      ['Banho', '48 cm na frente do vaso (o recomendado é 60): limitação da planta.']
+    ],
+    zoneamento: 'Trabalho no canto de cima com janela; refeições perto da cozinha sem atrapalhar o forno; TV isolada pela estante vazada, pelo painel fixo e pela porta de correr; descanso no quarto. É a separação mais clara: dá para trabalhar, ver TV e dormir ao mesmo tempo.',
+    eletrica: [
+      ['Office', '4 tomadas + ponto de rede (RJ45) na altura do tampo (~0,90 m) ou a 0,30 m escondidas na calha da mesa; circuito separado com DPS para o computador.'],
+      ['TV que gira 360°', 'o cabo precisa descer pelo eixo do painel: ponto no piso (tomada + HDMI/rede) embaixo da estante ou no forro alinhado ao eixo. Tomada comum na parede não atende.'],
+      ['Ar-condicionado', 'com a porta de correr, a sala de TV vira um ambiente menor e fechado: bom lugar para o split (circuito só dele, 220 V, ponto a ~2,10 m).'],
+      ['Iluminação', 'geral em perfil LED ou plafons 3000 K; fita LED embaixo dos aéreos na bancada; pendente sobre a mesa a 75–85 cm do tampo; luminária de mesa 4000 K no office; luz indireta regulável na sala de TV.']
+    ],
+    marcenaria: [
+      ['Porta de correr da sala de TV', 'trilho superior embutido no forro, sem trilho no piso: não atrapalha a cadeira de rodinha nem a limpeza.'],
+      ['Aproveitamento', 'aéreos de 35 cm de fundo a 60–70 cm do tampo nos 224 cm de bancada; despensa estreita ou temperos do piso ao teto no canto entre a shaft e a bancada (~28 × 46 cm); estante divisória com nichos dos dois lados (livros para o office, mídia para a TV); cama box baú; maleiro até o teto em cima do guarda-roupa.']
+    ],
+    pros: ['Cozinha toda usável com gente sentada à mesa', 'Zoneamento claro: sala de TV que fecha e office com janela', 'Hidráulica sem mudança', 'Folgas da geladeira e do cooktop dentro do recomendado'],
+    contras: ['Passagem de ~48 cm até o office', 'Só 2 lugares à mesa', 'TV que gira pede ponto no piso ou no forro', 'Planta sem área de serviço', 'Banho com 48 cm na frente do vaso']
+  },
+  'invertida': {
+    nota: 5, notaTxt: 'Sobe para 7 com a estante de 1,60 com TV de 50", a mesa 10 cm mais para cima e bancos no lugar das cadeiras.',
+    circulacao: [
+      ['Corredor da cozinha', '132 cm entre a porta de correr e a bancada: o mais folgado das duas opções.'],
+      ['Passagens', 'estante → cadeira de cima da mesa: 60 cm (no limite); mesa de jantar → cadeira do escritório: ~46 cm ⚠; cadeira de baixo → mesa do computador: ~44 cm (só dá acesso a esse canto).'],
+      ['⚠ Conflitos em uso', 'o painel da TV girando bate no sofá e na cadeira de cima puxada; a cadeira de baixo, puxada, bate na parede do quarto.'],
+      ['TV', 'a 1,3 m do sofá: perto para 55" (o ideal é 1,4 a 2,2 m).'],
+      ['Quarto e banho', 'iguais à opção 1: 57 e 60 cm dos lados da cama, 52 cm no pé; 48 cm na frente do vaso.']
+    ],
+    zoneamento: 'Sofá isolado pela estante e pela porta de correr (bom). Jantar e office disputam o mesmo trecho de ~2 m na janela de baixo: quem janta e quem trabalha ficam de costas a menos de 50 cm.',
+    eletrica: [
+      ['Office', 'encostado na parede do quarto: 4 tomadas + rede vêm dessa parede, caminho curto; circuito separado com DPS.'],
+      ['TV que gira 360°', 'mesmo cuidado do cabo pelo eixo: ponto no piso no meio da estante de 2,00 m.'],
+      ['Iluminação e ar', 'pendente centralizado na janela a 75–85 cm do tampo (cuidado com a cortina); split na parede de cima, sobre o sofá, para a sala de TV fechada.']
+    ],
+    marcenaria: [
+      ['Porta de correr do sofá', 'trilho no forro; a ponta fica a 16 cm da estante, uma fresta que dá para fechar com um painel fixo.'],
+      ['Cadeiras da mesa', 'as duas de cabeceira não têm para onde sair: a de baixo encosta na parede, a de cima entra no giro da TV. Bancos baú no lugar resolvem e ainda guardam coisas.'],
+      ['Aproveitamento', 'estante de 2,00 m com nichos dos dois lados; prateleira em cima da mesa do computador; aéreos na bancada e despensa no canto da shaft, como na opção 1.']
+    ],
+    materiais: [['Janela de baixo', 'cortina de tecido fácil de lavar: a mesa de jantar encosta nela.']],
+    pros: ['Sala de TV bem fechada', 'Corredor da cozinha muito folgado', 'Pontos do office fáceis de trazer', 'Jantar com vista'],
+    contras: ['3 conflitos em uso (giro da TV × sofá e cadeira; cadeira × parede)', 'Passagem de ~46 cm entre a mesa e o office', 'TV perto demais', '2 lugares à mesa, apertados']
+  }
+};
+const listaAn = linhas => `<ul>${linhas.map(l => Array.isArray(l) ? `<li><b>${esc(l[0])}:</b> ${esc(l[1])}</li>` : `<li>${esc(l)}</li>`).join('')}</ul>`;
+function htmlAnalise(ideia, comId = true) {
+  const a = ANALISE[ideia.id]; if (!a) return '';
+  const caixa = (titulo, corpo, aberta) => `<details${aberta ? ' open' : ''}><summary>${titulo}</summary><div class="corpo-an">${corpo}</div></details>`;
+  const sub = t => `<div class="sub-an">${esc(t)}</div>`;
+  return `<div class="analise"${comId ? ' id="analise"' : ''}><h3>📐 Análise técnica</h3>
+    ${caixa('1. Ergonomia e circulação', sub('Passagens (mínimo de 60 a 80 cm)') + listaAn(a.circulacao) + sub('Zoneamento') + `<p>${esc(a.zoneamento)}</p>`)}
+    ${caixa('2. Infraestrutura (elétrica, hidráulica e gás)', sub('Pontos elétricos e iluminação') + listaAn([...a.eletrica, ...AN_ELETRICA_COZINHA]) + sub('Hidráulica e gás') + listaAn(AN_HIDRAULICA))}
+    ${caixa('3. Marcenaria e folgas de abertura', sub('Portas e gavetas') + listaAn(AN_FOLGAS_COZINHA) + sub('Marcenaria inteligente') + listaAn(a.marcenaria))}
+    ${caixa('4. Materiais', listaAn([...AN_MATERIAIS, ...(a.materiais || [])]))}
+    ${caixa(`5. Resumo e nota <span class="nota ${a.nota >= 7 ? 'boa' : 'media'}">${a.nota}/10</span>`, sub('Prós') + `<ul class="pros">${a.pros.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` + sub('Contras') + `<ul class="contras">${a.contras.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` + `<p><b>Nota de viabilidade: ${a.nota}/10.</b> ${esc(a.notaTxt)}</p>`, true)}
+    <div class="rodape-an">Medidas da opção como ela vem (o ↺ volta a ela). Os valores elétricos seguem a prática comum (NBR 5410) e devem ser confirmados pelo eletricista com a potência dos aparelhos escolhidos.</div>
+  </div>`;
+}
 const IDEIAS = [
   { id: 'office-grande', curto: 'Office na janela', frase: 'Office 140 × 70 na janela · mesa de 2 · sala de TV com porta de correr · sofá com chaise · estante 1,60 com TV 50" 360°',
     titulo: 'Office grande na janela e sala de TV com porta de correr',
@@ -692,7 +806,7 @@ function abrirIdeias() {
   for (const ideia of IDEIAS) {
     const lista = ideia.itens(), v = conferir(lista);
     const ja = estado.layouts.find(l => l.ideia === ideia.id);
-    h += `<div class="ideia">${miniatura(lista)}<div><h4>${esc(ideia.titulo)}</h4>${htmlIdeia(ideia, v)}
+    h += `<div class="ideia">${miniatura(lista)}<div><h4>${esc(ideia.titulo)}</h4>${htmlIdeia(ideia, v)}${htmlAnalise(ideia, false)}
       <div class="fila"><button class="bt prim" data-ideia="${ideia.id}">Ver esta opção</button><button class="bt" data-ideia-nova="${ideia.id}">Fazer uma cópia para mexer</button></div></div></div>`;
   }
   $('#listaIdeias').innerHTML = h;
@@ -713,15 +827,17 @@ function restaurarIdeia() {
   l.itens = ideia.itens(); sel = null; confirmar(); render(); fecharFolhas();
   avisar('Opção voltou ao original (dá para desfazer).');
 }
-function abrirInfoIdeia() {
+function abrirInfoIdeia(foco) {
   const ideia = IDEIAS.find(i => i.id === layout().ideia); if (!ideia) return;
   $('#iiTitulo').textContent = ideia.titulo;
   $('#iiCorpo').innerHTML = `<div class="ideia" style="grid-template-columns:1fr;border:0;padding:0;background:none">${htmlIdeia(ideia, conferir(itens()))}</div>
     <p style="font-size:13px;color:var(--sub)">A conferência acima é do layout como está agora, com as suas mudanças.</p>
+    ${htmlAnalise(ideia)}
     <div class="fila"><button class="bt" id="iiRestaurar">↺ Voltar esta opção ao original</button><button class="bt" id="iiCopia">⧉ Fazer uma cópia para mexer</button></div>`;
   $('#iiRestaurar').onclick = restaurarIdeia;
   $('#iiCopia').onclick = () => usarIdeia(ideia.id, true);
   abrir('#fIdeiaInfo');
+  const an = $('#analise'); if (foco === 'analise' && an) requestAnimationFrame(() => an.scrollIntoView({ block: 'start' }));
 }
 function atualizarBotaoInfo() { $('#btInfo').hidden = !IDEIAS.some(i => i.id === layout().ideia); }
 
@@ -2537,7 +2653,7 @@ function preencherLayouts() {
   const on = $('#abas .aba.on'); if (on) on.scrollIntoView({ block: 'nearest', inline: 'center' });
   const ideia = IDEIAS.find(i => i.id === layout().ideia), leg = $('#legenda');
   leg.hidden = !ideia;
-  if (ideia) leg.innerHTML = `<span>${esc(ideia.frase)}</span><u>prós e contras ›</u>`;
+  if (ideia) leg.innerHTML = `<span>${esc(ideia.frase)}</span>${ANALISE[ideia.id] ? '<u class="an" data-foco="analise">📐 Análise técnica</u>' : ''}<u>prós e contras ›</u>`;
 }
 function preencherListaMoveis() {
   calcularConflitos();
@@ -2765,7 +2881,7 @@ $('#pTV').addEventListener('click', e => {
   confirmar(); render();
 });
 $('#abas').addEventListener('click', e => { const b = e.target.closest('[data-layout]'); if (b && b.dataset.layout !== estado.atual) { trocarLayout(b.dataset.layout); requestAnimationFrame(ajustar); } });
-$('#legenda').onclick = abrirInfoIdeia;
+$('#legenda').onclick = e => abrirInfoIdeia(e.target.closest('[data-foco]') ? 'analise' : null);
 
 $('#catalogo').addEventListener('click', e => {
   const b = e.target.closest('[data-cat]'); if (!b) return;
