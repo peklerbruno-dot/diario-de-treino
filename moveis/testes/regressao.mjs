@@ -52,8 +52,10 @@ import { abrir, verificar } from './harness.mjs';
   const yCama = await noApp(id => pegar(id).y, camaId);
   await t.toque(c.x, c.y);
   verificar((await t.status()).includes('Cama'), 'toque seleciona a cama');
-  await t.arrastar(c.x, c.y, c.x - 20, c.y - 40);
-  verificar((await noApp(id => pegar(id).y, camaId)) < yCama, 'arrastar com o dedo move a cama');
+  await page.waitForTimeout(150);
+  const c2 = await t.centroMovel(camaId); // o painel abriu e a vista pode ter andado
+  await t.arrastar(c2.x, c2.y, c2.x - 20, c2.y + 30);
+  verificar((await noApp(id => pegar(id).y, camaId)) > yCama, 'arrastar com o dedo move a cama');
   const vb0 = await page.getAttribute('#planta', 'viewBox');
   await t.pinca(200, 400, 2);
   verificar(vb0 !== await page.getAttribute('#planta', 'viewBox'), 'pinça muda o zoom');

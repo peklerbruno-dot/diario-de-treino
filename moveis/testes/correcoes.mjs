@@ -30,7 +30,7 @@ import { abrir, verificar } from './harness.mjs';
 
   // 4. alça de redim do L na ponta do braço 1
   await noApp(() => { layout().itens = [mk('cantoL', 'L', 120, 120, 100, 100, 0, { p: 50 })]; sel = itens()[0].id; confirmar(); render(); });
-  const pr = await noApp(() => posAlcaRedim(pegar(sel)));
+  const pr = await noApp(() => cantoRedim(pegar(sel)));
   verificar(pr[0] === 220 && pr[1] === 100, 'alça de redim do L fica na ponta do braço 1: ' + pr);
   // redimensionar pela alça mantém a ponta do braço 2 fixa
   {
