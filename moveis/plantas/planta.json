@@ -1,0 +1,890 @@
+{
+ "W": 420,
+ "H": 700,
+ "E": 15,
+ "PAREDES": [
+  {
+   "x1": 0,
+   "y1": 450,
+   "x2": 222,
+   "y2": 460
+  },
+  {
+   "x1": 300,
+   "y1": 450,
+   "x2": 310,
+   "y2": 700
+  },
+  {
+   "x1": 380,
+   "y1": 450,
+   "x2": 420,
+   "y2": 460
+  }
+ ],
+ "JANELAS": [
+  [
+   60,
+   175
+  ],
+  [
+   250,
+   405
+  ],
+  [
+   521,
+   657
+  ]
+ ],
+ "ENTRADA": [
+  352,
+  432
+ ],
+ "PORTAS": [
+  {
+   "nome": "Porta de entrada",
+   "h": [
+    420,
+    432
+   ],
+   "c": [
+    420,
+    352
+   ],
+   "o": [
+    340,
+    432
+   ]
+  },
+  {
+   "nome": "Porta do dormitório",
+   "h": [
+    300,
+    460
+   ],
+   "c": [
+    222,
+    460
+   ],
+   "o": [
+    300,
+    538
+   ]
+  },
+  {
+   "nome": "Porta do banho",
+   "h": [
+    320,
+    460
+   ],
+   "c": [
+    380,
+    460
+   ],
+   "o": [
+    320,
+    520
+   ]
+  }
+ ],
+ "FIXOS": [
+  {
+   "nome": "Shaft",
+   "x1": 388,
+   "y1": 0,
+   "x2": 420,
+   "y2": 46
+  },
+  {
+   "nome": "Bancada da pia",
+   "x1": 360,
+   "y1": 46,
+   "x2": 420,
+   "y2": 270
+  },
+  {
+   "nome": "Geladeira",
+   "x1": 340,
+   "y1": 280,
+   "x2": 410,
+   "y2": 350
+  },
+  {
+   "nome": "Bancada do banheiro",
+   "x1": 378,
+   "y1": 480,
+   "x2": 420,
+   "y2": 545
+  },
+  {
+   "nome": "Vaso sanitário",
+   "x1": 358,
+   "y1": 558,
+   "x2": 420,
+   "y2": 594
+  },
+  {
+   "nome": "Box",
+   "x1": 310,
+   "y1": 616,
+   "x2": 420,
+   "y2": 700
+  }
+ ],
+ "cooktop": {
+  "x1": 365,
+  "x2": 415,
+  "y1": 66,
+  "y2": 124
+ },
+ "cuba": {
+  "x1": 372,
+  "x2": 410,
+  "y1": 180,
+  "y2": 228
+ },
+ "AMBIENTES": [
+  {
+   "nome": "SALA / JANTAR",
+   "x1": 0,
+   "y1": 0,
+   "x2": 420,
+   "y2": 450,
+   "tx": 210,
+   "ty": 432
+  },
+  {
+   "nome": "DORMITÓRIO 01",
+   "x1": 0,
+   "y1": 460,
+   "x2": 300,
+   "y2": 700,
+   "tx": 150,
+   "ty": 532
+  },
+  {
+   "nome": "BANHO",
+   "x1": 310,
+   "y1": 460,
+   "x2": 420,
+   "y2": 700,
+   "tx": 344,
+   "ty": 530
+  }
+ ],
+ "opcoes": [
+  {
+   "id": "office-grande",
+   "titulo": "Office grande na janela e sala de TV com porta de correr",
+   "itens": [
+    {
+     "nome": "Mesa de computador 140 × 70",
+     "tipo": "escritorio",
+     "w": 140,
+     "h": 70,
+     "x": 70,
+     "y": 35,
+     "rot": 0,
+     "redondo": false,
+     "poly": [
+      [
+       0,
+       0
+      ],
+      [
+       140,
+       0
+      ],
+      [
+       140,
+       70
+      ],
+      [
+       0,
+       70
+      ]
+     ],
+     "painel": null
+    },
+    {
+     "nome": "Cadeira de escritório",
+     "tipo": "cadeira",
+     "w": 60,
+     "h": 60,
+     "x": 70,
+     "y": 60,
+     "rot": 180,
+     "redondo": false,
+     "poly": [
+      [
+       100,
+       90
+      ],
+      [
+       40,
+       90
+      ],
+      [
+       40,
+       30.000000000000004
+      ],
+      [
+       100,
+       29.999999999999996
+      ]
+     ],
+     "painel": null
+    },
+    {
+     "nome": "Mesa 110 × 75",
+     "tipo": "mesa",
+     "w": 110,
+     "h": 75,
+     "x": 211,
+     "y": 119.5,
+     "rot": 0,
+     "redondo": false,
+     "poly": [
+      [
+       156,
+       82
+      ],
+      [
+       266,
+       82
+      ],
+      [
+       266,
+       157
+      ],
+      [
+       156,
+       157
+      ]
+     ],
+     "painel": null
+    },
+    {
+     "nome": "Cadeira",
+     "tipo": "cadeira",
+     "w": 45,
+     "h": 50,
+     "x": 185.5,
+     "y": 82,
+     "rot": 0,
+     "redondo": false,
+     "poly": [
+      [
+       163,
+       57
+      ],
+      [
+       208,
+       57
+      ],
+      [
+       208,
+       107
+      ],
+      [
+       163,
+       107
+      ]
+     ],
+     "painel": null
+    },
+    {
+     "nome": "Cadeira",
+     "tipo": "cadeira",
+     "w": 45,
+     "h": 50,
+     "x": 236.5,
+     "y": 82,
+     "rot": 0,
+     "redondo": false,
+     "poly": [
+      [
+       214,
+       57
+      ],
+      [
+       259,
+       57
+      ],
+      [
+       259,
+       107
+      ],
+      [
+       214,
+       107
+      ]
+     ],
+     "painel": null
+    },
+    {
+     "nome": "Sofá 3 lugares com chaise",
+     "tipo": "chaise",
+     "w": 205,
+     "h": 160,
+     "x": 102.50000000000001,
+     "y": 368,
+     "rot": 180,
+     "redondo": false,
+     "poly": [
+      [
+       205.00000000000003,
+       448
+      ],
+      [
+       2.842170943040401e-14,
+       448
+      ],
+      [
+       0,
+       288
+      ],
+      [
+       75,
+       288
+      ],
+      [
+       75.00000000000001,
+       358
+      ],
+      [
+       205,
+       358
+      ]
+     ],
+     "painel": null
+    },
+    {
+     "nome": "Estante divisória 1,60 com TV 50\" que gira 360°",
+     "tipo": "tv",
+     "w": 160,
+     "h": 45,
+     "x": 80,
+     "y": 227.5,
+     "rot": 0,
+     "redondo": false,
+     "poly": [
+      [
+       0,
+       205
+      ],
+      [
+       160,
+       205
+      ],
+      [
+       160,
+       250
+      ],
+      [
+       0,
+       250
+      ]
+     ],
+     "painel": [
+      [
+       24.5,
+       227.5
+      ],
+      [
+       135.5,
+       227.5
+      ]
+     ]
+    },
+    {
+     "nome": "Painel fixo de vidro 50 × 12",
+     "tipo": "generico",
+     "w": 50,
+     "h": 12,
+     "x": 185,
+     "y": 228,
+     "rot": 0,
+     "redondo": false,
+     "poly": [
+      [
+       160,
+       222
+      ],
+      [
+       210,
+       222
+      ],
+      [
+       210,
+       234
+      ],
+      [
+       160,
+       234
+      ]
+     ],
+     "painel": null
+    },
+    {
+     "nome": "Porta de correr 2 folhas 2,00",
+     "tipo": "porta",
+     "w": 200,
+     "h": 12,
+     "x": 216,
+     "y": 350,
+     "rot": 90,
+     "redondo": false,
+     "poly": [
+      [
+       222,
+       250
+      ],
+      [
+       222,
+       450
+      ],
+      [
+       210,
+       450
+      ],
+      [
+       210,
+       250
+      ]
+     ],
+     "painel": null
+    },
+    {
+     "nome": "Cama box viúvo 128 × 188",
+     "tipo": "cama",
+     "w": 128,
+     "h": 188,
+     "x": 121,
+     "y": 554,
+     "rot": 0,
+     "redondo": false,
+     "poly": [
+      [
+       57,
+       460
+      ],
+      [
+       185,
+       460
+      ],
+      [
+       185,
+       648
+      ],
+      [
+       57,
+       648
+      ]
+     ],
+     "painel": null
+    },
+    {
+     "nome": "Criado-mudo",
+     "tipo": "criado",
+     "w": 45,
+     "h": 40,
+     "x": 27.5,
+     "y": 480,
+     "rot": 0,
+     "redondo": false,
+     "poly": [
+      [
+       5,
+       460
+      ],
+      [
+       50,
+       460
+      ],
+      [
+       50,
+       500
+      ],
+      [
+       5,
+       500
+      ]
+     ],
+     "painel": null
+    },
+    {
+     "nome": "Guarda-roupa de correr 1,60",
+     "tipo": "armario",
+     "w": 160,
+     "h": 55,
+     "x": 272.5,
+     "y": 620,
+     "rot": 90,
+     "redondo": false,
+     "poly": [
+      [
+       300,
+       540
+      ],
+      [
+       300,
+       700
+      ],
+      [
+       245,
+       700
+      ],
+      [
+       245,
+       540
+      ]
+     ],
+     "painel": null
+    }
+   ]
+  },
+  {
+   "id": "invertida",
+   "titulo": "Sofá com chaise em cima, porta de correr, mesa na janela e office embaixo",
+   "itens": [
+    {
+     "nome": "Sofá 2 lugares com chaise",
+     "tipo": "chaise",
+     "w": 200,
+     "h": 150,
+     "x": 100,
+     "y": 75,
+     "rot": 0,
+     "redondo": false,
+     "poly": [
+      [
+       200,
+       90
+      ],
+      [
+       70,
+       90
+      ],
+      [
+       70,
+       150
+      ],
+      [
+       0,
+       150
+      ],
+      [
+       0,
+       0
+      ],
+      [
+       200,
+       0
+      ]
+     ],
+     "painel": null
+    },
+    {
+     "nome": "Porta de correr 2 folhas 2,00",
+     "tipo": "porta",
+     "w": 200,
+     "h": 12,
+     "x": 222,
+     "y": 100,
+     "rot": 90,
+     "redondo": false,
+     "poly": [
+      [
+       228,
+       0
+      ],
+      [
+       228,
+       200
+      ],
+      [
+       216,
+       200
+      ],
+      [
+       216,
+       0
+      ]
+     ],
+     "painel": null
+    },
+    {
+     "nome": "Mesa 80 × 70",
+     "tipo": "mesa",
+     "w": 80,
+     "h": 70,
+     "x": 56,
+     "y": 345,
+     "rot": 0,
+     "redondo": false,
+     "poly": [
+      [
+       16,
+       310
+      ],
+      [
+       96,
+       310
+      ],
+      [
+       96,
+       380
+      ],
+      [
+       16,
+       380
+      ]
+     ],
+     "painel": null
+    },
+    {
+     "nome": "Cadeira",
+     "tipo": "cadeira",
+     "w": 45,
+     "h": 50,
+     "x": 56,
+     "y": 310,
+     "rot": 0,
+     "redondo": false,
+     "poly": [
+      [
+       33.5,
+       285
+      ],
+      [
+       78.5,
+       285
+      ],
+      [
+       78.5,
+       335
+      ],
+      [
+       33.5,
+       335
+      ]
+     ],
+     "painel": null
+    },
+    {
+     "nome": "Cadeira",
+     "tipo": "cadeira",
+     "w": 45,
+     "h": 50,
+     "x": 56,
+     "y": 380,
+     "rot": 180,
+     "redondo": false,
+     "poly": [
+      [
+       78.5,
+       405
+      ],
+      [
+       33.5,
+       405
+      ],
+      [
+       33.5,
+       355
+      ],
+      [
+       78.5,
+       355
+      ]
+     ],
+     "painel": null
+    },
+    {
+     "nome": "Mesa de computador 100 × 55",
+     "tipo": "escritorio",
+     "w": 100,
+     "h": 55,
+     "x": 172,
+     "y": 422.5,
+     "rot": 180,
+     "redondo": false,
+     "poly": [
+      [
+       222,
+       450
+      ],
+      [
+       122,
+       450
+      ],
+      [
+       122,
+       395
+      ],
+      [
+       222,
+       395
+      ]
+     ],
+     "painel": null
+    },
+    {
+     "nome": "Cadeira de escritório",
+     "tipo": "cadeira",
+     "w": 60,
+     "h": 60,
+     "x": 172,
+     "y": 390,
+     "rot": 0,
+     "redondo": false,
+     "poly": [
+      [
+       142,
+       360
+      ],
+      [
+       202,
+       360
+      ],
+      [
+       202,
+       420
+      ],
+      [
+       142,
+       420
+      ]
+     ],
+     "painel": null
+    },
+    {
+     "nome": "Estante divisória 2,00 com TV 55\" que gira 360°",
+     "tipo": "tv",
+     "w": 200,
+     "h": 45,
+     "x": 100,
+     "y": 202.5,
+     "rot": 0,
+     "redondo": false,
+     "poly": [
+      [
+       0,
+       180
+      ],
+      [
+       200,
+       180
+      ],
+      [
+       200,
+       225
+      ],
+      [
+       0,
+       225
+      ]
+     ],
+     "painel": [
+      [
+       161,
+       202.5
+      ],
+      [
+       39,
+       202.5
+      ]
+     ]
+    },
+    {
+     "nome": "Cama box viúvo 128 × 188",
+     "tipo": "cama",
+     "w": 128,
+     "h": 188,
+     "x": 121,
+     "y": 554,
+     "rot": 0,
+     "redondo": false,
+     "poly": [
+      [
+       57,
+       460
+      ],
+      [
+       185,
+       460
+      ],
+      [
+       185,
+       648
+      ],
+      [
+       57,
+       648
+      ]
+     ],
+     "painel": null
+    },
+    {
+     "nome": "Criado-mudo",
+     "tipo": "criado",
+     "w": 45,
+     "h": 40,
+     "x": 27.5,
+     "y": 480,
+     "rot": 0,
+     "redondo": false,
+     "poly": [
+      [
+       5,
+       460
+      ],
+      [
+       50,
+       460
+      ],
+      [
+       50,
+       500
+      ],
+      [
+       5,
+       500
+      ]
+     ],
+     "painel": null
+    },
+    {
+     "nome": "Guarda-roupa de correr 1,60",
+     "tipo": "armario",
+     "w": 160,
+     "h": 55,
+     "x": 272.5,
+     "y": 620,
+     "rot": 90,
+     "redondo": false,
+     "poly": [
+      [
+       300,
+       540
+      ],
+      [
+       300,
+       700
+      ],
+      [
+       245,
+       700
+      ],
+      [
+       245,
+       540
+      ]
+     ],
+     "painel": null
+    }
+   ]
+  }
+ ]
+}
