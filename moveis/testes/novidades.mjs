@@ -29,7 +29,7 @@ import { abrir, verificar } from './harness.mjs';
   const tr = await noApp(() => nosMoveis.get(itens()[1].id).g.getAttribute('transform'));
   const y0 = await noApp(() => itens()[1].y);
   const ySim = Number(/translate\([^ ]+ ([^)]+)\)/.exec(tr)[1]);
-  verificar(Math.abs(ySim - (y0 - 45)) < 0.5, `simular: cadeira sai 45 cm da mesa (${y0} → ${ySim})`);
+  verificar(Math.abs(ySim - (y0 - 55)) < 0.5, `simular: cadeira sai 55 cm de debaixo da mesa (${y0} → ${ySim})`);
   verificar(await page.isVisible('#simInfo'), 'simular mostra o quadro de resultado');
   await page.click('#btSim');
   const tr2 = await noApp(() => nosMoveis.get(itens()[1].id).g.getAttribute('transform'));

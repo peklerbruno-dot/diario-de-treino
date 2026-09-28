@@ -25,8 +25,8 @@ for (const x of r) {
   verificar(x.pc === 1 && x.cadEsc === 1, `${x.id}: mesa de computador e cadeira de escritório`);
   verificar(x.esticar >= 1, `${x.id}: sofá com chaise, retrátil ou puff (${x.sofa})`);
   verificar(x.tv.length === 1 && x.tv[0][1] >= 40 && x.tv[0][2] >= 40, `${x.id}: TV em cima de um móvel de verdade ${JSON.stringify(x.tv)}`);
-  verificar(x.fogao.y2 === 145 && x.fogao.x2 === 420, `${x.id}: fogão encostado em cima da bancada ${JSON.stringify(x.fogao)}`);
-  verificar(x.geladeira.y1 === 265 && x.geladeira.x2 === 420, `${x.id}: geladeira encostada embaixo da bancada ${JSON.stringify(x.geladeira)}`);
+  verificar(x.geladeira.y2 === 145 && x.geladeira.x2 === 420, `${x.id}: geladeira encostada na ponta da bancada perto da shaft ${JSON.stringify(x.geladeira)}`);
+  verificar(x.fogao.y1 === 265 && x.fogao.x2 === 420, `${x.id}: fogão encostado na ponta da bancada perto da entrada ${JSON.stringify(x.fogao)}`);
   verificar(!x.cozinhaSolta, `${x.id}: geladeira e fogão são fixos (não repetidos como móveis)`);
   verificar(x.correr, `${x.id}: guarda-roupa de portas de correr`);
   verificar(x.cama === 'Cama box viúvo 128 × 188' && x.lados.every(v => v >= 55), `${x.id}: cama de viúvo com os dois lados livres (${x.lados.map(Math.round).join(' e ')} cm)`);
@@ -41,6 +41,8 @@ verificar(banho.rotulo.length >= 4, 'planta mostra box, vidro, bancada e piso li
 // cadeiras começam guardadas debaixo da mesa e isso não conta como batida
 const guardadas = await noApp(() => IDEIAS.map(i => { const l = i.itens(); return l.filter(c => c.tipo === 'cadeira').every(c => l.some(m => MESAS.has(m.tipo) && itemPartes(c).some(pc => itemPartes(m).some(pm => colide(pc, pm))))); }));
 verificar(guardadas.every(Boolean), 'em todas as opções as cadeiras começam guardadas debaixo da mesa: ' + guardadas);
+const fundo = await noApp(() => IDEIAS.flatMap(i => { const l = i.itens(); return l.filter(c => c.tipo === 'cadeira').map(c => { const m = l.find(m => MESAS.has(m.tipo) && itemPartes(c).some(pc => itemPartes(m).some(pm => colide(pc, pm)))); const a = caixa(itemPoly(c)), b = caixa(itemPoly(m)); return Math.round(Math.min(a.x2, b.x2) - Math.max(a.x1, b.x1) < Math.min(a.y2, b.y2) - Math.max(a.y1, b.y1) ? Math.min(a.x2, b.x2) - Math.max(a.x1, b.x1) : Math.min(a.y2, b.y2) - Math.max(a.y1, b.y1)); }); }));
+verificar(fundo.every(v => v >= 20), 'cadeiras guardadas uns 25 cm para dentro da mesa: ' + fundo.join(','));
 // abas: uma por opção, um toque troca
 const abas = await t.page.locator('#abas .aba').count();
 verificar(abas >= 4, 'abas no topo com as opções: ' + abas);
@@ -52,6 +54,12 @@ verificar(sinc.filter(l => l[1]).length === 4 && sinc.some(l => /versão antiga/
 // geladeira/fogão soltos de versões anteriores saem dos layouts salvos
 const mig2 = await noApp(() => { localStorage.setItem(CHAVE, JSON.stringify({ layouts: [{ id: 'z', nome: 'Antigo', itens: [{ tipo: 'geladeira', nome: 'Geladeira', w: 70, h: 75, x: 100, y: 100 }, { tipo: 'sofa', nome: 'Sofá', w: 160, h: 90, x: 100, y: 300 }] }], atual: 'z' })); carregar(); const l = estado.layouts.find(l => l.id === 'z'); return l.itens.map(i => i.tipo); });
 verificar(mig2.join() === 'sofa', 'geladeira solta de layout antigo é removida (a fixa fica na planta): ' + mig2);
+// quem estava no "Layout 1" antigo abre na Opção 1, e os antigos não aparecem nas abas
+const velho = await noApp(() => { localStorage.setItem(CHAVE, JSON.stringify({ layouts: [{ id: 'v', nome: 'Layout 1', itens: [{ tipo: 'planta', nome: 'Vaso de planta', w: 45, h: 45, x: 350, y: 30 }] }], atual: 'v' })); carregar(); preencherLayouts(); return { atual: layout().ideia, abas: [...document.querySelectorAll('#abas .aba')].map(b => b.textContent) }; });
+verificar(velho.atual === 'office-janela' && !velho.abas.some(a => /Layout 1/.test(a)), 'layout antigo sai das abas e o app abre na Opção 1: ' + JSON.stringify(velho));
+// trocar geladeira e fogão pelo menu
+const troca = await noApp(() => { estado.op.cozinha = 'fogao-cima'; aplicarCozinha('fogao-cima'); const r = [FIXOS.find(f => f.nome === 'Fogão').y2, FIXOS.find(f => f.nome === 'Geladeira').y1]; aplicarCozinha('gel-cima'); estado.op.cozinha = 'gel-cima'; return r; });
+verificar(troca[0] === 145 && troca[1] === 265, 'botão do menu inverte geladeira e fogão: ' + troca);
 // TV antiga (só a tela) vira móvel ao carregar
 const mig = await noApp(() => { const it = limparItem({ tipo: 'tv', nome: 'TV antiga', w: 123, h: 8, x: 100, y: 100, base: 20 }); return [it.tela, it.estilo, !!it._migrar]; });
 verificar(mig[0] === 123 && mig[1] === 'giratorio' && mig[2], 'TV da versão anterior é convertida para móvel giratório');
