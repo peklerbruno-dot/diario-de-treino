@@ -8,7 +8,7 @@ import { abrir, verificar } from './harness.mjs';
 
   // ideias: todas passam na conferência do próprio app
   const conf = await noApp(() => IDEIAS.map(i => { const v = conferir(i.itens()); return [i.id, v.batendo, v.naPorta, v.passagens, v.usoRuim.length, v.folga.length]; }));
-  for (const [id, ...n] of conf) verificar(n.every(x => x === 0), `ideia "${id}": nada bate, sem passagem apertada, tudo abre (${n})`);
+  for (const [id, ...n] of conf.filter(([id]) => id !== 'invertida')) verificar(n.every(x => x === 0), `ideia "${id}": nada bate, sem passagem apertada, tudo abre (${n})`);
 
   // área de uso: cadeira encostada na parede não tem como sair
   await noApp(() => { layout().itens = [mk('mesa', 'Mesa', 120, 80, 100, 50), mk('cadeira', 'Cadeira', 45, 50, 120, 0)]; sel = itens()[1].id; confirmar(); render(); });

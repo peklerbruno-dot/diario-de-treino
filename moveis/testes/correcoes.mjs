@@ -122,7 +122,7 @@ import { abrir, verificar } from './harness.mjs';
   const t = await abrir({ iphone: true });
   const { page, noApp } = t;
   // 12. arrastar um móvel pequeno já selecionado move em vez de redimensionar
-  const vasoId = await noApp(() => itens().find(i => i.nome === 'Criado-mudo estreito').id);
+  const vasoId = await noApp(() => itens().find(i => i.nome === 'Criado-mudo').id);
   let c = await t.centroMovel(vasoId);
   await t.toque(c.x, c.y);
   c = await t.centroMovel(vasoId);

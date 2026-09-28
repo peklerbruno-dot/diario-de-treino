@@ -38,7 +38,8 @@ for (const x of r) {
 // rodada 4: tudo em uso ao mesmo tempo (TV girando, cadeiras puxadas, portas abertas) sem nada se encontrar
 const emUso = await noApp(() => IDEIAS.map(ideia => { const l = ideia.itens(), u = calcularUso(l);
   return [ideia.id, l.flatMap(i => (u.get(i.id) || []).map(p => `${i.nome}: ${p.zona} × ${p.com.join('/')}`)).concat(u.fixos.map(p => p.zona || String(p)))]; }));
-for (const [id, probs] of emUso) verificar(probs.length === 0, `${id}: TV girando, cadeiras puxadas e portas abertas não se encontram ${probs.join(' | ')}`);
+// a opção 'invertida' foi salva exatamente como o morador montou; os avisos dela aparecem no app
+for (const [id, probs] of emUso.filter(([id]) => id !== 'invertida')) verificar(probs.length === 0, `${id}: TV girando, cadeiras puxadas e portas abertas não se encontram ${probs.join(' | ')}`);
 // a cadeira puxada que alcança outra mesa (não a própria) conta
 const outraMesa = await noApp(() => { const m = mk('escritorio', 'Mesa de computador 120 × 60', 120, 60, 0, 100), g = uid();
   const mesa = mk('mesa', 'Mesa 80 × 70', 80, 70, 150, 100, 0, { grupo: g }), c = mk('cadeira', 'Cadeira', 45, 50, 125, 110, 270, { grupo: g });
@@ -49,6 +50,10 @@ const forno = await noApp(() => { const g = uid(), mesa = mk('mesa', 'Mesa 80 ×
   const u = calcularUso([mesa, c]); return { zonas: usoFixo(1).map(z => z.nome), cadeira: (u.get(c.id) || []).map(p => p.zona) }; });
 verificar(forno.zonas.includes('porta do forno') && forno.zonas.includes('frente da bancada'), 'cozinha tem porta do forno e frente da bancada: ' + forno.zonas);
 verificar(forno.cadeira.some(z => /forno/.test(z)), 'cadeira puxada na frente do forno é apontada: ' + forno.cadeira);
+// porta de correr: na simulação a folha da frente desliza por cima da de trás
+const porta = await noApp(() => { const l = estado.layouts.find(l => l.ideia === 'invertida'); trocarLayout(l.id); const p = itens().find(i => i.tipo === 'porta');
+  simulando = true; desenharUso(1); const tr = nosMoveis.get(p.id).g.querySelector('.folhaCorrer').getAttribute('transform'); simulando = false; desenharUso(1); return tr; });
+verificar(/translate\(-9\d/.test(porta), 'porta de correr abre na simulação: ' + porta);
 const lugares = r.map(x => x.sofa.join(' ')).join(' | ');
 verificar(/2 lugares/.test(lugares) && /3 lugares/.test(lugares), 'há opções com sofá de 2 e de 3 lugares: ' + lugares);
 // banheiro
