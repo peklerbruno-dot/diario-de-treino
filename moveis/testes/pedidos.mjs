@@ -28,7 +28,7 @@ for (const x of r) {
   verificar(x.esticar >= 1, `${x.id}: sofá com chaise, retrátil ou puff (${x.sofa})`);
   verificar(x.tv.length === 1 && x.tv[0][1] >= 40 && x.tv[0][2] >= 40, `${x.id}: TV em cima de um móvel de verdade ${JSON.stringify(x.tv)}`);
   verificar(x.bancada.y1 === 46 && x.cooktop.y2 < 130 && x.cooktop.y1 >= x.bancada.y1, `${x.id}: bancada comprida desde a shaft, com cooktop embutido na ponta de cima ${JSON.stringify([x.bancada, x.cooktop])}`);
-  verificar(x.geladeira.y1 - x.bancada.y2 >= 3 && 420 - x.geladeira.x2 >= 3 && x.geladeira.y2 < 352, `${x.id}: geladeira perto da entrada com folga da bancada e da parede ${JSON.stringify(x.geladeira)}`);
+  verificar(x.geladeira.y1 - x.bancada.y2 >= 10 && 420 - x.geladeira.x2 >= 10 && x.geladeira.y2 <= 352 && x.cooktop.y1 - x.bancada.y1 >= 15, `${x.id}: geladeira com 10 cm de folga para ventilar e cooktop a 15 cm ou mais da ponta (cabo de panela) ${JSON.stringify(x.geladeira)}`);
   verificar(!x.canto, `${x.id}: sem canto alemão, só cadeiras soltas`);
   verificar(x.divisoria, `${x.id}: estante divisória com TV que gira 360°`);
   verificar(!x.cozinhaSolta, `${x.id}: geladeira e fogão são fixos (não repetidos como móveis)`);
