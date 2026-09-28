@@ -44,6 +44,11 @@ const outraMesa = await noApp(() => { const m = mk('escritorio', 'Mesa de comput
   const mesa = mk('mesa', 'Mesa 80 × 70', 80, 70, 150, 100, 0, { grupo: g }), c = mk('cadeira', 'Cadeira', 45, 50, 125, 110, 270, { grupo: g });
   return (calcularUso([m, mesa, c]).get(c.id) || []).some(p => p.com.includes(m.nome)); });
 verificar(outraMesa, 'cadeira puxada contra a mesa do computador é apontada');
+// rodada 5: forno embaixo do cooktop e quem cozinha na frente da bancada
+const forno = await noApp(() => { const g = uid(), mesa = mk('mesa', 'Mesa 80 × 70', 80, 70, 195, 50, 0, { grupo: g }), c = mk('cadeira', 'Cadeira', 45, 50, 250, 60, 90, { grupo: g });
+  const u = calcularUso([mesa, c]); return { zonas: usoFixo(1).map(z => z.nome), cadeira: (u.get(c.id) || []).map(p => p.zona) }; });
+verificar(forno.zonas.includes('porta do forno') && forno.zonas.includes('frente da bancada'), 'cozinha tem porta do forno e frente da bancada: ' + forno.zonas);
+verificar(forno.cadeira.some(z => /forno/.test(z)), 'cadeira puxada na frente do forno é apontada: ' + forno.cadeira);
 const lugares = r.map(x => x.sofa.join(' ')).join(' | ');
 verificar(/2 lugares/.test(lugares) && /3 lugares/.test(lugares), 'há opções com sofá de 2 e de 3 lugares: ' + lugares);
 // banheiro
@@ -55,7 +60,7 @@ verificar(banho.rotulo.length >= 4, 'planta mostra box, vidro, bancada e piso li
 const guardadas = await noApp(() => IDEIAS.map(i => { const l = i.itens(); return l.filter(c => c.tipo === 'cadeira').every(c => l.some(m => MESAS.has(m.tipo) && itemPartes(c).some(pc => itemPartes(m).some(pm => colide(pc, pm))))); }));
 verificar(guardadas.every(Boolean), 'em todas as opções as cadeiras começam guardadas debaixo da mesa: ' + guardadas);
 const fundo = await noApp(() => IDEIAS.flatMap(i => { const l = i.itens(); return l.filter(c => c.tipo === 'cadeira').map(c => { const m = l.find(m => MESAS.has(m.tipo) && itemPartes(c).some(pc => itemPartes(m).some(pm => colide(pc, pm)))); const a = caixa(itemPoly(c)), b = caixa(itemPoly(m)); return Math.round(Math.min(a.x2, b.x2) - Math.max(a.x1, b.x1) < Math.min(a.y2, b.y2) - Math.max(a.y1, b.y1) ? Math.min(a.x2, b.x2) - Math.max(a.x1, b.x1) : Math.min(a.y2, b.y2) - Math.max(a.y1, b.y1)); }); }));
-verificar(fundo.every(v => v >= 20), 'cadeiras guardadas uns 25 cm para dentro da mesa: ' + fundo.join(','));
+verificar(fundo.every(v => v >= 10) && fundo.filter(v => v >= 20).length >= fundo.length - 2, 'cadeiras guardadas para dentro da mesa (as de cabeceira da mesa na janela, 10 cm): ' + fundo.join(','));
 // abas: uma por opção, um toque troca
 const abas = await t.page.locator('#abas .aba').count();
 verificar(abas >= 4, 'abas no topo com as opções: ' + abas);

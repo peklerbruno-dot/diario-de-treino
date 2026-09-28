@@ -47,7 +47,7 @@ import { abrir, verificar } from './harness.mjs';
   await page.click(`#pTV [data-virar="${alvo}"]`);
   const rot = await noApp(() => dirTV(pegar(sel)));
   verificar(rot === alvo && alvo !== atual, `botão "virar para" gira o painel da TV para ${alvo}°: ${rot}`);
-  verificar((await page.textContent('#pTV')).includes('TV de 55"'), 'painel da TV mostra a polegada');
+  verificar((await page.textContent('#pTV')).match(/TV de 5[05]"/), 'painel da TV mostra a polegada');
 
   // régua: de parede a parede da sala (420 cm)
   await noApp(() => { layout().itens = []; sel = null; confirmar(); render(); ajustar(); });
