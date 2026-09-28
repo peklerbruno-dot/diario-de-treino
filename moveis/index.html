@@ -554,7 +554,7 @@ const REDONDOS = new Set(['redondo', 'planta']);
    ESTADO
    ============================================================ */
 const CHAVE = 'simuladorMoveis.v1';
-const VERSAO_APP = '28/09 · versão 7'; // aparece no menu: serve para conferir se o aparelho abriu a versão nova
+const VERSAO_APP = '28/09 · versão 8'; // aparece no menu: serve para conferir se o aparelho abriu a versão nova
 const OP_PADRAO = { ima: true, cotas: true, portas: true, grade: true, rotulos: true, passagens: true, uso: false, cozinha: 'fogao-cima' };
 let estado;          // { layouts:[{id,nome,itens}], atual, op }
 let sel = null;      // id do móvel selecionado
@@ -603,53 +603,56 @@ const escritorio = (x, y, rot, cx, cy, crot, w = 120, h = 60) => { const g = uid
   mk('escritorio', `Mesa de computador ${w} × ${h}`, w, h, x, y, rot, { grupo: g }),
   mk('cadeira', 'Cadeira de escritório', 60, 60, cx, cy, crot, { grupo: g })]; };
 const TV55 = (x, y, rot, giro) => mk('tv', 'Estante divisória 1,80 com TV 55" que gira 360°', 180, 45, x, y, rot, { tela: 122, estilo: 'divisoria', giro });
-// mesa de 4 lugares com cadeiras soltas, ao lado da janela de cima e perto da cozinha
-const jantar4 = () => { const g = uid(); return [mk('mesa', 'Mesa 120 × 80', 120, 80, 185, 20, 90, { grupo: g }), ...cadeiras(g, [[160, 30, 270], [160, 85, 270], [240, 30, 90], [240, 85, 90]])]; };
+// mesa do computador no canto de cima, junto da janela: a cadeira sai para baixo, longe das cadeiras da mesa
+const officeCanto = (w = 120, h = 60) => escritorio(0, 0, 0, 30, h - 20, 180, w, h);
+// mesa de 4 lugares com cadeiras soltas, perto da cozinha; as da esquerda puxadas não alcançam a mesa do computador
+const jantar4 = y => { const g = uid(), x = 185; return [mk('mesa', 'Mesa 120 × 80', 120, 80, x, y, 90, { grupo: g }),
+  ...cadeiras(g, [[x - 25, y + 10, 270], [x - 25, y + 65, 270], [x + 55, y + 10, 90], [x + 55, y + 65, 90]])]; };
 const IDEIAS = [
-  { id: 'office-janela', curto: 'Office na janela', frase: 'Sofá 2 lugares com chaise · mesa de 4 · office na janela · estante divisória com TV 360°',
-    titulo: 'Office na janela, mesa de 4 e sofá com chaise',
-    resumo: 'A mesa do computador fica sob a janela de cima e a mesa de 4 lugares, com cadeiras soltas, ao lado dela, perto da cozinha. A estante divisória atravessa a sala no meio: do outro lado fica o sofá de 2 lugares com chaise. A TV, no painel do meio da estante, gira para o sofá, para a mesa ou para o computador.',
+  { id: 'office-janela', curto: 'Sofá com chaise', frase: 'Sofá 2 lugares com chaise · mesa de 4 · office no canto da janela · estante divisória com TV 360°',
+    titulo: 'Sofá com chaise, mesa de 4 e office no canto',
+    resumo: 'A mesa do computador fica no canto de cima, com a janela do lado. A mesa de 4 lugares, com cadeiras soltas, fica perto da cozinha. A estante divisória atravessa a sala: do outro lado fica o sofá de 2 lugares com chaise. A TV, no painel do meio da estante, gira para o sofá, para a mesa ou para o computador sem bater em nada.',
     proporciona: ['home office com computador de mesa e cadeira de escritório', 'mesa de 4 lugares com cadeiras soltas', 'sofá de 2 lugares com chaise para esticar as pernas', 'estante vazada que separa estar de jantar e trabalho, com a TV de 55" girando 360°'],
-    pros: ['Luz natural do lado da tela do computador', 'A estante separa os ambientes sem fechar a sala: é vazada', 'A chaise deixa deitar sem ocupar a sala toda'],
-    contras: ['A estante corta a sala: de um lado para o outro se passa pelo lado da cozinha (70 cm)', 'As cadeiras do lado da cozinha, puxadas, entram um pouco no corredor da pia', 'Sofá de 2 lugares sentados (mais 1 deitado na chaise)'],
-    tv: 'TV de 55" (boa distância: 1,4 a 2,2 m). Virada para o sofá fica a 1,5 m; girando o painel, fica a 1,9 m da mesa e a 1,4 m do computador.',
-    itens: () => [...escritorio(0, 55, 270, 35, 85, 90), ...jantar4(),
+    pros: ['Dá para trabalhar no computador e ter gente jantando ao mesmo tempo: as cadeiras puxadas não se encontram', 'Luz natural do lado esquerdo da mesa do computador', 'A estante separa os ambientes sem fechar a sala: é vazada'],
+    contras: ['Entre a estante e o sofá sobram só 35 cm: o sofá fica bem encostado na estante', 'As cadeiras do lado da cozinha, puxadas, entram um pouco no corredor da pia', 'Sofá de 2 lugares sentados (mais 1 deitado na chaise)'],
+    tv: 'TV de 55" (boa distância: 1,4 a 2,2 m). Virada para o sofá fica a 1,3 m, um pouco perto; girando o painel, fica a 1,75 m da mesa e a 2,2 m do computador. O giro do painel (Ø 1,30 m) não alcança nenhuma cadeira puxada.',
+    itens: () => [...officeCanto(), ...jantar4(50),
       mk('chaise', 'Sofá 2 lugares com chaise', 200, 150, 10, 300, 180, { p: 90, c: 70, lado: 'd' }),
-      TV55(20, 205, 0, 0), ...quarto()] },
-  { id: 'janela-sofa', curto: 'Sofá na janela', frase: 'Sofá 3 lugares retrátil + puff na janela · mesa de 4 · office na janela · estante em pé com TV 360°',
+      TV55(20, 220, 0, 0), ...quarto()] },
+  { id: 'janela-sofa', curto: 'Sofá na janela', frase: 'Sofá 3 lugares retrátil + puff na janela · mesa de 4 · office no canto · estante em pé com TV 360°',
     titulo: 'Sofá de 3 na janela e estante em pé',
-    resumo: 'O sofá de 3 lugares retrátil encosta na parede das janelas, de frente para a estante divisória, que fica em pé separando a sala do corredor da cozinha. A TV gira para o sofá, para a mesa de 4 ou para a pia.',
-    proporciona: ['sofá de 3 lugares que abre 60 cm para deitar, com puff móvel', 'mesa de 4 lugares com cadeiras soltas', 'home office na janela de cima', 'TV de 55" que dá para ver até da pia'],
-    pros: ['Dá para ver TV cozinhando: o painel gira para o lado da pia', 'Sofá grande, que aberto vira quase uma cama', 'O centro da sala fica livre'],
-    contras: ['O sofá fica na frente da janela de baixo (cortina atrás do encosto)', 'A estante fica junto do corredor da cozinha: a sala parece mais estreita', 'O computador fica longe da TV (2,4 m)'],
-    tv: 'TV de 55" (boa distância: 1,4 a 2,2 m). Fica a 1,8 m do sofá e, girando o painel, a 1,85 m da mesa; virada para a direita, a uns 1,8 m da pia.',
-    itens: () => [...escritorio(0, 55, 270, 35, 85, 90), ...jantar4(),
+    resumo: 'O sofá de 3 lugares retrátil encosta na parede das janelas, de frente para a estante divisória, que fica em pé separando a sala do corredor da cozinha. Mesa do computador no canto de cima e mesa de 4 perto da cozinha. A TV gira para o sofá, para a mesa de 4 ou para a pia.',
+    proporciona: ['sofá de 3 lugares que abre 60 cm para deitar, com puff móvel', 'mesa de 4 lugares com cadeiras soltas', 'home office no canto de cima, ao lado da janela', 'TV de 55" que dá para ver até da pia'],
+    pros: ['Dá para ver TV cozinhando: o painel gira para o lado da pia', 'Sofá grande, que aberto vira quase uma cama', 'Computador, mesa e sofá podem ser usados ao mesmo tempo sem uma cadeira pegar na outra'],
+    contras: ['O sofá fica na frente da janela de baixo (cortina atrás do encosto)', 'A estante fica junto do corredor da cozinha: a sala parece mais estreita', 'O computador fica longe da TV (2,9 m)'],
+    tv: 'TV de 55" (boa distância: 1,4 a 2,2 m). Fica a 1,8 m do sofá e, girando o painel, a 1,55 m da mesa; virada para a direita, a uns 1,8 m da pia.',
+    itens: () => [...officeCanto(), ...jantar4(55),
       mk('sofa', 'Sofá 3 lugares retrátil (abre 60 cm)', 210, 95, 0, 215, 270, { retratil: 60 }),
       mk('puff', 'Puff móvel 60 × 60', 60, 60, 100, 385),
-      TV55(200, 175, 90, 0), ...quarto()] },
-  { id: 'office-grande', curto: 'Office grande', frase: 'Sofá 3 lugares + puff baú · mesa de 2 · office 140 × 70 na janela · estante divisória com TV 360°',
+      TV55(200, 180, 90, 0), ...quarto()] },
+  { id: 'office-grande', curto: 'Office grande', frase: 'Sofá 3 lugares + puff baú · mesa de 2 · office 140 × 70 no canto · estante divisória com TV 360°',
     titulo: 'Home office grande e sofá de 3 com puff',
-    resumo: 'Mesa de computador maior (140 × 70), boa para monitor grande ou dois, sob a janela de cima. Mesa de 2 lugares perto da cozinha. A estante divisória separa o trabalho do sofá de 3 lugares, que tem um puff baú na frente.',
+    resumo: 'Mesa de computador maior (140 × 70), boa para monitor grande ou dois, no canto de cima ao lado da janela. Mesa de 2 lugares encostada na parede, perto da cozinha. A estante divisória separa o trabalho do sofá de 3 lugares, que tem um puff baú na frente.',
     proporciona: ['mesa de computador de 140 × 70 com o gabinete embaixo', 'mesa de 2 lugares com cadeiras soltas', 'sofá de 3 lugares com puff baú para esticar as pernas e guardar coisas'],
     pros: ['A melhor para quem trabalha muitas horas em casa', 'A estante esconde o escritório de quem está no sofá', 'O puff baú guarda mantas e sai do lugar quando precisa'],
-    contras: ['Só 2 lugares fixos à mesa', 'A TV fica longe da mesa de jantar (2,3 m)', 'A mesa de jantar encosta na parede: um lado fica sem cadeira'],
-    tv: 'TV de 55" (boa distância: 1,4 a 2,2 m). Fica a 1,8 m do sofá; girada para o computador, a 1,4 m, e dá para usar como segunda tela.',
-    itens: () => { const g = uid(); return [...escritorio(0, 40, 270, 45, 80, 90, 140, 70),
+    contras: ['Só 2 lugares à mesa', 'A TV fica longe da mesa de jantar (2,4 m)', 'A mesa de jantar encosta na parede: um lado fica sem cadeira'],
+    tv: 'TV de 55" (boa distância: 1,4 a 2,2 m). Fica a 1,7 m do sofá e, girada para o computador, a 2,05 m.',
+    itens: () => { const g = uid(); return [...officeCanto(140, 70),
       mk('mesa', 'Mesa 80 × 70', 80, 70, 195, 0, 0, { grupo: g }), ...cadeiras(g, [[205, 45, 180], [250, 5, 90]]),
-      mk('sofa', 'Sofá 3 lugares', 210, 90, 5, 360, 180), mk('puff', 'Puff baú 80 × 45', 80, 45, 150, 314),
-      TV55(20, 205, 0, 0), ...quarto()]; } },
-  { id: 'invertida', curto: 'Sofá em cima', frase: 'Sofá 2 lugares retrátil + puff em cima · mesa redonda de 3 · office na parede do quarto · estante com TV 360°',
-    titulo: 'Sofá na parede de cima, office na parede do quarto',
-    resumo: 'A sala ao contrário: o sofá de 2 lugares retrátil vai para a parede de cima e a mesa do computador para a parede do quarto. A estante divisória fica entre os dois, e a mesa redonda de 3 lugares perto da cozinha.',
-    proporciona: ['sofá de 2 lugares retrátil com puff móvel', 'home office num canto mais reservado, atrás da estante', 'mesa redonda com 3 cadeiras soltas'],
-    pros: ['A estante esconde o computador de quem está no sofá', 'A sala mais livre das quatro: 28% do piso com móveis', 'O sofá fica longe da porta de entrada, mais aconchegante'],
-    contras: ['A mesa do computador não tem luz natural direta', 'Mesa redonda de 90 cm: 3 lugares (4 apertado)', 'Sofá de 2 lugares'],
-    tv: 'TV de 55" (boa distância: 1,4 a 2,2 m). Fica a 2,15 m do sofá; girando o painel, a 1,4 m da mesa e a 1,6 m do computador.',
+      mk('sofa', 'Sofá 3 lugares', 210, 90, 5, 360, 180), mk('puff', 'Puff baú 80 × 45', 80, 45, 20, 314),
+      TV55(20, 215, 0, 0), ...quarto()]; } },
+  { id: 'invertida', curto: 'Sofá em cima', frase: 'Sofá 2 lugares retrátil + puff em cima · mesa de 2 · office na janela de baixo · estante com TV 360°',
+    titulo: 'Sofá na parede de cima, office na janela de baixo',
+    resumo: 'A sala ao contrário: o sofá de 2 lugares retrátil vai para a parede de cima e a mesa do computador para a janela de baixo. A estante divisória fica entre os dois; a mesa de 2 lugares fica ao lado do office, perto da cozinha.',
+    proporciona: ['sofá de 2 lugares retrátil com puff móvel', 'home office na janela, atrás da estante', 'mesa de 2 lugares (cabe uma 3ª cadeira dobrável quando vem visita)'],
+    pros: ['A estante esconde o computador de quem está no sofá', 'A sala mais livre das quatro: 26% do piso com móveis', 'Luz natural na mesa do computador'],
+    contras: ['Só 2 lugares à mesa', 'Sofá de 2 lugares', 'Quem entra pela porta dá de cara com a mesa de jantar'],
+    tv: 'TV de 55" (boa distância: 1,4 a 2,2 m). Fica a 1,75 m do sofá; girando o painel, a 1,45 m do computador e a 1,5 m da mesa.',
     itens: () => { const g = uid(); return [
       mk('sofa', 'Sofá 2 lugares retrátil (abre 60 cm)', 160, 95, 10, 0, 0, { retratil: 60 }), mk('puff', 'Puff móvel 60 × 60', 60, 60, 180, 15),
-      ...escritorio(10, 390, 180, 40, 355, 0),
-      mk('redondo', 'Mesa redonda Ø90', 90, 90, 180, 135, 0, { grupo: g }), ...cadeiras(g, [[150, 157.5, 270], [202.5, 205, 180], [250, 157.5, 90]]),
-      TV55(20, 240, 0, 180), ...quarto()]; } }
+      ...escritorio(0, 285, 270, 35, 315, 90),
+      mk('mesa', 'Mesa 80 × 70', 80, 70, 185, 280, 0, { grupo: g }), ...cadeiras(g, [[202.5, 255, 0], [202.5, 325, 180]]),
+      TV55(20, 200, 0, 180), ...quarto()]; } }
 ];
 // Confere uma lista de móveis sem mexer no layout atual: o que bate, passagens e uso.
 function conferir(lista) {
@@ -791,7 +794,7 @@ function talvezDicas() {
   if (!visto && !/[#&]l=/.test(location.hash)) { mostrarDica(0); abrir('#fDicas'); }
 }
 
-const VERSAO_IDEIAS = 5;
+const VERSAO_IDEIAS = 6;
 // As opções prontas ficam sempre na versão atual. Uma opção salva numa versão anterior
 // não é apagada: vira um layout seu, com "(versão antiga)" no nome.
 function sincronizarIdeias(s) {
@@ -1826,6 +1829,10 @@ function usoDoMovel(it, t) {
   }
   return { desloc, zonas: z };
 }
+// O painel da TV da estante gira a partir de uns 50 cm do chão: bate em mesa, escrivaninha e cadeira;
+// só passa por cima de tapete e puff. A TV em cima de móvel giratório fica mais alta (só pega móveis altos).
+const BAIXOS = new Set(['tapete', 'puff']);
+const giroBate = (tv, o) => tv.estilo === 'divisoria' ? !BAIXOS.has(o.tipo) : ALTOS.has(o.tipo);
 const ALTOS = new Set(['cadeira', 'sofa', 'chaise', 'poltrona', 'armario', 'estante', 'geladeira', 'cantoL', 'bancoEnc', 'generico', 'planta']);
 // Problemas de uso, com tudo aberto (t = 1): o que bate quando se puxa, abre ou gira.
 function calcularUso(lista = itens()) {
@@ -1841,9 +1848,9 @@ function calcularUso(lista = itens()) {
       }
       for (const o of lista) {
         if (o.id === it.id || o.sobrepor) continue;
-        if (zn.tipo === 'giro' && !ALTOS.has(o.tipo)) continue;
+        if (zn.tipo === 'giro' && !giroBate(it, o)) continue;
         if (o.tipo === 'puff' && ['sofa', 'chaise', 'poltrona'].includes(it.tipo)) continue; // o puff fica na frente do sofá de propósito e sai do lugar com a mão
-        if (it.tipo === 'cadeira' && MESAS.has(o.tipo) && zn.corpo) continue; // a cadeira sai de baixo da própria mesa
+        if (it.tipo === 'cadeira' && MESAS.has(o.tipo) && zn.corpo && bate(partes.get(it.id), partes.get(o.id))) continue; // a cadeira sai de baixo da própria mesa (outra mesa no caminho conta)
         if (bate([zn.poly], partes.get(o.id)) && !com.includes(o.nome)) com.push(o.nome);
       }
       zn.com = com;
@@ -1852,6 +1859,20 @@ function calcularUso(lista = itens()) {
     res.set(it.id, probs);
   }
   res.fixos = problemasFixos(lista, res);
+  // Duas coisas em uso ao mesmo tempo: cadeira puxada contra cadeira puxada, porta aberta contra a
+  // cadeira, a TV girando contra alguém puxando a cadeira. Não bate parado, mas atrapalha em uso.
+  const emUso = lista.map(it => ({ it, zs: usoDoMovel(it, 1).zonas.filter(z => z.tipo !== 'folga') })).filter(x => x.zs.length);
+  const fixas = usoFixo(1).map(z => ({ it: { id: 'fixo', nome: z.dono }, zs: [z] }));
+  const todos = emUso.concat(fixas);
+  for (let i = 0; i < todos.length; i++) for (let j = i + 1; j < todos.length; j++) {
+    const A = todos[i], B = todos[j];
+    const a = A.zs.filter(z => z.tipo !== 'giro' || !B.it.tipo || giroBate(A.it, B.it)), b = B.zs.filter(z => z.tipo !== 'giro' || !A.it.tipo || giroBate(B.it, A.it));
+    if (!a.some(za => b.some(zb => colide(za.poly, zb.poly)))) continue;
+    for (const [X, Y] of [[A, B], [B, A]]) {
+      if (X.it.id === 'fixo') continue;
+      res.get(X.it.id).push({ zona: `em uso junto com ${Y.it.nome.toLowerCase()}`, com: [Y.it.nome], grave: false, juntos: true });
+    }
+  }
   return res;
 }
 // Peças fixas também têm área de uso: a porta da geladeira (100°) e a porta do forno (45 cm).
