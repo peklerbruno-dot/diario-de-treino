@@ -139,9 +139,24 @@ type Ajuste = z.infer<typeof zAjuste>;
 
 const emData = (s: string | null | undefined) => (s ? new Date(s) : null);
 
+const VERSAO = process.env.NEXT_PUBLIC_VERSAO ?? "local";
+
 export async function POST(pedido: Request) {
   if (!(await temSessao())) {
     return NextResponse.json({ erro: "Sem sessão." }, { status: 401 });
+  }
+
+  // Um aparelho que não manda `x-versao` está rodando um app de antes deste
+  // mecanismo existir — congelado em segundo plano no iPhone, ele nunca se
+  // recarrega sozinho. A única porta que essa versão antiga tem é o 401: ao
+  // recebê-lo, ela navega para /entrar, que com a sessão válida devolve para
+  // "/" — já com o app novo. Nada se perde: o que estava na fila fica gravado
+  // no aparelho e sobe no primeiro sync da versão nova.
+  if (!pedido.headers.get("x-versao")) {
+    return NextResponse.json(
+      { erro: "Este aparelho está com uma versão antiga do app.", recarregar: true },
+      { status: 401 },
+    );
   }
 
   let corpo: z.infer<typeof zCorpo>;
@@ -183,17 +198,20 @@ export async function POST(pedido: Request) {
     : desde.getTime();
   const ate = new Date(Math.max(desde.getTime(), Math.min(maisNovo, Date.now() - 5000)));
 
-  return NextResponse.json({
-    recusados,
-    ate: ate.toISOString(),
-    lancamentos: lancamentos.map(limparLancamento),
-    fixos: fixos.map(limparFixo),
-    ajustes: ajustes.map((a) => ({
-      chave: a.chave,
-      valor: a.valor,
-      atualizadoEm: a.atualizadoEm.toISOString(),
-    })),
-  });
+  return NextResponse.json(
+    {
+      recusados,
+      ate: ate.toISOString(),
+      lancamentos: lancamentos.map(limparLancamento),
+      fixos: fixos.map(limparFixo),
+      ajustes: ajustes.map((a) => ({
+        chave: a.chave,
+        valor: a.valor,
+        atualizadoEm: a.atualizadoEm.toISOString(),
+      })),
+    },
+    { headers: { "x-versao": VERSAO } },
+  );
 }
 
 /**

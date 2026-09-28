@@ -365,7 +365,7 @@ export class Loja {
     try {
       const resposta = await fetch("/api/sync", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", "x-versao": VERSAO_DO_APP },
         body: JSON.stringify({
           desde: this.estado.ate,
           lancamentos: enviados
@@ -396,6 +396,10 @@ export class Loja {
       }
       if (!resposta.ok) {
         throw new Error(`O servidor respondeu ${resposta.status}.`);
+      }
+      const versaoDoServidor = resposta.headers.get("x-versao");
+      if (versaoDoServidor && versaoDoServidor !== VERSAO_DO_APP) {
+        recarregarQuandoSeguro(versaoDoServidor);
       }
 
       const vindo = (await resposta.json()) as {
@@ -488,6 +492,36 @@ export class Loja {
 }
 
 export const loja = new Loja();
+
+const VERSAO_DO_APP = process.env.NEXT_PUBLIC_VERSAO ?? "local";
+const CHAVE_DO_RECARREGO = "termometro.recarregouPara";
+
+/**
+ * Saiu versão nova: recarrega, mas só num momento que não custa nada.
+ *
+ * Nunca com uma folha aberta nem com o dedo num campo — um lançamento em
+ * digitação não pode sumir porque saiu um deploy. Nesses casos fica para o
+ * próximo sync (que vem 1,5 s depois de salvar, ou na próxima vez que o app
+ * voltar para a frente). E uma vez só por versão: se depois de recarregar o
+ * aparelho continuar velho (cache teimoso, rede caindo no meio), não entra em
+ * laço — espera a próxima abertura.
+ */
+function recarregarQuandoSeguro(versaoDoServidor: string) {
+  if (typeof window === "undefined") return;
+  if (document.visibilityState !== "visible") return;
+  if (document.querySelector('[role="dialog"]')) return;
+  const foco = document.activeElement?.tagName;
+  if (foco === "INPUT" || foco === "TEXTAREA" || foco === "SELECT") return;
+
+  try {
+    if (sessionStorage.getItem(CHAVE_DO_RECARREGO) === versaoDoServidor) return;
+    sessionStorage.setItem(CHAVE_DO_RECARREGO, versaoDoServidor);
+  } catch {
+    // Sem sessionStorage (aba privada estrita): recarrega mesmo assim, uma
+    // vez por abertura já é o que o `return` acima garantiria.
+  }
+  window.location.reload();
+}
 
 /** O quanto cabe num pedido, folgado abaixo dos tetos do servidor (2000/500/100). */
 const LOTE = { "l:": 500, "f:": 100, "a:": 50 } as const;
