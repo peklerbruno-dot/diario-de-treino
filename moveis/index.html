@@ -555,7 +555,7 @@ const REDONDOS = new Set(['redondo', 'planta']);
    ESTADO
    ============================================================ */
 const CHAVE = 'simuladorMoveis.v1';
-const VERSAO_APP = '28/09 · versão 13'; // aparece no menu: serve para conferir se o aparelho abriu a versão nova
+const VERSAO_APP = '28/09 · versão 14'; // aparece no menu: serve para conferir se o aparelho abriu a versão nova
 const OP_PADRAO = { ima: true, cotas: true, portas: true, grade: true, rotulos: true, passagens: true, uso: false, cozinha: 'fogao-cima' };
 let estado;          // { layouts:[{id,nome,itens}], atual, op }
 let sel = null;      // id do móvel selecionado
@@ -680,8 +680,11 @@ function htmlIdeia(ideia, v) {
     <div class="verif${c.ok ? '' : ' aviso'}">${esc(c.texto)}</div>`;
 }
 // O que é igual em todas as opções: cozinha, quarto e banheiro.
+const ESPACOS_BANCADA = () => { const banc = FIXOS.find(f => f.nome === 'Bancada da pia'), ck = COZINHA.cooktop, cimaCk = ck.y1 < CUBA.y1;
+  return cimaCk ? `${Math.round(ck.y1 - banc.y1)} cm da ponta da shaft até o cooktop, ${Math.round(CUBA.y1 - ck.y2)} cm entre o cooktop e a cuba e ${Math.round(banc.y2 - CUBA.y2)} cm da cuba até a ponta da geladeira`
+    : `${Math.round(CUBA.y1 - banc.y1)} cm da ponta da geladeira até a cuba, ${Math.round(ck.y1 - CUBA.y2)} cm entre a cuba e o cooktop e ${Math.round(banc.y2 - ck.y2)} cm do cooktop até a ponta da entrada`; };
 const TEXTO_FIXO = () => `<b>Igual em todas</b>
-  <div><b>Cozinha (fixa, igual em todos os layouts):</b> uma bancada só, de ${Math.round(FIXOS.find(f => f.nome === 'Bancada da pia').y2 - FIXOS.find(f => f.nome === 'Bancada da pia').y1)} cm, com ${estado.op.cozinha === 'fogao-cima' ? 'o cooktop embutido na ponta perto da shaft, a pia no lugar original e a geladeira na ponta perto da entrada' : 'a geladeira perto da shaft, a pia no lugar original e o cooktop embutido na ponta perto da entrada'}. Cooktop de 4 bocas (58 × 50 cm) embutido na bancada de 60 cm de fundo, cuba de 48 × 38 e geladeira de 70 × 70 (largura × fundo; uma duplex comum tem de 60 a 70 de largura). O forno (60 cm de largura) fica embutido embaixo do cooktop: a porta abaixa uns 50 cm e quem usa precisa de uns 90 cm livres na frente; ao longo da bancada ficam 60 cm livres para quem cozinha. O cooktop fica a 20 cm da ponta da bancada (recomendado: 10 a 15 cm ou mais), para apoiar panela e o cabo não bater na parede da shaft; na frente dele, a área do forno e de quem cozinha fica livre, e o cabo da panela deve ficar virado para dentro. A geladeira tem 10 cm de folga atrás e do lado da bancada (os fabricantes pedem 5 a 10 cm para ventilar o condensador); a dobradiça fica do lado livre, perto da entrada, então a porta abre além de 90° e as gavetas saem para limpar. A porta abre virada para a pia. Se estiver ao contrário do real: Menu → Trocar geladeira e cooktop de ponta.</div>
+  <div><b>Cozinha (fixa, igual em todos os layouts):</b> uma bancada só, de ${Math.round(FIXOS.find(f => f.nome === 'Bancada da pia').y2 - FIXOS.find(f => f.nome === 'Bancada da pia').y1)} cm, com ${estado.op.cozinha === 'fogao-cima' ? 'o cooktop embutido na ponta perto da shaft, a pia no lugar original e a geladeira na ponta perto da entrada' : 'a geladeira perto da shaft, a pia no lugar original e o cooktop embutido na ponta perto da entrada'}. Cooktop de 4 bocas (58 × 50 cm) embutido na bancada de 60 cm de fundo, cuba de 48 × 38 e geladeira de 70 × 70 (largura × fundo; uma duplex comum tem de 60 a 70 de largura). O forno (60 cm de largura) fica embutido embaixo do cooktop: a porta abaixa uns 50 cm e quem usa precisa de uns 90 cm livres na frente; ao longo da bancada ficam 60 cm livres para quem cozinha. Espaços livres na bancada: ${ESPACOS_BANCADA()}. O cooktop fica a 20 cm da ponta da bancada (recomendado: 10 a 15 cm ou mais), para apoiar panela e o cabo não bater na parede da shaft; na frente dele, a área do forno e de quem cozinha fica livre, e o cabo da panela deve ficar virado para dentro. A geladeira tem 10 cm de folga atrás e do lado da bancada (os fabricantes pedem 5 a 10 cm para ventilar o condensador); a dobradiça fica do lado livre, perto da entrada, então a porta abre além de 90° e as gavetas saem para limpar. A porta abre virada para a pia. Se estiver ao contrário do real: Menu → Trocar geladeira e cooktop de ponta.</div>
   <div><b>Quarto:</b> cama box de viúvo 128 × 188 com os dois lados livres: 57 cm do lado da janela e 60 cm do lado do guarda-roupa. Guarda-roupa de correr 1,60 × 55 na parede do banho, sem porta abrindo para fora, e um criado-mudo de cada lado.</div>
   <div><b>Banheiro:</b> box de 110 × 84 cm com vidro de correr (duas folhas de uns 59 cm; a passagem para entrar fica com uns 50 cm). Bancada de 65 × 42 cm com cuba. Na frente do vaso sobram 48 cm até a parede (o recomendado é 60). Piso livre fora do box, da bancada e do vaso: ${fmt(pisoLivreBanho())} m². As medidas da bancada e do vidro são estimativas; com as medidas reais dá para ajustar.</div>`;
 function abrirIdeias() {
@@ -963,6 +966,7 @@ function montarObstaculosFixos() {
 // 'fogao-cima' (padrão): cooktop do lado da shaft, geladeira do lado da entrada. 'gel-cima': o contrário.
 // cooktop de 4 bocas (58 × 50) com 20 cm de bancada livre até a ponta: apoio e cabo de panela sem bater na parede da shaft
 const COZINHA = { cooktop: { x1: 365, x2: 415, y1: 66, y2: 124 } };
+const CUBA = { x1: 372, x2: 410, y1: 180, y2: 228 }; // cuba 48 × 38, no lugar original da pia
 function aplicarCozinha(lado) {
   const gel = FIXOS.find(f => f.nome === 'Geladeira'), banc = FIXOS.find(f => f.nome === 'Bancada da pia');
   if (lado === 'gel-cima') {
@@ -1111,7 +1115,7 @@ function montarPlanta() {
   // bancada da pia (comprida), com a cuba no lugar original e o cooktop embutido
   const banc = FIXOS.find(f => f.nome === 'Bancada da pia'), gel = FIXOS.find(f => f.nome === 'Geladeira'), ck = COZINHA.cooktop;
   el('rect', { x: banc.x1, y: banc.y1, width: banc.x2 - banc.x1, height: banc.y2 - banc.y1, fill: '#d9dde2', stroke: '#4d5660', class: 'fina' }, gFixos);
-  el('rect', { x: 372, y: 180, width: 38, height: 48, rx: 5, fill: '#f4f6f8', stroke: '#4d5660', class: 'fina' }, gFixos);
+  el('rect', { x: CUBA.x1, y: CUBA.y1, width: CUBA.x2 - CUBA.x1, height: CUBA.y2 - CUBA.y1, rx: 5, fill: '#f4f6f8', stroke: '#4d5660', class: 'fina' }, gFixos);
   el('circle', { cx: 391, cy: 204, r: 2.5, fill: '#8a939c' }, gFixos);
   el('text', { x: 390, y: 172, class: 'amb', 'font-size': 6 }, gFixos).textContent = 'PIA';
   el('text', { x: 391, y: 235, class: 'amb', 'font-size': 4.5, 'font-weight': 400, style: 'letter-spacing:0' }, gFixos).textContent = 'cuba 48 × 38';
@@ -1120,16 +1124,22 @@ function montarPlanta() {
   for (const [bx, by, r] of [[378, cmy - 12, 7], [378, cmy + 12, 6], [402, cmy - 12, 6], [402, cmy + 12, 8]]) el('circle', { cx: bx, cy: by, r, fill: 'none', stroke: '#9aa5b1', class: 'fina' }, gFixos);
   el('text', { x: 390, y: ck.y2 + 7, class: 'amb', 'font-size': 5, style: 'letter-spacing:0' }, gFixos).textContent = `COOKTOP ${Math.round(ck.y2 - ck.y1)} × ${Math.round(ck.x2 - ck.x1)}`;
   el('text', { x: 390, y: ck.y2 + 13, class: 'amb', 'font-size': 4.2, 'font-weight': 400, style: 'letter-spacing:0' }, gFixos).textContent = 'forno 60 cm embaixo';
-  // margem do cooktop até a ponta da bancada e folga atrás da geladeira
-  const perto = ck.y1 - banc.y1 < banc.y2 - ck.y2, my = perto ? (banc.y1 + ck.y1) / 2 : (ck.y2 + banc.y2) / 2;
-  el('text', { x: 390, y: my + 2, class: 'amb', 'font-size': 4.5, 'font-weight': 400, style: 'letter-spacing:0' }, gFixos).textContent = `${Math.round(perto ? ck.y1 - banc.y1 : banc.y2 - ck.y2)} cm livres`;
+  // cotas ao longo da bancada: ponta → cooktop → cuba → ponta (espaços livres de apoio)
+  const pecas = [[ck.y1, ck.y2], [CUBA.y1, CUBA.y2]].sort((p, q) => p[0] - q[0]);
+  const marcos = [banc.y1, ...pecas.flat(), banc.y2], cx = banc.x1 + 3;
+  el('line', { x1: cx, y1: banc.y1, x2: cx, y2: banc.y2, stroke: '#6d7780', class: 'fina' }, gFixos);
+  for (const m of marcos) el('line', { x1: cx - 2, y1: m, x2: cx + 2, y2: m, stroke: '#6d7780', class: 'fina' }, gFixos);
+  for (let i = 0; i < marcos.length - 1; i += 2) { // só os trechos livres (entre as peças)
+    const a = marcos[i], b = marcos[i + 1], my = (a + b) / 2;
+    el('text', { x: cx + 5, y: my, class: 'amb cota-bancada', 'font-size': 5, 'font-weight': 700, fill: '#3d6fa8', style: 'letter-spacing:0', 'text-anchor': 'middle', transform: `rotate(-90 ${cx + 5} ${my})` }, gFixos).textContent = `${Math.round(b - a)} cm`;
+  }
   el('text', { x: 390, y: (ck.y1 < 150 ? banc.y2 - 8 : banc.y1 + 10), class: 'amb', 'font-size': 5, 'font-weight': 400, style: 'letter-spacing:0' }, gFixos).textContent = `BANCADA ${Math.round(banc.y2 - banc.y1)} × ${Math.round(banc.x2 - banc.x1)}`;
   el('rect', { x: gel.x1, y: gel.y1, width: gel.x2 - gel.x1, height: gel.y2 - gel.y1, rx: 2, fill: '#eef1f4', stroke: '#4d5660', class: 'fina' }, gFixos);
   el('line', { x1: gel.x1 + 5, y1: gel.y1, x2: gel.x1 + 5, y2: gel.y2, stroke: '#6d7780', class: 'fina' }, gFixos);
   const gmy = (gel.y1 + gel.y2) / 2;
   el('text', { x: (gel.x2 + W) / 2, y: gmy, class: 'amb', 'font-size': 4, 'font-weight': 400, style: 'letter-spacing:0', transform: `rotate(90 ${(gel.x2 + W) / 2} ${gmy})` }, gFixos).textContent = `folga ${Math.round(W - gel.x2)} cm`;
   el('text', { x: 383, y: gmy, class: 'amb', 'font-size': 5.5, style: 'letter-spacing:0', transform: `rotate(90 383 ${gmy})` }, gFixos).textContent = `GELADEIRA ${Math.round(gel.y2 - gel.y1)} × ${Math.round(gel.x2 - gel.x1)}`;
-  el('text', { x: 383, y: gel.y1 < 150 ? gel.y2 + 3.5 : gel.y1 - 1.5, class: 'amb', 'font-size': 3.5, 'font-weight': 400 }, gFixos).textContent = 'folga 5 cm';
+  el('text', { x: 383, y: gel.y1 < 150 ? gel.y2 + 6.5 : gel.y1 - 3, class: 'amb', 'font-size': 4, 'font-weight': 400, style: 'letter-spacing:0' }, gFixos).textContent = `folga ${Math.round(gel.y1 < 150 ? FIXOS.find(f => f.nome === 'Bancada da pia').y1 - gel.y2 : gel.y1 - FIXOS.find(f => f.nome === 'Bancada da pia').y2)} cm`;
   // box 110 × 84 com vidro de correr (duas folhas que se sobrepõem no meio)
   el('rect', { x: 310, y: 616, width: 110, height: 84, fill: '#dcebf2', stroke: '#4d5660', class: 'fina' }, gFixos);
   el('line', { x1: 310, y1: 614.5, x2: 369, y2: 614.5, stroke: '#5aa9e6', 'stroke-width': 3, 'vector-effect': 'non-scaling-stroke' }, gFixos);
