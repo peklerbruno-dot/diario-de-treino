@@ -290,7 +290,7 @@ kbd{background:#f1f3f5;border:1px solid var(--borda);border-radius:4px;padding:0
 <!-- Menu -->
 <div class="fundo-folha" id="fMenu" hidden>
   <div class="folha" role="dialog" aria-label="Menu">
-    <div class="folha-cab"><h2>Menu</h2><button class="bt" data-fechar>✕</button></div>
+    <div class="folha-cab"><h2>Menu <small id="mVersao" style="font-size:12px;font-weight:400;color:var(--sub)"></small></h2><button class="bt" data-fechar>✕</button></div>
     <h3>Layouts</h3>
     <div class="fila">
       <button class="bt" id="mNovo">＋ Novo vazio</button>
@@ -549,6 +549,7 @@ const REDONDOS = new Set(['redondo', 'planta']);
    ESTADO
    ============================================================ */
 const CHAVE = 'simuladorMoveis.v1';
+const VERSAO_APP = '28/09 · versão 5'; // aparece no menu: serve para conferir se o aparelho abriu a versão nova
 const OP_PADRAO = { ima: true, cotas: true, portas: true, grade: true, rotulos: true, passagens: true, uso: false };
 let estado;          // { layouts:[{id,nome,itens}], atual, op }
 let sel = null;      // id do móvel selecionado
@@ -2824,6 +2825,9 @@ atualizarBotaoInfo();
 requestAnimationFrame(ajustar);
 receberDoLink();
 setTimeout(talvezDicas, 500);
+$('#mVersao').textContent = VERSAO_APP;
+// avisa quando o aparelho abre uma versão nova pela primeira vez
+try { if (localStorage.getItem(CHAVE + '.versao') !== VERSAO_APP) { localStorage.setItem(CHAVE + '.versao', VERSAO_APP); setTimeout(() => avisar('Versão nova carregada: ' + VERSAO_APP), 900); } } catch (e) {}
 </script>
 </body>
 </html>
