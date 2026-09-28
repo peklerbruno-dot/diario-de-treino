@@ -554,7 +554,7 @@ const REDONDOS = new Set(['redondo', 'planta']);
    ESTADO
    ============================================================ */
 const CHAVE = 'simuladorMoveis.v1';
-const VERSAO_APP = '28/09 · versão 8'; // aparece no menu: serve para conferir se o aparelho abriu a versão nova
+const VERSAO_APP = '28/09 · versão 9'; // aparece no menu: serve para conferir se o aparelho abriu a versão nova
 const OP_PADRAO = { ima: true, cotas: true, portas: true, grade: true, rotulos: true, passagens: true, uso: false, cozinha: 'fogao-cima' };
 let estado;          // { layouts:[{id,nome,itens}], atual, op }
 let sel = null;      // id do móvel selecionado
@@ -611,14 +611,14 @@ const jantar4 = y => { const g = uid(), x = 185; return [mk('mesa', 'Mesa 120 ×
 const IDEIAS = [
   { id: 'office-janela', curto: 'Sofá com chaise', frase: 'Sofá 2 lugares com chaise · mesa de 4 · office no canto da janela · estante divisória com TV 360°',
     titulo: 'Sofá com chaise, mesa de 4 e office no canto',
-    resumo: 'A mesa do computador fica no canto de cima, com a janela do lado. A mesa de 4 lugares, com cadeiras soltas, fica perto da cozinha. A estante divisória atravessa a sala: do outro lado fica o sofá de 2 lugares com chaise. A TV, no painel do meio da estante, gira para o sofá, para a mesa ou para o computador sem bater em nada.',
-    proporciona: ['home office com computador de mesa e cadeira de escritório', 'mesa de 4 lugares com cadeiras soltas', 'sofá de 2 lugares com chaise para esticar as pernas', 'estante vazada que separa estar de jantar e trabalho, com a TV de 55" girando 360°'],
-    pros: ['Dá para trabalhar no computador e ter gente jantando ao mesmo tempo: as cadeiras puxadas não se encontram', 'Luz natural do lado esquerdo da mesa do computador', 'A estante separa os ambientes sem fechar a sala: é vazada'],
-    contras: ['Entre a estante e o sofá sobram só 35 cm: o sofá fica bem encostado na estante', 'As cadeiras do lado da cozinha, puxadas, entram um pouco no corredor da pia', 'Sofá de 2 lugares sentados (mais 1 deitado na chaise)'],
-    tv: 'TV de 55" (boa distância: 1,4 a 2,2 m). Virada para o sofá fica a 1,3 m, um pouco perto; girando o painel, fica a 1,75 m da mesa e a 2,2 m do computador. O giro do painel (Ø 1,30 m) não alcança nenhuma cadeira puxada.',
-    itens: () => [...officeCanto(), ...jantar4(50),
+    resumo: 'A mesa do computador (100 × 55, compacta) fica no canto de cima, com a janela do lado. Por ser 20 cm mais curta, a mesa de jantar pode subir até perto da parede e a estante sobe junto, deixando 55 cm até o sofá. A mesa de 4 lugares, com cadeiras soltas, fica perto da cozinha. A estante divisória atravessa a sala: do outro lado fica o sofá de 2 lugares com chaise. A TV, no painel do meio da estante, gira para o sofá, para a mesa ou para o computador sem bater em nada.',
+    proporciona: ['home office com computador de mesa (compacta, 100 × 55) e cadeira de escritório', 'mesa de 4 lugares com cadeiras soltas', 'sofá de 2 lugares com chaise para esticar as pernas', 'estante vazada que separa estar de jantar e trabalho, com a TV de 55" girando 360°'],
+    pros: ['Dá para trabalhar no computador e ter gente jantando ao mesmo tempo: as cadeiras puxadas não se encontram', 'TV a 1,5 m do sofá, na distância certa', 'A estante separa os ambientes sem fechar a sala: é vazada'],
+    contras: ['A mesa do computador é compacta (100 × 55): cabe um monitor grande e o gabinete embaixo, mas sobra pouco tampo', 'Entre a estante e o sofá ficam 55 cm: passa uma pessoa, sem folga', 'As cadeiras do lado da cozinha, puxadas, entram um pouco no corredor da pia', 'Sofá de 2 lugares sentados (mais 1 deitado na chaise)'],
+    tv: 'TV de 55" (boa distância: 1,4 a 2,2 m). Virada para o sofá fica a 1,5 m; girando o painel, fica a 1,8 m da mesa e a 2 m do computador. O giro do painel (Ø 1,30 m) não alcança nenhuma cadeira puxada.',
+    itens: () => [...officeCanto(100, 55), ...jantar4(20),
       mk('chaise', 'Sofá 2 lugares com chaise', 200, 150, 10, 300, 180, { p: 90, c: 70, lado: 'd' }),
-      TV55(20, 220, 0, 0), ...quarto()] },
+      TV55(20, 200, 0, 0), ...quarto()] },
   { id: 'janela-sofa', curto: 'Sofá na janela', frase: 'Sofá 3 lugares retrátil + puff na janela · mesa de 4 · office no canto · estante em pé com TV 360°',
     titulo: 'Sofá de 3 na janela e estante em pé',
     resumo: 'O sofá de 3 lugares retrátil encosta na parede das janelas, de frente para a estante divisória, que fica em pé separando a sala do corredor da cozinha. Mesa do computador no canto de cima e mesa de 4 perto da cozinha. A TV gira para o sofá, para a mesa de 4 ou para a pia.',
@@ -794,7 +794,7 @@ function talvezDicas() {
   if (!visto && !/[#&]l=/.test(location.hash)) { mostrarDica(0); abrir('#fDicas'); }
 }
 
-const VERSAO_IDEIAS = 6;
+const VERSAO_IDEIAS = 7;
 // As opções prontas ficam sempre na versão atual. Uma opção salva numa versão anterior
 // não é apagada: vira um layout seu, com "(versão antiga)" no nome.
 function sincronizarIdeias(s) {
