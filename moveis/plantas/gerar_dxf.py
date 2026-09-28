@@ -3,7 +3,6 @@
 # Unidade: centímetro. Origem no canto de baixo à esquerda do lado de dentro das paredes.
 import json, math, os, shutil, subprocess, sys
 import ezdxf
-from ezdxf.enums import TextEntityAlignment
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 D = json.load(open(os.path.join(AQUI, 'planta.json'), encoding='utf-8'))
@@ -30,9 +29,24 @@ def ret(msp, x1, y1, x2, y2, camada, dx=0):
     msp.add_lwpolyline([P((x1, y1), dx), P((x2, y1), dx), P((x2, y2), dx), P((x1, y2), dx)], close=True, dxfattribs={'layer': camada})
 
 
+GIRADOS = []  # textos girados: o conversor para DWG perde a rotação e ela é reposta depois
+
+
+def largura_texto(s, alt):  # largura aproximada em Arial (o conversor para DWG perde o alinhamento centralizado)
+    estreitas, largas = set('iljtfr.,:;|! 1I'), set('mwMW')
+    return alt * sum(0.3 if c in estreitas else 0.85 if c in largas else 0.56 for c in s)
+
+
 def texto(msp, s, x, y, alt, camada, dx=0, rot=0):
-    t = msp.add_text(s, height=alt, rotation=rot, dxfattribs={'layer': camada, 'style': 'PLANTA'})
-    t.set_placement(P((x, y), dx), align=TextEntityAlignment.MIDDLE_CENTER)
+    # centraliza à mão: ponto de inserção à esquerda, na linha de base
+    cx, cy = P((x, y), dx)
+    w, r = largura_texto(s, alt), math.radians(rot)
+    ux, uy = math.cos(r), math.sin(r)          # direção do texto
+    vx, vy = -math.sin(r), math.cos(r)         # para cima do texto
+    ix, iy = cx - ux * w / 2 - vx * alt / 2, cy - uy * w / 2 - vy * alt / 2
+    msp.add_text(s, height=alt, rotation=rot, dxfattribs={'layer': camada, 'style': 'PLANTA', 'insert': (ix, iy)})
+    if rot:
+        GIRADOS.append((s, ix, iy, rot))
 
 
 def parede(msp, x1, y1, x2, y2, dx):
@@ -128,51 +142,81 @@ def planta(msp, opcao, dx=0):
 
 
 def cota(msp, a, b, dist, dx, vertical=False):
-    p1, p2 = P(a, dx), P(b, dx)
+    # cota desenhada com linhas e texto (sem entidade DIMENSION, que o conversor para DWG não aceita bem)
+    (x1, y1), (x2, y2) = P(a, dx), P(b, dx)
+    at = {'layer': 'COTAS'}
     if vertical:
-        base = (p1[0] + dist, (p1[1] + p2[1]) / 2)
-        d = msp.add_linear_dim(base=base, p1=p1, p2=p2, angle=90, dimstyle='COTA', dxfattribs={'layer': 'COTAS'})
+        xc = x1 + dist; ya, yb = sorted((y1, y2))
+        for yy in (ya, yb):
+            msp.add_line((x1 - math.copysign(2, dist), yy), (xc + math.copysign(2, dist), yy), dxfattribs=at)
+            msp.add_line((xc - 2, yy - 2), (xc + 2, yy + 2), dxfattribs=at)
+        msp.add_line((xc, ya), (xc, yb), dxfattribs=at)
+        v = f'{round(yb - ya)}'
+        msp.add_text(v, height=6, rotation=90, dxfattribs={**at, 'style': 'PLANTA', 'insert': (xc - 2, (ya + yb) / 2 - largura_texto(v, 6) / 2)})
     else:
-        base = ((p1[0] + p2[0]) / 2, p1[1] + dist)
-        d = msp.add_linear_dim(base=base, p1=p1, p2=p2, dimstyle='COTA', dxfattribs={'layer': 'COTAS'})
-    d.render()
+        yc = y1 + dist; xa, xb = sorted((x1, x2))
+        for xx in (xa, xb):
+            msp.add_line((xx, y1 - math.copysign(2, dist)), (xx, yc + math.copysign(2, dist)), dxfattribs=at)
+            msp.add_line((xx - 2, yc - 2), (xx + 2, yc + 2), dxfattribs=at)
+        msp.add_line((xa, yc), (xb, yc), dxfattribs=at)
+        v = f'{round(xb - xa)}'
+        msp.add_text(v, height=6, dxfattribs={**at, 'style': 'PLANTA', 'insert': ((xa + xb) / 2 - largura_texto(v, 6) / 2, yc + 2)})
 
 
 def documento():
-    doc = ezdxf.new('R2010', setup=True)
+    doc = ezdxf.new('R2000', setup=True)
     doc.header['$INSUNITS'] = 5  # centímetros
     doc.header['$MEASUREMENT'] = 1
     doc.styles.add('PLANTA', font='arial.ttf')
     for nome, (cor, lt) in CAMADAS.items():
         doc.layers.add(nome, color=cor, linetype=lt)
-    ds = doc.dimstyles.new('COTA')
-    ds.dxf.dimtxt = 6; ds.dxf.dimasz = 4; ds.dxf.dimexe = 2; ds.dxf.dimexo = 2; ds.dxf.dimdec = 0
-    ds.dxf.dimtad = 1; ds.dxf.dimgap = 1.5; ds.dxf.dimblk = 'ARCHTICK'; ds.dxf.dimclrd = 2; ds.dxf.dimclre = 2; ds.dxf.dimclrt = 2
     return doc
 
 
 def converter_dwg(dxf):
     dwg = dxf[:-4] + '.dwg'
-    ferramenta = shutil.which('dwgwrite') or '/tmp/lrd/bin/dwgwrite'
+    ferramenta = shutil.which('dxf2dwg') or '/tmp/lrd/bin/dxf2dwg'
     if not os.path.exists(ferramenta):
         print('sem dwgwrite: só DXF'); return None
-    r = subprocess.run([ferramenta, '-y', '--as', 'r2000', '-o', dwg, dxf], capture_output=True, text=True)
+    r = subprocess.run([ferramenta, '-y', '-o', dwg, dxf], capture_output=True, text=True, errors='replace')
     if r.returncode != 0 or not os.path.exists(dwg):
         print('falhou DWG', dxf, r.stderr[-500:]); return None
+    repor_rotacao(dwg, ferramenta)
     return dwg
+
+
+def repor_rotacao(dwg, ferramenta):
+    # DWG -> JSON, devolve a rotação dos textos girados, JSON -> DWG (ferramentas do LibreDWG)
+    pasta = os.path.dirname(ferramenta); js = dwg + '.json'
+    subprocess.run([os.path.join(pasta, 'dwgread'), '-O', 'JSON', '-o', js, dwg], capture_output=True)
+    d = json.load(open(js, encoding='utf-8', errors='replace'))
+    n = 0
+    for o in d['OBJECTS']:
+        if o.get('entity') != 'TEXT':
+            continue
+        x, y = o['ins_pt'][:2]
+        for s, ix, iy, rot in GIRADOS:
+            if o['text_value'] == s and abs(x - ix) < 0.01 and abs(y - iy) < 0.01:
+                o['rotation'] = math.radians(rot); o['dataflags'] = o.get('dataflags', 0) & ~0x08; n += 1
+                break
+    json.dump(d, open(js, 'w', encoding='utf-8'))  # com \u: o leitor de JSON do LibreDWG não aceita UTF-8 cru
+    r = subprocess.run([os.path.join(pasta, 'dwgwrite'), '-y', '-I', 'JSON', '-o', dwg, js], capture_output=True, text=True, errors='replace')
+    os.remove(js)
+    print(f'  {n} textos girados repostos', '' if r.returncode == 0 else r.stderr[-300:])
 
 
 def main():
     saidas = []
+    def salvar(doc, nome):
+        f = os.path.join(AQUI, nome); doc.saveas(f)
+        print(f, '->', converter_dwg(f) if '--sem-dwg' not in sys.argv else '-')
+        GIRADOS.clear()
     for n, op in enumerate(D['opcoes'], 1):
-        doc = documento(); planta(doc.modelspace(), op)
-        f = os.path.join(AQUI, f'opcao-{n}.dxf'); doc.saveas(f); saidas.append(f)
+        doc = documento(); planta(doc.modelspace(), op); salvar(doc, f'opcao-{n}.dxf')
     doc = documento(); msp = doc.modelspace()
     for n, op in enumerate(D['opcoes']):
         planta(msp, op, dx=n * 650)
-    f = os.path.join(AQUI, 'opcoes-lado-a-lado.dxf'); doc.saveas(f); saidas.append(f)
-    for f in saidas:
-        print(f, '->', converter_dwg(f) if '--sem-dwg' not in sys.argv else '-')
+    salvar(doc, 'opcoes-lado-a-lado.dxf')
 
 
 main()

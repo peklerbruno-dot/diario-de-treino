@@ -161,3 +161,7 @@ o seu próprio deploy na Vercel (pasta escolhida em *Root Directory*).
   layout por link, exportar/importar `.json` e salvar imagem PNG.
   Testes no Chromium (Playwright, que precisa estar instalado no npm global):
   `node moveis/testes/regressao.mjs`, `correcoes.mjs`, `novidades.mjs` e `pedidos.mjs`.
+  Plantas para CAD em `moveis/plantas/` (DWG e DXF, em cm, com camadas):
+  `node moveis/plantas/exportar.mjs && python3 moveis/plantas/gerar_dxf.py`
+  (precisa do `ezdxf`; o DWG sai pelo `dxf2dwg` do LibreDWG, se estiver instalado).
+  Publicado em https://peklerbruno-dot.github.io/diario-de-treino/moveis/.
