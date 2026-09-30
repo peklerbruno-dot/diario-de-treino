@@ -165,6 +165,38 @@ const CATALOGO = [
     ],
   },
 
+  // ------------------------------------------------------------ DIVISÓRIAS
+  {
+    tipo: 'porta_correr', nome: 'Porta de correr 2 folhas', cat: 'Divisórias',
+    dim: { l: 200, p: 8, a: 210 }, cores: { principal: '#3f444a', secundaria: '#d6ecf2' },
+    partes: [
+      { f: 'caixa', l: 'L', p: 'P', a: 5, y: 'A-5', acab: 'metal' },
+      { f: 'caixa', l: 'L', p: 'P', a: 1, acab: 'metal' },
+      // folha de trás (esquerda) e folha da frente (direita), sobrepostas no meio
+      { f: 'caixa', l: 'L/2+2', p: 1, a: 'A-8', x: '-L/4+1', z: '-P/4', y: 2, cor: 'secundaria', acab: 'vidro' },
+      { f: 'caixa', l: 4, p: 3, a: 'A-8', x: '-L/2+2', z: '-P/4', y: 2, acab: 'metal' },
+      { f: 'caixa', l: 4, p: 3, a: 'A-8', x: 3, z: '-P/4', y: 2, acab: 'metal' },
+      { f: 'caixa', l: 'L/2+2', p: 3, a: 4, x: '-L/4+1', z: '-P/4', y: 2, acab: 'metal' },
+      { f: 'caixa', l: 'L/2+2', p: 3, a: 4, x: '-L/4+1', z: '-P/4', y: 'A-10', acab: 'metal' },
+      { f: 'caixa', l: 'L/2+2', p: 1, a: 'A-8', x: 'L/4-1', z: 'P/4', y: 2, cor: 'secundaria', acab: 'vidro' },
+      { f: 'caixa', l: 4, p: 3, a: 'A-8', x: -3, z: 'P/4', y: 2, acab: 'metal' },
+      { f: 'caixa', l: 4, p: 3, a: 'A-8', x: 'L/2-2', z: 'P/4', y: 2, acab: 'metal' },
+      { f: 'caixa', l: 'L/2+2', p: 3, a: 4, x: 'L/4-1', z: 'P/4', y: 2, acab: 'metal' },
+      { f: 'caixa', l: 'L/2+2', p: 3, a: 4, x: 'L/4-1', z: 'P/4', y: 'A-10', acab: 'metal' },
+    ],
+  },
+  {
+    tipo: 'painel_fixo', nome: 'Painel fixo', cat: 'Divisórias',
+    dim: { l: 50, p: 5, a: 210 }, cores: { principal: '#3f444a', secundaria: '#d6ecf2' },
+    partes: [
+      { f: 'caixa', l: 'L-6', p: 1, a: 'A-6', y: 3, cor: 'secundaria', acab: 'vidro' },
+      { f: 'caixa', l: 3, p: 'P', a: 'A', x: '-L/2+1.5', acab: 'metal' },
+      { f: 'caixa', l: 3, p: 'P', a: 'A', x: 'L/2-1.5', acab: 'metal' },
+      { f: 'caixa', l: 'L', p: 'P', a: 3, acab: 'metal' },
+      { f: 'caixa', l: 'L', p: 'P', a: 3, y: 'A-3', acab: 'metal' },
+    ],
+  },
+
   // ------------------------------------------------------------ MESAS E CADEIRAS
   {
     tipo: 'mesa_jantar', nome: 'Mesa de jantar', cat: 'Mesas e cadeiras', grupo: 'mesa',

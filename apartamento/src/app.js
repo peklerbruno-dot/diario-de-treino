@@ -1715,7 +1715,15 @@ const EXTENSOES = { aposPlanta: [], aposMoveis: [] };
 function carregarDoc() {
   try {
     const s = localStorage.getItem(CFG.chave);
-    if (s) { const d = JSON.parse(s); if (docValido(d)) return prepararDoc(d); }
+    if (s) {
+      const d = JSON.parse(s);
+      if (docValido(d) && (d.planta.revisao || 1) === PLANTA_ORIGINAL.revisao) return prepararDoc(d);
+      if (docValido(d)) { // planta antiga: guarda uma cópia e abre a nova
+        localStorage.setItem(`${CFG.chave}:revisao-${d.planta.revisao || 1}`, s);
+        setTimeout(() => toast('A planta foi atualizada. O layout anterior ficou guardado como cópia no navegador.'), 800);
+        return docOriginal(d.catalogoExtra || []);
+      }
+    }
   } catch { /* começa do original */ }
   return docOriginal();
 }

@@ -36,7 +36,8 @@ Cadeiras podem entrar embaixo de mesas sem aviso; tapetes e box não geram aviso
 - **Construída** = contorno externo, com as paredes, comparada aos 32 m² da construtora.
 
 Com o interior de 420 × 700 cm e paredes externas de 12 cm, a construída dá **32,15 m²**
-(+0,5% sobre os 32 m²). A área útil somada dá 28,68 m²: os ~3,5 m² de diferença são as paredes.
+(+0,5% sobre os 32 m²). A área útil somada dá 28,59 m² (estar/jantar 15,66, cozinha 3,09,
+quarto 7,20 e banheiro 2,64): os ~3,5 m² de diferença são as paredes e o shaft da cozinha.
 Por isso não foi preciso mudar a escala. Se as paredes forem mais grossas, basta mudar a
 espessura no painel da parede: tudo recalcula.
 
@@ -47,6 +48,14 @@ Brasília), pela data e pela hora escolhidas, com precisão de cerca de 1°. Com
 pega o sol da manhã, as janelas da parede esquerda estão voltadas para o **leste**. Se a
 orientação real for outra (nordeste, por exemplo), mude em "Janelas voltadas p/"; o local e a
 orientação ficam em `local` e `orientacao`, no início de `src/planta.js`.
+
+## Planta
+
+Medida nos prints dos dois cenários (1,43 px/cm): estar/jantar e cozinha na metade de cima;
+quarto (300 × 240) e banheiro (110 × 240) embaixo, separados da sala por uma parede com os vãos
+de 78 e 70. A porta de correr de 2 folhas e o painel fixo são móveis (catálogo "Divisórias"),
+porque mudam de lugar entre os cenários. Quando a planta original muda, `revisao` em
+`src/planta.js` sobe e um layout salvo com a planta antiga fica guardado como cópia no navegador.
 
 ## Organização
 
