@@ -1,0 +1,269 @@
+import "server-only";
+import { ApiError, GoogleGenAI, Type, type Part } from "@google/genai";
+import { categoriaValida, ehLinkDoInstagram, ehLinkDoTikTok, CATEGORIAS } from "./lugares";
+
+/**
+ * O leitor de posts: um reel, um carrossel, um print ou um texto entra, e sai a
+ * lista de lugares que ele menciona.
+ *
+ * Quem lê é o Gemini, pelo mesmo motivo do assistente deste repositório: tem
+ * plano gratuito, lê imagem e devolve JSON no formato que se pede.
+ *
+ * O Instagram não gosta de ser lido por robô. Pelo link, o que dá para pegar
+ * sem login é a legenda (e a capa) que o próprio Instagram entrega para quem
+ * gera pré-visualização — e numa boa parte dos carrosséis de "10 restaurantes
+ * em Tulum", a lista está na legenda. Quando está só nas imagens, ou quando o
+ * Instagram fecha a porta, o caminho é mandar os prints: o Gemini lê cada
+ * slide.
+ */
+
+const MODELO = process.env.GEMINI_MODELO || "gemini-flash-latest";
+
+let _ia: GoogleGenAI | undefined;
+const ia = () => (_ia ??= new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }));
+export const temGemini = () => Boolean(process.env.GEMINI_API_KEY);
+
+export type Sugestao = {
+  nome: string;
+  categoria: string;
+  cidade: string;
+  endereco: string;
+  descricao: string;
+  dicas: string;
+  lat?: number;
+  lng?: number;
+  googlePlaceId?: string;
+};
+
+export type Leitura = { resumo: string; lugares: Sugestao[] };
+
+export class ErroDeLeitura extends Error {}
+
+// ---------------------------------------------------------------------------
+// Buscar o que um link mostra
+// ---------------------------------------------------------------------------
+
+export type Pagina = { titulo: string; texto: string; imagem?: string };
+
+const NAVEGADOR = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1";
+/** É com este nome que o Instagram entrega a pré-visualização com legenda. */
+const PRE_VISUALIZADOR = "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)";
+
+const decodificar = (s: string) =>
+  s
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&");
+
+function meta(html: string, nome: string): string {
+  const re = new RegExp(
+    `<meta[^>]+(?:property|name)=["']${nome}["'][^>]*content=["']([^"']*)["']|<meta[^>]+content=["']([^"']*)["'][^>]*(?:property|name)=["']${nome}["']`,
+    "i",
+  );
+  const m = html.match(re);
+  return m ? decodificar(m[1] ?? m[2] ?? "").trim() : "";
+}
+
+async function baixar(url: string, agente: string): Promise<string | null> {
+  try {
+    const r = await fetch(url, {
+      headers: { "User-Agent": agente, "Accept-Language": "pt-BR,pt;q=0.9,es;q=0.8,en;q=0.7" },
+      redirect: "follow",
+      signal: AbortSignal.timeout(10000),
+      cache: "no-store",
+    });
+    if (!r.ok) return null;
+    return await r.text();
+  } catch {
+    return null;
+  }
+}
+
+/** Legenda do Instagram na página de incorporação — o plano B quando a meta vem vazia. */
+function legendaDaIncorporacao(html: string): string {
+  const m = html.match(/<div class="Caption"[^>]*>([\s\S]*?)<div class="CaptionComments/);
+  if (!m) return "";
+  return decodificar(m[1].replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, " "))
+    .replace(/[ \t]+/g, " ")
+    .trim();
+}
+
+export async function buscarPagina(url: string): Promise<Pagina | null> {
+  if (ehLinkDoTikTok(url)) {
+    try {
+      const r = await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`, {
+        signal: AbortSignal.timeout(10000),
+        cache: "no-store",
+      });
+      if (r.ok) {
+        const j = (await r.json()) as { title?: string; author_name?: string; thumbnail_url?: string };
+        if (j.title) return { titulo: j.author_name ?? "TikTok", texto: j.title, imagem: j.thumbnail_url };
+      }
+    } catch {
+      /* segue para a leitura genérica */
+    }
+  }
+
+  if (ehLinkDoInstagram(url)) {
+    const limpo = url.split("?")[0].replace(/\/?$/, "/");
+    const html = await baixar(limpo, PRE_VISUALIZADOR);
+    const texto = html ? meta(html, "og:description") || meta(html, "description") : "";
+    const titulo = html ? meta(html, "og:title") : "";
+    const imagem = html ? meta(html, "og:image") : "";
+    if (texto && !/^(Instagram|Log in|Entrar)/i.test(texto)) {
+      return { titulo, texto, imagem: imagem || undefined };
+    }
+    const codigo = limpo.match(/instagram\.com\/(?:p|reel|reels|tv)\/([\w-]+)/i)?.[1];
+    if (codigo) {
+      const incorporada = await baixar(`https://www.instagram.com/p/${codigo}/embed/captioned/`, NAVEGADOR);
+      const legenda = incorporada ? legendaDaIncorporacao(incorporada) : "";
+      if (legenda) return { titulo: titulo || "Instagram", texto: legenda, imagem: imagem || undefined };
+    }
+    return imagem ? { titulo, texto: "", imagem } : null;
+  }
+
+  const html = await baixar(url, NAVEGADOR);
+  if (!html) return null;
+  const titulo = meta(html, "og:title") || decodificar(html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1] ?? "").trim();
+  const descricao = meta(html, "og:description") || meta(html, "description");
+  // Para blog e site de guia, o corpo da página diz mais do que a descrição.
+  const corpo = decodificar(
+    html
+      .replace(/<(script|style|noscript|svg|nav|footer|header)[\s\S]*?<\/\1>/gi, " ")
+      .replace(/<[^>]+>/g, " "),
+  )
+    .replace(/\s+/g, " ")
+    .slice(0, 15000);
+  return { titulo, texto: `${descricao}\n\n${corpo}`.trim(), imagem: meta(html, "og:image") || undefined };
+}
+
+/** Baixa uma imagem (a capa do post) para o Gemini olhar junto com a legenda. */
+export async function imagemComoParte(url: string): Promise<Part | null> {
+  try {
+    const r = await fetch(url, { signal: AbortSignal.timeout(10000), cache: "no-store" });
+    if (!r.ok) return null;
+    const tipo = r.headers.get("content-type") ?? "image/jpeg";
+    if (!tipo.startsWith("image/")) return null;
+    const bytes = Buffer.from(await r.arrayBuffer());
+    if (bytes.length > 6_000_000) return null;
+    return { inlineData: { mimeType: tipo.split(";")[0], data: bytes.toString("base64") } };
+  } catch {
+    return null;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Extrair os lugares
+// ---------------------------------------------------------------------------
+
+const ESQUEMA = {
+  type: Type.OBJECT,
+  properties: {
+    resumo: { type: Type.STRING, description: "Uma frase dizendo do que é o post." },
+    lugares: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          nome: { type: Type.STRING, description: "Nome do estabelecimento ou ponto, como aparece no post." },
+          categoria: { type: Type.STRING, enum: CATEGORIAS.map((c) => c.valor) },
+          cidade: { type: Type.STRING, description: "Cidade ou região (ex.: 'Cidade do México', 'Tulum', 'Puerto Escondido'). Vazio se não der para saber." },
+          endereco: { type: Type.STRING, description: "Endereço ou bairro, se aparecer. Vazio se não." },
+          descricao: { type: Type.STRING, description: "Uma frase curta do que é o lugar." },
+          dicas: { type: Type.STRING, description: "O que pedir, preço, horário, reserva — o que o post disser. Vazio se nada." },
+        },
+        required: ["nome", "categoria", "cidade", "endereco", "descricao", "dicas"],
+        propertyOrdering: ["nome", "categoria", "cidade", "endereco", "descricao", "dicas"],
+      },
+    },
+  },
+  required: ["resumo", "lugares"],
+  propertyOrdering: ["resumo", "lugares"],
+};
+
+function instrucoes(destino: string) {
+  return `Você ajuda um grupo de amigos brasileiros a planejar uma viagem${destino ? ` para ${destino}` : ""}.
+Recebe um post de rede social (legenda, texto e/ou imagens — prints de um carrossel, de um reel, de um mapa) e devolve a lista de LUGARES concretos que ele recomenda: restaurantes, bares, cafés, praias, passeios, museus, hotéis, lojas, mercados.
+
+Regras:
+- Um item por lugar. Carrossel com 10 restaurantes = 10 itens. Se o mesmo lugar aparecer em mais de um slide, junte num só.
+- Use o nome próprio do lugar, como ele se chama de verdade (ex.: "Contramar", "Taquería Orinoco"). Não invente nome; se o post só descreve sem dizer o nome, deixe de fora.
+- Não inclua cidades, bairros ou regiões inteiras como lugar, a não ser que o post trate aquilo como um ponto a visitar (uma praia, uma pirâmide, um cenote).
+- Arrobas (@taqueriaorinoco) costumam ser o perfil do lugar: use para descobrir o nome, escrevendo-o por extenso.
+- Cidade: a que o post indicar; se não indicar mas o contexto deixar claro, use-a.
+- Escreva descrição e dicas em português do Brasil, curtas. Preserve preços na moeda original.
+- Se não houver lugar nenhum, devolva a lista vazia e explique no resumo.`;
+}
+
+/**
+ * Lê o que chegou e devolve os lugares. `imagens` vem como partes prontas do
+ * Gemini (base64); `texto` pode ter a legenda, um texto colado ou nada.
+ */
+export async function extrairLugares(entrada: { texto?: string; imagens?: Part[]; destino?: string }): Promise<Leitura> {
+  if (!temGemini()) {
+    throw new ErroDeLeitura("A leitura automática está desligada: falta a GEMINI_API_KEY nas configurações.");
+  }
+  const partes: Part[] = [];
+  if (entrada.texto?.trim()) partes.push({ text: `Texto do post:\n${entrada.texto.trim().slice(0, 20000)}` });
+  for (const img of entrada.imagens ?? []) partes.push(img);
+  if (partes.length === 0) throw new ErroDeLeitura("Não chegou nada para ler.");
+  if (!entrada.texto?.trim()) partes.unshift({ text: "Imagens do post:" });
+
+  let r;
+  try {
+    r = await ia().models.generateContent({
+      model: MODELO,
+      contents: [{ role: "user", parts: partes }],
+      config: {
+        systemInstruction: instrucoes(entrada.destino ?? ""),
+        responseMimeType: "application/json",
+        responseSchema: ESQUEMA,
+        temperature: 0.2,
+      },
+    });
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 429) {
+      throw new ErroDeLeitura("A cota gratuita do Gemini acabou por agora. Tente de novo daqui a pouco.");
+    }
+    console.error("[leitor]", e);
+    throw new ErroDeLeitura("Não consegui ler o post agora. Tente de novo em instantes.");
+  }
+
+  return interpretarResposta(r.text ?? "");
+}
+
+/** Separado para dar para testar sem chamar o Gemini. */
+export function interpretarResposta(bruto: string): Leitura {
+  let j: unknown;
+  try {
+    j = JSON.parse(bruto.replace(/^```(?:json)?\s*|\s*```$/g, ""));
+  } catch {
+    throw new ErroDeLeitura("A leitura voltou num formato estranho. Tente de novo.");
+  }
+  const o = (j ?? {}) as { resumo?: unknown; lugares?: unknown };
+  const texto = (x: unknown) => (typeof x === "string" ? x.trim() : "");
+  const vistos = new Set<string>();
+  const lugares: Sugestao[] = [];
+  for (const item of Array.isArray(o.lugares) ? o.lugares : []) {
+    const l = (item ?? {}) as Record<string, unknown>;
+    const nome = texto(l.nome).slice(0, 120);
+    if (!nome) continue;
+    const chave = nome.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    if (vistos.has(chave)) continue;
+    vistos.add(chave);
+    lugares.push({
+      nome,
+      categoria: categoriaValida(texto(l.categoria)),
+      cidade: texto(l.cidade).slice(0, 80),
+      endereco: texto(l.endereco).slice(0, 200),
+      descricao: texto(l.descricao).slice(0, 300),
+      dicas: texto(l.dicas).slice(0, 600),
+    });
+  }
+  return { resumo: texto(o.resumo).slice(0, 400), lugares };
+}

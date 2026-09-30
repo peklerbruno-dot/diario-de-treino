@@ -155,3 +155,10 @@ o seu próprio deploy na Vercel (pasta escolhida em *Root Directory*).
   número.
   Veja [`assistente/README.md`](assistente/README.md) e, para publicar,
   [`assistente/docs/COLOCAR-NO-AR.md`](assistente/docs/COLOCAR-NO-AR.md).
+- `viagem/` — o app da viagem em grupo (México 2026): lugares que chegam de
+  um reel, carrossel ou print do Instagram lidos pelo Gemini, com pastas, mapa
+  e “como chegar” pelo Google Maps; roteiro dia a dia; e divisão de contas no
+  estilo Splitwise (igual, valores, porcentagem, cotas, várias moedas,
+  simplificar dívidas). Uma conta por pessoa, convite por link.
+  Veja [`viagem/README.md`](viagem/README.md) e, para publicar,
+  [`viagem/docs/COLOCAR-NO-AR.md`](viagem/docs/COLOCAR-NO-AR.md).

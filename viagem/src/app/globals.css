@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * A paleta: papel de cor de areia, e o rosa mexicano como realce — nos botões,
+ * nos links, no que se toca. Verde é "a receber", vermelho é "deve"; os dois
+ * vêm sempre com a palavra escrita ao lado, para quem não distingue as cores.
+ * Todo texto tem pelo menos 4,5:1 contra a superfície onde aparece.
+ */
+:root {
+  color-scheme: light;
+  --papel: #faf6f0;
+  --cartao: #ffffff;
+  --tinta: #1e1a17;
+  --grafite: #544c46;
+  --fosco: #756c65;
+  --regua: #e2d9cf;
+  --linha: #efe8df;
+  --realce: #c2185b;
+  --realce-tinta: #ffffff;
+  --realce-fraco: #fce8f0;
+  --verde: #1b7148;
+  --verde-fraco: #e3f4ea;
+  --vermelho: #b3352c;
+  --vermelho-fraco: #fbe9e7;
+  --ambar: #8a5300;
+  --ambar-fraco: #fdf1dc;
+  --azul: #1f5f8f;
+  --sombra: 0 1px 2px rgba(30, 26, 23, 0.05), 0 8px 24px rgba(30, 26, 23, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --papel: #141211;
+    --cartao: #1f1c1a;
+    --tinta: #f5f1ec;
+    --grafite: #c4bbb3;
+    --fosco: #968d86;
+    --regua: #3a3431;
+    --linha: #2b2725;
+    --realce: #ff6fa3;
+    --realce-tinta: #1a0a10;
+    --realce-fraco: #3a1a27;
+    --verde: #5cc98f;
+    --verde-fraco: #17291f;
+    --vermelho: #ff8a80;
+    --vermelho-fraco: #331b19;
+    --ambar: #e0ae52;
+    --ambar-fraco: #2f2413;
+    --azul: #7db4e6;
+    --sombra: 0 0 0 1px rgba(255, 255, 255, 0.06);
+  }
+}
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--papel);
+  color: var(--tinta);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 16 px nos campos: abaixo disso o Safari do iPhone dá zoom ao focar. */
+input, select, textarea { font-size: 16px; }
+
+button, a, label, summary { touch-action: manipulation; }
+
+.campo {
+  @apply w-full rounded-folha border border-regua bg-cartao px-3 py-2.5 text-tinta outline-none placeholder:text-fosco focus:border-realce;
+}
+.botao {
+  @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-folha bg-realce px-4 font-semibold text-realce-tinta disabled:opacity-60;
+}
+.botao-leve {
+  @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-folha border border-regua bg-cartao px-4 font-medium text-tinta disabled:opacity-60;
+}
+.cartao { @apply rounded-cartao bg-cartao shadow-cartao; }
+.rotulo { @apply mb-1 block text-[13px] font-semibold uppercase tracking-wide text-fosco; }
+.pilula {
+  @apply inline-flex items-center gap-1 rounded-pilula border border-regua bg-cartao px-3 py-1.5 text-[14px] text-grafite;
+}
+.pilula-ativa { @apply border-realce bg-realce-fraco font-semibold text-realce; }
+
+/* A barra de abas respeita a faixa do gesto do iPhone. */
+.abas { padding-bottom: max(env(safe-area-inset-bottom, 0px), 6px); }
+.com-abas { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
