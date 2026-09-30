@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Apartamento 3D</title>
+<style>
+/* =====================================================================
+   ESTILO
+   ===================================================================== */
+:root {
+  --fundo: #f6f7f9; --painel: #ffffff; --linha: #e3e6ea; --texto: #1d2530; --suave: #6b7480;
+  --azul: #2f80ed; --azul-claro: #e8f1fd; --vermelho: #d0453b; --verde: #2e8b57;
+  --raio: 10px; --lateral: 272px; --painel-w: 300px; --barra: 52px;
+  font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--texto);
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--fundo); }
+button { font: inherit; color: inherit; cursor: pointer; border: 1px solid var(--linha); background: #fff;
+  border-radius: 8px; padding: 6px 10px; touch-action: manipulation; }
+button:hover:not(:disabled) { border-color: #c5cbd3; background: #fafbfc; }
+button:disabled { opacity: .4; cursor: default; }
+button.ligado { background: var(--azul-claro); border-color: var(--azul); color: var(--azul); }
+button.perigo { color: var(--vermelho); }
+button.link { border: 0; background: none; padding: 2px 0; color: var(--azul); font-size: 12px; }
+button.link.perigo { color: var(--vermelho); }
+
+#app { display: grid; height: 100%; grid-template: var(--barra) 1fr / var(--lateral) 1fr; position: relative; }
+
+/* ---- barra superior */
+#barra { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 0 12px;
+  background: var(--painel); border-bottom: 1px solid var(--linha); min-width: 0; }
+.marca { font-weight: 700; white-space: nowrap; }
+#abas { display: flex; gap: 4px; overflow-x: auto; flex: 1; min-width: 0; scrollbar-width: none; }
+.aba { white-space: nowrap; border-radius: 999px; padding: 6px 14px; display: flex; gap: 8px; align-items: center; }
+.aba.ativa, .aba.ativa:hover:not(:disabled) { background: var(--texto); color: #fff; border-color: var(--texto); }
+.aba .fechar { opacity: .6; font-size: 16px; line-height: 1; }
+.aba .fechar:hover { opacity: 1; }
+.aba.nova { padding: 6px 12px; font-weight: 600; }
+.acoes { display: flex; gap: 6px; align-items: center; }
+.acoes button { white-space: nowrap; }
+details.menu { position: relative; }
+details.menu summary { list-style: none; cursor: pointer; border: 1px solid var(--linha); border-radius: 8px; padding: 6px 10px; background: #fff; }
+details.menu summary::-webkit-details-marker { display: none; }
+details.menu > div { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; background: #fff; border: 1px solid var(--linha);
+  border-radius: var(--raio); box-shadow: 0 10px 30px rgba(20,30,40,.14); padding: 6px; display: grid; min-width: 230px; }
+details.menu > div button { border: 0; text-align: left; padding: 8px 10px; }
+details.menu > div hr { border: 0; border-top: 1px solid var(--linha); margin: 4px 0; }
+#bLateral { display: none; }
+
+/* ---- lateral esquerda */
+#lateral { background: var(--painel); border-right: 1px solid var(--linha); overflow-y: auto; padding: 12px; }
+#lateral h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--suave); margin: 14px 0 8px; }
+#lateral h2:first-child { margin-top: 0; }
+#avisoPlanta { background: #fff6e0; border: 1px solid #f0d58a; color: #6b5310; border-radius: 8px; padding: 8px 10px; font-size: 12px; margin-bottom: 10px; }
+.tab-areas { width: 100%; border-collapse: collapse; }
+.tab-areas td { padding: 5px 4px; border-bottom: 1px solid var(--linha); }
+.tab-areas td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+.tab-areas tr { cursor: pointer; }
+.tab-areas tr:hover td { background: #fafbfc; }
+.tab-areas tr.ativo td { background: var(--azul-claro); color: var(--azul); }
+.tab-areas tr.soma td { font-weight: 600; border-bottom: 0; cursor: default; background: none; }
+.comparativo { background: var(--fundo); border-radius: 8px; padding: 8px 10px; margin-top: 6px; display: grid; gap: 3px; }
+.comparativo div { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; }
+.comparativo b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.comparativo .ok b { color: var(--verde); }
+.comparativo .alerta b { color: #b7791f; }
+.interruptor { display: flex; align-items: center; gap: 8px; padding: 5px 0; cursor: pointer; }
+.interruptor em { margin-left: auto; font-style: normal; font-size: 12px; color: var(--suave); }
+#buscaCatalogo { width: 100%; padding: 7px 10px; border: 1px solid var(--linha); border-radius: 8px; font: inherit; margin-bottom: 4px; }
+#catalogo h4 { margin: 10px 0 4px; font-size: 12px; color: var(--suave); font-weight: 600; }
+.item-cat { display: flex; width: 100%; align-items: center; gap: 8px; border: 0; padding: 6px 6px; border-radius: 6px; text-align: left; }
+.item-cat:hover { background: var(--fundo) !important; }
+.item-cat i { width: 14px; height: 14px; border-radius: 4px; border: 1px solid rgba(0,0,0,.12); flex: none; }
+.item-cat span { flex: 1; }
+.item-cat em { font-style: normal; font-size: 12px; color: var(--suave); }
+.nota { font-size: 12px; color: var(--suave); margin: 6px 0 0; }
+#salvo { font-size: 11px; color: var(--suave); margin-top: 16px; }
+
+/* ---- palco 3D */
+#palco { position: relative; overflow: hidden; min-width: 0; }
+#palco canvas { display: block; width: 100%; height: 100%; touch-action: none; outline: none; }
+#rotulos { position: absolute; inset: 0; pointer-events: none; }
+.rotulo { position: absolute; left: 0; top: 0; background: rgba(255,255,255,.86); border-radius: 8px; padding: 3px 9px;
+  text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,.08); white-space: nowrap; }
+.rotulo b { display: block; font-size: 12px; }
+.rotulo span { font-size: 12px; color: var(--suave); font-variant-numeric: tabular-nums; }
+.rotulo.ativo { background: var(--azul); color: #fff; }
+.rotulo.ativo span { color: #dce9fb; }
+#avisos { position: absolute; left: 12px; bottom: 12px; max-width: min(560px, calc(100% - 24px)); background: #fff; border: 1px solid #f1c6c2;
+  border-radius: var(--raio); padding: 8px 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; box-shadow: 0 6px 20px rgba(0,0,0,.08); }
+#avisos b { color: var(--vermelho); margin-right: 4px; }
+#avisos button { font-size: 12px; padding: 3px 8px; border-color: #f1c6c2; }
+#avisos span { font-size: 12px; color: var(--suave); }
+#dica { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: var(--texto); color: #fff; padding: 4px 10px; border-radius: 999px; font-size: 12px; pointer-events: none; }
+#ajuda { position: absolute; right: 12px; bottom: 12px; font-size: 11px; color: var(--suave); background: rgba(255,255,255,.8); border-radius: 8px; padding: 4px 8px; pointer-events: none; }
+#toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); background: var(--texto); color: #fff; padding: 10px 16px;
+  border-radius: 10px; opacity: 0; transition: .2s; pointer-events: none; z-index: 50; max-width: 90vw; }
+#toast.visivel { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---- painel da seleção */
+/* flutua sobre a cena: abrir o painel não muda o tamanho da vista 3D */
+#painel { position: absolute; top: var(--barra); right: 0; bottom: 0; width: var(--painel-w); overflow: hidden auto; z-index: 10;
+  background: var(--painel); border-left: 1px solid var(--linha); padding: 12px 14px 20px; box-shadow: -8px 0 24px rgba(20,30,40,.06); display: none; }
+body.com-painel #painel { display: block; }
+body.com-painel #ajuda { display: none; }
+#painel header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+#painel header small { color: var(--suave); font-size: 12px; }
+#painel header h2 { margin: 0; font-size: 17px; }
+#painel .fechar { border: 0; font-size: 20px; line-height: 1; padding: 2px 6px; }
+.bloco { border-top: 1px solid var(--linha); padding: 10px 0; }
+.bloco h3 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--suave); }
+.grade2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.grade3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+.campo { display: grid; grid-template-columns: 1fr auto; align-items: center; border: 1px solid var(--linha); border-radius: 8px; padding: 3px 8px 5px; background: #fff; }
+.campo:focus-within { border-color: var(--azul); box-shadow: 0 0 0 3px var(--azul-claro); }
+.campo span { grid-column: 1 / -1; font-size: 11px; color: var(--suave); }
+.campo input, .campo select { border: 0; outline: 0; font: inherit; font-size: 15px; width: 100%; min-width: 0; padding: 0; background: none; font-variant-numeric: tabular-nums; }
+.campo em { font-style: normal; font-size: 11px; color: var(--suave); }
+.campo.largo { grid-template-columns: 1fr; }
+.campo.cor { grid-template-columns: 1fr; }
+.campo.cor input { height: 28px; cursor: pointer; }
+.linha-botoes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.linha-botoes.fim { border-top: 1px solid var(--linha); padding-top: 12px; }
+.status { border-radius: 8px; padding: 7px 10px; font-size: 13px; margin-bottom: 8px; }
+.status.ok { background: #eaf6ef; color: var(--verde); }
+.status.alerta { background: #fdecea; color: var(--vermelho); }
+.abertura { border: 1px solid var(--linha); border-radius: 8px; padding: 8px; margin-bottom: 8px; }
+.abertura.ativa { border-color: var(--azul); box-shadow: 0 0 0 3px var(--azul-claro); }
+.abertura-cab { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.area-grande { font-size: 26px; font-weight: 700; margin: 4px 0 10px; }
+.area-grande small { display: block; font-size: 12px; font-weight: 400; color: var(--suave); }
+
+/* ---- diálogo .glb */
+dialog { border: 0; border-radius: 14px; padding: 18px; width: min(420px, 92vw); box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+dialog h3 { margin: 0 0 12px; }
+dialog form { display: grid; gap: 10px; }
+dialog p { margin: 0; font-size: 13px; color: var(--suave); }
+dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 0; margin: 6px 0 0; }
+dialog button[value="ok"] { background: var(--azul); color: #fff; border-color: var(--azul); }
+
+/* ---- telas estreitas (celular / tablet em pé) */
+@media (max-width: 860px) {
+  :root { --barra: 96px; }
+  #app { grid-template: var(--barra) 1fr / 1fr; }
+  #barra { flex-wrap: wrap; align-content: center; row-gap: 6px; padding: 6px 10px; }
+  #abas { order: 3; flex-basis: 100%; }
+  .acoes { flex: 1; justify-content: flex-end; gap: 4px; }
+  .acoes button, details.menu summary { padding: 6px 7px; white-space: nowrap; font-size: 13px; }
+  #bEnquadrar { display: none; }
+  .marca { display: none; }
+  #bLateral { display: inline-block; }
+  #lateral { position: fixed; top: var(--barra); bottom: 0; left: 0; width: min(88vw, 320px); z-index: 30; transform: translateX(-102%);
+    transition: transform .2s; box-shadow: 10px 0 30px rgba(0,0,0,.12); }
+  body.lateral-aberta #lateral { transform: none; }
+  #painel { position: fixed; top: auto; left: 0; right: 0; bottom: 0; width: auto; z-index: 25; max-height: 48vh; border-left: 0; border-top: 1px solid var(--linha);
+    box-shadow: 0 -10px 30px rgba(0,0,0,.12); border-radius: 14px 14px 0 0; }
+  .acoes .texto { display: none; }
+  #ajuda { display: none; }
+}
+</style>
+</head>
+<body>
+<!-- =====================================================================
+     INTERFACE
+     ===================================================================== -->
+<div id="app">
+  <header id="barra">
+    <button id="bLateral" title="Áreas e catálogo">☰</button>
+    <div class="marca">Apartamento 3D</div>
+    <nav id="abas" aria-label="Cenários"></nav>
+    <div class="acoes">
+      <button id="bDesfazer" title="Desfazer (Ctrl+Z)">↶</button>
+      <button id="bRefazer" title="Refazer (Ctrl+Shift+Z)">↷</button>
+      <button id="bVista" title="Alternar vista (T)">Vista de cima</button>
+      <button id="bCorte" title="Baixar as paredes para ver o interior"><span class="texto">Cortar paredes</span><span aria-hidden="true"> ✂</span></button>
+      <button id="bEnquadrar" title="Enquadrar o apartamento">⤢</button>
+      <button id="bPNG" title="Exportar a vista como imagem">PNG</button>
+      <details class="menu">
+        <summary>Arquivo ▾</summary>
+        <div>
+          <button id="bSalvar">Salvar no navegador</button>
+          <button id="bExportar">Exportar layout (.json)</button>
+          <button id="bImportar">Importar layout (.json)</button>
+          <hr>
+          <button id="bGLB">Importar modelo .glb</button>
+          <hr>
+          <button id="bOriginal">Voltar ao original</button>
+        </div>
+      </details>
+    </div>
+  </header>
+
+  <aside id="lateral">
+    <div id="avisoPlanta" hidden></div>
+    <h2>Áreas</h2>
+    <div id="areas"></div>
+    <h2>Demolição</h2>
+    <div id="demolicao"></div>
+    <h2>Adicionar móvel</h2>
+    <input id="buscaCatalogo" type="search" placeholder="Buscar no catálogo">
+    <div id="catalogo"></div>
+    <button id="bGLB2" style="width:100%;margin-top:10px">Importar modelo .glb…</button>
+    <div id="salvo"></div>
+  </aside>
+
+  <main id="palco">
+    <div id="rotulos"></div>
+    <div id="dica" hidden></div>
+    <div id="avisos" hidden></div>
+    <div id="ajuda">Clique: selecionar · arraste: mover · R: girar · Del: remover · botão direito: deslocar a vista</div>
+  </main>
+
+  <aside id="painel"></aside>
+</div>
+
+<div id="toast" role="status"></div>
+<input type="file" id="arqJSON" accept=".json,application/json" hidden>
+<input type="file" id="arqGLB" accept=".glb,.gltf" hidden>
+
+<dialog id="dlgGLB">
+  <form method="dialog">
+    <h3>Importar modelo .glb</h3>
+    <label class="campo largo"><span>Nome no catálogo</span><input id="glbNome" type="text"></label>
+    <p>Tamanho no arquivo: <b id="glbOriginal"></b></p>
+    <label class="campo"><span>1 unidade do arquivo equivale a</span><input id="glbEscala" type="text" inputmode="decimal"><em>cm</em></label>
+    <p>Resultado: <b id="glbResultado"></b> (L × P × A). Dá para mudar as medidas depois, no painel do móvel.</p>
+    <menu><button value="cancel">Cancelar</button><button value="ok">Adicionar ao catálogo</button></menu>
+  </form>
+</dialog>
+
+<!-- =====================================================================
+     BIBLIOTECA 3D (three.js embutido — funciona sem internet)
+     ===================================================================== -->
+<script>/*@THREE@*/</script>
+
+<!-- =====================================================================
+     CATÁLOGO DE MÓVEIS (dados)
+     ===================================================================== -->
+<script>/*@CATALOGO@*/</script>
+
+<!-- =====================================================================
+     PLANTA E CENÁRIOS (dados)
+     ===================================================================== -->
+<script>/*@PLANTA@*/</script>
+
+<!-- =====================================================================
+     APLICAÇÃO
+     ===================================================================== -->
+<script>/*@APP@*/</script>
+</body>
+</html>
