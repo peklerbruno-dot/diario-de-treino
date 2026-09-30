@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Lancamento } from "./tipos";
-import { valoresRapidos } from "./valores-rapidos";
+import { categoriasPorUso, valoresRapidos } from "./valores-rapidos";
 
 let n = 0;
 const gasto = (reais: number, extras: Partial<Lancamento> = {}): Lancamento => ({
@@ -62,5 +62,24 @@ describe("os botões de valor", () => {
     const v = valoresRapidos([...fora, ...dentro], HOJE);
     expect(v.baseadoEm).toBe(10);
     expect(v.medianaCents).toBe(1500);
+  });
+});
+
+describe("as categorias na confirmação de um valor", () => {
+  const cats = [{ id: "mercado" }, { id: "comida" }, { id: "transporte" }, { id: "lazer" }];
+
+  it("as mais usadas no Diário vêm primeiro; as nunca usadas, na ordem de cadastro", () => {
+    const historia = [
+      ...Array.from({ length: 5 }, () => gasto(20, { categoria: "transporte" })),
+      ...Array.from({ length: 2 }, () => gasto(30, { categoria: "comida" })),
+      gasto(50, { categoria: "lazer", tipo: "SAIDA" }), // saída não conta
+      gasto(50, { categoria: "lazer", previsto: true }), // previsto não conta
+    ];
+    expect(categoriasPorUso(cats, historia, HOJE).map((c) => c.id)).toEqual([
+      "transporte",
+      "comida",
+      "mercado",
+      "lazer",
+    ]);
   });
 });

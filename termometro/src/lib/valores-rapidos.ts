@@ -93,3 +93,29 @@ export function valoresRapidos(lancamentos: readonly Lancamento[], hoje: string)
     medianaCents: emCentavos(quantil(0.5)),
   };
 }
+
+/**
+ * As categorias do Diário na ordem em que você mais usa.
+ *
+ * Na confirmação de um valor, a categoria é o segundo toque — e o segundo
+ * toque só é rápido se a categoria certa estiver à mão. As mais usadas no
+ * último ano vêm primeiro; as nunca usadas seguem na ordem em que foram
+ * cadastradas.
+ */
+export function categoriasPorUso<C extends { id: string }>(
+  categorias: readonly C[],
+  lancamentos: readonly Lancamento[],
+  hoje: string,
+): C[] {
+  const desde = somarDias(hoje, -365);
+  const vezes = new Map<string, number>();
+  for (const l of lancamentos) {
+    if (l.apagadoEm || l.previsto || l.tipo !== "DIARIO" || !l.categoria) continue;
+    if (l.data < desde || l.data > hoje) continue;
+    vezes.set(l.categoria, (vezes.get(l.categoria) ?? 0) + 1);
+  }
+  return categorias
+    .map((c, ordem) => ({ c, ordem, n: vezes.get(c.id) ?? 0 }))
+    .sort((a, b) => b.n - a.n || a.ordem - b.ordem)
+    .map(({ c }) => c);
+}

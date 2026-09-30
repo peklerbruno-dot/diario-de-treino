@@ -283,6 +283,7 @@ export function Folha({
   // digitação: o teclado do iPhone fechava no meio da nota.
   const fechar = useRef(aoFechar);
   fechar.current = aoFechar;
+  const abertaEm = useRef(Date.now());
 
   useEffect(() => {
     // O foco entra na folha ao abrir e volta para quem a abriu ao fechar. Sem
@@ -327,7 +328,12 @@ export function Folha({
       <button
         type="button"
         aria-label="Fechar"
-        onClick={aoFechar}
+        onClick={() => {
+          // O segundo toque de um toque duplo cai na cortina que acabou de
+          // aparecer por cima do botão — e fechava a folha no mesmo instante
+          // em que ela abria. Nos primeiros 400 ms, a cortina não fecha nada.
+          if (Date.now() - abertaEm.current > 400) aoFechar();
+        }}
         className="absolute inset-0 bg-black/35 backdrop-blur-[2px]"
       />
       <div

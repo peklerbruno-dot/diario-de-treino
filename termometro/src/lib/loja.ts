@@ -255,13 +255,17 @@ export class Loja {
    * mais nada. É o botão de R$ 15 da tela Hoje. Sem folha para conferir, a
    * segurança é o Desfazer que aparece logo em seguida.
    */
-  lancarRapido(valorCents: number, data: string) {
+  lancarRapido(
+    valorCents: number,
+    data: string,
+    extras: { categoria?: string | null; nota?: string | null } = {},
+  ) {
     const l = this.salvarLancamento({
       data,
       tipo: "DIARIO",
       valorCents,
-      nota: null,
-      categoria: null,
+      nota: extras.nota?.trim() || null,
+      categoria: extras.categoria ?? null,
       previsto: false,
       rendaPropria: false,
       investimento: false,
