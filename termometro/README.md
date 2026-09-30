@@ -240,6 +240,30 @@ se aconteceu, o cartão **"Aconteceu mesmo?"** cobra: um toque confirma, outro
 apaga (com desfazer), e "aconteceram todos" resolve a lista de uma vez — porque
 previsto vencido distorce o saldo em silêncio.
 
+## "Gastei": um toque por gasto
+
+Na tela Hoje, logo abaixo dos botões de lançar, uma grade de valores: tocar em
+**R$ 15** lança R$ 15 no Diário de hoje, e pronto. A pergunta que ela responde é
+"quanto foi?", não "no que foi" — quem sai do caixa sabe o valor na hora; a
+categoria pode esperar (tocar no lançamento abre a edição). A segurança é o
+**Desfazer** que aparece por seis segundos, e um toque fantasma duplo no mesmo
+botão vira um lançamento só.
+
+Os valores saem dos seus gastos, calculados no próprio aparelho
+(`src/lib/valores-rapidos.ts`):
+
+- **Redondos**, uma escada fixa — de 5 em 5 até 50, de 10 em 10 até 100, depois
+  degraus maiores. Fina embaixo porque é embaixo que mora quase todo gasto do
+  dia a dia; fixa porque botão que muda de lugar não vira memória do dedo. Vai
+  até o valor que cobre 95% dos seus gastos do último ano, nunca menos que
+  R$ 100.
+- **Os seus de sempre**: os valores quebrados que você repete (três vezes ou
+  mais) e a escada não tem — o R$ 38 do almoço, o R$ 12 do café.
+
+Os atalhos com nome (Ajustes → Atalhos com nome) continuam existindo para o
+gasto que tem nome e categoria fixos, e aparecem acima da grade assim que você
+cria ou edita o primeiro.
+
 ## Pequenas coisas que economizam toques
 
 - **Desfazer** por seis segundos depois de apagar um lançamento. Apagar já era
@@ -479,7 +503,8 @@ cor. A tabela dos doze meses logo abaixo é o mesmo dado em números.
     src/lib/calculadora.ts   o que o teclado do app digita → conta e parcelas
     src/lib/datas.ts         dia de caderno: texto, sem fuso
     src/lib/atalho.ts        o que o atalho do iPhone manda → lançamentos
-    src/lib/atalhos.ts       os botões de lançamento rápido da tela Hoje
+    src/lib/atalhos.ts       os atalhos com nome (Ajustes)
+    src/lib/valores-rapidos.ts  os botões de valor da tela Hoje, a partir dos seus gastos
     src/lib/busca.ts         buscar por nota/categoria; a categoria que a nota levou
     src/lib/backup.ts        ler de volta o backup JSON que o app baixou
     src/lib/saldo-no-servidor.ts  a conta da tela, para a Siri responder o mesmo
