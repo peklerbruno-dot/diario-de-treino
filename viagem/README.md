@@ -4,7 +4,8 @@ O app da viagem do México (e das próximas): **os lugares que o grupo quer
 conhecer, o roteiro dia a dia e a divisão de contas**, cada um com a sua conta,
 todo mundo vendo a mesma coisa.
 
-Quem só quer colocar no ar, sem mexer em código: [`docs/COLOCAR-NO-AR.md`](docs/COLOCAR-NO-AR.md).
+Quem só quer colocar no ar, sem mexer em código: [`docs/COLOCAR-NO-AR.md`](docs/COLOCAR-NO-AR.md)
+(pela tela da Vercel) ou [`docs/LANCAR.md`](docs/LANCAR.md) (um comando, com três chaves).
 
 ## O que ele faz
 
