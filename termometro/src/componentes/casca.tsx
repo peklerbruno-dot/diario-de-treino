@@ -427,8 +427,8 @@ function BarraDeLancar() {
  * pelo erro raro.
  */
 function Desfazer({ acimaDaBarra }: { acimaDaBarra: boolean }) {
-  const { ultimaExclusao } = useEstado();
-  if (!ultimaExclusao) return null;
+  const { ultimaAcao } = useEstado();
+  if (!ultimaAcao) return null;
 
   return (
     <div
@@ -442,10 +442,12 @@ function Desfazer({ acimaDaBarra }: { acimaDaBarra: boolean }) {
       className="fixed inset-x-0 bottom-[var(--baixo)] z-[60] px-4 lg:bottom-5 lg:left-[236px]"
     >
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 rounded-folha bg-heroi px-3.5 py-2.5 text-[13px] text-heroi-tinta shadow-cartao">
-        <span className="min-w-0 truncate">Apagado: {ultimaExclusao.rotulo}</span>
+        <span className="min-w-0 truncate">
+          {ultimaAcao.tipo === "apagou" ? "Apagado" : "Lançado"}: {ultimaAcao.rotulo}
+        </span>
         <button
           type="button"
-          onClick={() => loja.desfazerExclusao()}
+          onClick={() => loja.desfazer()}
           className="shrink-0 rounded-full bg-heroi-tinta/15 px-3.5 py-1 font-semibold"
         >
           Desfazer

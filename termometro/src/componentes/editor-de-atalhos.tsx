@@ -36,10 +36,11 @@ export function EditorDeAtalhos({ estado }: { estado: Estado }) {
 
   return (
     <section className="mt-6">
-      <Subtitulo>Atalhos rápidos</Subtitulo>
+      <Subtitulo>Atalhos com nome</Subtitulo>
       <p className="mt-1 text-[15px] leading-relaxed text-grafite">
-        Os botões que aparecem na aba <strong>Hoje</strong>, embaixo dos lançamentos do dia. Cada um
-        guarda a coluna, a categoria e a observação de um gasto que se repete — tocar nele abre o
+        O jeito rápido da aba <strong>Hoje</strong> são os botões de valor, em “Gastei”. Estes aqui
+        são para o gasto que se repete com nome e categoria — o “Almoço FFLCH” — e aparecem em Hoje,
+        acima dos valores, assim que você criar ou editar o primeiro. Tocar num deles abre o
         lançamento já preenchido, faltando só o valor.
       </p>
 

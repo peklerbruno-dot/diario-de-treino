@@ -8,7 +8,7 @@ import {
   type Categoria,
 } from "./categorias";
 import { hoje as dataDeHoje } from "./datas";
-import { aoReal } from "./dinheiro";
+import { aoReal, comCifrao } from "./dinheiro";
 import type { Ajustes, Fixo, Lancamento, Tipo } from "./tipos";
 import { AJUSTES_PADRAO } from "./tipos";
 
@@ -48,11 +48,12 @@ export interface Estado {
   recadoDeErro: string | null;
   carregado: boolean;
   /**
-   * O último lançamento apagado, enquanto ainda dá para desfazer. Efêmero de
-   * propósito: não é gravado no aparelho nem sincronizado — é só a janela de
-   * arrependimento de alguns segundos depois do toque em Apagar.
+   * A última ação que ainda dá para desfazer: um Apagar, ou um lançamento de
+   * um toque (os botões de valor da tela Hoje). Efêmero de propósito: não é
+   * gravado no aparelho nem sincronizado — é só a janela de arrependimento de
+   * alguns segundos depois do toque.
    */
-  ultimaExclusao: { id: string; rotulo: string } | null;
+  ultimaAcao: { tipo: "apagou" | "lancou"; id: string; rotulo: string } | null;
 }
 
 const ESTADO_VAZIO: Estado = {
@@ -66,7 +67,7 @@ const ESTADO_VAZIO: Estado = {
   ultimaSincronizacao: null,
   recadoDeErro: null,
   carregado: false,
-  ultimaExclusao: null,
+  ultimaAcao: null,
 };
 
 const agora = () => new Date().toISOString();
@@ -229,33 +230,73 @@ export class Loja {
 
   private relogioDoDesfazer: ReturnType<typeof setTimeout> | null = null;
 
+  /** Abre a janela de arrependimento e a fecha sozinha em seis segundos. */
+  private abrirDesfazer(acao: NonNullable<Estado["ultimaAcao"]>) {
+    this.publicar({ ultimaAcao: acao }, false);
+    if (this.relogioDoDesfazer) clearTimeout(this.relogioDoDesfazer);
+    this.relogioDoDesfazer = setTimeout(() => {
+      if (this.estado.ultimaAcao?.id === acao.id) this.publicar({ ultimaAcao: null }, false);
+    }, 6000);
+  }
+
   apagarLancamento(id: string) {
     const atual = this.estado.lancamentos[id];
     if (!atual) return;
     const l: Lancamento = { ...atual, apagadoEm: agora(), atualizadoEm: agora() };
-    this.publicar({
-      lancamentos: { ...this.estado.lancamentos, [id]: l },
-      // Apagar é soft-delete, então desfazer é barato — e um toque errado em
-      // Apagar deixa de custar o valor inteiro digitado de novo.
-      ultimaExclusao: { id, rotulo: atual.nota?.trim() || "lançamento" },
-    });
+    this.publicar({ lancamentos: { ...this.estado.lancamentos, [id]: l } });
     this.marcarPendente(`l:${id}`);
-
-    if (this.relogioDoDesfazer) clearTimeout(this.relogioDoDesfazer);
-    this.relogioDoDesfazer = setTimeout(() => {
-      if (this.estado.ultimaExclusao?.id === id) this.publicar({ ultimaExclusao: null }, false);
-    }, 6000);
+    // Apagar é soft-delete, então desfazer é barato — e um toque errado em
+    // Apagar deixa de custar o valor inteiro digitado de novo.
+    this.abrirDesfazer({ tipo: "apagou", id, rotulo: atual.nota?.trim() || "lançamento" });
   }
 
-  desfazerExclusao() {
-    const alvo = this.estado.ultimaExclusao;
+  /**
+   * Um gasto do dia a dia lançado com um toque: o valor, hoje, no Diário, e
+   * mais nada. É o botão de R$ 15 da tela Hoje. Sem folha para conferir, a
+   * segurança é o Desfazer que aparece logo em seguida.
+   */
+  lancarRapido(valorCents: number, data: string) {
+    const l = this.salvarLancamento({
+      data,
+      tipo: "DIARIO",
+      valorCents,
+      nota: null,
+      categoria: null,
+      previsto: false,
+      rendaPropria: false,
+      investimento: false,
+      apartamento: false,
+      fixoId: null,
+    });
+    this.abrirDesfazer({
+      tipo: "lancou",
+      id: l.id,
+      rotulo: `${comCifrao(l.valorCents)} no diário`,
+    });
+    return l;
+  }
+
+  desfazer() {
+    const alvo = this.estado.ultimaAcao;
     if (!alvo) return;
-    const morto = this.estado.lancamentos[alvo.id];
-    this.publicar({ ultimaExclusao: null }, false);
-    if (!morto?.apagadoEm) return;
-    // Volta como era, inclusive `previsto`: desfazer não é relançar.
-    const { apagadoEm: _, atualizadoEm: __, criadoEm: ___, ...resto } = morto;
-    this.salvarLancamento(resto);
+    this.publicar({ ultimaAcao: null }, false);
+    const l = this.estado.lancamentos[alvo.id];
+    if (!l) return;
+
+    if (alvo.tipo === "apagou") {
+      if (!l.apagadoEm) return;
+      // Volta como era, inclusive `previsto`: desfazer não é relançar.
+      const { apagadoEm: _, atualizadoEm: __, criadoEm: ___, ...resto } = l;
+      this.salvarLancamento(resto);
+      return;
+    }
+
+    // Desfazer um lançamento de um toque é apagá-lo — sem abrir outra janela
+    // de "Apagado", que só confundiria.
+    if (l.apagadoEm) return;
+    const morto: Lancamento = { ...l, apagadoEm: agora(), atualizadoEm: agora() };
+    this.publicar({ lancamentos: { ...this.estado.lancamentos, [l.id]: morto } });
+    this.marcarPendente(`l:${l.id}`);
   }
 
   /** Confirmar é dizer "aconteceu mesmo, e foi este valor". */
