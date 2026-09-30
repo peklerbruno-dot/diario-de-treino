@@ -72,6 +72,8 @@ function prepararDoc(d) {
   d.ativo = Math.min(Math.max(0, d.ativo | 0), d.cenarios.length - 1);
   d.catalogoExtra ||= [];
   d.planta.pontosEletricos ||= [];
+  d.planta.local ||= clonar(PLANTA_ORIGINAL.local);
+  d.planta.orientacao ??= PLANTA_ORIGINAL.orientacao;
   for (const a of d.planta.aberturas) a.id ||= novoId('ab');
   for (const c of d.cenarios) { c.id ||= novoId('c'); for (const m of c.moveis) prepararMovel(m); }
   return d;
@@ -307,11 +309,10 @@ const pmrem = new T.PMREMGenerator(renderer);
 cena.environment = pmrem.fromScene(new T.RoomEnvironment(), 0.04).texture;
 cena.environmentIntensity = 0.45;
 
-// Luzes: céu + sol entrando pelas janelas da parede esquerda.
+// Luzes: céu + sol. A posição do sol vem da data e da hora (seção 4b).
 const hemi = new T.HemisphereLight(0xffffff, 0xd8cbb8, 1.1);
 cena.add(hemi);
 const sol = new T.DirectionalLight(0xfff1dc, 2.4);
-sol.position.set(-260, 1100, 120);
 sol.castShadow = true;
 sol.shadow.mapSize.set(4096, 4096);
 Object.assign(sol.shadow.camera, { left: -650, right: 650, top: 650, bottom: -650, near: 10, far: 3000 });
@@ -356,8 +357,7 @@ function enquadrar() {
   camTopo.position.set(cx, 3000, cz);
   ctlTopo.target.set(cx, 0, cz);
   camTopo.updateProjectionMatrix();
-  sol.target.position.set(cx, 0, cz);
-  sol.position.set(cx - 470, 1100, cz - 230); // sol alto, entrando pelas janelas da esquerda
+  aplicarSol();
   ctlPersp.update(); ctlTopo.update();
 }
 
@@ -462,6 +462,87 @@ const MAT = {
     cimento: new T.MeshStandardMaterial({ map: texturaCimento(), roughness: 0.7 }),
   },
 };
+
+// =====================================================================
+// 4b. SOL POR DATA E HORA
+// =====================================================================
+// Posição do sol pelo algoritmo simplificado da NOAA (erro < 1°), para a
+// latitude/longitude de doc.planta.local. Data e hora não entram no
+// histórico: ficam guardadas à parte, só neste navegador.
+const CHAVE_LUZ = 'simulador-apto:luz';
+const rad = (g) => (g * Math.PI) / 180, grau = (r) => (r * 180) / Math.PI;
+const hojeISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+const luz = Object.assign({ data: hojeISO(), hora: 8 }, (() => { try { return JSON.parse(localStorage.getItem(CHAVE_LUZ)) || {}; } catch { return {}; } })());
+
+function posicaoSol(dataISO, hora, { lat, lon, fuso }) {
+  const [a, m, d] = dataISO.split('-').map(Number);
+  const n = (Date.UTC(a, m - 1, d) + (hora - fuso) * 3600e3) / 864e5 + 2440587.5 - 2451545.0;
+  const L = 280.46 + 0.9856474 * n, g = rad(357.528 + 0.9856003 * n);
+  const lamb = rad(L + 1.915 * Math.sin(g) + 0.02 * Math.sin(2 * g));
+  const eps = rad(23.439 - 4e-7 * n);
+  const ra = Math.atan2(Math.cos(eps) * Math.sin(lamb), Math.cos(lamb));
+  const dec = Math.asin(Math.sin(eps) * Math.sin(lamb));
+  const H = rad((18.697374558 + 24.06570982441908 * n) * 15 + lon) - ra, f = rad(lat);
+  const elev = Math.asin(Math.sin(f) * Math.sin(dec) + Math.cos(f) * Math.cos(dec) * Math.cos(H));
+  const az = Math.atan2(-Math.sin(H), Math.tan(dec) * Math.cos(f) - Math.sin(f) * Math.cos(H));
+  return { elev: grau(elev), az: (grau(az) + 360) % 360 }; // az: a partir do norte, sentido horário
+}
+
+// Direção na planta (x, z) de um azimute. A parede esquerda olha para -x;
+// 'orientacao' diz a que azimute isso corresponde.
+function direcaoPlanta(az) {
+  const t = rad(az - doc.planta.orientacao);
+  return [-Math.cos(t), -Math.sin(t)];
+}
+
+function nascerPor(dataISO) {
+  let nascer = null, por = null, antes = posicaoSol(dataISO, 0, doc.planta.local).elev;
+  for (let min = 5; min <= 1440; min += 5) {
+    const e = posicaoSol(dataISO, min / 60, doc.planta.local).elev;
+    if (antes < 0 && e >= 0 && nascer == null) nascer = min / 60;
+    if (antes >= 0 && e < 0) por = min / 60;
+    antes = e;
+  }
+  return { nascer, por };
+}
+
+const PONTOS = ['N', 'NE', 'L', 'SE', 'S', 'SO', 'O', 'NO'];
+const pontoCardeal = (az) => PONTOS[Math.round(az / 45) % 8];
+const horaTxt = (h) => `${String(Math.floor(h)).padStart(2, '0')}:${String(Math.round((h % 1) * 60)).padStart(2, '0')}`.replace(/:60$/, ':59');
+const suave = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+
+const CEU_DIA = new T.Color('#e9ebee'), CEU_NOITE = new T.Color('#2a303b');
+const SOL_BAIXO = new T.Color('#ffb070'), SOL_ALTO = new T.Color('#fff4e4');
+function aplicarSol() {
+  if (!doc) return;
+  const { cx, cz } = centroPlanta();
+  const { elev, az } = posicaoSol(luz.data, luz.hora, doc.planta.local);
+  const [dx, dz] = direcaoPlanta(az);
+  const e = rad(Math.max(elev, 2)), dist = 1500;
+  sol.target.position.set(cx, 0, cz);
+  sol.position.set(cx + dx * Math.cos(e) * dist, Math.sin(e) * dist, cz + dz * Math.cos(e) * dist);
+  const dia = suave(-2, 6, elev);                  // 0 à noite, 1 de dia
+  sol.intensity = 2.8 * suave(-0.5, 8, elev);
+  sol.visible = sol.intensity > 0.01;
+  sol.color.copy(SOL_BAIXO).lerp(SOL_ALTO, suave(3, 35, elev));
+  hemi.intensity = 0.25 + 0.9 * dia;
+  cena.environmentIntensity = 0.1 + 0.35 * dia;
+  cena.background.copy(CEU_NOITE).lerp(CEU_DIA, dia);
+  return { elev, az };
+}
+
+// Bússola: seta do norte girando conforme a câmera.
+const bussola = document.querySelector('#bussola');
+function posicionarBussola() {
+  const { cx, cz } = centroPlanta();
+  const [nx, nz] = direcaoPlanta(0);
+  const a = new T.Vector3(cx, 0, cz).project(camAtiva()), b = new T.Vector3(cx + nx * 100, 0, cz + nz * 100).project(camAtiva());
+  const ang = Math.atan2(b.x - a.x, (b.y - a.y) * (palco.clientHeight / palco.clientWidth));
+  bussola.querySelector('svg').style.transform = `rotate(${grau(ang)}deg)`;
+  const letra = bussola.querySelector('b');
+  letra.style.left = `${20 + Math.sin(ang) * 27}px`;
+  letra.style.top = `${20 - Math.cos(ang) * 27}px`;
+}
 
 // =====================================================================
 // 5. PAREDES, ABERTURAS E PISOS
@@ -1141,6 +1222,53 @@ function renderAreas() {
   }
 }
 
+let animacao = null;
+function renderLuz() {
+  const box = $('#luz');
+  box.textContent = '';
+  const info = aplicarSol();
+  const { nascer, por } = nascerPor(luz.data);
+  const guardar = () => { try { localStorage.setItem(CHAVE_LUZ, JSON.stringify(luz)); } catch { /* ok */ } };
+  const hora = el('input', { type: 'range', min: 4, max: 20, step: 0.25, value: String(luz.hora) });
+  const rotHora = el('b', {}, horaTxt(luz.hora));
+  const txt = el('p', { class: 'nota' });
+  const descrever = ({ elev, az }) => {
+    txt.textContent = elev <= 0
+      ? 'Sol abaixo do horizonte.'
+      : `Sol a ${Math.round(elev)}° de altura, vindo do ${pontoCardeal(az)} (azimute ${Math.round(az)}°).`;
+  };
+  descrever(info);
+  hora.addEventListener('input', () => {
+    luz.hora = +hora.value; rotHora.textContent = horaTxt(luz.hora);
+    descrever(aplicarSol()); guardar();
+  });
+  const data = el('input', { type: 'date', value: luz.data, onchange: (e) => { if (e.target.value) { luz.data = e.target.value; guardar(); renderLuz(); } } });
+  const orient = el('select', { onchange: (e) => alterar(() => { doc.planta.orientacao = +e.target.value; }) },
+    ...PONTOS.map((p, i) => el('option', { value: i * 45, selected: Math.round(doc.planta.orientacao / 45) % 8 === i }, p)));
+  const animar = botao(animacao ? '■ Parar' : '▶ Passar o dia', () => {
+    if (animacao) { clearInterval(animacao); animacao = null; renderLuz(); return; }
+    luz.hora = Math.floor((nascer ?? 6) * 4) / 4;
+    animacao = setInterval(() => {
+      luz.hora += 0.25;
+      if (luz.hora > (por ?? 18) + 0.25) { clearInterval(animacao); animacao = null; luz.hora = por ?? 18; guardar(); renderLuz(); return; }
+      hora.value = String(luz.hora); rotHora.textContent = horaTxt(luz.hora); descrever(aplicarSol());
+    }, 180);
+    renderLuz();
+  });
+  anexar(box,
+    el('div', { class: 'luz-local' }, doc.planta.local.nome),
+    el('div', { class: 'grade2' },
+      el('label', { class: 'campo largo' }, el('span', {}, 'Data'), data),
+      el('label', { class: 'campo largo' }, el('span', {}, 'Janelas voltadas p/'), orient)),
+    el('label', { class: 'faixa-hora' }, el('span', {}, 'Hora'), rotHora, hora),
+    txt,
+    el('div', { class: 'linha-botoes' }, animar,
+      botao('Manhã', () => { luz.hora = 8; guardar(); renderLuz(); }),
+      botao('Tarde', () => { luz.hora = 15; guardar(); renderLuz(); })),
+    nascer != null ? el('p', { class: 'nota' }, `Nascer ${horaTxt(nascer)} · pôr ${horaTxt(por)} (horário de Brasília)`) : null,
+  );
+}
+
 function renderDemolicao() {
   const box = $('#demolicao');
   box.textContent = '';
@@ -1372,6 +1500,7 @@ function atualizarTudo() {
   desenharSelecao();
   renderAbas();
   renderAreas();
+  renderLuz();
   renderDemolicao();
   renderCatalogo();
   renderPainel();
@@ -1494,7 +1623,8 @@ function exportarPNG() {
     g.font = `${12 * k}px system-ui, sans-serif`; g.fillStyle = '#4a5563'; g.fillText(r.area, x, y + 9 * k);
   }
   g.font = `${12 * k}px system-ui, sans-serif`; g.textAlign = 'left'; g.fillStyle = 'rgba(29,37,48,.75)';
-  g.fillText(`${cen().nome} · útil ${m2(doc.planta.ambientes.reduce((s, a) => s + areaUtil(a), 0))} · ${new Date().toLocaleDateString('pt-BR')}`, 14 * k, src.height - 14 * k);
+  const [ano, mes, dia] = luz.data.split('-');
+  g.fillText(`${cen().nome} · útil ${m2(doc.planta.ambientes.reduce((s, a) => s + areaUtil(a), 0))} · sol de ${dia}/${mes}/${ano} às ${horaTxt(luz.hora)}`, 14 * k, src.height - 14 * k);
   c.toBlob((b) => baixar(b, `apartamento-${slug(cen().nome)}.png`));
 }
 
@@ -1573,6 +1703,8 @@ for (const d of document.querySelectorAll('details.menu')) d.addEventListener('c
 //    ou acrescentar novos tipos em PISOS.
 //  - Modo caminhada: uma terceira câmera ao lado de camPersp/camTopo,
 //    ativada em alternarVista().
+//  - Luz artificial à noite: somar PointLights em aplicarSol() quando o
+//    sol estiver abaixo do horizonte (a partir de pontosEletricos).
 //  - Tomadas e pontos de luz: doc.planta.pontosEletricos (já existe, vazio,
 //    e já acompanha o "esticar" das paredes) + uma função em aposPlanta.
 const EXTENSOES = { aposPlanta: [], aposMoveis: [] };
@@ -1608,6 +1740,7 @@ renderer.setAnimationLoop(() => {
   ctlAtivo().update();
   renderer.render(cena, camAtiva());
   posicionarRotulos();
+  posicionarBussola();
 });
 
 // acesso pelo console, útil para testes e ajustes finos

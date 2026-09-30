@@ -93,6 +93,14 @@ details.menu > div hr { border: 0; border-top: 1px solid var(--linha); margin: 4
 #avisos b { color: var(--vermelho); margin-right: 4px; }
 #avisos button { font-size: 12px; padding: 3px 8px; border-color: #f1c6c2; }
 #avisos span { font-size: 12px; color: var(--suave); }
+#bussola { position: absolute; top: 12px; left: 12px; width: 40px; height: 40px; pointer-events: none; }
+#bussola { top: 18px; left: 18px; }
+#bussola b { position: absolute; left: 20px; top: -7px; transform: translate(-50%, -50%); font-size: 11px; color: var(--vermelho); }
+.luz-local { font-size: 13px; margin-bottom: 8px; }
+.faixa-hora { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; align-items: center; margin-top: 8px; }
+.faixa-hora span { font-size: 12px; color: var(--suave); }
+.faixa-hora b { text-align: right; font-variant-numeric: tabular-nums; }
+.faixa-hora input { grid-column: 1 / -1; width: 100%; accent-color: #e0a030; }
 #dica { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: var(--texto); color: #fff; padding: 4px 10px; border-radius: 999px; font-size: 12px; pointer-events: none; }
 #ajuda { position: absolute; right: 12px; bottom: 12px; font-size: 11px; color: var(--suave); background: rgba(255,255,255,.8); border-radius: 8px; padding: 4px 8px; pointer-events: none; }
 #toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); background: var(--texto); color: #fff; padding: 10px 16px;
@@ -196,6 +204,8 @@ dialog button[value="ok"] { background: var(--azul); color: #fff; border-color: 
     <div id="avisoPlanta" hidden></div>
     <h2>Áreas</h2>
     <div id="areas"></div>
+    <h2>Luz do sol</h2>
+    <div id="luz"></div>
     <h2>Demolição</h2>
     <div id="demolicao"></div>
     <h2>Adicionar móvel</h2>
@@ -207,6 +217,7 @@ dialog button[value="ok"] { background: var(--azul); color: #fff; border-color: 
 
   <main id="palco">
     <div id="rotulos"></div>
+    <div id="bussola" title="Norte"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="18" fill="rgba(255,255,255,.88)" stroke="#d5dae0"/><path d="M20 5 L26 21 L20 18 L14 21 Z" fill="#d0453b"/><path d="M20 35 L14 19 L20 22 L26 19 Z" fill="#9aa3ad"/></svg><b>N</b></div>
     <div id="dica" hidden></div>
     <div id="avisos" hidden></div>
     <div id="ajuda">Clique: selecionar · arraste: mover · R: girar · Del: remover · botão direito: deslocar a vista</div>

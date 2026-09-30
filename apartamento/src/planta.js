@@ -23,6 +23,13 @@
 const PLANTA_ORIGINAL = {
   aviso: 'Planta provisória: posições deduzidas das medidas, aguardando os prints para conferir.',
   alturaParede: 260,
+
+  // Local e orientação — usados para calcular o sol por data e hora.
+  // 'orientacao' = para onde olham as janelas da parede esquerda, em graus
+  // a partir do norte (0 = N, 90 = L, 180 = S, 270 = O). O apartamento pega
+  // o sol da manhã, então as janelas estão voltadas para o leste.
+  local: { nome: 'Barra Funda, São Paulo', lat: -23.525, lon: -46.666, fuso: -3 },
+  orientacao: 90,
   areaConstrutora: 32, // m², informado pela construtora
 
   paredes: [

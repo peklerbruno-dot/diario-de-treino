@@ -23,7 +23,8 @@ está embutido no próprio arquivo.
 | Demolir | marque "Pode ser derrubada" na parede; depois é um clique na seção Demolição |
 | Cenários | abas no topo; `+` duplica o cenário atual; clique duplo renomeia |
 | Salvar | automático no navegador; **Arquivo** exporta/importa `.json` |
-| Imagem | botão **PNG** (com as áreas escritas) |
+| Luz do sol | seção **Luz do sol**: data, hora (4h–20h) e ▶ **Passar o dia**; a bússola no canto mostra o norte |
+| Imagem | botão **PNG** (com as áreas, a data e a hora do sol) |
 | Modelo 3D pronto | **Arquivo → Importar modelo .glb**, informando a escala em cm |
 
 Aviso de colisão: o móvel fica marcado em vermelho e o conflito aparece no canto da tela.
@@ -38,6 +39,14 @@ Com o interior de 420 × 700 cm e paredes externas de 12 cm, a construída dá *
 (+0,5% sobre os 32 m²). A área útil somada dá 28,68 m²: os ~3,5 m² de diferença são as paredes.
 Por isso não foi preciso mudar a escala. Se as paredes forem mais grossas, basta mudar a
 espessura no painel da parede: tudo recalcula.
+
+## Sol
+
+A posição do sol é calculada para a Barra Funda, em São Paulo (23,5° S, 46,7° O, horário de
+Brasília), pela data e pela hora escolhidas, com precisão de cerca de 1°. Como o apartamento
+pega o sol da manhã, as janelas da parede esquerda estão voltadas para o **leste**. Se a
+orientação real for outra (nordeste, por exemplo), mude em "Janelas voltadas p/"; o local e a
+orientação ficam em `local` e `orientacao`, no início de `src/planta.js`.
 
 ## Organização
 
