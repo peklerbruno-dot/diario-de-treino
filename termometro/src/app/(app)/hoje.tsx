@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AtalhosRapidos } from "@/componentes/atalhos-rapidos";
 import { FolhaDeLancamento } from "@/componentes/folha-de-lancamento";
+import { LancarPorValor } from "@/componentes/lancar-por-valor";
 import { Botao, Cartao, Dinheiro, Selo, Sobrescrito, Subtitulo, Titulo } from "@/componentes/pecas";
 import { useAnoCalculado } from "@/componentes/usar-loja";
 import { curta, hoje, nomeDoDiaDaSemana, nomeDoMes, partesDaData } from "@/lib/datas";
@@ -73,6 +74,9 @@ export function TelaDeHoje() {
               + Diário
             </Botao>
           </div>
+
+          <AtalhosRapidos data={agora} />
+          <LancarPorValor data={agora} />
         </div>
 
         <section className="mt-6 lg:mt-4">
@@ -82,7 +86,7 @@ export function TelaDeHoje() {
           {doDia.lancamentos.length === 0 ? (
             <Cartao className="px-4 py-3.5">
               <p className="text-[14.5px] text-grafite">
-                Nada ainda. Toque em <b>+ Diário</b> e registre o primeiro.
+                Nada ainda. Toque num valor em <b>Gastei</b>, ou em <b>+ Diário</b>.
               </p>
             </Cartao>
           ) : (
@@ -105,8 +109,6 @@ export function TelaDeHoje() {
               ))}
             </Cartao>
           )}
-
-          <AtalhosRapidos data={agora} />
         </section>
       </div>
 

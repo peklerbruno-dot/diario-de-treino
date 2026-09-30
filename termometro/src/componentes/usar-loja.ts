@@ -28,7 +28,7 @@ const VAZIO: Estado = {
   ultimaSincronizacao: null,
   recadoDeErro: null,
   carregado: false,
-  ultimaExclusao: null,
+  ultimaAcao: null,
 };
 
 export function useEstado(): Estado {
