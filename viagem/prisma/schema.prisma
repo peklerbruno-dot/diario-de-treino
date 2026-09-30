@@ -1,0 +1,310 @@
+// A viagem em grupo — lugares, roteiro e contas.
+//
+// Três decisões atravessam o arquivo:
+//
+// 1. **Quem viaja não é quem tem conta.** `Membro` é uma pessoa da viagem: é
+//    ela que paga, deve e recebe. `Pessoa` é uma conta de login. Um membro pode
+//    existir sem conta — o amigo que não quer instalar nada continua entrando
+//    nas contas — e, quando ele resolver entrar, o convite o deixa escolher
+//    "eu sou o Fulano" e herdar tudo que já estava no nome dele.
+//
+// 2. **Dinheiro é inteiro, em centavos.** 0,1 + 0,2 não dá 0,3 em ponto
+//    flutuante, e numa divisão entre cinco um centavo perdido vira uma dívida
+//    que ninguém sabe explicar. A câmbio é congelado na despesa: o que o Pedro
+//    pagou em pesos na terça vale o que valia na terça.
+//
+// 3. **Data é texto.** "2026-12-03" é o dia que está no roteiro, não um instante
+//    no tempo; um `DateTime` a moveria de dia na virada de fuso entre São Paulo
+//    e a Cidade do México.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Gente
+// ---------------------------------------------------------------------------
+
+model Pessoa {
+  id    String @id
+  nome  String
+  email String @unique
+
+  /// `scrypt`, no formato "sal:hash" em hexadecimal.
+  senha String
+
+  /// A chave do atalho do iPhone. Quem manda um post pelo atalho carrega esta
+  /// chave; trocá-la invalida só o atalho dela.
+  chaveDoAtalho String @unique
+
+  criadoEm     DateTime @default(now())
+  ultimoAcesso DateTime?
+
+  membros Membro[]
+}
+
+model Viagem {
+  id      String @id
+  nome    String
+  destino String @default("")
+
+  /// "AAAA-MM-DD". Os dias do roteiro vão do início ao fim.
+  inicio String
+  fim    String
+
+  /// A moeda em que os saldos são mostrados. Toda despesa é convertida para ela.
+  moedaBase String @default("BRL")
+
+  /// Quanto vale 1 unidade de cada moeda na moeda base, em JSON:
+  /// {"MXN": 0.29, "USD": 5.4}. É o valor sugerido para uma despesa nova.
+  cambios Json @default("{}")
+
+  /// Quem abre o convite entra na viagem. Guardado em claro porque precisa
+  /// ser mostrado de novo para ser compartilhado; trocá-lo derruba o anterior.
+  convite String @unique
+
+  criadoEm DateTime @default(now())
+
+  membros    Membro[]
+  pastas     Pasta[]
+  lugares    Lugar[]
+  itens      ItemRoteiro[]
+  despesas   Despesa[]
+  pagamentos Pagamento[]
+  importacoes Importacao[]
+}
+
+model Membro {
+  id       String  @id
+  viagemId String
+  nome     String
+
+  /// A conta que este membro usa para entrar — ou nenhuma, ainda.
+  pessoaId String?
+
+  /// Quem organiza: troca o convite, edita a viagem e remove gente.
+  organiza Boolean @default(false)
+
+  /// Uma cor para reconhecer a pessoa de relance nas listas.
+  cor String @default("#d9376e")
+
+  criadoEm DateTime @default(now())
+  saiuEm   DateTime?
+
+  viagem Viagem  @relation(fields: [viagemId], references: [id], onDelete: Cascade)
+  pessoa Pessoa? @relation(fields: [pessoaId], references: [id], onDelete: SetNull)
+
+  lugaresAdicionados Lugar[]        @relation("QuemAdicionou")
+  votos              Voto[]
+  despesasCriadas    Despesa[]      @relation("QuemLancou")
+  pagou              PagadorDespesa[]
+  deve               ParteDespesa[]
+  pagamentosFeitos   Pagamento[]    @relation("QuemPagou")
+  pagamentosRecebidos Pagamento[]   @relation("QuemRecebeu")
+
+  @@unique([viagemId, pessoaId])
+  @@index([viagemId])
+}
+
+// ---------------------------------------------------------------------------
+// Lugares
+// ---------------------------------------------------------------------------
+
+/// Uma pasta de lugares: "Puerto Escondido", "Tacos na CDMX", "Bares".
+model Pasta {
+  id       String @id
+  viagemId String
+  nome     String
+  emoji    String @default("📍")
+  criadoEm DateTime @default(now())
+
+  viagem  Viagem  @relation(fields: [viagemId], references: [id], onDelete: Cascade)
+  lugares Lugar[]
+
+  @@index([viagemId])
+}
+
+model Lugar {
+  id       String  @id
+  viagemId String
+  pastaId  String?
+
+  nome      String
+  categoria String  @default("outro")
+  cidade    String  @default("")
+  endereco  String  @default("")
+  descricao String  @default("")
+  /// Faixa de preço, dicas, o que pedir — o que o post dizia.
+  dicas     String  @default("")
+
+  lat Float?
+  lng Float?
+
+  /// O identificador do Google, quando a busca do Google achou o lugar.
+  googlePlaceId String?
+  /// Onde o lugar veio: o post, o reel, o link do Maps.
+  fonte String @default("")
+
+  fomos Boolean @default(false)
+
+  adicionadoPorId String?
+  criadoEm        DateTime  @default(now())
+  apagadoEm       DateTime?
+
+  viagem        Viagem        @relation(fields: [viagemId], references: [id], onDelete: Cascade)
+  pasta         Pasta?        @relation(fields: [pastaId], references: [id], onDelete: SetNull)
+  adicionadoPor Membro?       @relation("QuemAdicionou", fields: [adicionadoPorId], references: [id], onDelete: SetNull)
+  votos         Voto[]
+  itens         ItemRoteiro[]
+
+  @@index([viagemId, apagadoEm])
+}
+
+/// "Quero ir" — um por pessoa por lugar.
+model Voto {
+  lugarId  String
+  membroId String
+
+  lugar  Lugar  @relation(fields: [lugarId], references: [id], onDelete: Cascade)
+  membro Membro @relation(fields: [membroId], references: [id], onDelete: Cascade)
+
+  @@id([lugarId, membroId])
+}
+
+/// Um post, um reel ou um punhado de prints que chegou e virou sugestões de
+/// lugares. As sugestões ficam aqui até alguém confirmar quais entram.
+model Importacao {
+  id       String @id
+  viagemId String
+  membroId String?
+
+  /// "link", "imagens", "texto" ou "atalho".
+  origem String
+  /// O link ou texto que chegou, para mostrar de onde veio.
+  entrada String @default("")
+
+  /// "pendente", "pronta", "revisada" ou "falhou".
+  estado String @default("pendente")
+  /// As sugestões, em JSON: [{nome, categoria, cidade, endereco, ...}].
+  sugestoes Json @default("[]")
+  /// Um resumo do post, ou o motivo da falha.
+  observacao String @default("")
+
+  criadoEm DateTime @default(now())
+
+  viagem Viagem @relation(fields: [viagemId], references: [id], onDelete: Cascade)
+
+  @@index([viagemId, estado])
+}
+
+// ---------------------------------------------------------------------------
+// Roteiro
+// ---------------------------------------------------------------------------
+
+model ItemRoteiro {
+  id       String  @id
+  viagemId String
+  /// "AAAA-MM-DD"
+  dia      String
+  /// "HH:MM", ou vazio para "sem hora marcada".
+  hora     String  @default("")
+  titulo   String
+  notas    String  @default("")
+  lugarId  String?
+  /// A ordem dentro do dia, para o que não tem hora.
+  ordem    Int     @default(0)
+
+  criadoEm DateTime @default(now())
+
+  viagem Viagem @relation(fields: [viagemId], references: [id], onDelete: Cascade)
+  lugar  Lugar? @relation(fields: [lugarId], references: [id], onDelete: SetNull)
+
+  @@index([viagemId, dia])
+}
+
+// ---------------------------------------------------------------------------
+// Contas
+// ---------------------------------------------------------------------------
+
+model Despesa {
+  id        String @id
+  viagemId  String
+  descricao String
+  categoria String @default("outro")
+  /// "AAAA-MM-DD"
+  data      String
+
+  /// O valor na moeda em que foi pago, em centavos.
+  valor  Int
+  moeda  String
+  /// Quanto 1 unidade de `moeda` valia na moeda base da viagem, no dia.
+  cambio Float  @default(1)
+
+  /// "igual", "exato", "porcentagem" ou "cotas" — como a tela mostra de novo.
+  modo String @default("igual")
+
+  notas String @default("")
+
+  criadoPorId String?
+  criadoEm    DateTime  @default(now())
+  apagadoEm   DateTime?
+
+  viagem     Viagem           @relation(fields: [viagemId], references: [id], onDelete: Cascade)
+  criadoPor  Membro?          @relation("QuemLancou", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  pagadores  PagadorDespesa[]
+  partes     ParteDespesa[]
+
+  @@index([viagemId, apagadoEm])
+}
+
+/// Quem pagou, e quanto — na moeda da despesa, em centavos.
+model PagadorDespesa {
+  despesaId String
+  membroId  String
+  valor     Int
+
+  despesa Despesa @relation(fields: [despesaId], references: [id], onDelete: Cascade)
+  membro  Membro  @relation(fields: [membroId], references: [id], onDelete: Cascade)
+
+  @@id([despesaId, membroId])
+}
+
+/// Quanto cabe a cada um — na moeda da despesa, em centavos. `peso` guarda o
+/// que foi digitado (a porcentagem, as cotas) para a edição mostrar igual.
+model ParteDespesa {
+  despesaId String
+  membroId  String
+  valor     Int
+  peso      Float @default(0)
+
+  despesa Despesa @relation(fields: [despesaId], references: [id], onDelete: Cascade)
+  membro  Membro  @relation(fields: [membroId], references: [id], onDelete: Cascade)
+
+  @@id([despesaId, membroId])
+}
+
+/// "Acertar": o Pedro passou um Pix de R$ 200 para a Ana.
+model Pagamento {
+  id       String @id
+  viagemId String
+  deId     String
+  paraId   String
+  /// Na moeda base da viagem, em centavos.
+  valor    Int
+  data     String
+  notas    String @default("")
+
+  criadoEm  DateTime  @default(now())
+  apagadoEm DateTime?
+
+  viagem Viagem @relation(fields: [viagemId], references: [id], onDelete: Cascade)
+  de     Membro @relation("QuemPagou", fields: [deId], references: [id], onDelete: Cascade)
+  para   Membro @relation("QuemRecebeu", fields: [paraId], references: [id], onDelete: Cascade)
+
+  @@index([viagemId, apagadoEm])
+}
