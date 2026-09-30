@@ -240,14 +240,15 @@ se aconteceu, o cartão **"Aconteceu mesmo?"** cobra: um toque confirma, outro
 apaga (com desfazer), e "aconteceram todos" resolve a lista de uma vez — porque
 previsto vencido distorce o saldo em silêncio.
 
-## "Gastei": um toque por gasto
+## "Gastei": o valor e a categoria, dois toques
 
-Na tela Hoje, logo abaixo dos botões de lançar, uma grade de valores: tocar em
-**R$ 15** lança R$ 15 no Diário de hoje, e pronto. A pergunta que ela responde é
-"quanto foi?", não "no que foi" — quem sai do caixa sabe o valor na hora; a
-categoria pode esperar (tocar no lançamento abre a edição). A segurança é o
-**Desfazer** que aparece por seis segundos, e um toque fantasma duplo no mesmo
-botão vira um lançamento só.
+Na tela Hoje, logo abaixo dos botões de lançar, uma grade de valores. Tocar em
+**R$ 15** abre uma confirmação curta, e **tocar numa categoria ali já lança** —
+o segundo toque é a escolha, não um "Salvar" a mais. Quem quiser escreve uma
+observação antes; quem não quiser categoria tem "Lançar sem categoria"; e
+fechar cancela. As categorias vêm na ordem em que você mais usa no Diário, e a
+que a observação sugere ganha um contorno. Depois de lançar, o **Desfazer**
+fica seis segundos na tela.
 
 Os valores saem dos seus gastos, calculados no próprio aparelho
 (`src/lib/valores-rapidos.ts`):
