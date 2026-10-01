@@ -3,6 +3,8 @@ import { exigirMembro } from "@/lib/auth";
 import { membrosDaViagem } from "@/lib/consultas";
 import { periodo } from "@/lib/datas";
 import { temGemini } from "@/lib/leitor";
+import { chaveVemDaVercel } from "@/lib/configuracao";
+import { FormularioDoGemini } from "@/componentes/formulario-gemini";
 import { temGoogle } from "@/lib/localizar";
 import { Aviso, Avatar, Cabecalho, Pagina, Secao } from "@/componentes/pecas";
 import { Compartilhar, Copiar } from "@/componentes/copiar";
@@ -14,7 +16,7 @@ export default async function Grupo({ params, searchParams }: { params: Promise<
   const { id } = await params;
   const { nova } = await searchParams;
   const { eu, viagem, pessoa } = await exigirMembro(id);
-  const membros = await membrosDaViagem(id);
+  const [membros, leitura] = await Promise.all([membrosDaViagem(id), temGemini()]);
 
   const h = await headers();
   const origem = `${h.get("x-forwarded-proto") ?? "https"}://${h.get("x-forwarded-host") ?? h.get("host")}`;
@@ -102,6 +104,18 @@ export default async function Grupo({ params, searchParams }: { params: Promise<
         <p className="mt-1 text-[13px] text-fosco">Para quem não vai criar conta: entra nas divisões do mesmo jeito.</p>
       </Secao>
 
+      {(eu.organiza || !leitura) && (
+        <Secao titulo="Leitura automática de posts">
+          <div id="leitura" className="cartao p-4">
+            {eu.organiza ? (
+              <FormularioDoGemini viagemId={id} ligada={leitura} pelaVercel={chaveVemDaVercel()} />
+            ) : (
+              <p className="text-[15px] text-grafite">Ainda desligada. Quem organiza a viagem liga aqui nesta tela, em 1 minuto.</p>
+            )}
+          </div>
+        </Secao>
+      )}
+
       <Secao titulo="Câmbio">
         <div className="cartao p-4">
           <FormularioDeCambio viagemId={id} moedaBase={viagem.moedaBase} cambios={(viagem.cambios as Record<string, number>) ?? {}} />
@@ -139,7 +153,7 @@ export default async function Grupo({ params, searchParams }: { params: Promise<
 
       <Secao titulo="Sobre">
         <div className="cartao space-y-1 p-4 text-[14px] text-fosco">
-          <p>Leitura de posts e prints: {temGemini() ? "ligada (Gemini)" : "desligada — falta GEMINI_API_KEY"}.</p>
+          <p>Leitura de posts e prints: {leitura ? "ligada (Gemini)" : "desligada"}.</p>
           <p>Busca de lugares: {temGoogle() ? "Google Places" : "OpenStreetMap (grátis). Com GOOGLE_MAPS_API_KEY, acha mais restaurantes."}</p>
           <p>Você entrou como {pessoa.email}.</p>
           <form action="/sair" method="post" className="pt-2">

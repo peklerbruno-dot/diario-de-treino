@@ -10,6 +10,7 @@ import { ehData } from "@/lib/datas";
 import { ehMoeda, LISTA_DE_MOEDAS } from "@/lib/dinheiro";
 import { buscarCambios } from "@/lib/cambio";
 import { corDoMembro } from "@/lib/cores";
+import { chaveFunciona, guardarChaveDoGemini } from "@/lib/configuracao";
 
 const texto = (d: FormData, campo: string) => String(d.get(campo) ?? "").trim();
 
@@ -173,4 +174,21 @@ export async function desvincularConta(dados: FormData): Promise<void> {
   if (id === eu.id) return;
   await bd.membro.updateMany({ where: { id, viagemId }, data: { pessoaId: null, organiza: false } });
   revalidatePath(`/v/${viagemId}/grupo`);
+}
+
+/** Liga (ou desliga) a leitura automática, guardando a chave do Gemini no banco. */
+export async function salvarChaveDoGemini(_: ComValores, dados: FormData): Promise<ComValores> {
+  const viagemId = texto(dados, "viagemId");
+  await exigirOrganizacao(viagemId);
+  if (texto(dados, "desligar") === "1") {
+    await guardarChaveDoGemini(null);
+    revalidatePath("/", "layout");
+    return { valores: { ok: "desligada" } };
+  }
+  const chave = texto(dados, "chave").replace(/\s+/g, "");
+  if (!/^AIza[\w-]{30,}$/.test(chave)) return { erro: "Isso não parece uma chave do Gemini — ela começa com “AIza”." };
+  if (!(await chaveFunciona(chave))) return { erro: "O Google recusou essa chave. Confira se copiou inteira." };
+  await guardarChaveDoGemini(chave);
+  revalidatePath("/", "layout");
+  return { valores: { ok: "ligada" } };
 }
