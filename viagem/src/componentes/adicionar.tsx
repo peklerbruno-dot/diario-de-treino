@@ -121,7 +121,7 @@ export function Adicionar({ viagemId, textoInicial = "", temLeitura }: { viagemI
       </div>
 
       {!temLeitura && (
-        <Aviso tom="atencao">A leitura automática está desligada (falta a GEMINI_API_KEY). Links do Google Maps e nomes digitados funcionam; posts e prints, não.</Aviso>
+        <Aviso tom="atencao">A leitura de posts e prints ainda está desligada — quem organiza liga em Grupo → Leitura automática. Links do Google Maps e nomes digitados já funcionam.</Aviso>
       )}
       {erro && <Aviso tom="erro">{erro}</Aviso>}
 

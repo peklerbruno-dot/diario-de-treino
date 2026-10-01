@@ -14,7 +14,7 @@ export default async function PaginaAdicionar({ params, searchParams }: { params
     <Pagina abas>
       <Cabecalho titulo="Adicionar" voltar={`/v/${id}/lugares`} subtitulo="O app lê o post e sugere os lugares. Você confirma quais entram." />
       <div className="cartao p-5">
-        <Adicionar viagemId={id} textoInicial={texto} temLeitura={temGemini()} />
+        <Adicionar viagemId={id} textoInicial={texto} temLeitura={await temGemini()} />
       </div>
       <div className="mt-5 space-y-2 text-[15px]">
         <Link href={`/v/${id}/lugares/novo${pasta ? `?pasta=${pasta}` : ""}`} className="block text-realce">Preencher um lugar à mão →</Link>

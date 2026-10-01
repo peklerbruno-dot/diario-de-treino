@@ -1,5 +1,6 @@
 import "server-only";
 import { ApiError, GoogleGenAI, Type, type Part } from "@google/genai";
+import { chaveDoGemini } from "./configuracao";
 import { categoriaValida, ehLinkDoInstagram, ehLinkDoTikTok, CATEGORIAS } from "./lugares";
 
 /**
@@ -19,9 +20,15 @@ import { categoriaValida, ehLinkDoInstagram, ehLinkDoTikTok, CATEGORIAS } from "
 
 const MODELO = process.env.GEMINI_MODELO || "gemini-flash-latest";
 
-let _ia: GoogleGenAI | undefined;
-const ia = () => (_ia ??= new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }));
-export const temGemini = () => Boolean(process.env.GEMINI_API_KEY);
+const clientes = new Map<string, GoogleGenAI>();
+async function ia(): Promise<GoogleGenAI | null> {
+  const chave = await chaveDoGemini();
+  if (!chave) return null;
+  let c = clientes.get(chave);
+  if (!c) clientes.set(chave, (c = new GoogleGenAI({ apiKey: chave })));
+  return c;
+}
+export const temGemini = async () => Boolean(await chaveDoGemini());
 
 export type Sugestao = {
   nome: string;
@@ -205,8 +212,9 @@ Regras:
  * Gemini (base64); `texto` pode ter a legenda, um texto colado ou nada.
  */
 export async function extrairLugares(entrada: { texto?: string; imagens?: Part[]; destino?: string }): Promise<Leitura> {
-  if (!temGemini()) {
-    throw new ErroDeLeitura("A leitura automática está desligada: falta a GEMINI_API_KEY nas configurações.");
+  const cliente = await ia();
+  if (!cliente) {
+    throw new ErroDeLeitura("A leitura automática ainda está desligada. Quem organiza liga em Grupo → Leitura automática (é grátis).");
   }
   const partes: Part[] = [];
   if (entrada.texto?.trim()) partes.push({ text: `Texto do post:\n${entrada.texto.trim().slice(0, 20000)}` });
@@ -216,7 +224,7 @@ export async function extrairLugares(entrada: { texto?: string; imagens?: Part[]
 
   let r;
   try {
-    r = await ia().models.generateContent({
+    r = await cliente.models.generateContent({
       model: MODELO,
       contents: [{ role: "user", parts: partes }],
       config: {

@@ -308,3 +308,15 @@ model Pagamento {
 
   @@index([viagemId, apagadoEm])
 }
+
+// ---------------------------------------------------------------------------
+// Configuração
+// ---------------------------------------------------------------------------
+
+/// Ajustes do app inteiro que se mudam pela tela, sem mexer na Vercel. Hoje,
+/// só a chave do Gemini — guardada cifrada com o AUTH_SECRET.
+model Configuracao {
+  chave        String   @id
+  valor        String
+  atualizadoEm DateTime @updatedAt
+}
