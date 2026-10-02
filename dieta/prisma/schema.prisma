@@ -1,0 +1,108 @@
+// Dieta — o plano da nutricionista, os avisos na hora de cada refeição e a água.
+//
+// Dia é texto ("2026-10-02") e hora é texto ("12:30"), sempre no relógio de São
+// Paulo (ver src/lib/datas.ts). Refeição não tem fuso: "almoço às 12h30" é às
+// 12h30 de onde você estiver, e um DateTime em UTC aqui só criaria a chance de
+// o almoço aparecer às 9h30.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+/// Uma variável só, `DATABASE_URL`. A conexão sem intermediário, que a criação
+/// de tabelas exige no Neon, é trocada na hora da migração por
+/// `scripts/build-vercel.mjs`.
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Um plano da nutricionista. A cada consulta nasce um novo; o anterior fica
+/// guardado (desligado) para dar para comparar o que mudou.
+model Plano {
+  id          String    @id
+  nome        String
+  /// Orientações gerais do plano: "evitar fritura", "beber 2,5 L de água".
+  orientacoes String    @default("")
+  ativo       Boolean   @default(false)
+  criadoEm    DateTime  @default(now())
+  refeicoes   Refeicao[]
+}
+
+/// Uma refeição do plano, num horário.
+model Refeicao {
+  id       String @id
+  planoId  String
+  plano    Plano  @relation(fields: [planoId], references: [id], onDelete: Cascade)
+  nome     String
+  /// "07:30"
+  horario  String
+  ordem    Int
+  /// O que comer: lista de opções, cada uma com seus itens e substituições.
+  /// O formato está em src/lib/conteudo.ts.
+  conteudo Json
+  /// Observação da nutricionista só para esta refeição.
+  nota     String @default("")
+  /// Dias da semana em que esta refeição vale, 0 = domingo. Vazio = todos.
+  dias     Int[]  @default([])
+  /// Manda notificação na hora desta refeição?
+  avisar   Boolean @default(true)
+
+  @@index([planoId])
+}
+
+/// O que aconteceu com uma refeição num dia: segui, troquei ou pulei.
+///
+/// Guarda o nome e o horário da refeição, e não só o id: quando chegar o plano
+/// novo, o histórico da semana passada continua dizendo "almoço, 12h30" em vez
+/// de apontar para uma refeição que já não existe.
+model Registro {
+  id         String   @id
+  dia        String
+  refeicaoId String
+  nome       String
+  horario    String
+  /// "seguiu" | "trocou" | "pulou"
+  estado     String
+  /// O que comeu no lugar, quando trocou.
+  nota       String   @default("")
+  criadoEm   DateTime @default(now())
+
+  @@unique([dia, refeicaoId])
+  @@index([dia])
+}
+
+/// Um copo (ou garrafa) de água. Um registro por toque, e não um total por dia:
+/// é o que permite desfazer o último toque sem adivinhar quanto tirar.
+model Agua {
+  id       String   @id
+  dia      String
+  ml       Int
+  criadoEm DateTime @default(now())
+
+  @@index([dia])
+}
+
+/// Um aparelho que aceitou receber notificações.
+model Aparelho {
+  /// O endereço que o serviço de push do aparelho (Apple, Google, Mozilla) deu.
+  endpoint String   @id
+  p256dh   String
+  auth     String
+  nome     String   @default("")
+  criadoEm DateTime @default(now())
+}
+
+/// Cada aviso mandado, uma linha. A chave ("2026-10-02|refeicao:abc") é única:
+/// é o que impede o mesmo aviso de sair duas vezes quando duas chamadas do
+/// relógio se cruzam ou quando uma demora mais de um minuto.
+model AvisoEnviado {
+  chave    String   @id
+  criadoEm DateTime @default(now())
+}
+
+/// Ajustes soltos: meta de água, tamanho do copo, intervalo dos lembretes…
+model Ajuste {
+  chave String @id
+  valor String
+}

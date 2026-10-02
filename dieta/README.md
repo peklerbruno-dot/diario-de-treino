@@ -1,0 +1,97 @@
+# Dieta
+
+O plano da nutricionista no celular, **um aviso na hora de cada refeição** e o
+controle da água do dia.
+
+Quem quer só colocar no ar, sem mexer em código: [`docs/COLOCAR-NO-AR.md`](docs/COLOCAR-NO-AR.md).
+
+## O que ele faz
+
+**O plano entra pelo PDF.** Em Plano → *Plano novo*, mande o PDF que a
+nutricionista passou (ou fotos das páginas, ou o texto que veio pelo WhatsApp).
+O Gemini lê as refeições, os horários, as quantidades, as **substituições** de
+cada item e as **opções** da refeição inteira ("Opção 1 / Opção 2"). Nada entra
+direto: a tela mostra tudo para conferir e corrigir antes de salvar. Se o plano
+pede uma meta de água, ela vira a sua.
+
+A cada consulta, um plano novo; o anterior fica guardado em Plano e dá para
+voltar a ele.
+
+**Hoje** mostra as refeições do dia na ordem, com a próxima destacada. Cada uma
+tem três botões: **Segui**, **Troquei** (com "o que comeu no lugar", opcional)
+e **Pulei**. As substituições de cada item ficam a um toque ("3 trocas").
+
+**Avisos no iPhone.** Na hora de cada refeição chega uma notificação com o que
+comer — "Almoço · 12h30 — Arroz integral 4 col. · Feijão 1 concha · Frango
+120 g". Tocar nela abre o app direto naquela refeição. Dá para avisar alguns
+minutos antes, e desligar o aviso de uma refeição só. Refeição já marcada não
+avisa.
+
+**Água.** Meta do dia, um toque por copo (o tamanho do copo é ajustável) e
+lembretes de tempos em tempos numa janela do dia (8h às 21h, por padrão). A
+barra mostra um tracinho com o ritmo — onde você deveria estar a essa hora para
+fechar a meta. Os lembretes param quando a meta é batida e pulam o horário que
+cairia colado numa refeição.
+
+**Histórico** das últimas quatro semanas: quanto do plano você seguiu por
+semana, quantos dias bateu a água, e o detalhe de cada dia — o que levar para a
+consulta.
+
+## Como funciona
+
+    cron-job.org, a cada minuto ──► /api/avisos ──► Web Push ──► Apple ──► iPhone
+                                         │
+                                  src/lib/agenda.ts decide o que vence
+
+- **As notificações são Web Push**, o padrão que o iPhone aceita desde o
+  iOS 16.4 para apps adicionados à Tela de Início. Chegam com o app fechado.
+  O par de chaves (VAPID) é só deste app; a tela Ajustes gera um para você
+  colar na Vercel.
+- **O relógio é de fora.** O cron da Vercel, no plano gratuito, roda uma vez por
+  dia — inútil para aviso de almoço. O cron-job.org chama `/api/avisos` a cada
+  minuto, de graça, com a senha `CRON_SECRET`.
+- **Nenhum aviso sai duas vezes.** Antes de mandar, a chave do aviso
+  (`2026-10-02|refeicao:…`) é gravada numa tabela com chave única; duas chamadas
+  que se cruzem, só uma consegue. E um minuto pulado pelo cron não perde o aviso:
+  ele vale por 20 minutos depois do horário.
+- **Tudo no horário de São Paulo**, convertido pelo `Intl` (o servidor roda em
+  UTC). Dia é texto (`2026-10-02`), hora é texto (`12:30`).
+- **Uma porta só**, como no Termômetro: um código de acesso, que o aparelho
+  lembra por seis meses.
+
+## Como o código está organizado
+
+    src/lib/agenda.ts        que avisos vencem agora (puro, testado)
+    src/lib/conteudo.ts      opções, itens e substituições ↔ texto editável
+    src/lib/leitor.ts        o Gemini lendo o PDF; plano-lido.ts confere a resposta
+    src/lib/push.ts          envio das notificações
+    src/lib/datas.ts         o relógio de São Paulo
+    src/app/api/avisos       o que o cron chama
+    src/app/(app)/           as telas: Hoje, Plano (e Plano novo), Histórico, Ajustes
+    public/sw.js             recebe o push e abre o app na refeição
+
+### O formato de uma refeição
+
+Para editar no celular sem formulário de mil campos, o que comer é um texto,
+uma coisa por linha:
+
+    Opção 1:
+    Pão integral — 2 fatias
+    ou tapioca — 3 col. de sopa de goma
+    Ovo mexido — 2 unidades
+    Opção 2:
+    Iogurte natural — 170 g
+
+Linha terminada em ":" abre uma opção; linha que começa com "ou" é substituição
+do item de cima.
+
+## Rodar no computador
+
+```sh
+cp .env.example .env    # e preencha
+npm install
+npx prisma migrate deploy
+npm run dev             # http://localhost:3000
+npm test                # as regras dos avisos, do formato e da leitura
+npm run typecheck
+```

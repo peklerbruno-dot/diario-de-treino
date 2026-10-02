@@ -162,3 +162,8 @@ o seu próprio deploy na Vercel (pasta escolhida em *Root Directory*).
   simplificar dívidas). Uma conta por pessoa, convite por link.
   Veja [`viagem/README.md`](viagem/README.md) e, para publicar,
   [`viagem/docs/COLOCAR-NO-AR.md`](viagem/docs/COLOCAR-NO-AR.md).
+- `dieta/` — o plano da nutricionista no celular: o PDF lido pelo Gemini vira
+  as refeições do dia, com opções e substituições; um aviso no iPhone na hora
+  de cada refeição; segui / troquei / pulei; e a água do dia, com lembretes.
+  Veja [`dieta/README.md`](dieta/README.md) e, para publicar,
+  [`dieta/docs/COLOCAR-NO-AR.md`](dieta/docs/COLOCAR-NO-AR.md).

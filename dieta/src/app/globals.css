@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * A paleta.
+ *
+ * Fundo neutro levemente quente, cartões brancos com sombra — o mesmo arranjo
+ * do Termômetro, que é o que faz o cartão flutuar. O verde-folha é a cor do
+ * app e de "segui o plano"; o azul é só da água; âmbar é "troquei", vermelho
+ * contido é "pulei".
+ *
+ * Cor nunca carrega sentido sozinha: cada estado vem escrito ("Segui",
+ * "Troquei", "Pulei") e com um símbolo, para quem não distingue as cores.
+ */
+:root {
+  color-scheme: light;
+  --papel: #f3f3ef;
+  --cartao: #ffffff;
+  --tinta: #101210;
+  --grafite: #575b56;
+  --fosco: #6b6f69;
+  --regua: #d9dbd4;
+  --linha: #ebece7;
+  --folha: #23784a;
+  --folha-clara: #e4f2e9;
+  --agua: #1769c2;
+  --agua-clara: #e3eefb;
+  --troca: #8a5a00;
+  --troca-clara: #fbf0dc;
+  --pulou: #b23a32;
+  --pulou-clara: #fbe7e5;
+  /* Texto sobre os botões cheios (verde, azul, âmbar). */
+  --sobre-cor: #ffffff;
+  --sombra: 0 1px 2px rgba(16, 18, 16, 0.05), 0 10px 24px rgba(16, 18, 16, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --papel: #0f100e;
+    --cartao: #1a1c19;
+    --tinta: #ffffff;
+    --grafite: #b9bdb6;
+    --fosco: #8b9088;
+    --regua: #353833;
+    --linha: #2a2c28;
+    --folha: #4cc584;
+    --folha-clara: #17301f;
+    --agua: #5aa6ff;
+    --agua-clara: #142438;
+    --troca: #e0aa4a;
+    --troca-clara: #33270f;
+    --pulou: #ff7b72;
+    --pulou-clara: #3a1a18;
+    /* No escuro as cores cheias ficam claras, e o texto em cima delas, escuro. */
+    --sobre-cor: #0f100e;
+    --sombra: 0 0 0 1px rgba(255, 255, 255, 0.06);
+  }
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--papel);
+  color: var(--tinta);
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) 0 env(safe-area-inset-left, 0px);
+  margin: 0;
+  overscroll-behavior-y: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+a,
+[role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+input,
+select,
+textarea {
+  font-size: 17px; /* abaixo disso o Safari dá zoom ao focar */
+  font-family: inherit;
+  color: inherit;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* O rótulo pequeno em maiúsculas que encabeça cada bloco. */
+.sobrescrito {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--fosco);
+}
+
+/* O cartão para o qual a notificação apontou fica marcado por um instante. */
+:target {
+  scroll-margin-top: 16px;
+  animation: chamar 1.6s ease-out;
+}
+
+@keyframes chamar {
+  0% {
+    box-shadow: 0 0 0 3px var(--folha);
+  }
+  100% {
+    box-shadow: var(--sombra);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
