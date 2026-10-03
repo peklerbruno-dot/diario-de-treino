@@ -101,6 +101,34 @@ details.menu > div hr { border: 0; border-top: 1px solid var(--linha); margin: 4
 .faixa-hora span { font-size: 12px; color: var(--suave); }
 .faixa-hora b { text-align: right; font-variant-numeric: tabular-nums; }
 .faixa-hora input { grid-column: 1 / -1; width: 100%; accent-color: #e0a030; }
+#cotas { position: absolute; inset: 0; pointer-events: none; }
+.cota { position: absolute; left: 0; top: 0; pointer-events: auto; font-size: 11px; font-weight: 600; padding: 1px 6px; border-radius: 6px;
+  background: #1d2530; color: #fff; border: 0; font-variant-numeric: tabular-nums; }
+.cota::after { content: ' cm'; font-weight: 400; opacity: .7; }
+.cota:hover { background: var(--azul) !important; }
+.cota-campo { position: absolute; left: 0; top: 0; width: 64px; pointer-events: auto; font: inherit; font-size: 13px; padding: 2px 6px;
+  border: 2px solid var(--azul); border-radius: 6px; }
+.rotulo-zona { position: absolute; left: 0; top: 0; font-size: 11px; font-weight: 600; color: #fff; background: var(--cor); padding: 1px 7px;
+  border-radius: 999px; white-space: nowrap; opacity: .85; pointer-events: none; }
+.rotulo-zona.ativo { opacity: 1; box-shadow: 0 0 0 2px #fff; }
+.opcoes { display: flex; flex-wrap: wrap; gap: 6px; }
+.opcoes button { font-size: 13px; padding: 5px 9px; }
+.opcoes button.ativo { background: var(--texto); color: #fff; border-color: var(--texto); }
+.opcoes button[style*="--cor"].ativo { background: var(--cor); border-color: var(--cor); }
+button.acao { width: 100%; background: var(--azul); color: #fff; border-color: var(--azul); font-weight: 600; padding: 9px; }
+button.acao:hover:not(:disabled) { background: #2a6fd0; border-color: #2a6fd0; }
+.linha-uso { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; padding: 5px 8px; border-radius: 6px; margin-bottom: 4px; }
+.linha-uso.ok { background: #eaf6ef; color: var(--verde); }
+.linha-uso.alerta { background: #fdecea; color: var(--vermelho); }
+.lista-moveis { display: grid; gap: 2px; }
+.lista-moveis button { display: flex; justify-content: space-between; gap: 8px; border: 0; padding: 6px 4px; text-align: left; border-radius: 6px; }
+.lista-moveis em { font-style: normal; font-size: 12px; color: var(--suave); white-space: nowrap; }
+.item-canto { display: flex; width: 100%; align-items: center; gap: 8px; border: 0; padding: 5px 6px; border-radius: 6px; text-align: left; }
+.item-canto i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.item-canto span { flex: 1; }
+.item-canto em { font-style: normal; font-size: 12px; color: var(--suave); }
+.item-canto.ativo { background: var(--azul-claro); }
+body.caminhando #bussola, body.caminhando #ajuda { display: none; }
 #dica { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: var(--texto); color: #fff; padding: 4px 10px; border-radius: 999px; font-size: 12px; pointer-events: none; }
 #ajuda { position: absolute; right: 12px; bottom: 12px; font-size: 11px; color: var(--suave); background: rgba(255,255,255,.8); border-radius: 8px; padding: 4px 8px; pointer-events: none; }
 #toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); background: var(--texto); color: #fff; padding: 10px 16px;
@@ -183,6 +211,7 @@ dialog button[value="ok"] { background: var(--azul); color: #fff; border-color: 
       <button id="bRefazer" title="Refazer (Ctrl+Shift+Z)">↷</button>
       <button id="bVista" title="Alternar vista (T)">Vista de cima</button>
       <button id="bCorte" title="Baixar as paredes para ver o interior"><span class="texto">Cortar paredes</span><span aria-hidden="true"> ✂</span></button>
+      <button id="bCaminhar" title="Caminhar pelo apartamento na altura dos olhos (C)"><span aria-hidden="true">🚶 </span><span class="texto">Caminhar</span></button>
       <button id="bEnquadrar" title="Enquadrar o apartamento">⤢</button>
       <button id="bPNG" title="Exportar a vista como imagem">PNG</button>
       <details class="menu">
@@ -204,6 +233,10 @@ dialog button[value="ok"] { background: var(--azul); color: #fff; border-color: 
     <div id="avisoPlanta" hidden></div>
     <h2>Áreas</h2>
     <div id="areas"></div>
+    <h2>Cantos</h2>
+    <div id="cantos"></div>
+    <h2>Mostrar</h2>
+    <div id="mostrar"></div>
     <h2>Luz do sol</h2>
     <div id="luz"></div>
     <h2>Demolição</h2>
@@ -217,6 +250,7 @@ dialog button[value="ok"] { background: var(--azul); color: #fff; border-color: 
 
   <main id="palco">
     <div id="rotulos"></div>
+    <div id="cotas"></div>
     <div id="bussola" title="Norte"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="18" fill="rgba(255,255,255,.88)" stroke="#d5dae0"/><path d="M20 5 L26 21 L20 18 L14 21 Z" fill="#d0453b"/><path d="M20 35 L14 19 L20 22 L26 19 Z" fill="#9aa3ad"/></svg><b>N</b></div>
     <div id="dica" hidden></div>
     <div id="avisos" hidden></div>

@@ -64,6 +64,10 @@ function prepararMovel(m) {
   m.cores = Object.assign({}, def.cores, m.cores);
   m.nome ??= def.nome;
   m.espelhado = !!m.espelhado;
+  if (def.variantes) m.variante ??= def.variantes[0].id;
+  if (def.acabamentos) m.acab ??= def.acabamentos[0];
+  m.y ??= varianteDe(def, m)?.elev ?? def.elev ?? 0;
+  m.aberto ??= def.aberto ?? 0;
   return m;
 }
 
@@ -75,7 +79,12 @@ function prepararDoc(d) {
   d.planta.local ||= clonar(PLANTA_ORIGINAL.local);
   d.planta.orientacao ??= PLANTA_ORIGINAL.orientacao;
   for (const a of d.planta.aberturas) a.id ||= novoId('ab');
-  for (const c of d.cenarios) { c.id ||= novoId('c'); for (const m of c.moveis) prepararMovel(m); }
+  for (const c of d.cenarios) {
+    c.id ||= novoId('c');
+    c.zonas ||= [];
+    for (const z of c.zonas) z.id ||= novoId('z');
+    for (const m of c.moveis) prepararMovel(m);
+  }
   return d;
 }
 
@@ -337,7 +346,7 @@ ctlTopo.touches = { ONE: T.TOUCH.PAN, TWO: T.TOUCH.DOLLY_PAN };
 ctlTopo.minZoom = 0.3; ctlTopo.maxZoom = 12;
 ctlTopo.enabled = false;
 
-const vista = { topo: false, corte: false };
+const vista = { topo: false, corte: false, caminhar: false };
 const camAtiva = () => (vista.topo ? camTopo : camPersp);
 const ctlAtivo = () => (vista.topo ? ctlTopo : ctlPersp);
 
@@ -444,6 +453,8 @@ const MAT = {
   topo: new T.MeshStandardMaterial({ color: '#3f4349', roughness: 0.85 }),
   topoSel: new T.MeshStandardMaterial({ color: '#2f80ed', roughness: 0.6 }),
   laje: new T.MeshStandardMaterial({ color: '#cfcac2', roughness: 1 }),
+  teto: new T.MeshStandardMaterial({ color: '#f7f6f3', roughness: 0.95, side: T.DoubleSide }),
+  rodape: new T.MeshStandardMaterial({ color: '#f8f7f4', roughness: 0.45 }),
   chao: new T.MeshStandardMaterial({ color: '#e1ded8', roughness: 1 }),
   esquadria: new T.MeshStandardMaterial({ color: '#f1f1ef', roughness: 0.4, metalness: 0.2 }),
   aluminio: new T.MeshStandardMaterial({ color: '#4c5157', roughness: 0.35, metalness: 0.6 }),
@@ -528,6 +539,10 @@ function aplicarSol() {
   hemi.intensity = 0.25 + 0.9 * dia;
   cena.environmentIntensity = 0.1 + 0.35 * dia;
   cena.background.copy(CEU_NOITE).lerp(CEU_DIA, dia);
+  // luminárias: acendem quando escurece
+  const noite = 1 - suave(-4, 10, elev);
+  for (const l of luzesMoveis) l.intensity = l.userData.base * noite;
+  for (const mt of matsLuz) mt.emissiveIntensity = 0.05 + 1.4 * noite;
   return { elev, az };
 }
 
@@ -570,7 +585,7 @@ function construirPlanta() {
   limpar(grpPlanta);
   const pl = doc.planta;
   const H = pl.alturaParede;
-  const Hc = vista.corte ? Math.min(H, CFG.alturaCorte) : H;
+  const Hc = vista.corte && !vista.caminhar ? Math.min(H, CFG.alturaCorte) : H;
 
   // chão externo e laje sob as paredes
   const chao = new T.Mesh(new T.PlaneGeometry(8000, 8000), MAT.chao);
@@ -584,6 +599,11 @@ function construirPlanta() {
     grpPlanta.add(m);
   }
   for (const w of pl.paredes) grpPlanta.add(w.demolida ? paredeDemolida(w) : construirParede(w, pl, H, Hc));
+  if (vista.caminhar) { // teto, para a luz entrar só pelas janelas
+    const teto = malhaPoligono(deslocar(pl.contorno, pl, true), MAT.teto, H);
+    teto.castShadow = true;
+    grpPlanta.add(teto);
+  }
   for (const f of EXTENSOES.aposPlanta) f(grpPlanta, pl);
   montarRotulos();
 }
@@ -622,6 +642,13 @@ function construirParede(w, pl, H, Hc) {
     m.castShadow = m.receiveShadow = true;
     m.userData = info;
     g.add(m);
+    if (y0 === 0 && Hc > 8) { // rodapé
+      const r = new T.Mesh(new T.BoxGeometry(u1 - u0, 7, e + 1.6), MAT.rodape);
+      r.position.set((u0 + u1) / 2, 3.5, 0);
+      r.receiveShadow = true;
+      r.userData = info;
+      g.add(r);
+    }
   };
   const aberturas = pl.aberturas.filter((a) => a.parede === w.id).sort((a, b) => a.pos - b.pos);
   let u = -e / 2;
@@ -724,89 +751,299 @@ function montarRotulos() {
     return { div, pos: new T.Vector3(x, 1, z), nome: amb.nome, area: m2(areaUtil(amb)) };
   });
 }
-function posicionarRotulos() {
+function posicionar(lista) {
   const w = palco.clientWidth, h = palco.clientHeight, v = new T.Vector3();
-  for (const r of rotulos) {
+  for (const r of lista) {
     v.copy(r.pos).project(camAtiva());
-    const vis = v.z < 1 && Math.abs(v.x) < 1.2 && Math.abs(v.y) < 1.2;
-    r.div.style.display = vis ? '' : 'none';
-    r.div.style.transform = `translate(${((v.x + 1) / 2) * w}px, ${((1 - v.y) / 2) * h}px) translate(-50%, -50%)`;
+    const vis = !vista.caminhar && v.z < 1 && Math.abs(v.x) < 1.2 && Math.abs(v.y) < 1.2;
+    r.el ??= r.div;
+    r.el.style.display = vis ? '' : 'none';
+    r.el.style.transform = `translate(${((v.x + 1) / 2) * w}px, ${((1 - v.y) / 2) * h}px)${r.canto ? '' : ' translate(-50%, -50%)'}`;
   }
 }
+const posicionarRotulos = () => posicionar(rotulos);
 
 // =====================================================================
 // 6. MÓVEIS
 // =====================================================================
+// Cada móvel do catálogo é montado a partir de formas (caixa, cilindro,
+// esfera, torno). Peças com 'mov' se mexem conforme m.aberto (0 a 1):
+// portas giram, gavetas deslizam, persianas enrolam. As peças fixas são
+// fundidas por material para o celular desenhar menos objetos.
 const objMovel = new Map();   // id do móvel → THREE.Group
 const modelos = new Map();    // id do modelo .glb → { cena, tam, centro, base }
+let luzesMoveis = [];         // luminárias acesas à noite
 
+// ---- texturas de detalhe (cinza, tingidas pela cor da peça)
+function texturaDetalhe(tileCm, px, desenhar) {
+  const c = document.createElement('canvas');
+  c.width = c.height = px;
+  const g = c.getContext('2d');
+  desenhar(g, px, aleatorio(px + tileCm));
+  const t = new T.CanvasTexture(c);
+  t.wrapS = t.wrapT = T.RepeatWrapping;
+  t.repeat.set(100 / tileCm, 100 / tileCm); // as coordenadas de textura das peças são em metros
+  t.colorSpace = T.SRGBColorSpace;
+  t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  return t;
+}
+const GERADORES = {
+  madeira: () => texturaDetalhe(70, 512, (g, px, r) => {
+    g.fillStyle = '#d9d9d9'; g.fillRect(0, 0, px, px);
+    for (let k = 0; k < 140; k++) {
+      const y = r() * px, esc = r() > 0.5;
+      g.strokeStyle = esc ? `rgba(70,50,30,${0.05 + r() * 0.12})` : `rgba(255,255,255,${0.04 + r() * 0.08})`;
+      g.lineWidth = 0.6 + r() * 2.4;
+      g.beginPath(); g.moveTo(0, y);
+      for (let x = 0; x <= px; x += 32) g.lineTo(x, y + Math.sin(x / 90 + k) * (2 + r() * 3));
+      g.stroke();
+    }
+  }),
+  tecido: () => texturaDetalhe(4, 128, (g, px, r) => {
+    for (let y = 0; y < px; y += 2) for (let x = 0; x < px; x += 2) {
+      const v = 205 + (((x + y) / 2) % 2 ? 22 : 0) + r() * 18;
+      g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(x, y, 2, 2);
+    }
+  }),
+  boucle: () => texturaDetalhe(9, 256, (g, px, r) => {
+    g.fillStyle = '#d0d0d0'; g.fillRect(0, 0, px, px);
+    for (let k = 0; k < 2600; k++) {
+      const v = 170 + r() * 85; g.fillStyle = `rgb(${v},${v},${v})`;
+      g.beginPath(); g.arc(r() * px, r() * px, 1.5 + r() * 3.5, 0, 7); g.fill();
+    }
+  }),
+  couro: () => texturaDetalhe(30, 256, (g, px, r) => {
+    g.fillStyle = '#d6d6d6'; g.fillRect(0, 0, px, px);
+    for (let k = 0; k < 5000; k++) { const v = 185 + r() * 60; g.fillStyle = `rgba(${v},${v},${v},.5)`; g.fillRect(r() * px, r() * px, 1.5, 1.5); }
+  }),
+  marmore: () => texturaDetalhe(110, 512, (g, px, r) => {
+    g.fillStyle = '#f2f2f2'; g.fillRect(0, 0, px, px);
+    for (let k = 0; k < 16; k++) {
+      g.strokeStyle = `rgba(110,110,115,${0.08 + r() * 0.25})`; g.lineWidth = 0.6 + r() * 2.5;
+      g.beginPath(); let x = r() * px, y = 0; g.moveTo(x, y);
+      while (y < px) { x += (r() - 0.45) * 40; y += 20 + r() * 30; g.lineTo(x, y); }
+      g.stroke();
+    }
+  }),
+  granito: () => texturaDetalhe(40, 256, (g, px, r) => {
+    g.fillStyle = '#9a9a9a'; g.fillRect(0, 0, px, px);
+    for (let k = 0; k < 7000; k++) { const v = r() * 255; g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(r() * px, r() * px, 1 + r() * 2, 1 + r() * 2); }
+  }),
+  palha: () => texturaDetalhe(6, 128, (g, px) => {
+    g.fillStyle = '#cfcfcf'; g.fillRect(0, 0, px, px);
+    g.strokeStyle = '#8f8f8f'; g.lineWidth = 3;
+    for (let k = -px; k < px * 2; k += 16) {
+      g.beginPath(); g.moveTo(k, 0); g.lineTo(k + px, px); g.stroke();
+      g.beginPath(); g.moveTo(k, px); g.lineTo(k + px, 0); g.stroke();
+    }
+  }),
+  azulejo: () => texturaDetalhe(30, 512, (g, px, r) => {
+    const h = px / 4, w = px / 2;
+    for (let lin = 0; lin < 4; lin++) for (let col = -1; col < 3; col++) {
+      const v = 228 + r() * 20; g.fillStyle = `rgb(${v},${v},${v})`;
+      g.fillRect(col * w + (lin % 2) * w / 2, lin * h, w, h);
+    }
+    g.strokeStyle = '#a8a39b'; g.lineWidth = 4;
+    for (let lin = 0; lin <= 4; lin++) { g.beginPath(); g.moveTo(0, lin * h); g.lineTo(px, lin * h); g.stroke(); }
+    for (let lin = 0; lin < 4; lin++) for (let col = 0; col <= 2; col++) {
+      const x = col * w + (lin % 2) * w / 2; g.beginPath(); g.moveTo(x, lin * h); g.lineTo(x, lin * h + h); g.stroke();
+    }
+  }),
+};
+const TEX = {};
+const tex = (nome) => (TEX[nome] ??= GERADORES[nome]());
+
+// Acabamentos: como cada material reage à luz.
 const ACAB = {
-  tecido: { roughness: 0.95 }, madeira: { roughness: 0.6 }, laca: { roughness: 0.32 },
-  metal: { roughness: 0.3, metalness: 0.75 }, vidro: { roughness: 0.05, transparent: true, opacity: 0.3, depthWrite: false },
-  tela: { roughness: 0.15, metalness: 0.2 }, pedra: { roughness: 0.4 }, padrao: { roughness: 0.75 },
+  padrao:   { roughness: 0.7 },
+  tecido:   { roughness: 0.95, tex: 'tecido', bump: 0.5 },
+  linho:    { roughness: 0.93, tex: 'tecido', bump: 0.9 },
+  veludo:   { fisico: true, roughness: 0.8, sheen: 1, sheenRoughness: 0.3, tex: 'tecido', bump: 0.1 },
+  boucle:   { roughness: 1, tex: 'boucle', bump: 2 },
+  couro:    { roughness: 0.45, tex: 'couro', bump: 0.4 },
+  blackout: { roughness: 0.95, tex: 'tecido', bump: 0.3 },
+  voil:     { roughness: 0.9, transparent: true, opacity: 0.5, depthWrite: false, sombra: false, lados: 2 },
+  madeira:  { roughness: 0.55, tex: 'madeira', bump: 0.12 },
+  palha:    { roughness: 0.8, tex: 'palha', bump: 1.2 },
+  laca:     { roughness: 0.28 },
+  metal:    { roughness: 0.3, metalness: 0.8 },
+  espelho:  { roughness: 0.02, metalness: 1 },
+  vidro:    { fisico: true, roughness: 0.04, transparent: true, opacity: 0.25, depthWrite: false, sombra: false },
+  tela:     { roughness: 0.12, metalness: 0.3 },
+  pedra:    { roughness: 0.35, tex: 'granito' },
+  marmore:  { roughness: 0.18, tex: 'marmore' },
+  ceramica: { roughness: 0.16 },
+  azulejo:  { roughness: 0.22, tex: 'azulejo' },
+  planta:   { roughness: 0.55, lados: 2 },
+  luz:      { roughness: 0.6, luz: true, lados: 2 },
+};
+const NOMES_ACAB = {
+  linho: 'Linho', tecido: 'Tecido liso', veludo: 'Veludo', boucle: 'Bouclê', couro: 'Couro', blackout: 'Blackout',
+  voil: 'Voil (translúcido)', madeira: 'Madeira', laca: 'Laca', palha: 'Palhinha', marmore: 'Mármore', pedra: 'Granito', metal: 'Metal',
 };
 const cacheMat = new Map();
+const matsLuz = new Set();
 function material(cor, acab = 'padrao') {
   const k = `${cor}|${acab}`;
-  if (!cacheMat.has(k)) cacheMat.set(k, new T.MeshStandardMaterial({ color: cor, ...(ACAB[acab] || ACAB.padrao) }));
-  return cacheMat.get(k);
+  if (cacheMat.has(k)) return cacheMat.get(k);
+  const a = ACAB[acab] || ACAB.padrao;
+  const props = { color: cor, roughness: a.roughness, metalness: a.metalness || 0 };
+  if (a.tex) { props.map = tex(a.tex); if (a.bump) { props.bumpMap = tex(a.tex); props.bumpScale = a.bump; } }
+  if (a.transparent) Object.assign(props, { transparent: true, opacity: a.opacity, depthWrite: a.depthWrite });
+  if (a.lados === 2) props.side = T.DoubleSide;
+  if (a.sheen) Object.assign(props, { sheen: a.sheen, sheenRoughness: a.sheenRoughness, sheenColor: new T.Color(cor).lerp(new T.Color('#ffffff'), 0.35) });
+  if (a.luz) Object.assign(props, { emissive: new T.Color('#ffd49a'), emissiveIntensity: 0 });
+  const mat = a.fisico ? new T.MeshPhysicalMaterial(props) : new T.MeshStandardMaterial(props);
+  mat.userData.sombra = a.sombra !== false;
+  if (a.luz) matsLuz.add(mat);
+  cacheMat.set(k, mat);
+  return mat;
 }
 
-// Avalia medidas do catálogo: número ou expressão com L, P, A, min, max.
+// ---- expressões do catálogo: números ou fórmulas com L, P, A (medidas do
+// móvel), i (índice de repetição) e funções matemáticas básicas.
+const NOMES_EXPR = ['L', 'P', 'A', 'i', 'min', 'max', 'abs', 'floor', 'ceil', 'round', 'sin', 'cos', 'sqrt', 'PI'];
+const VALORES_EXPR = [Math.min, Math.max, Math.abs, Math.floor, Math.ceil, Math.round, Math.sin, Math.cos, Math.sqrt, Math.PI];
 const cacheExpr = new Map();
-function avaliar(v, L, P, A) {
+function avaliar(v, L, P, A, i = 0) {
   if (typeof v === 'number') return v;
   if (v == null || v === '') return 0;
   let f = cacheExpr.get(v);
   if (!f) {
-    if (!/^[\d\s.,+\-*/()LPAminax]*$/.test(v)) throw new Error(`Expressão inválida no catálogo: ${v}`);
-    f = new Function('L', 'P', 'A', 'min', 'max', `return (${v});`);
+    const nomes = String(v).match(/[A-Za-z_]+/g) || [];
+    if (nomes.some((n) => !NOMES_EXPR.includes(n)) || /[^\w\s.,+\-*/()<>=?:!&|%]/.test(v)) throw new Error(`Expressão inválida no catálogo: ${v}`);
+    f = new Function(...NOMES_EXPR, `return (${v});`);
     cacheExpr.set(v, f);
   }
-  return f(L, P, A, Math.min, Math.max);
+  return f(L, P, A, i, ...VALORES_EXPR);
 }
+
+// ---- variantes (formatos), acabamentos e áreas de uso
+const varianteDe = (def, m) => (def?.variantes ? def.variantes.find((v) => v.id === m.variante) || def.variantes[0] : null);
+const partesDe = (def, m) => varianteDe(def, m)?.partes || def?.partes || [];
+const usoDe = (def, m) => varianteDe(def, m)?.uso ?? def?.uso ?? [];
+const luzDe = (def, m) => varianteDe(def, m)?.luz ?? def?.luz ?? null;
+const acaoDe = (def, m) => varianteDe(def, m)?.acao ?? def?.acao ?? 'Abrir';
+const temMov = (def, m) => partesDe(def, m).some((p) => p.mov);
 
 function pegada(m) {
   const gira = m.rot % 180 !== 0;
   const w = gira ? m.p : m.l, d = gira ? m.l : m.p;
-  return { x0: m.x - w / 2, x1: m.x + w / 2, z0: m.z - d / 2, z1: m.z + d / 2, w, d };
+  return { x0: m.x - w / 2, x1: m.x + w / 2, z0: m.z - d / 2, z1: m.z + d / 2, w, d, y0: m.y || 0, y1: (m.y || 0) + m.a };
 }
 function encaixar(m) {
   const pg = pegada(m);
   m.x = snap(pg.x0) + pg.w / 2;
   m.z = snap(pg.z0) + pg.d / 2;
 }
+// Do sistema do móvel (x para a direita, z para a frente) para a planta.
+function paraPlanta(m, x, z) {
+  if (m.espelhado) x = -x;
+  const t = rad(-m.rot);
+  return [m.x + x * Math.cos(t) + z * Math.sin(t), m.z - x * Math.sin(t) + z * Math.cos(t)];
+}
+function retanguloPlanta(m, x0, x1, z0, z1) {
+  const a = paraPlanta(m, x0, z0), b = paraPlanta(m, x1, z1);
+  return { x0: Math.min(a[0], b[0]), x1: Math.max(a[0], b[0]), z0: Math.min(a[1], b[1]), z1: Math.max(a[1], b[1]) };
+}
+// Pegada usada nas colisões: aberto, inclui portas e gavetas para fora.
+function pegadaColisao(m) {
+  const pg = pegada(m), def = defCatalogo(m.tipo);
+  if (!(m.aberto > 0.02 && temMov(def, m))) return pg;
+  const obj = objMovel.get(m.id);
+  if (!obj) return pg;
+  obj.updateMatrixWorld(true);
+  const b = new T.Box3().setFromObject(obj);
+  // sobras pequenas (tecido, puxador) não contam: só o que abre de verdade
+  const ext = (aberto, fechado, sinal) => ((aberto - fechado) * sinal > 3 ? aberto : fechado);
+  return { ...pg, x0: ext(b.min.x, pg.x0, -1), x1: ext(b.max.x, pg.x1, 1), z0: ext(b.min.z, pg.z0, -1), z1: ext(b.max.z, pg.z1, 1) };
+}
+function zonasUso(m) {
+  const def = defCatalogo(m.tipo), { l: L, p: P, a: A } = m;
+  return usoDe(def, m).map((u) => ({
+    nome: u.nome || 'Área de uso',
+    ...retanguloPlanta(m, avaliar(u.x0, L, P, A), avaliar(u.x1, L, P, A), avaliar(u.z0, L, P, A), avaliar(u.z1, L, P, A)),
+  }));
+}
 
-function criarParte(pt, m) {
+// Coordenadas de textura em metros, projetadas pela direção de cada face.
+function uvMetros(geo) {
+  if (!geo.attributes.normal) geo.computeVertexNormals();
+  const pos = geo.attributes.position, nor = geo.attributes.normal, uv = new Float32Array(pos.count * 2);
+  for (let k = 0; k < pos.count; k++) {
+    const ax = Math.abs(nor.getX(k)), ay = Math.abs(nor.getY(k)), az = Math.abs(nor.getZ(k));
+    const x = pos.getX(k), y = pos.getY(k), z = pos.getZ(k);
+    const [u, v] = ax >= ay && ax >= az ? [z, y] : ay >= az ? [x, z] : [x, y];
+    uv[k * 2] = u / 100; uv[k * 2 + 1] = v / 100;
+  }
+  geo.setAttribute('uv', new T.BufferAttribute(uv, 2));
+}
+
+function criarParte(pt, m, def, i) {
   const { l: L, p: P, a: A } = m;
-  const v = (k, pad = 0) => (pt[k] == null ? pad : avaliar(pt[k], L, P, A));
-  const cor = !pt.cor || pt.cor === 'principal' ? m.cores.principal : pt.cor === 'secundaria' ? m.cores.secundaria : pt.cor;
-  const mat = material(cor, pt.acab);
-  let geo, pos;
+  const v = (k, pad = 0) => (pt[k] == null ? pad : avaliar(pt[k], L, P, A, i));
+  if (pt.se != null && !v('se')) return null;
+  let cor = Array.isArray(pt.cor) ? pt.cor[i % pt.cor.length] : pt.cor;
+  cor = !cor || cor === 'principal' ? m.cores.principal : cor === 'secundaria' ? (m.cores.secundaria || '#888888') : cor;
+  const acab = pt.acab === '@' ? (m.acab || def.acabamentos?.[0] || 'tecido') : pt.acab;
+  const mat = material(cor, acab);
+  let geo, y = v('y');
   if (pt.f === 'caixa') {
     const l = v('l'), a = v('a'), p = v('p');
     if (l <= 0 || a <= 0 || p <= 0) return null;
     const r = Math.min(v('r'), l / 2 - 0.01, a / 2 - 0.01, p / 2 - 0.01);
     geo = r > 0.2 ? new T.RoundedBoxGeometry(l, a, p, 3, r) : new T.BoxGeometry(l, a, p);
-    pos = [v('x'), v('y') + a / 2, v('z')];
+    y += a / 2;
   } else if (pt.f === 'cil') {
-    const raio = v('raio'), raio2 = pt.raio2 == null ? raio : v('raio2'), a = v('a');
-    if (raio <= 0 || a <= 0) return null;
-    geo = new T.CylinderGeometry(raio2, raio, a, 28);
+    const a = v('a');
+    if (a <= 0) return null;
+    if (pt.l != null) { // elíptico: largura l e profundidade p
+      const l = v('l'), p = v('p', l);
+      if (l <= 0 || p <= 0) return null;
+      geo = new T.CylinderGeometry(0.5 * v('k', 1), 0.5, a, 40);
+      geo.scale(l, 1, p);
+    } else {
+      const raio = v('raio'), raio2 = pt.raio2 == null ? raio : v('raio2');
+      if (raio <= 0 && raio2 <= 0) return null;
+      geo = new T.CylinderGeometry(raio2, raio, a, 24);
+    }
     if (pt.eixo === 'x') geo.rotateZ(-Math.PI / 2);
-    if (pt.eixo === 'z') geo.rotateX(Math.PI / 2);
-    pos = [v('x'), v('y') + (pt.eixo === 'x' || pt.eixo === 'z' ? 0 : a / 2), v('z')];
+    else if (pt.eixo === 'z') geo.rotateX(Math.PI / 2);
+    else y += a / 2;
   } else if (pt.f === 'esfera') {
     const raio = v('raio');
     if (raio <= 0) return null;
-    geo = new T.SphereGeometry(raio, 24, 16);
-    pos = [v('x'), v('y') + raio, v('z')];
+    geo = new T.SphereGeometry(raio, 20, 14);
+    geo.scale(v('ex', 1), v('ey', 1), v('ez', 1));
+    y += raio * v('ey', 1);
+  } else if (pt.f === 'torno') {
+    const pts = pt.pts.map(([r, h]) => new T.Vector2(Math.max(0.01, avaliar(r, L, P, A, i)), avaliar(h, L, P, A, i)));
+    geo = new T.LatheGeometry(pts, 28);
   } else return null;
-  const mesh = new T.Mesh(geo, mat);
-  mesh.position.set(...pos);
-  mesh.castShadow = pt.acab !== 'vidro';
-  mesh.receiveShadow = true;
-  return mesh;
+  uvMetros(geo);
+  const pos = new T.Vector3(v('x'), y, v('z'));
+  const rot = new T.Euler(rad(v('rx')), rad(v('ry')), rad(v('rz')));
+  let mov = null;
+  if (pt.mov) {
+    const mv = pt.mov, e = (k, pad = 0) => (mv[k] == null ? pad : avaliar(mv[k], L, P, A, i));
+    mov = {
+      pivo: new T.Vector3(e('px', pos.x), e('py', pos.y), e('pz', pos.z)),
+      eixo: mv.eixo || 'y', ang: rad(e('gira')),
+      desl: mv.desliza ? new T.Vector3(...mv.desliza.map((d) => avaliar(d, L, P, A, i))) : null,
+      esc: mv.escala ? mv.escala.map((d) => avaliar(d, L, P, A, i)) : null,
+    };
+  }
+  return { geo, mat, pos, rot, mov };
+}
+
+function aplicarAbertura(g, k) {
+  for (const a of g.userData.anim || []) {
+    a.g.rotation.set(0, 0, 0);
+    if (a.ang) a.g.rotation[a.eixo] = a.ang * k;
+    a.g.position.copy(a.pivo);
+    if (a.desl) a.g.position.addScaledVector(a.desl, k);
+    if (a.esc) a.g.scale.set(1 + (a.esc[0] - 1) * k, 1 + (a.esc[1] - 1) * k, 1 + (a.esc[2] - 1) * k);
+  }
 }
 
 function construirMovel(m) {
@@ -814,6 +1051,7 @@ function construirMovel(m) {
   const g = new T.Group();
   const interno = new T.Group();
   g.add(interno);
+  const anim = [];
   if (def?.modelo) {
     const mod = modelos.get(def.modelo);
     if (mod) {
@@ -828,16 +1066,58 @@ function construirMovel(m) {
       interno.add(caixa(m.l, m.a, m.p, material('#c8ccd2'), 0, m.a / 2, 0)); // modelo ainda carregando
     }
   } else if (def) {
-    for (const pt of def.partes) {
-      try { const mesh = criarParte(pt, m); if (mesh) interno.add(mesh); }
-      catch (err) { console.warn(err); }
+    const fixas = new Map(); // material → geometrias já posicionadas
+    for (const pt of partesDe(def, m)) {
+      let n = 1;
+      try { if (pt.n != null) n = Math.max(0, Math.min(300, Math.floor(avaliar(pt.n, m.l, m.p, m.a)))); } catch (err) { console.warn(err); }
+      for (let i = 0; i < n; i++) {
+        let r;
+        try { r = criarParte(pt, m, def, i); } catch (err) { console.warn(err); }
+        if (!r) continue;
+        if (r.mov) {
+          const mesh = new T.Mesh(r.geo, r.mat);
+          mesh.castShadow = r.mat.userData.sombra; mesh.receiveShadow = true;
+          mesh.position.copy(r.pos).sub(r.mov.pivo);
+          mesh.rotation.copy(r.rot);
+          const piv = new T.Group();
+          piv.add(mesh);
+          interno.add(piv);
+          anim.push({ g: piv, ...r.mov });
+        } else {
+          r.geo.applyMatrix4(new T.Matrix4().compose(r.pos, new T.Quaternion().setFromEuler(r.rot), new T.Vector3(1, 1, 1)));
+          if (!fixas.has(r.mat)) fixas.set(r.mat, []);
+          fixas.get(r.mat).push(r.geo);
+        }
+      }
+    }
+    for (const [mat, geos0] of fixas) {
+      // juntar exige todas indexadas ou todas não indexadas
+      const misto = geos0.some((gg) => gg.index) && geos0.some((gg) => !gg.index);
+      const geos = misto ? geos0.map((gg) => { if (!gg.index) return gg; const n = gg.toNonIndexed(); gg.dispose(); return n; }) : geos0;
+      const unida = geos.length > 1 ? T.mergeGeometries(geos, false) : geos[0];
+      const lista = unida ? [unida] : geos;
+      if (unida && unida !== geos[0]) for (const gg of geos) gg.dispose();
+      for (const geo of lista) {
+        const mesh = new T.Mesh(geo, mat);
+        mesh.castShadow = mat.userData.sombra; mesh.receiveShadow = true;
+        interno.add(mesh);
+      }
+    }
+    const lz = luzDe(def, m);
+    if (lz) {
+      const luzP = new T.PointLight(lz.cor || '#ffd49a', 0, 520, 1);
+      luzP.position.set(avaliar(lz.x, m.l, m.p, m.a), avaliar(lz.y, m.l, m.p, m.a), avaliar(lz.z, m.l, m.p, m.a));
+      luzP.userData.base = lz.intensidade ?? 90;
+      interno.add(luzP);
     }
   } else {
     interno.add(caixa(m.l, m.a, m.p, material('#e5484d'), 0, m.a / 2, 0));
   }
   interno.scale.x = m.espelhado ? -1 : 1;
-  g.position.set(m.x, 0, m.z);
+  g.position.set(m.x, m.y || 0, m.z);
   g.rotation.y = (-m.rot * Math.PI) / 180;
+  g.userData.anim = anim;
+  aplicarAbertura(g, m.aberto || 0);
   g.traverse((o) => { o.userData.tipo ??= 'movel'; o.userData.id ??= m.id; });
   return g;
 }
@@ -850,45 +1130,160 @@ function construirMoveis() {
     grpMoveis.add(g);
     objMovel.set(m.id, g);
   }
+  aplicarVisibilidadeTopo();
+  luzesMoveis = [];
+  grpMoveis.traverse((o) => { if (o.isPointLight) luzesMoveis.push(o); });
+  luzesMoveis.slice(8).forEach((l) => { l.visible = false; }); // limite para o celular
+  aplicarSol();
   for (const f of EXTENSOES.aposMoveis) f(grpMoveis, cen());
 }
 
+// Na vista de cima (planta baixa), o que fica no alto — pendentes,
+// prateleiras, armários aéreos — some para mostrar o que está embaixo.
+function aplicarVisibilidadeTopo() {
+  for (const m of cen().moveis) {
+    const obj = objMovel.get(m.id);
+    if (obj) obj.visible = !(vista.topo && (m.y || 0) >= 140);
+  }
+}
+
+// Abre/fecha com animação (portas, gavetas, sofá retrátil, persianas…).
+let animando = null;
+function alternarAbertura(m) {
+  const alvo = (m.aberto || 0) > 0.5 ? 0 : 1;
+  const de = m.aberto || 0, t0 = performance.now(), dur = 650;
+  registrar();
+  cancelAnimationFrame(animando);
+  const passo = (agora) => {
+    const t = Math.min(1, (agora - t0) / dur), k = t * t * (3 - 2 * t);
+    m.aberto = de + (alvo - de) * k;
+    const obj = objMovel.get(m.id);
+    if (obj) aplicarAbertura(obj, m.aberto);
+    if (t < 1) animando = requestAnimationFrame(passo);
+    else { m.aberto = alvo; atualizarTudo(); }
+  };
+  animando = requestAnimationFrame(passo);
+}
+
 // =====================================================================
-// 7. COLISÕES
+// 7. COLISÕES, ÁREAS DE USO E PORTAS
 // =====================================================================
-let colisoes = { porMovel: new Map(), lista: [] };
+// Três verificações: móveis que se sobrepõem (inclusive com portas e
+// gavetas abertas), áreas de uso bloqueadas (o espaço para puxar a
+// cadeira, abrir o guarda-roupa, sentar no sofá) e móveis no caminho do
+// abrir das portas.
+let colisoes = { porMovel: new Map(), lista: [], usoBloq: new Set(), portasBloq: new Set() };
 
 function sobrepoe(a, b) {
   return Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0) > CFG.tolColisao &&
          Math.min(a.z1, b.z1) - Math.max(a.z0, b.z0) > CFG.tolColisao;
 }
+const sobrepoeAltura = (a, b) => Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0) > CFG.tolColisao;
 function caixaParede(w) {
   const e = w.esp / 2;
-  return { x0: Math.min(w.x1, w.x2) - e, x1: Math.max(w.x1, w.x2) + e, z0: Math.min(w.z1, w.z2) - e, z1: Math.max(w.z1, w.z2) + e };
+  return { x0: Math.min(w.x1, w.x2) - e, x1: Math.max(w.x1, w.x2) + e, z0: Math.min(w.z1, w.z2) - e, z1: Math.max(w.z1, w.z2) + e, y0: 0, y1: 9999 };
+}
+const ignoraPar = (a, b) => (a.ignora || []).includes(b.grupo) || (b.ignora || []).includes(a.grupo);
+
+// Giro de cada porta: dobradiça, raio e os dois sentidos do quarto de círculo.
+function girosPortas() {
+  const pl = doc.planta, lista = [];
+  for (const ab of pl.aberturas) {
+    if (ab.tipo !== 'porta') continue;
+    const w = pl.paredes.find((p) => p.id === ab.parede);
+    if (!w || w.demolida) continue;
+    const hz = horizontal(w), u = hz ? [1, 0] : [0, 1], vv = hz ? [0, 1] : [-1, 0];
+    const noInicio = ab.dobradica !== 'fim', lado = ab.lado === -1 ? -1 : 1;
+    const uh = noInicio ? ab.pos + 3 : ab.pos + ab.largura - 3, v0 = (lado * w.esp) / 2;
+    lista.push({
+      ab, nome: ab.id === 'porta-entrada' ? 'porta de entrada' : `porta (${w.nome})`, R: ab.largura - 6,
+      c: [w.x1 + u[0] * uh + vv[0] * v0, w.z1 + u[1] * uh + vv[1] * v0],
+      du: [u[0] * (noInicio ? 1 : -1), u[1] * (noInicio ? 1 : -1)], dv: [vv[0] * lado, vv[1] * lado],
+    });
+  }
+  return lista;
+}
+function bloqueiaGiro(pg, giro) {
+  for (let ri = 1; ri <= 5; ri++) for (let ti = 0; ti <= 6; ti++) {
+    const r = (giro.R * ri) / 5.2, t = (Math.PI / 2) * (0.04 + (ti / 6) * 0.92);
+    const x = giro.c[0] + giro.du[0] * r * Math.cos(t) + giro.dv[0] * r * Math.sin(t);
+    const z = giro.c[1] + giro.du[1] * r * Math.cos(t) + giro.dv[1] * r * Math.sin(t);
+    if (x > pg.x0 + 0.5 && x < pg.x1 - 0.5 && z > pg.z0 + 0.5 && z < pg.z1 - 0.5) return true;
+  }
+  return false;
 }
 
 function verificarColisoes() {
-  const porMovel = new Map(), lista = [];
+  const porMovel = new Map(), lista = [], usoBloq = new Set(), portasBloq = new Set();
   const marcar = (id, txt) => { if (!porMovel.has(id)) porMovel.set(id, []); porMovel.get(id).push(txt); };
-  const itens = cen().moveis.map((m) => ({ m, def: defCatalogo(m.tipo) || {}, pg: pegada(m) }))
-    .filter((i) => i.def.colide !== false);
+  const itens = cen().moveis.map((m) => ({ m, def: defCatalogo(m.tipo) || {}, pg: pegadaColisao(m) }))
+    .filter((it) => it.def.colide !== false);
+  const paredes = doc.planta.paredes.filter((w) => !w.demolida).map((w) => ({ w, cx: caixaParede(w) }));
   for (let i = 0; i < itens.length; i++) {
     const A = itens[i];
     for (let j = i + 1; j < itens.length; j++) {
       const B = itens[j];
-      if ((A.def.ignora || []).includes(B.def.grupo) || (B.def.ignora || []).includes(A.def.grupo)) continue;
-      if (!sobrepoe(A.pg, B.pg)) continue;
+      if (ignoraPar(A.def, B.def) || !sobrepoe(A.pg, B.pg) || !sobrepoeAltura(A.pg, B.pg)) continue;
       marcar(A.m.id, B.m.nome); marcar(B.m.id, A.m.nome);
       lista.push({ ids: [A.m.id, B.m.id], txt: `${A.m.nome} × ${B.m.nome}` });
     }
-    for (const w of doc.planta.paredes) {
-      if (w.demolida || !sobrepoe(A.pg, caixaParede(w))) continue;
+    for (const { w, cx } of paredes) {
+      if (!sobrepoe(A.pg, cx)) continue;
       marcar(A.m.id, `parede ${w.nome}`);
       lista.push({ ids: [A.m.id], txt: `${A.m.nome} × parede ${w.nome}` });
     }
+    // área de uso: o que estiver no chão (até 1 m de altura) atrapalha
+    zonasUso(A.m).forEach((z, k) => {
+      const quem = [
+        ...itens.filter((B) => B !== A && !ignoraPar(A.def, B.def) && B.pg.y0 < 100 && sobrepoe(z, B.pg)).map((B) => B.m.nome),
+        ...paredes.filter(({ cx }) => sobrepoe(z, cx)).map(({ w }) => `parede ${w.nome}`),
+      ];
+      if (!quem.length) return;
+      usoBloq.add(`${A.m.id}#${k}`);
+      marcar(A.m.id, `${z.nome.toLowerCase()} bloqueada por ${quem.join(', ')}`);
+      lista.push({ ids: [A.m.id], txt: `${A.m.nome}: ${z.nome.toLowerCase()} bloqueada`, tipo: 'uso' });
+    });
   }
-  colisoes = { porMovel, lista };
+  for (const giro of girosPortas()) {
+    for (const B of itens) {
+      if (B.pg.y0 >= 100 || !bloqueiaGiro(B.pg, giro)) continue;
+      portasBloq.add(giro.ab.id);
+      marcar(B.m.id, `no caminho da ${giro.nome}`);
+      lista.push({ ids: [B.m.id], txt: `${B.m.nome} bloqueia a ${giro.nome}`, tipo: 'porta' });
+    }
+  }
+  colisoes = { porMovel, lista, usoBloq, portasBloq };
   renderAvisos();
+}
+
+// ---- cotas: distância livre do móvel selecionado até o obstáculo mais
+// próximo em cada direção (parede ou outro móvel na mesma altura).
+function calcularCotas(m) {
+  const pg = pegada(m), obst = [];
+  for (const w of doc.planta.paredes) if (!w.demolida) obst.push(caixaParede(w));
+  for (const o of cen().moveis) {
+    if (o.id === m.id || defCatalogo(o.tipo)?.colide === false) continue;
+    const po = pegada(o);
+    if (sobrepoeAltura(po, pg)) obst.push(po);
+  }
+  const cotas = [];
+  const dirs = [['x', 1], ['x', -1], ['z', 1], ['z', -1]];
+  for (const [eixo, s] of dirs) {
+    const [a0, a1, b0, b1] = eixo === 'x' ? ['x0', 'x1', 'z0', 'z1'] : ['z0', 'z1', 'x0', 'x1'];
+    const borda = s > 0 ? pg[a1] : pg[a0];
+    let melhor = Infinity;
+    for (const o of obst) {
+      if (Math.min(o[b1], pg[b1]) - Math.max(o[b0], pg[b0]) <= 1) continue; // não está na frente
+      const d = s > 0 ? o[a0] - borda : borda - o[a1];
+      if (d > -0.5 && d < melhor) melhor = Math.max(0, d);
+    }
+    if (!Number.isFinite(melhor) || melhor > 800) continue;
+    const meio = (pg[b0] + pg[b1]) / 2;
+    const p1 = eixo === 'x' ? [borda, meio] : [meio, borda];
+    const p2 = eixo === 'x' ? [borda + s * melhor, meio] : [meio, borda + s * melhor];
+    cotas.push({ eixo, s, dist: melhor, p1, p2 });
+  }
+  return cotas;
 }
 
 // =====================================================================
@@ -896,8 +1291,25 @@ function verificarColisoes() {
 // =====================================================================
 const matSel = new T.MeshBasicMaterial({ color: CFG.corSel, transparent: true, opacity: 0.16, depthWrite: false });
 const matCol = new T.MeshBasicMaterial({ color: CFG.corColisao, transparent: true, opacity: 0.28, depthWrite: false });
+const matUso = new T.MeshBasicMaterial({ color: '#27ae60', transparent: true, opacity: 0.16, depthWrite: false });
+const matUsoBloq = new T.MeshBasicMaterial({ color: CFG.corColisao, transparent: true, opacity: 0.26, depthWrite: false });
+const matPorta = new T.MeshBasicMaterial({ color: '#f2994a', transparent: true, opacity: 0.16, depthWrite: false });
 const linhaSel = new T.LineBasicMaterial({ color: CFG.corSel });
 const linhaCol = new T.LineBasicMaterial({ color: CFG.corColisao });
+const linhaUso = new T.LineDashedMaterial({ color: '#1e8449', dashSize: 6, gapSize: 4 });
+const linhaCota = new T.LineBasicMaterial({ color: '#1d2530' });
+
+// O que aparece sobre a planta (painel "Mostrar").
+const camadas = Object.assign({ uso: false, cantos: true, cotas: true },
+  (() => { try { return JSON.parse(localStorage.getItem('simulador-apto:camadas')) || {}; } catch { return {}; } })());
+const guardarCamadas = () => { try { localStorage.setItem('simulador-apto:camadas', JSON.stringify(camadas)); } catch { /* ok */ } };
+
+function contornoTracejado(pts, mat, y) {
+  const l = new T.Line(new T.BufferGeometry().setFromPoints([...pts, pts[0]].map(([x, z]) => new T.Vector3(x, y, z))), mat);
+  l.computeLineDistances();
+  return l;
+}
+const retPts = (r) => [[r.x0, r.z0], [r.x1, r.z0], [r.x1, r.z1], [r.x0, r.z1]];
 
 function desenharSelecao() {
   limpar(grpSel);
@@ -907,21 +1319,172 @@ function desenharSelecao() {
     q.rotation.x = -Math.PI / 2; q.position.set(m.x, 0.7, m.z);
     grpSel.add(q);
     const obj = objMovel.get(m.id);
-    if (obj) {
-      const b = new T.Box3().setFromObject(obj);
-      grpSel.add(new T.Box3Helper(b, linha.color));
-    }
+    if (obj) grpSel.add(new T.Box3Helper(new T.Box3().setFromObject(obj), linha.color));
   };
   for (const id of colisoes.porMovel.keys()) { const m = movel(id); if (m) marca(m, matCol, linhaCol); }
-  if (sel?.tipo === 'movel') { const m = movel(sel.id); if (m) marca(m, matSel, linhaSel); }
+  const selM = sel?.tipo === 'movel' ? movel(sel.id) : null;
+  if (selM) marca(selM, matSel, linhaSel);
+  if (vista.caminhar) return;
+  // áreas de uso: de todos (camada ligada) ou só do móvel selecionado
+  for (const m of cen().moveis) {
+    if (!camadas.uso && m !== selM) continue;
+    zonasUso(m).forEach((z, k) => {
+      const bloq = colisoes.usoBloq.has(`${m.id}#${k}`);
+      grpSel.add(malhaPoligono(retPts(z), bloq ? matUsoBloq : matUso, 0.5));
+      grpSel.add(contornoTracejado(retPts(z), bloq ? linhaCol : linhaUso, 0.6));
+    });
+  }
+  // giro das portas: todas com a camada ligada; bloqueadas sempre
+  for (const giro of girosPortas()) {
+    const bloq = colisoes.portasBloq.has(giro.ab.id);
+    if (!camadas.uso && !bloq) continue;
+    const pts = [giro.c];
+    for (let k = 0; k <= 16; k++) {
+      const t = (k / 16) * (Math.PI / 2);
+      pts.push([giro.c[0] + (giro.du[0] * Math.cos(t) + giro.dv[0] * Math.sin(t)) * giro.R,
+                giro.c[1] + (giro.du[1] * Math.cos(t) + giro.dv[1] * Math.sin(t)) * giro.R]);
+    }
+    grpSel.add(malhaPoligono(pts, bloq ? matUsoBloq : matPorta, 0.45));
+  }
+  desenharCotas(selM);
+}
+
+// ---- cotas (linhas + rótulos clicáveis para digitar a distância)
+const camadaCotas = $('#cotas');
+let cotasTela = [];
+function desenharCotas(m) {
+  camadaCotas.textContent = '';
+  cotasTela = [];
+  if (!m || !camadas.cotas || vista.caminhar) return;
+  const y = (m.y || 0) + 1.5;
+  for (const c of calcularCotas(m)) {
+    const [x1, z1] = c.p1, [x2, z2] = c.p2;
+    const pts = [new T.Vector3(x1, y, z1), new T.Vector3(x2, y, z2)];
+    const per = c.eixo === 'x' ? [0, 6] : [6, 0]; // tracinhos nas pontas
+    for (const [x, z] of [c.p1, c.p2]) pts.push(new T.Vector3(x - per[0], y, z - per[1]), new T.Vector3(x + per[0], y, z + per[1]));
+    grpSel.add(new T.LineSegments(new T.BufferGeometry().setFromPoints([pts[0], pts[1], pts[2], pts[3], pts[4], pts[5]]), linhaCota));
+    const bt = el('button', { type: 'button', class: 'cota', title: 'Clique para digitar a distância' }, `${fmt(c.dist)}`);
+    bt.addEventListener('pointerdown', (e) => e.stopPropagation());
+    bt.addEventListener('click', () => editarCota(bt, m, c));
+    camadaCotas.append(bt);
+    cotasTela.push({ el: bt, pos: new T.Vector3((x1 + x2) / 2, y, (z1 + z2) / 2) });
+  }
+}
+function editarCota(bt, m, c) {
+  const inp = el('input', { type: 'text', inputmode: 'decimal', value: fmt(c.dist), class: 'cota-campo' });
+  bt.replaceWith(inp);
+  const item = cotasTela.find((t) => t.el === bt);
+  if (item) item.el = inp;
+  inp.focus(); inp.select();
+  let feito = false;
+  const aplicar = () => {
+    if (feito) return; feito = true;
+    const v = numero(inp.value);
+    if (!Number.isFinite(v) || v < 0 || Math.abs(v - c.dist) < 0.05) { desenharSelecao(); return; }
+    const delta = (c.dist - v) * c.s;
+    alterar(() => { if (c.eixo === 'x') m.x += delta; else m.z += delta; });
+  };
+  inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') aplicar(); if (e.key === 'Escape') { feito = true; desenharSelecao(); } });
+  inp.addEventListener('blur', aplicar);
+}
+
+// ---- cantos: zonas de função (home office, jantar, TV…) desenhadas no piso
+const FUNCOES = {
+  office:     { nome: 'Home office', cor: '#2f80ed' },
+  estar:      { nome: 'TV / estar', cor: '#9b51e0' },
+  jantar:     { nome: 'Jantar', cor: '#f2994a' },
+  dormir:     { nome: 'Dormir', cor: '#27ae60' },
+  cozinha:    { nome: 'Cozinha', cor: '#eb5757' },
+  banho:      { nome: 'Banho', cor: '#2d9cdb' },
+  leitura:    { nome: 'Leitura', cor: '#bb6bd9' },
+  circulacao: { nome: 'Circulação', cor: '#828282' },
+  servico:    { nome: 'Serviço', cor: '#a0785a' },
+  outro:      { nome: 'Outro', cor: '#4f4f4f' },
+};
+const grpZonas = new T.Group();
+cena.add(grpZonas);
+let rotulosZonas = [];
+const zona = (id) => (cen().zonas || []).find((z) => z.id === id);
+const retZona = (z) => ({ x0: z.x - z.l / 2, x1: z.x + z.l / 2, z0: z.z - z.p / 2, z1: z.z + z.p / 2 });
+
+function construirZonas() {
+  limpar(grpZonas);
+  rotulosZonas.forEach((r) => r.div.remove());
+  rotulosZonas = [];
+  if (!camadas.cantos || vista.caminhar) return;
+  for (const z of cen().zonas || []) {
+    const f = FUNCOES[z.funcao] || FUNCOES.outro, ativo = sel?.tipo === 'zona' && sel.id === z.id;
+    const r = retZona(z);
+    const fundo = malhaPoligono(retPts(r), new T.MeshBasicMaterial({ color: f.cor, transparent: true, opacity: ativo ? 0.2 : 0.09, depthWrite: false }), 0.35);
+    fundo.userData = { tipo: 'zona', id: z.id };
+    grpZonas.add(fundo, contornoTracejado(retPts(r), new T.LineDashedMaterial({ color: f.cor, dashSize: ativo ? 14 : 9, gapSize: 6 }), 0.4));
+    const div = el('div', { class: 'rotulo-zona' + (ativo ? ' ativo' : ''), style: `--cor:${f.cor}` }, z.nome || f.nome);
+    camadaRotulos.append(div);
+    rotulosZonas.push({ div, canto: true, pos: new T.Vector3(r.x0 + 4, 1, r.z0 + 4) });
+  }
+}
+function moveisNaZona(z) {
+  const r = retZona(z);
+  return cen().moveis.filter((m) => m.x > r.x0 && m.x < r.x1 && m.z > r.z0 && m.z < r.z1);
+}
+function novaZona() {
+  const rc = tela.getBoundingClientRect();
+  let p = pontoNoPiso({ clientX: rc.left + rc.width / 2, clientY: rc.top + rc.height / 2 });
+  if (!p || !dentro([p.x, p.z], doc.planta.contorno)) p = { x: 150, z: 150 };
+  const z = { id: novoId('z'), funcao: 'outro', x: snap(p.x), z: snap(p.z), l: 150, p: 150 };
+  camadas.cantos = true; guardarCamadas();
+  alterar(() => { (cen().zonas ||= []).push(z); });
+  selecionar({ tipo: 'zona', id: z.id });
+}
+
+// ---- caminhar pelo apartamento (câmera na altura dos olhos)
+const andar = { yaw: Math.PI / 2, pitch: -0.12, x: 380, z: 395, orbita: null, anim: 0 };
+function aplicarCameraAndar() {
+  camPersp.position.set(andar.x, 160, andar.z);
+  camPersp.rotation.set(andar.pitch, andar.yaw, 0, 'YXZ');
+}
+function alternarCaminhada() {
+  vista.caminhar = !vista.caminhar;
+  if (vista.caminhar) {
+    if (vista.topo) { vista.topo = false; ctlTopo.enabled = false; }
+    andar.orbita = { pos: camPersp.position.clone(), alvo: ctlPersp.target.clone() };
+    ctlPersp.enabled = false;
+    camPersp.fov = 70; camPersp.updateProjectionMatrix();
+    aplicarCameraAndar();
+    toast('Arraste para olhar em volta; toque no piso para andar até lá. W/A/S/D também andam.');
+  } else {
+    camPersp.fov = 42; camPersp.updateProjectionMatrix();
+    if (andar.orbita) { camPersp.position.copy(andar.orbita.pos); ctlPersp.target.copy(andar.orbita.alvo); }
+    ctlPersp.enabled = true; ctlPersp.update();
+  }
+  document.body.classList.toggle('caminhando', vista.caminhar);
+  construirPlanta(); construirZonas(); desenharSelecao(); atualizarBotoes();
+}
+function andarPara(x, z) {
+  const de = { x: andar.x, z: andar.z }, t0 = performance.now(), dur = Math.min(900, 250 + Math.hypot(x - de.x, z - de.z) * 2.5);
+  cancelAnimationFrame(andar.anim);
+  const passo = (agora) => {
+    const t = Math.min(1, (agora - t0) / dur), k = t * t * (3 - 2 * t);
+    andar.x = de.x + (x - de.x) * k; andar.z = de.z + (z - de.z) * k;
+    aplicarCameraAndar();
+    if (t < 1) andar.anim = requestAnimationFrame(passo);
+  };
+  andar.anim = requestAnimationFrame(passo);
+}
+function passoAndar(frente, lado) {
+  const s = Math.sin(andar.yaw), c = Math.cos(andar.yaw);
+  const x = andar.x - s * frente + c * lado, z = andar.z - c * frente - s * lado;
+  if (dentro([x, z], doc.planta.contorno)) { andar.x = x; andar.z = z; aplicarCameraAndar(); }
 }
 
 function selecionar(s) {
   sel = s;
   construirPlanta();
+  construirZonas();
   desenharSelecao();
   renderPainel();
   renderAreas();
+  renderCantos();
 }
 
 const ray = new T.Raycaster();
@@ -934,7 +1497,7 @@ function raioDe(e) {
 }
 function alvoEm(e) {
   raioDe(e);
-  for (const h of ray.intersectObjects([grpMoveis, grpPlanta], true)) {
+  for (const h of ray.intersectObjects([grpMoveis, grpZonas, grpPlanta], true)) {
     const u = h.object.userData;
     if (u.tipo) return { tipo: u.tipo, id: u.id, abertura: u.abertura };
   }
@@ -954,8 +1517,9 @@ function aoPressionar(e) {
   if (e.pointerType === 'mouse' && e.button !== 0) return;
   const alvo = alvoEm(e);
   arr = { id: e.pointerId, x: e.clientX, y: e.clientY, alvo, movido: false };
-  const paredeSel = alvo?.tipo === 'parede' && sel?.tipo === 'parede' && sel.id === alvo.id && !parede(alvo.id)?.demolida;
-  if (alvo?.tipo === 'movel' || paredeSel) {
+  const jaSel = (tipo) => alvo?.tipo === tipo && sel?.tipo === tipo && sel.id === alvo.id;
+  const paredeSel = jaSel('parede') && !parede(alvo.id)?.demolida;
+  if (alvo?.tipo === 'movel' || paredeSel || jaSel('zona')) {
     const inicio = pontoNoPiso(e);
     if (!inicio) return;
     ctlAtivo().enabled = false;
@@ -964,10 +1528,16 @@ function aoPressionar(e) {
       const m = movel(alvo.id);
       Object.assign(arr, { x0: m.x, z0: m.z });
       if (sel?.id !== m.id) selecionar({ tipo: 'movel', id: m.id });
+    } else if (alvo.tipo === 'zona') {
+      const z = zona(alvo.id);
+      Object.assign(arr, { x0: z.x, z0: z.z });
     } else {
       arr.planta0 = clonar(doc.planta);
       arr.delta = 0;
     }
+    renderer.domElement.setPointerCapture(e.pointerId);
+  } else if (vista.caminhar) {
+    Object.assign(arr, { olhar: true, yaw0: andar.yaw, pitch0: andar.pitch });
     renderer.domElement.setPointerCapture(e.pointerId);
   }
 }
@@ -975,6 +1545,12 @@ function aoPressionar(e) {
 function aoMover(e) {
   if (!arr || e.pointerId !== arr.id) return;
   if (!arr.movido && Math.hypot(e.clientX - arr.x, e.clientY - arr.y) > 4) arr.movido = true;
+  if (arr.olhar && arr.movido) {
+    andar.yaw = arr.yaw0 + (e.clientX - arr.x) * 0.0045;
+    andar.pitch = Math.max(-1.2, Math.min(1.2, arr.pitch0 + (e.clientY - arr.y) * 0.0045));
+    aplicarCameraAndar();
+    return;
+  }
   if (!arr.arrastavel || !arr.movido) return;
   const p = pontoNoPiso(e);
   if (!p) return;
@@ -983,10 +1559,15 @@ function aoMover(e) {
     m.x = arr.x0 + (p.x - arr.inicio.x);
     m.z = arr.z0 + (p.z - arr.inicio.z);
     encaixar(m);
-    objMovel.get(m.id)?.position.set(m.x, 0, m.z);
+    objMovel.get(m.id)?.position.set(m.x, m.y || 0, m.z);
     verificarColisoes();
     desenharSelecao();
     renderPainelPosicao();
+  } else if (arr.alvo.tipo === 'zona') {
+    const z = zona(arr.alvo.id);
+    z.x = snap(arr.x0 + (p.x - arr.inicio.x) - z.l / 2) + z.l / 2;
+    z.z = snap(arr.z0 + (p.z - arr.inicio.z) - z.p / 2) + z.p / 2;
+    construirZonas();
   } else {
     const w0 = arr.planta0.paredes.find((w) => w.id === arr.alvo.id);
     const hz = horizontal(w0);
@@ -1012,21 +1593,29 @@ function aoSoltar(e) {
   const g = arr;
   arr = null;
   if (g.arrastavel) {
-    ctlAtivo().enabled = true;
+    ctlAtivo().enabled = !vista.caminhar;
     if (g.movido) { registrar(g.estado); atualizarTudo(); }
     dica('');
     return;
   }
+  if (g.olhar && g.movido) return;
   if (g.movido) return; // foi órbita/arraste de câmera
   const a = g.alvo;
+  if (vista.caminhar && (!a || a.tipo === 'ambiente' || a.tipo === 'zona')) {
+    const p = pontoNoPiso(e);
+    if (p && dentro([p.x, p.z], doc.planta.contorno)) andarPara(p.x, p.z);
+    if (sel) selecionar(null);
+    return;
+  }
   if (!a) selecionar(null);
   else if (a.tipo === 'parede') selecionar({ tipo: 'parede', id: a.id, abertura: a.abertura });
   else if (a.tipo === 'ambiente') selecionar({ tipo: 'ambiente', id: a.id });
+  else if (a.tipo === 'zona') selecionar({ tipo: 'zona', id: a.id });
 }
 
 function cancelarArraste() {
   if (!arr) return;
-  ctlAtivo().enabled = true;
+  ctlAtivo().enabled = !vista.caminhar;
   doc = JSON.parse(arr.estado);
   arr = null;
   atualizarTudo();
@@ -1045,7 +1634,9 @@ function adicionarMovel(tipo) {
   if (!def) return;
   // coloca no ponto do piso que está no centro da tela (ou no centro da sala)
   const r = tela.getBoundingClientRect();
-  let p = pontoNoPiso({ clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 });
+  let p = vista.caminhar
+    ? { x: andar.x - Math.sin(andar.yaw) * 120, z: andar.z - Math.cos(andar.yaw) * 120 }
+    : pontoNoPiso({ clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 });
   const cont = doc.planta.contorno;
   if (!p || !dentro([p.x, p.z], cont)) {
     const [x, z] = centroRotulo(poligonoUtil(doc.planta.ambientes.find((a) => a.id === 'sala') || doc.planta.ambientes[0]));
@@ -1088,8 +1679,17 @@ document.addEventListener('keydown', (e) => {
   else if (ctrl && k === 'd') { e.preventDefault(); duplicarSelecionado(); }
   else if (ctrl) return;
   else if (k === 'delete' || k === 'backspace') { e.preventDefault(); removerSelecionado(); }
+  else if (vista.caminhar && ['w', 's', 'a', 'd'].includes(k)) {
+    passoAndar(k === 'w' ? 30 : k === 's' ? -30 : 0, k === 'd' ? 30 : k === 'a' ? -30 : 0);
+  }
+  else if (vista.caminhar && k.startsWith('arrow') && sel?.tipo !== 'movel') {
+    e.preventDefault();
+    if (k === 'arrowup' || k === 'arrowdown') passoAndar(k === 'arrowup' ? 30 : -30, 0);
+    else { andar.yaw += k === 'arrowleft' ? 0.15 : -0.15; aplicarCameraAndar(); }
+  }
   else if (k === 'r') girar(e.shiftKey ? -1 : 1);
   else if (k === 't') alternarVista();
+  else if (k === 'c') alternarCaminhada();
   else if (k === 'escape') selecionar(null);
   else if (k.startsWith('arrow')) {
     e.preventDefault();
@@ -1312,42 +1912,156 @@ function renderPainel() {
   if (sel.tipo === 'movel') painelMovel(p, cab);
   else if (sel.tipo === 'parede') painelParede(p, cab);
   else if (sel.tipo === 'ambiente') painelAmbiente(p, cab);
+  else if (sel.tipo === 'zona') painelZona(p, cab);
 }
 
 function painelMovel(p, cab) {
   const m = movel(sel.id);
   if (!m) return;
   const def = defCatalogo(m.tipo) || { nome: m.tipo };
-  const pg = pegada(m);
+  const pg = pegada(m), vr = varianteDe(def, m);
   const col = colisoes.porMovel.get(m.id);
-  anexar(p, 
-    cab(m.nome, def.nome),
-    el('div', { class: 'status ' + (col ? 'alerta' : 'ok') }, col ? `⚠ Colide com: ${[...new Set(col)].join(', ')}` : '✓ Sem colisões'),
-    secao('Nome', campoTexto('Nome', m.nome, (v) => alterar(() => { m.nome = v; }))),
+  const rotCores = def.rotulosCores || ['Principal', 'Secundária'];
+  const [acaoAbrir, acaoFechar] = acaoDe(def, m) instanceof Array ? acaoDe(def, m) : [acaoDe(def, m), 'Fechar'];
+  const aberto = (m.aberto || 0) > 0.5;
+  const NOME_DIR = { 'x1': 'Livre à direita', 'x-1': 'Livre à esquerda', 'z1': 'Livre abaixo', 'z-1': 'Livre acima' };
+  const zonas = zonasUso(m);
+  anexar(p,
+    cab(m.nome, vr ? `${def.nome} · ${vr.nome}` : def.nome),
+    el('div', { class: 'status ' + (col ? 'alerta' : 'ok') }, col ? `⚠ ${[...new Set(col)].join('; ')}` : '✓ Cabe e dá para usar'),
+    def.variantes?.length > 1 ? secao('Formato',
+      el('div', { class: 'opcoes' }, ...def.variantes.map((v) => botao(v.nome, () => trocarVariante(m, def, v), { class: v === vr ? 'ativo' : '' })))) : null,
+    temMov(def, m) ? secao('Funcionamento',
+      botao(aberto ? `■ ${acaoFechar}` : `▶ ${acaoAbrir}`, () => alternarAbertura(m), { class: 'acao' }),
+      el('p', { class: 'nota' }, aberto ? 'Aberto: as colisões consideram as partes para fora.' : 'Veja o móvel em uso; as colisões passam a considerar as partes abertas.')) : null,
     secao('Medidas',
       el('div', { class: 'grade3' },
         campoNum('Largura', m.l, (v) => alterar(() => { m.l = v; })),
         campoNum('Profund.', m.p, (v) => alterar(() => { m.p = v; })),
         campoNum('Altura', m.a, (v) => alterar(() => { m.a = v; }))),
-      botao('Voltar às medidas do catálogo', () => def.dim && alterar(() => Object.assign(m, { l: def.dim.l, p: def.dim.p, a: def.dim.a })), { class: 'link' })),
-    secao('Posição (canto superior esquerdo)',
+      el('div', { class: 'grade2', style: 'margin-top:8px' },
+        campoNum('Altura do chão', m.y || 0, (v) => alterar(() => { m.y = v; }), { min: 0, max: 300 })),
+      botao('Voltar às medidas do catálogo', () => alterar(() => Object.assign(m, vr?.dim || def.dim || {})), { class: 'link' })),
+    def.acabamentos ? secao('Material',
+      el('div', { class: 'opcoes' }, ...def.acabamentos.map((a) => botao(NOMES_ACAB[a] || a, () => alterar(() => { m.acab = a; }), { class: (m.acab || def.acabamentos[0]) === a ? 'ativo' : '' })))) : null,
+    secao('Cores',
       el('div', { class: 'grade2' },
-        campoNum('X', pg.x0, (v) => alterar(() => { m.x = v + pg.w / 2; }), { min: -500, max: 3000, chave: 'x' }),
-        campoNum('Z', pg.z0, (v) => alterar(() => { m.z = v + pg.d / 2; }), { min: -500, max: 3000, chave: 'z' })),
+        campoCor(rotCores[0], m.cores.principal, (v, fim) => { m.cores.principal = v; aplicarMudancaMovel(m, fim); }),
+        campoCor(rotCores[1], m.cores.secundaria || '#888888', (v, fim) => { m.cores.secundaria = v; aplicarMudancaMovel(m, fim); }))),
+    secao('Posição e distâncias',
+      el('div', { class: 'grade2' },
+        campoNum('X (canto)', pg.x0, (v) => alterar(() => { m.x = v + pg.w / 2; }), { min: -500, max: 3000, chave: 'x' }),
+        campoNum('Z (canto)', pg.z0, (v) => alterar(() => { m.z = v + pg.d / 2; }), { min: -500, max: 3000, chave: 'z' }),
+        ...calcularCotas(m).map((c) => campoNum(NOME_DIR[c.eixo + c.s], c.dist, (v) => alterar(() => {
+          const d = (c.dist - v) * c.s; if (c.eixo === 'x') m.x += d; else m.z += d;
+        }), { min: 0, max: 2000 }))),
       el('div', { class: 'linha-botoes' },
         botao('↺ 90°', () => girar(-1), { title: 'Girar anti-horário (Shift+R)' }),
         botao('↻ 90°', () => girar(1), { title: 'Girar horário (R)' }),
         botao('⇋ Espelhar', () => alterar(() => { m.espelhado = !m.espelhado; }), { title: 'Inverter lado (ex.: chaise)' }))),
-    secao('Cores',
-      el('div', { class: 'grade2' },
-        campoCor('Principal', m.cores.principal, (v, fim) => { m.cores.principal = v; aplicarMudancaMovel(m, fim); }),
-        campoCor('Secundária', m.cores.secundaria || '#888888', (v, fim) => { m.cores.secundaria = v; aplicarMudancaMovel(m, fim); }))),
+    zonas.length ? secao('Área de uso',
+      ...zonas.map((z, k) => el('div', { class: 'linha-uso ' + (colisoes.usoBloq.has(`${m.id}#${k}`) ? 'alerta' : 'ok') },
+        el('span', {}, z.nome), el('b', {}, `${fmt(z.x1 - z.x0)} × ${fmt(z.z1 - z.z0)} cm`))),
+      el('p', { class: 'nota' }, 'O espaço para usar o móvel (verde no piso). Fica vermelho se algo estiver em cima.')) : null,
     el('div', { class: 'linha-botoes fim' },
       botao('Duplicar', duplicarSelecionado, { title: 'Ctrl+D' }),
       botao('Remover', removerSelecionado, { class: 'perigo', title: 'Delete' })),
-    el('p', { class: 'nota' }, 'Arraste o móvel no piso (encaixe de 5 cm). Setas movem 5 cm, Shift+setas 25 cm.'),
+    el('p', { class: 'nota' }, 'Arraste o móvel no piso (encaixe de 5 cm). Clique numa cota para digitar a distância.'),
   );
 }
+function trocarVariante(m, def, v) {
+  alterar(() => {
+    m.variante = v.id;
+    const costas = paraPlanta(m, 0, -m.p / 2); // as costas ficam onde estavam (encostadas na parede)
+    // mantém a largura escolhida se o novo formato for de tamanho parecido
+    if (v.dim) Object.assign(m, { l: Math.abs(v.dim.l - m.l) <= m.l * 0.25 ? m.l : v.dim.l, p: v.dim.p, a: v.dim.a });
+    if (v.elev != null) m.y = v.elev;
+    m.aberto = def.aberto ?? 0;
+    const novas = paraPlanta(m, 0, -m.p / 2);
+    m.x += costas[0] - novas[0]; m.z += costas[1] - novas[1];
+    afastarDasParedes(m);
+  });
+}
+// Se o novo formato ficou maior e entrou na parede, empurra o móvel para fora.
+function afastarDasParedes(m) {
+  for (let k = 0; k < 4; k++) {
+    const pg = pegada(m);
+    const w = doc.planta.paredes.find((pw) => {
+      if (pw.demolida) return false;
+      const c = caixaParede(pw);
+      return Math.min(pg.x1, c.x1) - Math.max(pg.x0, c.x0) > 0.5 && Math.min(pg.z1, c.z1) - Math.max(pg.z0, c.z0) > 0.5;
+    });
+    if (!w) return;
+    const c = caixaParede(w);
+    const ox = Math.min(pg.x1, c.x1) - Math.max(pg.x0, c.x0), oz = Math.min(pg.z1, c.z1) - Math.max(pg.z0, c.z0);
+    if (ox < oz) m.x += m.x < (c.x0 + c.x1) / 2 ? -ox : ox;
+    else m.z += m.z < (c.z0 + c.z1) / 2 ? -oz : oz;
+  }
+}
+
+function painelZona(p, cab) {
+  const z = zona(sel.id);
+  if (!z) return;
+  const f = FUNCOES[z.funcao] || FUNCOES.outro, r = retZona(z);
+  const ms = moveisNaZona(z);
+  const area = (z.l * z.p) / 1e4;
+  const ocup = cen().moveis.filter((m) => defCatalogo(m.tipo)?.colide !== false && (m.y || 0) < 100).reduce((soma, m) => {
+    const pg = pegada(m);
+    const dx = Math.min(pg.x1, r.x1) - Math.max(pg.x0, r.x0), dz = Math.min(pg.z1, r.z1) - Math.max(pg.z0, r.z0);
+    return soma + (dx > 0 && dz > 0 ? dx * dz : 0);
+  }, 0) / 1e4;
+  const mudar = (fn) => alterar(() => fn(zona(z.id)));
+  anexar(p,
+    cab(z.nome || f.nome, 'Canto'),
+    el('div', { class: 'area-grande', style: `color:${f.cor}` }, m2(area),
+      el('small', {}, `${fmt((ocup / area) * 100)}% ocupado por móveis · ${m2(Math.max(0, area - ocup))} livres`)),
+    secao('Função',
+      el('div', { class: 'opcoes' }, ...Object.entries(FUNCOES).map(([k, fn]) =>
+        botao(fn.nome, () => mudar((zz) => { zz.funcao = k; }), { class: z.funcao === k ? 'ativo' : '', style: `--cor:${fn.cor}` }))),
+      campoTexto('Nome (opcional)', z.nome || '', (v) => mudar((zz) => { zz.nome = v; }))),
+    secao('Medidas',
+      el('div', { class: 'grade2' },
+        campoNum('Largura', z.l, (v) => mudar((zz) => { zz.x += (v - zz.l) / 2; zz.l = v; }), { min: 20 }),
+        campoNum('Profund.', z.p, (v) => mudar((zz) => { zz.z += (v - zz.p) / 2; zz.p = v; }), { min: 20 }),
+        campoNum('X (canto)', r.x0, (v) => mudar((zz) => { zz.x = v + zz.l / 2; }), { min: -500, max: 3000 }),
+        campoNum('Z (canto)', r.z0, (v) => mudar((zz) => { zz.z = v + zz.p / 2; }), { min: -500, max: 3000 }))),
+    secao(`Móveis neste canto (${ms.length})`,
+      ms.length ? el('div', { class: 'lista-moveis' }, ...ms.map((m) => el('button', { type: 'button', onclick: () => selecionar({ tipo: 'movel', id: m.id }) },
+        el('span', {}, m.nome), el('em', {}, `${fmt(m.l)} × ${fmt(m.p)} × ${fmt(m.a)}`))))
+        : el('p', { class: 'nota' }, 'Nenhum móvel com o centro dentro deste canto.')),
+    el('div', { class: 'linha-botoes fim' },
+      botao('Remover canto', () => { alterar(() => { cen().zonas = cen().zonas.filter((x) => x.id !== z.id); }); selecionar(null); }, { class: 'perigo' })),
+    el('p', { class: 'nota' }, 'Com o canto selecionado, arraste-o no piso para mudar de lugar.'),
+  );
+}
+
+function renderCantos() {
+  const box = $('#cantos');
+  if (!box) return;
+  box.textContent = '';
+  for (const z of cen().zonas || []) {
+    const f = FUNCOES[z.funcao] || FUNCOES.outro;
+    box.append(el('button', { type: 'button', class: 'item-canto' + (sel?.tipo === 'zona' && sel.id === z.id ? ' ativo' : ''),
+      onclick: () => { if (!camadas.cantos) { camadas.cantos = true; guardarCamadas(); renderMostrar(); } selecionar({ tipo: 'zona', id: z.id }); } },
+    el('i', { style: `background:${f.cor}` }), el('span', {}, z.nome || f.nome), el('em', {}, m2((z.l * z.p) / 1e4))));
+  }
+  box.append(botao('+ Marcar canto', novaZona, { class: 'link' }));
+}
+
+function renderMostrar() {
+  const box = $('#mostrar');
+  box.textContent = '';
+  const opcoes = [['uso', 'Áreas de uso e giro das portas'], ['cantos', 'Cantos (funções)'], ['cotas', 'Cotas do móvel selecionado']];
+  for (const [k, nome] of opcoes) {
+    box.append(el('label', { class: 'interruptor' },
+      el('input', { type: 'checkbox', checked: !!camadas[k], onchange: (e) => {
+        camadas[k] = e.target.checked; guardarCamadas();
+        if (k === 'cantos' && !camadas.cantos && sel?.tipo === 'zona') sel = null;
+        construirZonas(); desenharSelecao(); renderPainel();
+      } }), el('span', {}, nome)));
+  }
+}
+
 function aplicarMudancaMovel(m, fim) {
   if (fim) { atualizarTudo(); return; }
   const velho = objMovel.get(m.id);
@@ -1469,7 +2183,8 @@ function renderAvisos() {
   box.textContent = '';
   if (!colisoes.lista.length) { box.hidden = true; return; }
   box.hidden = false;
-  box.append(el('b', {}, `⚠ ${colisoes.lista.length} ${colisoes.lista.length === 1 ? 'conflito' : 'conflitos'}`));
+  const n = colisoes.lista.length, uso = colisoes.lista.filter((c) => c.tipo).length;
+  box.append(el('b', {}, `⚠ ${n} ${n === 1 ? 'conflito' : 'conflitos'}${uso ? ` (${uso} de uso)` : ''}`));
   for (const c of colisoes.lista.slice(0, 6)) {
     box.append(el('button', { type: 'button', onclick: () => selecionar({ tipo: 'movel', id: c.ids[0] }) }, c.txt));
   }
@@ -1489,6 +2204,10 @@ function atualizarBotoes() {
   $('#bRefazer').disabled = !hist.avancar.length;
   $('#bVista').innerHTML = `<span class="texto">Vista </span>${vista.topo ? '3D' : 'de cima'}`;
   $('#bCorte').classList.toggle('ligado', vista.corte);
+  $('#bCaminhar').classList.toggle('ligado', vista.caminhar);
+  $('#bCaminhar').querySelector('.texto').textContent = vista.caminhar ? 'Sair' : 'Caminhar';
+  $('#bVista').disabled = vista.caminhar;
+  $('#bCorte').disabled = vista.caminhar;
 }
 
 function atualizarTudo() {
@@ -1497,9 +2216,12 @@ function atualizarTudo() {
   construirPlanta();
   construirMoveis();
   verificarColisoes();
+  construirZonas();
   desenharSelecao();
   renderAbas();
   renderAreas();
+  renderCantos();
+  renderMostrar();
   renderLuz();
   renderDemolicao();
   renderCatalogo();
@@ -1509,9 +2231,11 @@ function atualizarTudo() {
 }
 
 function alternarVista() {
+  if (vista.caminhar) return;
   vista.topo = !vista.topo;
   ctlPersp.enabled = !vista.topo;
   ctlTopo.enabled = vista.topo;
+  aplicarVisibilidadeTopo();
   atualizarBotoes();
 }
 
@@ -1519,7 +2243,8 @@ $('#bDesfazer').onclick = desfazer;
 $('#bRefazer').onclick = refazer;
 $('#bVista').onclick = alternarVista;
 $('#bCorte').onclick = () => { vista.corte = !vista.corte; construirPlanta(); atualizarBotoes(); };
-$('#bEnquadrar').onclick = enquadrar;
+$('#bEnquadrar').onclick = () => { if (vista.caminhar) alternarCaminhada(); enquadrar(); };
+$('#bCaminhar').onclick = alternarCaminhada;
 $('#bPNG').onclick = exportarPNG;
 $('#bLateral').onclick = () => document.body.classList.toggle('lateral-aberta');
 $('#buscaCatalogo').addEventListener('input', (e) => { filtroCatalogo = e.target.value; renderCatalogo(); });
@@ -1745,12 +2470,16 @@ enquadrar();
 })();
 
 renderer.setAnimationLoop(() => {
-  ctlAtivo().update();
+  if (!vista.caminhar) ctlAtivo().update();
   renderer.render(cena, camAtiva());
   posicionarRotulos();
   posicionarBussola();
+  posicionar(cotasTela);
+  posicionar(rotulosZonas);
 });
 
 // acesso pelo console, útil para testes e ajustes finos
-window.simulador = { get doc() { return doc; }, atualizarTudo, selecionar, esticar, areaUtil, areaConstruida, alternarVista, enquadrar, exportarPNG, CFG, camera: camAtiva, alvo: (x, y) => alvoEm({ clientX: x, clientY: y }), get sel() { return sel; } };
+window.simulador = { get doc() { return doc; }, atualizarTudo, selecionar, esticar, areaUtil, areaConstruida, alternarVista, enquadrar, exportarPNG, CFG, camera: camAtiva,
+  _grp: grpMoveis, olhar(px, py, pz, tx, ty, tz) { camPersp.position.set(px, py, pz); ctlPersp.target.set(tx, ty, tz); ctlPersp.update(); },
+  alternarAbertura: (id) => alternarAbertura(movel(id)), alternarCaminhada, camadas, alvo: (x, y) => alvoEm({ clientX: x, clientY: y }), get sel() { return sel; } };
 })();

@@ -23,7 +23,7 @@
 // =====================================================================
 
 const PLANTA_ORIGINAL = {
-  revisao: 2,
+  revisao: 3,
   alturaParede: 260,
 
   // Local e orientação — usados para calcular o sol por data e hora.
@@ -76,13 +76,14 @@ const PLANTA_ORIGINAL = {
 };
 
 // ---------------------------------------------------------------------
-// MÓVEIS — x,z = centro do móvel; rot = 0/90/180/270
+// MÓVEIS — x,z = centro do móvel; rot = 0/90/180/270; y = altura do chão
 // rot 0: frente para baixo (+z) · 90: para a esquerda · 180: para cima · 270: para a direita
 // l = largura, p = profundidade, a = altura (cm) · espelhado = lado invertido (chaise, cuba)
+// variante = formato (ver o catálogo) · aberto = 0 fechado … 1 aberto
 // ---------------------------------------------------------------------
 const MOVEIS_COMUNS = [
   // Quarto: cama com a cabeceira na parede da sala, guarda-roupa de correr na parede do banheiro
-  { tipo: 'cama_box',     nome: 'Cama box viúva', x: 121,   z: 554,   rot: 0,  l: 128, p: 188, a: 60 },
+  { tipo: 'cama_box',     nome: 'Cama box viúva', variante: 'cabeceira', x: 121, z: 554, rot: 0, l: 128, p: 188, a: 60 },
   { tipo: 'criado_mudo',  nome: 'Criado-mudo',    x: 28,    z: 480,   rot: 0,  l: 45,  p: 40,  a: 55 },
   { tipo: 'guarda_roupa', nome: 'Guarda-roupa de correr', x: 272.5, z: 620, rot: 90, l: 160, p: 55, a: 220 },
   // Cozinha: bancada com o cooktop no alto, cuba abaixo; geladeira com folga de 10 cm
@@ -94,36 +95,76 @@ const MOVEIS_COMUNS = [
   { tipo: 'box_banho',    nome: 'Box (vidro de correr)', x: 365, z: 658, rot: 180, l: 110, p: 84, a: 200 },
 ];
 
+// Decoração comum: persianas nas três janelas, quarto, cozinha e banheiro
+const DECOR_COMUNS = [
+  { tipo: 'persiana', nome: 'Persiana (janela 115)', x: 4, z: 118.5, rot: 270, y: 95, l: 125, p: 8, a: 130 },
+  { tipo: 'persiana', nome: 'Persiana (janela 155)', x: 4, z: 328,   rot: 270, y: 95, l: 165, p: 8, a: 130 },
+  { tipo: 'persiana', nome: 'Persiana (janela 136)', x: 4, z: 588.5, rot: 270, y: 95, l: 146, p: 8, a: 130 },
+  { tipo: 'tapete',   nome: 'Tapete do quarto', variante: 'borda', x: 121, z: 610, rot: 0, l: 170, p: 130, a: 1 },
+  { tipo: 'quadro',   nome: 'Quadros sobre a cama', variante: 'trio', x: 121, z: 461.5, rot: 0, y: 112, l: 120, p: 3, a: 45 },
+  { tipo: 'luminaria', nome: 'Abajur', variante: 'abajur', x: 28, z: 480, rot: 0, y: 55, l: 30, p: 30, a: 45 },
+  { tipo: 'armario_aereo', nome: 'Armário aéreo', x: 402.5, z: 159, rot: 90, y: 150, l: 224, p: 35, a: 70 },
+  { tipo: 'espelho',  nome: 'Espelho do banheiro', variante: 'redondo', x: 418.5, z: 511, rot: 90, y: 100, l: 55, p: 3, a: 75 },
+  { tipo: 'planta',   nome: 'Costela-de-adão', variante: 'costela', x: 300, z: 25, rot: 0, l: 45, p: 45, a: 120 },
+];
+
+const CANTOS_COMUNS = [
+  { funcao: 'cozinha', x: 355, z: 175, l: 130, p: 350 },
+  { funcao: 'dormir',  x: 150, z: 580, l: 300, p: 240 },
+  { funcao: 'banho',   x: 365, z: 580, l: 110, p: 240 },
+  { funcao: 'circulacao', nome: 'Entrada', x: 290, z: 405, l: 100, p: 90 },
+];
+
 const CENARIOS_ORIGINAIS = [
   {
     id: 'office-janela',
     nome: 'Office na janela',
     moveis: [
-      ...MOVEIS_COMUNS,
-      { tipo: 'mesa_computador',    nome: 'Mesa de computador', x: 70,    z: 35,    rot: 0,   l: 140, p: 70, a: 75 },
+      ...MOVEIS_COMUNS, ...DECOR_COMUNS,
+      { tipo: 'mesa_computador',    nome: 'Mesa de computador', variante: 'escrivaninha', x: 70, z: 35, rot: 0, l: 140, p: 70, a: 75 },
       { tipo: 'cadeira_escritorio', nome: 'Cadeira',            x: 70,    z: 60,    rot: 180, l: 60,  p: 60, a: 100 },
+      { tipo: 'prateleira',         nome: 'Prateleira',         x: 70,    z: 11,    rot: 0,   y: 150, l: 100, p: 22, a: 26 },
       { tipo: 'mesa_jantar',        nome: 'Mesa de jantar',     x: 211,   z: 120,   rot: 0,   l: 110, p: 75, a: 76 },
       { tipo: 'cadeira',            nome: 'Cadeira de jantar',  x: 185,   z: 83,    rot: 0,   l: 45,  p: 50, a: 90 },
       { tipo: 'cadeira',            nome: 'Cadeira de jantar',  x: 237,   z: 83,    rot: 0,   l: 45,  p: 50, a: 90 },
+      { tipo: 'luminaria',          nome: 'Pendente da mesa', variante: 'pendente', x: 211, z: 120, rot: 0, y: 170, l: 40, p: 40, a: 90 },
       { tipo: 'estante_tv',         nome: 'Estante divisória com TV', x: 80.5, z: 227.5, rot: 0, l: 160, p: 45, a: 180 },
       { tipo: 'painel_fixo',        nome: 'Painel fixo',        x: 186,   z: 228,   rot: 0,   l: 50,  p: 5,  a: 210 },
       { tipo: 'porta_correr',       nome: 'Porta de correr 2 folhas', x: 218, z: 334, rot: 90, l: 200, p: 8, a: 210 },
-      { tipo: 'sofa_chaise',        nome: 'Sofá 3 lugares com chaise', x: 102.5, z: 370, rot: 180, espelhado: true, l: 205, p: 160, a: 85 },
+      { tipo: 'sofa_chaise',        nome: 'Sofá 3 lugares com chaise', variante: 'chaise', x: 102.5, z: 370, rot: 180, espelhado: true, l: 205, p: 160, a: 85 },
+      { tipo: 'tapete',             nome: 'Tapete da sala', variante: 'listrado', x: 110, z: 302, rot: 0, l: 180, p: 100, a: 1 },
+      { tipo: 'quadro',             nome: 'Quadro sobre o sofá', variante: 'tela', x: 102.5, z: 448.5, rot: 180, y: 115, l: 100, p: 3, a: 60 },
+    ],
+    zonas: [
+      { funcao: 'office', x: 75,  z: 67.5,  l: 150, p: 135 },
+      { funcao: 'jantar', x: 220, z: 112.5, l: 140, p: 165 },
+      { funcao: 'estar',  x: 107.5, z: 325, l: 215, p: 250 },
+      ...CANTOS_COMUNS,
     ],
   },
   {
     id: 'sofa-em-cima',
     nome: 'Sofá em cima',
     moveis: [
-      ...MOVEIS_COMUNS,
-      { tipo: 'sofa_chaise',        nome: 'Sofá 2 lugares com chaise', x: 100, z: 75, rot: 0, l: 200, p: 150, a: 85 },
+      ...MOVEIS_COMUNS, ...DECOR_COMUNS,
+      { tipo: 'sofa_chaise',        nome: 'Sofá 2 lugares com chaise', variante: 'chaise', x: 100, z: 75, rot: 0, l: 200, p: 150, a: 85 },
+      { tipo: 'tapete',             nome: 'Tapete da sala', variante: 'borda', x: 105, z: 120, rot: 0, l: 180, p: 110, a: 1 },
+      { tipo: 'quadro',             nome: 'Quadros sobre o sofá', variante: 'trio', x: 100, z: 1.5, rot: 0, y: 120, l: 120, p: 3, a: 45 },
       { tipo: 'porta_correr',       nome: 'Porta de correr 2 folhas', x: 222, z: 100, rot: 90, l: 200, p: 8, a: 210 },
       { tipo: 'estante_tv',         nome: 'Estante divisória com TV', x: 100, z: 201.5, rot: 180, l: 200, p: 45, a: 180 },
       { tipo: 'mesa_jantar',        nome: 'Mesa de jantar',     x: 56,    z: 343.5, rot: 0,   l: 80,  p: 70, a: 76 },
       { tipo: 'cadeira',            nome: 'Cadeira de jantar',  x: 56,    z: 309,   rot: 0,   l: 45,  p: 50, a: 90 },
       { tipo: 'cadeira',            nome: 'Cadeira de jantar',  x: 56,    z: 379,   rot: 180, l: 45,  p: 50, a: 90 },
-      { tipo: 'mesa_computador',    nome: 'Mesa',               x: 172,   z: 422.5, rot: 180, l: 100, p: 55, a: 75 },
+      { tipo: 'luminaria',          nome: 'Pendente da mesa', variante: 'pendente', x: 56, z: 343.5, rot: 0, y: 170, l: 40, p: 40, a: 90 },
+      { tipo: 'mesa_computador',    nome: 'Mesa', variante: 'escrivaninha', x: 172, z: 422.5, rot: 180, l: 100, p: 55, a: 75 },
       { tipo: 'cadeira_escritorio', nome: 'Cadeira',            x: 172,   z: 390,   rot: 0,   l: 60,  p: 60, a: 100 },
+      { tipo: 'prateleira',         nome: 'Prateleira',         x: 172,   z: 439,   rot: 180, y: 150, l: 90, p: 22, a: 26 },
+    ],
+    zonas: [
+      { funcao: 'estar',  x: 109, z: 112.5, l: 218, p: 225 },
+      { funcao: 'jantar', x: 55,  z: 340,   l: 110, p: 160 },
+      { funcao: 'office', x: 175, z: 395,   l: 120, p: 110 },
+      ...CANTOS_COMUNS,
     ],
   },
 ];

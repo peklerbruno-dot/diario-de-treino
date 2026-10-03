@@ -23,12 +23,36 @@ está embutido no próprio arquivo.
 | Demolir | marque "Pode ser derrubada" na parede; depois é um clique na seção Demolição |
 | Cenários | abas no topo; `+` duplica o cenário atual; clique duplo renomeia |
 | Salvar | automático no navegador; **Arquivo** exporta/importa `.json` |
+| Formato e material | painel do móvel: **Formato** (ex.: sofá com chaise, reto ou retrátil) e **Material** (linho, veludo, bouclê, couro…) |
+| Abrir e usar | botão azul **Abrir portas / Estender / Abrir baú…** no painel do móvel |
+| Distâncias | cotas pretas no piso ao redor do móvel selecionado; clique e digite a distância |
+| Cantos | lateral **Cantos**: home office, jantar, TV, dormir… com área e lista de móveis |
+| Caminhar | botão **🚶 Caminhar** (ou `C`): arraste para olhar, toque no piso para andar, W/A/S/D |
 | Luz do sol | seção **Luz do sol**: data, hora (4h–20h) e ▶ **Passar o dia**; a bússola no canto mostra o norte |
 | Imagem | botão **PNG** (com as áreas, a data e a hora do sol) |
 | Modelo 3D pronto | **Arquivo → Importar modelo .glb**, informando a escala em cm |
 
 Aviso de colisão: o móvel fica marcado em vermelho e o conflito aparece no canto da tela.
 Cadeiras podem entrar embaixo de mesas sem aviso; tapetes e box não geram aviso.
+
+## Apartamento decorado
+
+Cada móvel do catálogo é desenhado em detalhe (pés, almofadas, puxadores, livros, louça) com
+materiais que reagem à luz: madeira com veio, linho, veludo com brilho, bouclê, couro, mármore,
+granito, azulejo, vidro, metal. Ele continua editável: medidas, cores, **formato** e **material**.
+
+- **Móveis que funcionam:** guarda-roupa (correr ou abrir), gavetas, cama baú, sofá retrátil,
+  mesa extensível, armários da cozinha, geladeira, box, persianas e cortinas abrem e fecham.
+  Abertos, contam nas colisões: dá para ver se a porta do armário bate na cama.
+- **Áreas de uso:** cada móvel sabe o espaço de que precisa (afastar a cadeira, sentar no sofá,
+  abrir o armário, os lados da cama). Em verde no piso; em vermelho se algo estiver no caminho.
+  O giro das portas do apartamento também é conferido.
+- **Distâncias:** com um móvel selecionado aparecem as cotas até a parede ou o móvel mais
+  próximo em cada direção. Clique numa cota (ou use o painel) e digite a distância desejada.
+- **Cantos:** marque as funções do apartamento (home office, TV, jantar, dormir…). Cada canto
+  mostra a área, quanto está ocupado e a lista de móveis com medidas.
+- **Caminhar:** visita na altura dos olhos, com teto; à noite as luminárias acendem.
+- Na vista de cima, o que fica no alto (pendentes, prateleiras, armário aéreo) é ocultado.
 
 ## Áreas
 
@@ -63,7 +87,7 @@ porque mudam de lugar entre os cenários. Quando a planta original muda, `revisa
 apartamento/
   simulador.html      ← o arquivo final (gerado; é este que se abre)
   src/planta.js       ← DADOS: paredes, portas, janelas, ambientes e os dois cenários
-  src/catalogo.js     ← DADOS: catálogo de móveis feitos de formas parametrizadas
+  src/catalogo.js     ← DADOS: catálogo de móveis (formas, formatos, movimentos, áreas de uso)
   src/app.js          ← aplicação, em seções numeradas (1. Configuração … 12. Início)
   src/pagina.html     ← estilo e interface
   vendor/             ← three.js r170 empacotado (e o arquivo de entrada usado para gerá-lo)
