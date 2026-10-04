@@ -7,7 +7,14 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "Viagem", statusBarStyle: "default" },
-  icons: { icon: "/icone-192.png", apple: "/apple-touch-icon.png" },
+  icons: { icon: "/icone-192.png", apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }] },
+  other: {
+    // Sem esta etiqueta o ícone da tela de início abre com as barras do
+    // Safari em cima e embaixo. O `appleWebApp.capable` acima deveria bastar,
+    // mas do Next 15 em diante ele emite só `mobile-web-app-capable`, que o
+    // iOS não conhece — o mesmo tropeço que o Termômetro já tinha resolvido.
+    "apple-mobile-web-app-capable": "yes",
+  },
 };
 
 export const viewport: Viewport = {
