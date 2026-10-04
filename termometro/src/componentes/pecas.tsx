@@ -405,7 +405,7 @@ export function Aviso({
   return (
     <div
       className={`rounded-folha p-3.5 text-[14.5px] leading-relaxed shadow-baixa ${
-        tom === "atencao" ? "bg-cartao text-tinta ring-1 ring-atencao/40" : "bg-cartao text-grafite"
+        tom === "atencao" ? "bg-cartao text-tinta ring-1 ring-atencao" : "bg-cartao text-grafite"
       }`}
     >
       {children}

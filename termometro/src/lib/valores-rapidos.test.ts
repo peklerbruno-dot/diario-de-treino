@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { Lancamento } from "./tipos";
-import { categoriasPorUso, valoresRapidos } from "./valores-rapidos";
+import {
+  BOTOES_NA_GRADE,
+  categoriasPorUso,
+  escreverPreferencias,
+  lerPreferencias,
+  valoresRapidos,
+} from "./valores-rapidos";
 
 let n = 0;
 const gasto = (reais: number, extras: Partial<Lancamento> = {}): Lancamento => ({
@@ -11,43 +17,73 @@ const gasto = (reais: number, extras: Partial<Lancamento> = {}): Lancamento => (
   ...extras,
 });
 const HOJE = "2026-09-30";
-const emReais = (cents: number[]) => cents.map((c) => c / 100);
 
 describe("os botões de valor", () => {
-  it("sem história, a escada de 5 em 5 até 50 e de 10 em 10 até 100", () => {
+  const valores = (v: ReturnType<typeof valoresRapidos>) => v.botoes.map((b) => b.valorCents / 100);
+  const seus = (v: ReturnType<typeof valoresRapidos>) =>
+    v.botoes.filter((b) => b.seu).map((b) => b.valorCents / 100);
+  const vezes = (reais: number, n: number, extras: Partial<Lancamento> = {}) =>
+    Array.from({ length: n }, () => gasto(reais, extras));
+
+  it("sem história, redondos de R$ 5 a R$ 100, sem descer ao de real em real", () => {
     const v = valoresRapidos([], HOJE);
-    expect(emReais(v.escada)).toEqual([5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100]);
-    expect(v.deSempre).toEqual([]);
+    expect(valores(v)).toEqual([5, 6, 8, 10, 12, 15, 18, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 100]);
+    expect(seus(v)).toEqual([]);
     expect(v.medianaCents).toBeNull();
   });
 
-  it("com gastos pequenos, a escada não encolhe abaixo de R$ 100", () => {
-    const v = valoresRapidos(
-      Array.from({ length: 20 }, () => gasto(8)),
-      HOJE,
-    );
-    expect(emReais(v.escada).at(-1)).toBe(100);
+  it("em ordem crescente, nunca mais que a grade comporta", () => {
+    const historia = Array.from({ length: 40 }, (_, i) => vezes(10 + i * 3, 2)).flat();
+    const v = valoresRapidos(historia, HOJE);
+    const lista = valores(v);
+    expect(lista).toEqual([...lista].sort((a, b) => a - b));
+    expect(lista.length).toBe(BOTOES_NA_GRADE);
   });
 
-  it("com gastos maiores, a escada sobe até cobrir 95% deles", () => {
-    const historia = [
-      ...Array.from({ length: 30 }, () => gasto(40)),
-      ...Array.from({ length: 10 }, () => gasto(170)),
-    ];
+  it("os valores que você usa entram — redondos ou quebrados — e os outros se afastam deles", () => {
+    const historia = [...vezes(38, 5), ...vezes(12, 3), ...vezes(20, 6), ...vezes(27, 2)];
     const v = valoresRapidos(historia, HOJE);
-    // 95% dos gastos ficam até R$ 170 → a escada vai até o degrau de R$ 180.
-    expect(emReais(v.escada).at(-1)).toBe(180);
+    expect(seus(v)).toEqual([12, 20, 27, 38]);
+    // 38 já está lá; o redondo de 40, a 5% dele, seria o mesmo botão.
+    expect(valores(v)).not.toContain(40);
+    expect(valores(v)).toContain(100);
   });
 
-  it("os quebrados que se repetem viram 'de sempre'; os redondos já estão na escada", () => {
-    const historia = [
-      ...Array.from({ length: 5 }, () => gasto(38)),
-      ...Array.from({ length: 3 }, () => gasto(12)),
-      ...Array.from({ length: 2 }, () => gasto(27)), // duas vezes é coincidência
-      ...Array.from({ length: 6 }, () => gasto(20)), // redondo: já está na escada
-    ];
-    const v = valoresRapidos(historia, HOJE);
-    expect(emReais(v.deSempre)).toEqual([12, 38]);
+  it("uma vez só é acaso, não hábito", () => {
+    expect(seus(valoresRapidos([gasto(38), gasto(15), gasto(15)], HOJE))).toEqual([15]);
+  });
+
+  it("quando há mais valores do que cabem, o uso recente vence o antigo", () => {
+    const antigos = Array.from({ length: 25 }, (_, i) =>
+      vezes(100 + i, 3, { data: "2025-11-01" }),
+    ).flat();
+    const novo = vezes(14, 2, { data: "2026-09-28" });
+    expect(seus(valoresRapidos([...antigos, ...novo], HOJE))).toContain(14);
+  });
+
+  it("a grade vai até cobrir 95% dos gastos, nunca menos que R$ 100", () => {
+    expect(valores(valoresRapidos(vezes(8, 20), HOJE)).at(-1)).toBe(100);
+    const v = valoresRapidos([...vezes(40, 30), ...vezes(170, 10)], HOJE);
+    expect(valores(v).at(-1)).toBe(200);
+  });
+
+  it("escondido nunca aparece; fixado aparece sempre", () => {
+    const historia = [...vezes(38, 5), ...vezes(12, 3)];
+    const v = valoresRapidos(historia, HOJE, { fixados: [7, 333], escondidos: [38, 5, 10] });
+    expect(valores(v)).not.toContain(38);
+    expect(valores(v)).not.toContain(5);
+    expect(valores(v)).not.toContain(10);
+    expect(seus(v)).toEqual([7, 12, 333]);
+  });
+
+  it("preferências estragadas viram nenhuma preferência", () => {
+    expect(lerPreferencias("{lixo")).toEqual({ fixados: [], escondidos: [] });
+    expect(lerPreferencias('{"fixados":[7,7,-1,2.5,"9"],"escondidos":null}')).toEqual({
+      fixados: [7],
+      escondidos: [],
+    });
+    const ida = { fixados: [40, 7], escondidos: [5] };
+    expect(lerPreferencias(escreverPreferencias(ida))).toEqual({ fixados: [7, 40], escondidos: [5] });
   });
 
   it("só o gasto do dia a dia de verdade entra na conta", () => {
@@ -58,10 +94,11 @@ describe("os botões de valor", () => {
       gasto(38, { data: "2025-01-01" }), // mais de um ano atrás
       gasto(38, { data: "2026-10-05" }), // futuro
     ];
-    const dentro = Array.from({ length: 10 }, () => gasto(15));
+    const dentro = vezes(15, 10);
     const v = valoresRapidos([...fora, ...dentro], HOJE);
     expect(v.baseadoEm).toBe(10);
     expect(v.medianaCents).toBe(1500);
+    expect(seus(v)).toEqual([15]);
   });
 });
 

@@ -2,6 +2,12 @@
 
 import { CHAVE_DOS_ATALHOS, escreverAtalhos, lerAtalhos, type AtalhoFixo } from "./atalhos";
 import {
+  CHAVE_DOS_VALORES,
+  escreverPreferencias,
+  lerPreferencias,
+  type PreferenciasDeValores,
+} from "./valores-rapidos";
+import {
   CHAVE_DAS_CATEGORIAS,
   escreverCategorias,
   lerCategorias,
@@ -780,6 +786,14 @@ export function guardarCategorias(lista: Categoria[]) {
 /** Os atalhos de lançamento rápido, do mesmo ajuste que sincroniza. */
 export function atalhosDe(estado: Estado): AtalhoFixo[] {
   return lerAtalhos(estado.ajustes[CHAVE_DOS_ATALHOS]?.valor);
+}
+
+export function preferenciasDosValores(estado: Estado): PreferenciasDeValores {
+  return lerPreferencias(estado.ajustes[CHAVE_DOS_VALORES]?.valor);
+}
+
+export function guardarPreferenciasDosValores(p: PreferenciasDeValores) {
+  loja.definirAjuste(CHAVE_DOS_VALORES, escreverPreferencias(p));
 }
 
 export function guardarAtalhos(lista: AtalhoFixo[]) {

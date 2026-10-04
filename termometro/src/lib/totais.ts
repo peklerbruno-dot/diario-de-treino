@@ -1,4 +1,4 @@
-import { nomeDaCategoria, SEM_CATEGORIA, type Categoria } from "./categorias";
+import { nomeDaCategoria, type Categoria } from "./categorias";
 import type { Lancamento, Tipo } from "./tipos";
 
 /**
@@ -20,6 +20,7 @@ export interface TotalDaCategoria {
 
 export interface TotaisPorCategoria {
   tipo: Tipo;
+  /** Tudo o que entrou no tipo, com categoria ou sem. */
   totalCents: number;
   categorias: TotalDaCategoria[];
 }
@@ -28,6 +29,10 @@ const SEM = "__sem__";
 
 /**
  * Agrupa por categoria, de maior para menor.
+ *
+ * O que não tem categoria conta no total, mas não vira linha: a lista é "para
+ * onde foi", e "não sei" não é um lugar. As fatias são sobre o que tem
+ * categoria, para as barras compararem só o que dá para comparar.
  *
  * Previsto entra junto de propósito. Metade do mês que vem é previsão, e uma
  * tela que só contasse o confirmado responderia sobre um mês pela metade — no
@@ -51,13 +56,16 @@ export function totaisPorCategoria(
     total += l.valorCents;
   }
 
-  const lista: TotalDaCategoria[] = [...soma.entries()].map(([id, { centavos, quantos }]) => ({
-    id,
-    nome: id === SEM ? SEM_CATEGORIA : nomeDaCategoria(categorias as Categoria[], id),
-    centavos,
-    quantos,
-    parte: total > 0 ? centavos / total : 0,
-  }));
+  const comCategoria = total - (soma.get(SEM)?.centavos ?? 0);
+  const lista: TotalDaCategoria[] = [...soma.entries()]
+    .filter(([id]) => id !== SEM)
+    .map(([id, { centavos, quantos }]) => ({
+      id,
+      nome: nomeDaCategoria(categorias as Categoria[], id),
+      centavos,
+      quantos,
+      parte: comCategoria > 0 ? centavos / comCategoria : 0,
+    }));
 
   // Do maior para o menor: é onde está o dinheiro que a pessoa veio ver. Empate
   // desempata pelo nome, para a lista não dançar a cada recálculo.

@@ -252,15 +252,25 @@ que a observação sugere ganha um contorno. Depois de lançar, o **Desfazer**
 fica seis segundos na tela.
 
 Os valores saem dos seus gastos, calculados no próprio aparelho
-(`src/lib/valores-rapidos.ts`):
+(`src/lib/valores-rapidos.ts`), numa grade só, em ordem crescente, de até 28
+botões:
 
-- **Redondos**, uma escada fixa — de 5 em 5 até 50, de 10 em 10 até 100, depois
-  degraus maiores. Fina embaixo porque é embaixo que mora quase todo gasto do
-  dia a dia; fixa porque botão que muda de lugar não vira memória do dedo. Vai
-  até o valor que cobre 95% dos seus gastos do último ano, nunca menos que
-  R$ 100.
-- **Os seus de sempre**: os valores quebrados que você repete (três vezes ou
-  mais) e a escada não tem — o R$ 38 do almoço, o R$ 12 do café.
+- **Os seus**, em destaque: os valores que você usa — redondos ou quebrados, o
+  R$ 38 do almoço, o R$ 12 do café — com pelo menos duas vezes no último ano.
+  O uso recente pesa mais (o peso cai pela metade a cada quatro meses), então o
+  valor que você parou de usar sai sozinho e o hábito novo entra logo.
+- **Redondos que tapam buraco**: depois dos seus, a grade completa o caminho de
+  R$ 5 até onde vão 95% dos seus gastos (nunca menos que R$ 100), sempre com o
+  redondo mais longe de tudo o que já está lá. Longe em proporção: mais fina
+  embaixo, mais espaçada em cima, sem descer ao de real em real.
+- **Outro**, o último botão, abre o teclado para qualquer valor.
+
+Em Ajustes → Botões do Gastei, tocar num botão o esconde (outro entra no
+lugar), e dá para fixar um valor que faz falta. A escolha é de cada pessoa e
+viaja com a conta.
+
+Em **Totais**, o que não tem categoria conta no total mas não vira linha da
+lista: ela é "para onde foi", e "não sei" não é um lugar.
 
 Os atalhos com nome (Ajustes → Atalhos com nome) continuam existindo para o
 gasto que tem nome e categoria fixos, e aparecem acima da grade assim que você
