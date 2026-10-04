@@ -21,7 +21,7 @@
 // ficou guardado de antes. Foi preciso quando uma etiqueta do `<head>` mudou e
 // a página velha continuou sendo servida do cache — a correção existia no
 // servidor e não chegava no aparelho.
-const CACHE = "termometro-v4";
+const CACHE = "termometro-v5";
 
 // Só resposta BOA entra no cache. Sem este filtro, um 500 do servidor ou o
 // redirecionamento para /entrar (sessão vencida) eram guardados POR CIMA da
