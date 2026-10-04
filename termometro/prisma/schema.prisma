@@ -34,6 +34,10 @@ enum Tipo {
 /// fazia escrevendo "=195+15+83" dentro da célula.
 model Lancamento {
   id         String  @id
+  /// De quem é esta linha. Toda leitura e toda escrita filtram por aqui: é a
+  /// parede entre o dinheiro de uma pessoa e o de outra.
+  usuarioId  String
+  usuario    Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   data       String // "2026-01-14". Texto, não DateTime: dia de caderno não tem fuso.
   tipo       Tipo
   valorCents Int
@@ -76,8 +80,8 @@ model Lancamento {
   /// adiantado esconder do outro tudo o que escreveu.
   servidorEm   DateTime  @default(now()) @updatedAt
 
-  @@index([servidorEm])
-  @@index([data])
+  @@index([usuarioId, servidorEm])
+  @@index([usuarioId, data])
   @@index([categoria])
 }
 
@@ -85,6 +89,8 @@ model Lancamento {
 /// chegaram: salário no dia 5, fatura no dia 10, gasto do dia todo santo dia.
 model Fixo {
   id         String  @id
+  usuarioId  String
+  usuario    Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   tipo       Tipo
   /// 1 a 31; 0 quer dizer "todo dia" (o gasto do dia a dia).
   ///
@@ -111,15 +117,48 @@ model Fixo {
   apagadoEm    DateTime?
   servidorEm   DateTime  @default(now()) @updatedAt
 
-  @@index([servidorEm])
+  @@index([usuarioId, servidorEm])
 }
 
-/// Ajustes soltos (saldo de abertura do ano, rateio do apartamento…).
+/// Ajustes soltos (saldo de abertura do ano, rateio do apartamento…), de cada
+/// pessoa: a mesma chave "categorias" existe uma vez por usuário.
 model Ajuste {
-  chave        String   @id
+  usuarioId    String
+  usuario      Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  chave        String
   valor        String
   atualizadoEm DateTime
   servidorEm   DateTime @default(now()) @updatedAt
 
-  @@index([servidorEm])
+  @@id([usuarioId, chave])
+  @@index([usuarioId, servidorEm])
+}
+
+/// Quem usa o app. O dono (id "dono") entra com o CODIGO_DE_ACESSO da Vercel,
+/// como sempre entrou; quem chega por convite entra com um código gerado, do
+/// qual o banco guarda só a impressão (HMAC com AUTH_SECRET) — nunca o código.
+model Usuario {
+  id          String   @id
+  nome        String
+  /// Impressão do código de acesso. Nula para o dono (o código dele é a
+  /// variável de ambiente) e para quem ainda não abriu o convite.
+  codigoHash  String?  @unique
+  criadoEm    DateTime @default(now())
+
+  lancamentos Lancamento[]
+  fixos       Fixo[]
+  ajustes     Ajuste[]
+  convites    Convite[]
+}
+
+/// Um convite de uso único. O link leva o `token`; quem o abre primeiro e
+/// toca em "Criar meu acesso" recebe o código — abrir o link só para ver
+/// (como faz a prévia do WhatsApp) não gasta nada.
+model Convite {
+  token     String    @id
+  usuarioId String
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  criadoEm  DateTime  @default(now())
+  expiraEm  DateTime
+  usadoEm   DateTime?
 }

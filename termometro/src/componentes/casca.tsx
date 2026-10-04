@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { hoje } from "@/lib/datas";
 import { loja, RECADO_DA_SITUACAO } from "@/lib/loja";
 import { FolhaDeLancamento } from "./folha-de-lancamento";
+import { Marca } from "./marca";
 import {
   IconeAgenda,
   IconeAjustes,
@@ -19,6 +20,7 @@ import {
 } from "./icones";
 import { Botao } from "./pecas";
 import { useEstado, useIniciarLoja } from "./usar-loja";
+import type { QuemUsa } from "@/lib/loja";
 
 /**
  * As alturas do rodapé, num lugar só.
@@ -87,8 +89,8 @@ const aqui = (href: string, caminho: string, naLateral: boolean) => {
   return caminho.startsWith(href);
 };
 
-export function Casca({ children }: { children: React.ReactNode }) {
-  useIniciarLoja();
+export function Casca({ children, usuario }: { children: React.ReactNode; usuario: QuemUsa }) {
+  useIniciarLoja(usuario);
   useRegistrarServiceWorker();
   const montado = useMontado();
   const caminho = usePathname();
@@ -146,7 +148,9 @@ function Lateral({ caminho }: { caminho: string }) {
   return (
     <>
       <aside className="sticky top-0 hidden h-[100svh] w-[236px] shrink-0 flex-col border-r border-linha bg-cartao px-3 py-6 lg:flex">
-        <p className="px-3 font-titulo text-[21px] font-semibold tracking-tight">Termômetro</p>
+        <p className="px-3">
+          <Marca />
+        </p>
 
         <Botao tipo="primario" onClick={() => setLancando(true)} className="mx-1 mt-5">
           Lançar

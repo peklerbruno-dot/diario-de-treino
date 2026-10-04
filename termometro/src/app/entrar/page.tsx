@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { codigoConfigurado, temSessao } from "@/lib/auth";
+import { Marca } from "@/componentes/marca";
 import { FormularioDeEntrada } from "./formulario";
 
 export const dynamic = "force-dynamic";
@@ -11,10 +12,12 @@ export default async function Entrar() {
 
   return (
     <main className="mx-auto flex min-h-[100svh] max-w-md flex-col justify-center px-6 py-10">
-      <h1 className="text-[28px] font-semibold tracking-tight">Termômetro</h1>
+      <h1>
+        <Marca tamanho="grande" />
+      </h1>
       <p className="mt-2 text-[17px] leading-relaxed text-grafite">
-        Entradas, saídas e o saldo de cada dia. Digite o código de acesso — este aparelho vai
-        lembrar por seis meses.
+        Entradas, saídas e o saldo de cada dia. Digite o seu código de acesso — este aparelho
+        vai lembrar por seis meses.
       </p>
 
       <FormularioDeEntrada />

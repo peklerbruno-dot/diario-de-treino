@@ -25,7 +25,21 @@ import { AJUSTES_PADRAO } from "./tipos";
  * do que você digitou depende de a rede estar boa naquele segundo.
  */
 
-const CHAVE = "termometro.v2";
+/**
+ * Onde o aparelho guarda os dados. Cada pessoa tem a sua gaveta: o dono fica
+ * na de sempre (para não baixar tudo de novo depois da atualização), quem
+ * chega por convite ganha uma com o próprio id. Dois que usem o mesmo
+ * celular nunca veem o dinheiro um do outro.
+ */
+const CHAVE_DO_DONO = "termometro.v2";
+const chaveDe = (usuarioId: string) =>
+  usuarioId === "dono" ? CHAVE_DO_DONO : `${CHAVE_DO_DONO}:${usuarioId}`;
+
+export interface QuemUsa {
+  id: string;
+  nome: string;
+  ehDono: boolean;
+}
 const ESPERA_ANTES_DE_SINCRONIZAR_MS = 1500;
 
 export type Situacao = "guardado" | "enviando" | "sem-internet" | "erro" | "sessao-vencida";
@@ -47,6 +61,8 @@ export interface Estado {
   ultimaSincronizacao: string | null;
   recadoDeErro: string | null;
   carregado: boolean;
+  /** De quem são estes dados. Nulo antes de o app abrir. */
+  usuario: QuemUsa | null;
   /**
    * A última ação que ainda dá para desfazer: um Apagar, ou um lançamento de
    * um toque (os botões de valor da tela Hoje). Efêmero de propósito: não é
@@ -67,6 +83,7 @@ const ESTADO_VAZIO: Estado = {
   ultimaSincronizacao: null,
   recadoDeErro: null,
   carregado: false,
+  usuario: null,
   ultimaAcao: null,
 };
 
@@ -78,6 +95,8 @@ const novoId = () =>
 
 export class Loja {
   private estado: Estado = ESTADO_VAZIO;
+  private chave = CHAVE_DO_DONO;
+  private escutando = false;
   private ouvintes = new Set<() => void>();
   private relogioDoEnvio: ReturnType<typeof setTimeout> | null = null;
   private enviando = false;
@@ -104,11 +123,19 @@ export class Loja {
   // -------------------------------------------------------- vida do aparelho
 
   /** Lê o que ficou guardado da última vez e já tenta uma sincronização. */
-  iniciar() {
-    if (this.estado.carregado) return;
+  iniciar(usuario: QuemUsa) {
+    if (this.estado.carregado && this.estado.usuario?.id === usuario.id) return;
+
+    // Trocou de pessoa sem recarregar a página (saiu e entrou com outro
+    // código): nada do estado de antes pode sobreviver na memória.
+    if (this.relogioDoEnvio) clearTimeout(this.relogioDoEnvio);
+    this.relogioDoEnvio = null;
+    this.estado = ESTADO_VAZIO;
+    this.chave = chaveDe(usuario.id);
+
     let guardado: Partial<Estado> = {};
     try {
-      const bruto = localStorage.getItem(CHAVE);
+      const bruto = localStorage.getItem(this.chave);
       if (bruto) guardado = JSON.parse(bruto) as Partial<Estado>;
     } catch {
       // Safari com dados de site bloqueados, aba privada, armazenamento cheio:
@@ -123,13 +150,16 @@ export class Loja {
         situacao: "guardado",
         recadoDeErro: null,
         carregado: true,
+        usuario,
+        ultimaAcao: null,
       },
       false,
     );
 
     void this.sincronizar();
 
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && !this.escutando) {
+      this.escutando = true;
       window.addEventListener("online", () => void this.sincronizar());
       document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible") void this.sincronizar();
@@ -148,7 +178,7 @@ export class Loja {
       const { lancamentos, fixos, ajustes, ate, pendentes, recusados, ultimaSincronizacao } =
         this.estado;
       localStorage.setItem(
-        CHAVE,
+        this.chave,
         JSON.stringify({
           lancamentos,
           fixos,
@@ -656,9 +686,14 @@ export function saldosIniciaisDigitados(estado: Estado): Record<number, number> 
   return saldos;
 }
 
+/** O rateio de quem nunca mexeu nele: 40% era o do apartamento do dono; quem chega começa em 0. */
+const rateioPadrao = (estado: Estado) =>
+  estado.usuario && !estado.usuario.ehDono ? 0 : AJUSTES_PADRAO.rateioAptoPercent;
+
 export function rateioApto(estado: Estado): number {
-  const n = Number(estado.ajustes[CHAVE_DO_RATEIO]?.valor);
-  return Number.isFinite(n) ? n : AJUSTES_PADRAO.rateioAptoPercent;
+  const bruto = estado.ajustes[CHAVE_DO_RATEIO]?.valor;
+  const n = Number(bruto);
+  return bruto !== undefined && Number.isFinite(n) ? n : rateioPadrao(estado);
 }
 
 export function ajustesDoAno(estado: Estado, ano: number): Ajustes {
@@ -667,7 +702,10 @@ export function ajustesDoAno(estado: Estado, ano: number): Ajustes {
   return {
     ano,
     saldoInicialCents: Number.isFinite(saldo) ? saldo : 0,
-    rateioAptoPercent: Number.isFinite(rateio) ? rateio : AJUSTES_PADRAO.rateioAptoPercent,
+    rateioAptoPercent:
+      estado.ajustes[CHAVE_DO_RATEIO] !== undefined && Number.isFinite(rateio)
+        ? rateio
+        : rateioPadrao(estado),
   };
 }
 

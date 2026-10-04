@@ -2,23 +2,32 @@ import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { bd } from "./bd";
+import { normalizarCodigo } from "./codigos";
 
 /**
- * A porta: um código, e nada mais.
+ * A porta: cada pessoa, um código.
  *
- * Não há conta, e-mail nem senha por pessoa — este app é de uma pessoa só. Quem
- * sabe o código entra; o navegador lembra por seis meses, então na prática você
- * digita isso uma vez por aparelho.
+ * O dono (o BP) entra com o CODIGO_DE_ACESSO da Vercel, como sempre entrou —
+ * nada mudou para ele, nem o atalho da Siri. Quem chega por convite recebe um
+ * código gerado (ver `codigos.ts`), e o banco guarda só a impressão dele:
+ * HMAC com o AUTH_SECRET. Quem lesse o banco não teria o código de ninguém.
  *
- * O código mora em CODIGO_DE_ACESSO, cadastrado na Vercel. Trocar o código é
- * trocar essa variável e publicar de novo: nenhuma linha de código muda.
- *
- * É pouca porta, e de propósito. O que ela protege é o seu dinheiro à mostra
- * para quem esbarrasse no endereço.
+ * O navegador lembra por seis meses. O cookie diz QUEM é, assinado; e para
+ * quem não é o dono, cada pedido confere se a pessoa ainda existe — remover
+ * alguém corta o acesso na hora, sem esperar o cookie vencer.
  */
 
 const COOKIE = "termometro_sessao";
 const DURACAO_SESSAO_MS = 1000 * 60 * 60 * 24 * 180; // 180 dias
+
+/** O id do dono. Os dados de antes das contas são todos dele. */
+export const DONO = "dono";
+
+export interface Sessao {
+  usuarioId: string;
+  ehDono: boolean;
+}
 
 function segredo(): string {
   const s = process.env.AUTH_SECRET;
@@ -43,41 +52,65 @@ export function codigoConfigurado(): boolean {
   return (process.env.CODIGO_DE_ACESSO ?? "").trim().length >= 4;
 }
 
-/**
- * O código confere?
- *
- * Usado pela porta de trás, a que o atalho do iPhone bate: lá não há navegador
- * nem cookie, só o código viajando num cabeçalho. A comparação é a mesma da
- * entrada pela tela — em tempo constante, para o relógio não contar quantas
- * letras estavam certas.
- */
-export function codigoConfere(codigo: string | null | undefined): boolean {
-  if (!codigoConfigurado() || !codigo) return false;
+/** O código é o do dono? Em tempo constante, como sempre foi. */
+function ehCodigoDoDono(codigo: string): boolean {
+  if (!codigoConfigurado()) return false;
   return iguais((process.env.CODIGO_DE_ACESSO ?? "").trim(), codigo.trim());
 }
 
-export async function entrar(codigo: string): Promise<{ ok: boolean; motivo?: string }> {
-  if (!codigoConfigurado()) {
-    return {
-      ok: false,
-      motivo:
-        "Esta instalação está sem código de acesso configurado. " +
-        "Cadastre CODIGO_DE_ACESSO na Vercel e publique de novo.",
-    };
-  }
-  if (!iguais((process.env.CODIGO_DE_ACESSO ?? "").trim(), codigo.trim())) {
-    return { ok: false, motivo: "Código incorreto." };
-  }
+/**
+ * A impressão do código, que é o que o banco guarda. Determinística de
+ * propósito — é por ela que se acha a pessoa —, e inútil sem o AUTH_SECRET.
+ */
+export function impressaoDoCodigo(codigo: string): string {
+  return createHmac("sha256", segredo())
+    .update(`codigo:${normalizarCodigo(codigo)}`)
+    .digest("hex");
+}
 
+/**
+ * De quem é este código? É a porta da tela de entrada E a do atalho da Siri,
+ * que chega sem cookie, só com o código num cabeçalho.
+ */
+export async function usuarioDoCodigo(codigo: string | null | undefined): Promise<string | null> {
+  if (!codigo || !codigo.trim()) return null;
+  if (ehCodigoDoDono(codigo)) return DONO;
+  if (normalizarCodigo(codigo).length < 8) return null;
+  const achado = await bd.usuario.findUnique({
+    where: { codigoHash: impressaoDoCodigo(codigo) },
+    select: { id: true },
+  });
+  return achado?.id ?? null;
+}
+
+/** Abre a sessão de alguém neste navegador. */
+export async function abrirSessao(usuarioId: string): Promise<void> {
   const expira = Date.now() + DURACAO_SESSAO_MS;
+  const carga = `${usuarioId}.${expira}`;
   const jar = await cookies();
-  jar.set(COOKIE, `${expira}.${assinar(String(expira))}`, {
+  jar.set(COOKIE, `${carga}.${assinar(carga)}`, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
     expires: new Date(expira),
   });
+}
+
+export async function entrar(codigo: string): Promise<{ ok: boolean; motivo?: string }> {
+  const usuarioId = await usuarioDoCodigo(codigo);
+  if (!usuarioId) {
+    if (!codigoConfigurado()) {
+      return {
+        ok: false,
+        motivo:
+          "Esta instalação está sem código de acesso configurado. " +
+          "Cadastre CODIGO_DE_ACESSO na Vercel e publique de novo.",
+      };
+    }
+    return { ok: false, motivo: "Código incorreto." };
+  }
+  await abrirSessao(usuarioId);
   return { ok: true };
 }
 
@@ -86,23 +119,62 @@ export async function sair(): Promise<void> {
   jar.delete(COOKIE);
 }
 
-/** Tem sessão válida? Não depende do banco: é só o cookie assinado. */
-export async function temSessao(): Promise<boolean> {
+/**
+ * Quem está aqui? `null` é ninguém.
+ *
+ * Dois formatos de cookie valem: o novo, `usuario.expira.assinatura`, e o de
+ * antes das contas, `expira.assinatura` — que só o dono tinha, e que continua
+ * sendo dele, para ninguém ser deslogado pela atualização.
+ */
+export async function sessao(): Promise<Sessao | null> {
   const jar = await cookies();
   const bruto = jar.get(COOKIE)?.value;
-  if (!bruto) return false;
+  if (!bruto) return null;
 
-  const corte = bruto.lastIndexOf(".");
-  if (corte < 1) return false;
-  const expira = bruto.slice(0, corte);
-  const assinatura = bruto.slice(corte + 1);
+  const partes = bruto.split(".");
+  let usuarioId: string;
+  let expira: string;
+  let assinatura: string;
+  if (partes.length === 2) {
+    [expira, assinatura] = partes;
+    usuarioId = DONO;
+    if (!iguais(assinar(expira), assinatura)) return null;
+  } else if (partes.length === 3) {
+    [usuarioId, expira, assinatura] = partes;
+    if (!usuarioId || !iguais(assinar(`${usuarioId}.${expira}`), assinatura)) return null;
+  } else {
+    return null;
+  }
+  if (!(Number(expira) > Date.now())) return null;
 
-  if (!iguais(assinar(expira), assinatura)) return false;
-  return Number(expira) > Date.now();
+  if (usuarioId !== DONO) {
+    // Removido pelo dono? Então a sessão morreu junto, agora.
+    const existe = await bd.usuario.findUnique({ where: { id: usuarioId }, select: { id: true } });
+    if (!existe) return null;
+  }
+  return { usuarioId, ehDono: usuarioId === DONO };
 }
 
-export async function exigirSessao(): Promise<void> {
-  if (!(await temSessao())) redirect("/entrar");
+export async function temSessao(): Promise<boolean> {
+  return (await sessao()) !== null;
+}
+
+export async function exigirSessao(): Promise<Sessao> {
+  const s = await sessao();
+  if (!s) redirect("/entrar");
+  return s;
+}
+
+/**
+ * Quem bate na porta de trás (atalho da Siri): o código no cabeçalho ou no
+ * corpo, ou a sessão do navegador, nessa ordem.
+ */
+export async function usuarioDoPedido(...codigos: (string | null | undefined)[]): Promise<string | null> {
+  for (const c of codigos) {
+    const id = await usuarioDoCodigo(c);
+    if (id) return id;
+  }
+  return (await sessao())?.usuarioId ?? null;
 }
 
 export const NOME_DO_COOKIE = COOKIE;

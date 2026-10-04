@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { codigoConfere, temSessao } from "@/lib/auth";
+import { usuarioDoPedido } from "@/lib/auth";
 import { bd } from "@/lib/bd";
 import { camposDoEndereco, hojeNoFuso, lerPedidoDoAtalho, recadoDoAtalho } from "@/lib/atalho";
 import { CHAVE_DAS_CATEGORIAS, lerCategorias, nomeDaCategoria } from "@/lib/categorias";
@@ -50,12 +50,16 @@ export async function POST(pedido: Request) {
   // com a mesma facilidade, e quem já está com sessão aberta não precisa de
   // nenhum dos dois.
   const doCorpo = typeof corpo.codigo === "string" ? corpo.codigo : null;
-  const autorizado = codigoConfere(doCabecalho) || codigoConfere(doCorpo) || (await temSessao());
-  if (!autorizado) return naoAutorizado();
+  // O código diz não só SE pode, mas DE QUEM é o lançamento: cada pessoa tem o
+  // seu, e o atalho da Siri de um amigo lança no Diário dele.
+  const usuarioId = await usuarioDoPedido(doCabecalho, doCorpo);
+  if (!usuarioId) return naoAutorizado();
 
   // A lista de categorias vive no banco, e é o servidor que traduz o que foi
   // falado ("mercado", "conta de luz") no identificador que o lançamento guarda.
-  const guardadas = await bd.ajuste.findUnique({ where: { chave: CHAVE_DAS_CATEGORIAS } });
+  const guardadas = await bd.ajuste.findUnique({
+    where: { usuarioId_chave: { usuarioId, chave: CHAVE_DAS_CATEGORIAS } },
+  });
   const categorias = lerCategorias(guardadas?.valor);
 
   const leitura = lerPedidoDoAtalho(corpo, { hoje: hojeNoFuso(), categorias });
@@ -66,6 +70,7 @@ export async function POST(pedido: Request) {
   await bd.lancamento.createMany({
     data: lancamentos.map((l) => ({
       id: l.id,
+      usuarioId,
       data: l.data,
       tipo: l.tipo,
       valorCents: l.valorCents,
@@ -83,7 +88,7 @@ export async function POST(pedido: Request) {
 
   const data = lancamentos[0].data;
 
-  const { saldoDoDiaCents: saldoDoDia } = await saldoNoServidor(data);
+  const { saldoDoDiaCents: saldoDoDia } = await saldoNoServidor(data, usuarioId);
 
   return NextResponse.json({
     ok: true,

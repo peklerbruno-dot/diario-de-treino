@@ -1,6 +1,7 @@
-# Termômetro
+# Finanças do BP
 
-O caderno de contas da planilha, virado app. Entradas, saídas e o saldo de cada
+O caderno de contas da planilha, virado app. (O nome de antes era Termômetro, e
+o código ainda o usa por dentro: pasta, chaves do aparelho, nome do cookie.) Entradas, saídas e o saldo de cada
 dia, no iPhone e no computador, com os dois sempre iguais.
 
 Não é um app de finanças genérico: é a aba de um ano da **Planilha do Breno —
@@ -427,6 +428,32 @@ lançamento feito no metrô, com o app fechado antes de o sinal voltar, ficava
 para sempre só naquele celular. Na abertura, o app ainda refaz a fila a partir
 dos próprios dados (tudo que mudou depois da última sincronização), de modo que
 nem uma gravação perdida deixa algo para trás.
+
+## Amigos com conta própria
+
+O app tem um dono (o BP) e pode ter convidados. Cada pessoa tem a própria conta,
+que começa vazia; ninguém vê a de ninguém, nem o dono a dos amigos.
+
+- **Convidar:** Ajustes → Pessoas → nome → Convidar. Sai um link de convite,
+  para mandar pelo WhatsApp. Ele vale sete dias e uma vez só; abrir o link não o
+  gasta (a prévia que o WhatsApp monta abre o link sozinha) — só o toque em
+  "Criar meu acesso".
+- **O código do amigo** é gerado pelo app (três palavras e quatro números,
+  `pera-azul-trem-4821`) e aparece uma vez, na tela de quem aceitou. O banco
+  guarda só a impressão dele (HMAC com o `AUTH_SECRET`), então ninguém — nem o
+  dono olhando o banco — descobre o código de alguém. Perdeu? Ajustes → "Gerar
+  um novo código", ou o dono manda um convite novo.
+- **Remover** alguém apaga a conta e tudo o que ela lançou, e derruba na hora
+  as sessões abertas e o atalho da Siri dessa pessoa.
+- O dono continua entrando com o `CODIGO_DE_ACESSO` da Vercel, como sempre.
+
+Por dentro ([`src/lib/pessoas.ts`](src/lib/pessoas.ts), [`src/lib/auth.ts`](src/lib/auth.ts)):
+cada lançamento, fixo e ajuste leva um `usuarioId`, e esse id vem **só** da
+sessão assinada — nunca do corpo do pedido. Toda leitura do sync filtra por
+ele; toda escrita o grava, e uma atualização só pega linha que já é de quem
+pede, de modo que um id alheio mandado de propósito é ignorado, e não
+sobrescrito. No aparelho, os dados de cada pessoa ficam em chaves separadas do
+`localStorage`, para dois logins no mesmo celular não se misturarem.
 
 ## Detalhes de iPhone que o código resolve
 

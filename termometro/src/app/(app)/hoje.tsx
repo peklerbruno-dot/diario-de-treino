@@ -4,17 +4,33 @@ import { useState } from "react";
 import { AtalhosRapidos } from "@/componentes/atalhos-rapidos";
 import { FolhaDeLancamento } from "@/componentes/folha-de-lancamento";
 import { LancarPorValor } from "@/componentes/lancar-por-valor";
-import { Botao, Cartao, Dinheiro, Selo, Sobrescrito, Subtitulo, Titulo } from "@/componentes/pecas";
+import { Marca } from "@/componentes/marca";
+import {
+  Botao,
+  Cartao,
+  CampoDeValor,
+  Dinheiro,
+  Selo,
+  Sobrescrito,
+  Subtitulo,
+  Titulo,
+} from "@/componentes/pecas";
 import { useAnoCalculado } from "@/componentes/usar-loja";
 import { curta, hoje, nomeDoDiaDaSemana, nomeDoMes, partesDaData } from "@/lib/datas";
-import { comCifrao } from "@/lib/dinheiro";
+import { comCifrao, paraCentavos } from "@/lib/dinheiro";
 import {
   previstosVencidos,
   primeiroDiaNoVermelho,
   sobraPorDia,
   type AnoCalculado,
 } from "@/lib/calculo";
-import { lancamentosVivos, loja } from "@/lib/loja";
+import {
+  guardarSaldoInicial,
+  lancamentosVivos,
+  loja,
+  saldoInicialExplicito,
+  type Estado,
+} from "@/lib/loja";
 import { useEstado } from "@/componentes/usar-loja";
 import { NOME_DO_TIPO, type Tipo } from "@/lib/tipos";
 
@@ -36,10 +52,16 @@ export function TelaDeHoje() {
 
   return (
     <div>
+      {/* No computador a marca já está no menu do lado. */}
+      <div className="mb-4 lg:hidden">
+        <Marca />
+      </div>
       <p className="text-[13px] text-fosco">{nomeDoDiaDaSemana(agora)}</p>
       <Titulo className="mt-0.5">
         {dia} de {nomeDoMes(mes)}
       </Titulo>
+
+      <PrimeiroUso ano={ano} />
 
       <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
         <div>
@@ -256,4 +278,72 @@ function Vencidos({ agora }: { agora: string }) {
       </Cartao>
     </section>
   );
+}
+
+/**
+ * O primeiro passo de uma conta nova: dizer com quanto se começa.
+ *
+ * Sem isso o saldo abre em zero e o primeiro gasto já põe tudo no vermelho —
+ * o app parece quebrado no primeiro minuto. A pergunta é a de hoje, e não a de
+ * 1º de janeiro, porque é a que se sabe responder olhando o banco; numa conta
+ * vazia as duas dão o mesmo número. Some sozinha assim que houver um saldo
+ * guardado ou qualquer lançamento.
+ */
+function PrimeiroUso({ ano }: { ano: number }) {
+  const estado = useEstado();
+  const [valor, setValor] = useState("");
+  const [erro, setErro] = useState<string | null>(null);
+
+  if (!precisaDoComeco(estado, ano)) return null;
+
+  const guardar = () => {
+    const cents = paraCentavos(valor || "0");
+    if (cents === null) {
+      setErro("Não entendi o valor. Digite só o número, como 1500 ou 1.500,00.");
+      return;
+    }
+    guardarSaldoInicial(ano, cents);
+  };
+
+  return (
+    <Cartao className="mt-4 px-5 py-4">
+      <Subtitulo>Para começar: quanto você tem hoje?</Subtitulo>
+      <p className="mt-1 text-[14.5px] leading-relaxed text-grafite">
+        Some o que está na conta e na carteira. É daqui que o app conta o seu saldo, dia a dia.
+      </p>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          guardar();
+        }}
+        className="mt-1 flex items-end gap-2"
+      >
+        <div className="flex-1">
+          <CampoDeValor
+            valor={valor}
+            aoMudar={(v) => {
+              setValor(v);
+              setErro(null);
+            }}
+          />
+        </div>
+        <Botao submit tipo="primario">
+          Começar
+        </Botao>
+      </form>
+      {erro && (
+        <p role="alert" className="mt-2 text-[14px] text-atencao">
+          {erro}
+        </p>
+      )}
+    </Cartao>
+  );
+}
+
+function precisaDoComeco(estado: Estado, ano: number): boolean {
+  // Antes da primeira conversa com o servidor, "vazio" pode ser só "ainda não
+  // chegou": num aparelho novo, o dono veria o convite por um instante.
+  if (!estado.carregado || !estado.ultimaSincronizacao) return false;
+  if (lancamentosVivos(estado).length > 0) return false;
+  return saldoInicialExplicito(estado, ano) === null && saldoInicialExplicito(estado, ano - 1) === null;
 }

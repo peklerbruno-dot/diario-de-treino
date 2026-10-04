@@ -8,6 +8,7 @@ import {
   rateioApto,
   saldosIniciaisDigitados,
   type Estado,
+  type QuemUsa,
 } from "@/lib/loja";
 
 /**
@@ -28,6 +29,7 @@ const VAZIO: Estado = {
   ultimaSincronizacao: null,
   recadoDeErro: null,
   carregado: false,
+  usuario: null,
   ultimaAcao: null,
 };
 
@@ -35,10 +37,11 @@ export function useEstado(): Estado {
   return useSyncExternalStore(loja.assinar, loja.instantaneo, () => VAZIO);
 }
 
-export function useIniciarLoja() {
+export function useIniciarLoja(usuario: QuemUsa) {
   useEffect(() => {
-    loja.iniciar();
-  }, []);
+    loja.iniciar(usuario);
+    // Só a troca de pessoa reinicia a loja.
+  }, [usuario.id]);
 }
 
 /**

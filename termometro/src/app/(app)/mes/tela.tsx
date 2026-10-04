@@ -66,8 +66,8 @@ export function TelaDoMes() {
       {vazio && (
         <div className="mt-4">
           <Aviso>
-            Ainda não há nada aqui. Em <strong>Ajustes → Importar planilha</strong> dá para trazer o
-            Termômetro inteiro de uma vez; ou toque em <strong>Lançar</strong> e registre o primeiro
+            Ainda não há nada aqui. Em <strong>Ajustes → Importar planilha</strong> dá para trazer uma
+            planilha inteira de uma vez; ou toque em <strong>Lançar</strong> e registre o primeiro
             valor.
           </Aviso>
         </div>

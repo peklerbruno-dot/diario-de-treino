@@ -15,8 +15,9 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "Termômetro",
-    short_name: "Termômetro",
+    name: "Finanças do BP",
+    // O nome embaixo do ícone: o iPhone corta o que passa de uns 12 caracteres.
+    short_name: "Finanças BP",
     description: "Entradas, saídas e o saldo de cada dia.",
     start_url: "/",
     scope: "/",
@@ -29,7 +30,7 @@ export default function manifest(): MetadataRoute.Manifest {
     icons: [
       { src: "/icone-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
       { src: "/icone-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
-      { src: "/icone-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      { src: "/icone-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }
