@@ -1,11 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { emReais, comCifrao } from "@/lib/dinheiro";
 import { categoriaPelaNota } from "@/lib/busca";
 import { categoriasDoTipo } from "@/lib/categorias";
 import { categoriasDe, lancamentosVivos, loja } from "@/lib/loja";
-import { categoriasPorUso, valoresRapidos } from "@/lib/valores-rapidos";
+import {
+  CHAVE_DOS_VALORES,
+  categoriasPorUso,
+  lerPreferencias,
+  valoresRapidos,
+} from "@/lib/valores-rapidos";
+import { FolhaDeLancamento } from "./folha-de-lancamento";
 import { Botao, CampoDeTexto, Folha, Sobrescrito, Subtitulo } from "./pecas";
 import { useEstado } from "./usar-loja";
 
@@ -18,20 +25,22 @@ import { useEstado } from "./usar-loja";
  * a escolha, não um "Salvar" a mais. Quem quiser escreve uma observação antes;
  * quem não quiser categoria tem "Lançar sem categoria"; e fechar cancela.
  *
- * Os valores vêm de `valoresRapidos`: uma escada fixa até onde cobre 95% dos
- * seus gastos, mais os valores quebrados que você repete.
+ * Os valores vêm de `valoresRapidos`: os que você usa, em destaque, e
+ * redondos tapando os buracos. O último botão, "Outro", abre o teclado.
  */
 export function LancarPorValor({ data }: { data: string }) {
   const estado = useEstado();
+  const preferencias = estado.ajustes[CHAVE_DOS_VALORES]?.valor;
   const valores = useMemo(
-    () => valoresRapidos(lancamentosVivos(estado), data),
-    // Só os lançamentos importam; a sincronização mexendo no resto do estado
-    // não precisa recalcular a grade.
-    [estado.lancamentos, data],
+    () => valoresRapidos(lancamentosVivos(estado), data, lerPreferencias(preferencias)),
+    // Só os lançamentos e as preferências importam; a sincronização mexendo
+    // no resto do estado não precisa recalcular a grade.
+    [estado.lancamentos, preferencias, data],
   );
 
   // O valor tocado, esperando a categoria. Nulo é a confirmação fechada.
   const [escolhido, setEscolhido] = useState<number | null>(null);
+  const [outroValor, setOutroValor] = useState(false);
   // O ✓ que confirma, no próprio botão, que o lançamento entrou.
   const [tocado, setTocado] = useState<number | null>(null);
   const relogio = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -43,6 +52,8 @@ export function LancarPorValor({ data }: { data: string }) {
     relogio.current = setTimeout(() => setTocado(null), 900);
   }
 
+  const temSeus = valores.botoes.some((b) => b.seu);
+
   return (
     <section className="mt-6">
       <div className="flex items-baseline justify-between gap-3">
@@ -50,22 +61,55 @@ export function LancarPorValor({ data }: { data: string }) {
         <span className="text-[12.5px] text-fosco">toque no valor, depois na categoria</span>
       </div>
 
-      {valores.deSempre.length > 0 && (
-        <>
-          <Sobrescrito className="mt-3">Os seus de sempre</Sobrescrito>
-          <Grade valores={valores.deSempre} tocado={tocado} aoTocar={setEscolhido} destaque />
-        </>
-      )}
+      <div className="mt-2 grid grid-cols-4 gap-2 sm:grid-cols-5">
+        {valores.botoes.map(({ valorCents: v, seu }) => {
+          const acabou = tocado === v;
+          return (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setEscolhido(v)}
+              aria-label={`Gastei ${comCifrao(v)}`}
+              className={`flex min-h-[50px] touch-manipulation items-center justify-center rounded-folha shadow-baixa transition-transform active:scale-95 ${
+                acabou
+                  ? "bg-heroi text-heroi-tinta"
+                  : seu
+                    ? "bg-cartao text-tinta ring-1 ring-regua"
+                    : "bg-cartao text-grafite"
+              }`}
+            >
+              {acabou ? (
+                <span className="text-[16px] font-semibold">✓</span>
+              ) : (
+                <span className="flex items-baseline gap-1">
+                  <span className="text-[11px] text-fosco">R$</span>
+                  <span
+                    className={`tabular text-[17px] ${seu ? "font-bold" : "font-medium"}`}
+                  >
+                    {emReais(v)}
+                  </span>
+                </span>
+              )}
+            </button>
+          );
+        })}
+        <button
+          type="button"
+          onClick={() => setOutroValor(true)}
+          className="flex min-h-[50px] touch-manipulation items-center justify-center rounded-folha bg-papel text-[15px] text-tinta ring-1 ring-regua active:scale-95"
+        >
+          Outro
+        </button>
+      </div>
 
-      {valores.deSempre.length > 0 && <Sobrescrito className="mt-4">Redondos</Sobrescrito>}
-      <Grade valores={valores.escada} tocado={tocado} aoTocar={setEscolhido} />
-
-      {valores.medianaCents !== null && (
-        <p className="mt-2.5 text-[12.5px] leading-snug text-fosco">
-          Metade dos seus gastos do dia a dia fica até {comCifrao(valores.medianaCents)}; os botões
-          vão até onde cabem quase todos eles.
-        </p>
-      )}
+      <p className="mt-2.5 text-[12.5px] leading-snug text-fosco">
+        {temSeus
+          ? "Em destaque, os valores que você mais usa; os outros tapam os buracos. "
+          : "Conforme você usa, os seus valores de sempre aparecem aqui. "}
+        <Link href="/ajustes#botoes-do-gastei" className="underline">
+          Escolher os botões
+        </Link>
+      </p>
 
       {escolhido !== null && (
         <ConfirmarValor
@@ -75,51 +119,11 @@ export function LancarPorValor({ data }: { data: string }) {
           aoFechar={() => setEscolhido(null)}
         />
       )}
-    </section>
-  );
-}
 
-function Grade({
-  valores,
-  tocado,
-  aoTocar,
-  destaque,
-}: {
-  valores: number[];
-  tocado: number | null;
-  aoTocar: (valorCents: number) => void;
-  destaque?: boolean;
-}) {
-  return (
-    <div className="mt-2 grid grid-cols-4 gap-2 sm:grid-cols-5">
-      {valores.map((v) => {
-        const acabou = tocado === v;
-        return (
-          <button
-            key={v}
-            type="button"
-            onClick={() => aoTocar(v)}
-            aria-label={`Gastei ${comCifrao(v)}`}
-            className={`flex min-h-[50px] touch-manipulation items-center justify-center rounded-folha shadow-baixa transition-transform active:scale-95 ${
-              acabou
-                ? "bg-heroi text-heroi-tinta"
-                : destaque
-                  ? "bg-cartao text-tinta ring-1 ring-regua"
-                  : "bg-cartao text-tinta"
-            }`}
-          >
-            {acabou ? (
-              <span className="text-[16px] font-semibold">✓</span>
-            ) : (
-              <span className="flex items-baseline gap-1">
-                <span className="text-[11px] text-fosco">R$</span>
-                <span className="tabular text-[17px] font-semibold">{emReais(v)}</span>
-              </span>
-            )}
-          </button>
-        );
-      })}
-    </div>
+      {outroValor && (
+        <FolhaDeLancamento data={data} tipoInicial="DIARIO" aoFechar={() => setOutroValor(false)} />
+      )}
+    </section>
   );
 }
 

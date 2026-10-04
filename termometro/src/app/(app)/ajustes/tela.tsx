@@ -16,6 +16,7 @@ import {
 } from "@/componentes/pecas";
 import { buscarAVersaoNova } from "@/componentes/casca";
 import { EditorDeAtalhos } from "@/componentes/editor-de-atalhos";
+import { EditorDeValores } from "@/componentes/editor-de-valores";
 import { MeuAcesso, PessoasDoApp } from "@/componentes/pessoas";
 import { useEstado } from "@/componentes/usar-loja";
 import { hoje, partesDaData } from "@/lib/datas";
@@ -39,7 +40,6 @@ import {
   VERSAO_DO_APP,
 } from "@/lib/loja";
 import { categoriasDoTipo, idDoNome, type Categoria } from "@/lib/categorias";
-import { quantosSemCategoria } from "@/lib/classificar";
 import { calcularAnoEncadeado } from "@/lib/calculo";
 import { NOME_DO_TIPO, TIPOS, type Tipo } from "@/lib/tipos";
 
@@ -180,9 +180,9 @@ export function TelaDeAjustes() {
 
       <Categorias estado={estado} />
 
-      <EditorDeAtalhos estado={estado} />
+      <EditorDeValores estado={estado} />
 
-      <Classificar estado={estado} />
+      <EditorDeAtalhos estado={estado} />
 
       <ArrumarOsCentavos estado={estado} />
 
@@ -307,34 +307,6 @@ export function TelaDeAjustes() {
         </Aviso>
       </div>
     </div>
-  );
-}
-
-/**
- * O convite para classificar o passado.
- *
- * Só aparece enquanto sobrar o que classificar, e some sozinho quando acabar —
- * em vez de virar um item permanente em Ajustes anunciando uma tarefa que já
- * foi feita.
- */
-function Classificar({ estado }: { estado: EstadoDoApp }) {
-  const faltam = quantosSemCategoria(lancamentosVivos(estado));
-  if (faltam === 0) return null;
-
-  return (
-    <section className="mt-6">
-      <Subtitulo>Classificar o que veio da planilha</Subtitulo>
-      <p className="mt-1 text-[15px] leading-relaxed text-grafite">
-        {faltam} lançamentos ainda estão sem categoria — é como eles nasceram, porque a planilha não
-        guardava isso. Juntados por nota, viram poucas decisões.
-      </p>
-      <Link
-        href="/classificar"
-        className="mt-2 inline-flex min-h-[46px] items-center rounded-folha bg-cartao px-4 text-[16px] shadow-baixa"
-      >
-        Classificar agora
-      </Link>
-    </section>
   );
 }
 

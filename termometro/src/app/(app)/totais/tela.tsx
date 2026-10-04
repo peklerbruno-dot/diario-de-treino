@@ -1,13 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { Aviso, Cartao, Seta, Sobrescrito, Subtitulo, Titulo } from "@/componentes/pecas";
 import { useEstado } from "@/componentes/usar-loja";
 import { categoriasDe, lancamentosVivos } from "@/lib/loja";
 import { hoje, nomeDoMes, partesDaData } from "@/lib/datas";
 import { comCifrao } from "@/lib/dinheiro";
-import { SEM_CATEGORIA } from "@/lib/categorias";
 import { doPeriodo, totaisPorCategoria } from "@/lib/totais";
 import { NOME_DO_TIPO, TIPOS, type Tipo } from "@/lib/tipos";
 
@@ -118,9 +116,7 @@ export function TelaDosTotais() {
           {totais.categorias.length === 0 ? (
             <div className="mt-4">
               <Aviso>
-                Nada nesta coluna no período. Se você acabou de começar a marcar categorias, só os
-                lançamentos novos aparecem aqui — os antigos ficam em “Sem categoria” até você abrir
-                e escolher.
+                Nada com categoria nesta coluna no período.
               </Aviso>
             </div>
           ) : (
@@ -130,19 +126,7 @@ export function TelaDosTotais() {
                 {totais.categorias.map((c) => (
                   <div key={c.id} className="border-b border-linha py-3 last:border-b-0">
                     <div className="flex items-baseline justify-between gap-3">
-                      {/* "Sem categoria" é o único nome que leva a algum lugar: ele é
-                      o convite, e aparece exatamente onde incomoda. */}
-                      {c.nome === SEM_CATEGORIA ? (
-                        <Link
-                          href="/classificar"
-                          className="min-w-0 truncate text-[15px] font-medium"
-                        >
-                          {c.nome}{" "}
-                          <span className="text-[13px] font-normal text-saldo">classificar</span>
-                        </Link>
-                      ) : (
-                        <span className="min-w-0 truncate text-[15px] font-medium">{c.nome}</span>
-                      )}
+                      <span className="min-w-0 truncate text-[15px] font-medium">{c.nome}</span>
                       <span className="shrink-0 text-right">
                         <span className="tabular block text-[15px] font-semibold">
                           {comCifrao(c.centavos)}
@@ -164,8 +148,8 @@ export function TelaDosTotais() {
                 ))}
               </Cartao>
               <p className="mt-2 px-1 text-[12.5px] leading-snug text-fosco">
-                A porcentagem é sobre o total desta coluna no período, e o número ao lado é quantos
-                lançamentos entraram na linha. Previsto conta junto: um mês pela metade respondido
+                A porcentagem é sobre o que tem categoria nesta coluna no período, e o número ao
+                lado é quantos lançamentos entraram na linha. Previsto conta junto: um mês pela metade respondido
                 só pelo confirmado não responde nada.
               </p>
             </section>

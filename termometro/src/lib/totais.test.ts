@@ -32,7 +32,6 @@ describe("quanto foi para cada lugar", () => {
     expect(t.categorias.map((c) => [c.nome, c.centavos])).toEqual([
       ["Mercado", 40000],
       ["Comida", 5000],
-      ["Sem categoria", 5000],
     ]);
   });
 
@@ -42,8 +41,12 @@ describe("quanto foi para cada lugar", () => {
   });
 
   it("empate desempata pelo nome, para a lista não dançar", () => {
-    const t = totaisPorCategoria(dados, categorias, "DIARIO");
-    expect(t.categorias.slice(1).map((c) => c.nome)).toEqual(["Comida", "Sem categoria"]);
+    const t = totaisPorCategoria(
+      [...dados, l("2026-09-07", "DIARIO", 50, "bar")],
+      [...categorias, { id: "bar", nome: "Bar", tipos: ["DIARIO"] }],
+      "DIARIO",
+    );
+    expect(t.categorias.slice(1).map((c) => c.nome)).toEqual(["Bar", "Comida"]);
   });
 
   it("conta quantos lançamentos entraram em cada linha", () => {
@@ -51,16 +54,21 @@ describe("quanto foi para cada lugar", () => {
     expect(t.categorias[0].quantos).toBe(2);
   });
 
-  it("a fatia é sobre o total do tipo, e soma 1", () => {
+  it("a fatia é sobre o que tem categoria, e soma 1", () => {
     const t = totaisPorCategoria(dados, categorias, "DIARIO");
-    expect(t.categorias[0].parte).toBeCloseTo(0.8);
+    expect(t.categorias[0].parte).toBeCloseTo(400 / 450);
     expect(t.categorias.reduce((s, c) => s + c.parte, 0)).toBeCloseTo(1);
   });
 
-  it("quem não tem categoria aparece, em vez de sumir da conta", () => {
-    expect(totaisPorCategoria(dados, categorias, "DIARIO").categorias.map((c) => c.nome)).toContain(
-      "Sem categoria",
-    );
+  it("quem não tem categoria conta no total, mas não vira linha", () => {
+    const t = totaisPorCategoria(dados, categorias, "DIARIO");
+    expect(t.totalCents).toBe(50000);
+    expect(t.categorias.map((c) => c.nome)).not.toContain("Sem categoria");
+  });
+
+  it("tudo sem categoria: total certo, lista vazia, sem dividir por zero", () => {
+    const t = totaisPorCategoria([l("2026-09-01", "DIARIO", 30)], categorias, "DIARIO");
+    expect(t).toEqual({ tipo: "DIARIO", totalCents: 3000, categorias: [] });
   });
 
   it("lançamento apagado não conta", () => {
