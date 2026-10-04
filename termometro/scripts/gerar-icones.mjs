@@ -1,6 +1,6 @@
 /**
- * Desenha os ícones do app: o selo "BP" — quadrado escuro, as duas letras em
- * serifa e o traço verde de "sobrou" embaixo. É o mesmo desenho do componente
+ * Desenha os ícones do app: o selo "$BP" — quadrado escuro, o cifrão no verde
+ * de "sobrou" e as duas letras em serifa branca. É o mesmo desenho do componente
  * `SeloBP` (src/componentes/marca.tsx), que o app mostra no menu e na entrada.
  *
  * Os arquivos ficam versionados em public/. Só é preciso rodar de novo se o
@@ -16,9 +16,8 @@
 import { chromium } from "playwright";
 
 const html = (px, escala) => `<!doctype html><html><body style="margin:0">
-<div style="width:${px}px;height:${px}px;background:#111114;display:flex;flex-direction:column;align-items:center;justify-content:center">
-  <div style="font-family:'Liberation Serif',serif;font-weight:700;color:#fff;font-size:${px * 0.44 * escala}px;line-height:1;letter-spacing:-0.02em;margin-top:${px * 0.03 * escala}px">BP</div>
-  <div style="width:${px * 0.36 * escala}px;height:${px * 0.055 * escala}px;border-radius:999px;background:#3fbf7f;margin-top:${px * 0.035 * escala}px"></div>
+<div style="width:${px}px;height:${px}px;background:#111114;display:flex;align-items:center;justify-content:center">
+  <div style="font-family:'Liberation Serif',serif;font-weight:700;color:#fff;font-size:${px * 0.4 * escala}px;line-height:1;letter-spacing:-0.03em"><span style="color:#3fbf7f">$</span>BP</div>
 </div></body></html>`;
 
 const ICONES = [
