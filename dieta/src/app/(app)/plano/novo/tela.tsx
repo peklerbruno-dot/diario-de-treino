@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { salvarPlanoNovo } from "@/app/acoes";
 import { CamposDaRefeicao, type Rascunho } from "@/componentes/editor-de-refeicao";
+import { reduzirImagem } from "@/componentes/reduzir";
 import { Botao, Cartao, Titulo, campo } from "@/componentes/pecas";
 import { litros } from "@/lib/ajustes";
 import { escreverTexto } from "@/lib/conteudo";
@@ -19,26 +20,6 @@ import type { PlanoLido } from "@/lib/plano-lido";
  */
 
 const MAXIMO_DE_ARQUIVOS = 10;
-
-/**
- * Foto de celular tem 3 a 5 MB, e a Vercel aceita 4,5 MB por envio. Reduzida a
- * 1800 px no lado maior, em JPEG, fica com uns 400 KB e continua legível para
- * o Gemini — dá para mandar as páginas todas de uma vez.
- */
-async function reduzirImagem(arquivo: File): Promise<Blob> {
-  const LADO = 1800;
-  try {
-    const bitmap = await createImageBitmap(arquivo);
-    const escala = Math.min(1, LADO / Math.max(bitmap.width, bitmap.height));
-    const tela = document.createElement("canvas");
-    tela.width = Math.round(bitmap.width * escala);
-    tela.height = Math.round(bitmap.height * escala);
-    tela.getContext("2d")!.drawImage(bitmap, 0, 0, tela.width, tela.height);
-    return await new Promise<Blob>((ok, falha) => tela.toBlob((b) => (b ? ok(b) : falha()), "image/jpeg", 0.85));
-  } catch {
-    return arquivo; // Sem como reduzir (formato estranho): vai como está.
-  }
-}
 
 type Lido = { nome: string; orientacoes: string; aguaMl: number | null; refeicoes: Rascunho[] };
 

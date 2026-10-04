@@ -22,6 +22,10 @@ export type Ajustes = {
   /** Janela dos lembretes de água: "08:00" a "21:00". */
   aguaInicio: string;
   aguaFim: string;
+  /** Manda, à noite, um resumo de como foi o dia. */
+  resumoNoturno: boolean;
+  /** A hora do resumo: "21:30". */
+  resumoHora: string;
 };
 
 export const PADRAO: Ajustes = {
@@ -33,6 +37,8 @@ export const PADRAO: Ajustes = {
   aguaIntervalo: 90,
   aguaInicio: "08:00",
   aguaFim: "21:00",
+  resumoNoturno: true,
+  resumoHora: "21:30",
 };
 
 const inteiro = (s: string | undefined, padrao: number, min: number, max: number) => {
@@ -54,6 +60,8 @@ export function lerAjustes(linhas: { chave: string; valor: string }[]): Ajustes 
     aguaIntervalo: inteiro(v.aguaIntervalo, PADRAO.aguaIntervalo, 30, 360),
     aguaInicio: hora(v.aguaInicio, PADRAO.aguaInicio),
     aguaFim: hora(v.aguaFim, PADRAO.aguaFim),
+    resumoNoturno: sim(v.resumoNoturno, PADRAO.resumoNoturno),
+    resumoHora: hora(v.resumoHora, PADRAO.resumoHora),
   };
 }
 

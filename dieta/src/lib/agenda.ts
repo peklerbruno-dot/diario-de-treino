@@ -22,6 +22,9 @@ import { type Agora, horaFalada, paraMinutos, valeNoDia } from "./datas";
  *  - **Água não atropela refeição.** Um lembrete de água a menos de 20 minutos
  *    de uma refeição é pulado: duas notificações seguidas ensinam a ignorar as
  *    duas.
+ *
+ * Além das refeições e da água, saem aqui os lembretes que você cria (remédio,
+ * creatina…) e, à noite, o resumo do dia.
  */
 
 export const TOLERANCIA = 20;
@@ -34,6 +37,15 @@ export type RefeicaoDoPlano = {
   conteudo: Conteudo;
   dias: number[];
   avisar: boolean;
+};
+
+export type LembreteSeu = {
+  id: string;
+  titulo: string;
+  texto: string;
+  horario: string;
+  dias: number[];
+  ativo: boolean;
 };
 
 export type Aviso = {
@@ -51,8 +63,12 @@ export type Situacao = {
   ajustes: Ajustes;
   /** Ids das refeições já marcadas hoje (segui, troquei ou pulei). */
   marcadas: Set<string>;
+  /** Quantas das refeições marcadas hoje foram "segui". */
+  seguidas?: number;
   /** Água bebida hoje, em ml. */
   aguaHoje: number;
+  /** Os lembretes que você criou. */
+  lembretes?: LembreteSeu[];
   /** Chaves de avisos que já saíram. */
   enviadas: Set<string>;
 };
@@ -133,5 +149,35 @@ export function avisosDevidos(s: Situacao): Aviso[] {
     }
   }
 
+  // Lembretes seus. Não dependem de plano nem de meta: tocam na hora, nos dias marcados.
+  for (const l of s.lembretes ?? []) {
+    const alvo = paraMinutos(l.horario);
+    if (!l.ativo || alvo == null || !valeNoDia(l.dias, agora.diaDaSemana)) continue;
+    if (!dentroDaJanela(agora.minutos, alvo)) continue;
+    const chave = `${agora.dia}|lembrete:${l.id}`;
+    if (s.enviadas.has(chave)) continue;
+    avisos.push({ chave, titulo: `⏰ ${l.titulo}`, corpo: l.texto || `Lembrete das ${horaFalada(l.horario)}.`, url: "/" });
+  }
+
+  // O resumo da noite: uma linha sobre o dia, para fechar com a cabeça no lugar.
+  const horaDoResumo = paraMinutos(ajustes.resumoHora);
+  if (ajustes.resumoNoturno && horaDoResumo != null && dentroDaJanela(agora.minutos, horaDoResumo)) {
+    const chave = `${agora.dia}|resumo`;
+    if (!s.enviadas.has(chave) && (doDia.length > 0 || s.aguaHoje > 0)) {
+      avisos.push({ chave, titulo: "Seu dia", corpo: resumoDoDia(doDia.length, s.marcadas.size, s.seguidas ?? 0, s.aguaHoje, ajustes.aguaMeta), url: "/historico" });
+    }
+  }
+
   return avisos;
+}
+
+/** "4 de 5 refeições no plano · 💧 1,8 L de 2,5 L". */
+export function resumoDoDia(total: number, marcadas: number, seguidas: number, agua: number, meta: number): string {
+  const partes: string[] = [];
+  if (total > 0) {
+    const faltam = total - marcadas;
+    partes.push(`${seguidas} de ${total} refeições no plano${faltam > 0 ? ` (${faltam} sem marcar)` : ""}`);
+  }
+  partes.push(agua >= meta ? `💧 meta batida (${litros(agua)})` : `💧 ${litros(agua)} de ${litros(meta)}`);
+  return partes.join(" · ");
 }

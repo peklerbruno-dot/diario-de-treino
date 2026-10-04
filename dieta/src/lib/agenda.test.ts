@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { avisosDevidos, horariosDaAgua, ritmoDaAgua, type RefeicaoDoPlano, type Situacao } from "./agenda";
+import { avisosDevidos, horariosDaAgua, resumoDoDia, ritmoDaAgua, type RefeicaoDoPlano, type Situacao } from "./agenda";
 import { PADRAO } from "./ajustes";
 import { lerTexto } from "./conteudo";
 
@@ -98,5 +98,36 @@ describe("avisos de água", () => {
   it("calcula o ritmo nas pontas", () => {
     expect(ritmoDaAgua(PADRAO, 7 * 60)).toBe(0);
     expect(ritmoDaAgua(PADRAO, 22 * 60)).toBe(PADRAO.aguaMeta);
+  });
+});
+
+describe("lembretes seus", () => {
+  const creatina = { id: "cr", titulo: "Creatina", texto: "5 g com água", horario: "08:00", dias: [], ativo: true };
+
+  it("tocam na hora, com o texto", () => {
+    expect(avisosDevidos(as("08:05", { lembretes: [creatina] }))).toEqual([
+      { chave: "2026-10-02|lembrete:cr", titulo: "⏰ Creatina", corpo: "5 g com água", url: "/" },
+    ]);
+  });
+
+  it("respeitam desligado, dias e o que já saiu", () => {
+    expect(avisosDevidos(as("08:00", { lembretes: [{ ...creatina, ativo: false }] }))).toEqual([]);
+    expect(avisosDevidos(as("08:00", { lembretes: [{ ...creatina, dias: [1] }] }))).toEqual([]);
+    expect(avisosDevidos(as("08:00", { lembretes: [creatina], enviadas: new Set(["2026-10-02|lembrete:cr"]) }))).toEqual([]);
+  });
+});
+
+describe("resumo da noite", () => {
+  it("sai na hora do resumo, contando o dia", () => {
+    const [r] = avisosDevidos(as("21:30", { marcadas: new Set(["alm"]), seguidas: 1, aguaHoje: 1500 }));
+    expect(r).toEqual({ chave: "2026-10-02|resumo", titulo: "Seu dia", corpo: "1 de 1 refeições no plano · 💧 1,5 L de 2 L", url: "/historico" });
+  });
+
+  it("conta o que ficou sem marcar e a meta batida", () => {
+    expect(resumoDoDia(5, 3, 2, 2500, 2000)).toBe("2 de 5 refeições no plano (2 sem marcar) · 💧 meta batida (2,5 L)");
+  });
+
+  it("não sai desligado", () => {
+    expect(avisosDevidos(as("21:30", { ajustes: { ...PADRAO, avisarAgua: false, resumoNoturno: false } }))).toEqual([]);
   });
 });

@@ -216,3 +216,41 @@ export async function salvarAjustes(parcial: Partial<Ajustes>) {
   );
   atualizarTudo();
 }
+
+// ---------------------------------------------------------------------------
+// Fotos e lembretes
+// ---------------------------------------------------------------------------
+
+export async function apagarFoto(id: string) {
+  await exigirSessao();
+  await bd.foto.deleteMany({ where: { id } });
+  atualizarTudo();
+}
+
+export type LembreteParaSalvar = { titulo: string; texto: string; horario: string; dias: number[]; ativo: boolean };
+
+export async function salvarLembrete(id: string | null, l: LembreteParaSalvar): Promise<{ erro?: string }> {
+  await exigirSessao();
+  const titulo = l.titulo.trim().slice(0, 60);
+  const horario = normalizarHora(l.horario);
+  if (!titulo) return { erro: "Dê um nome ao lembrete." };
+  if (!horario) return { erro: "Horário inválido. Use, por exemplo, 8:00." };
+  const dias = [...new Set(l.dias.filter((d) => Number.isInteger(d) && d >= 0 && d <= 6))].sort();
+  const dados = { titulo, texto: l.texto.trim().slice(0, 200), horario, dias: dias.length === 7 ? [] : dias, ativo: l.ativo };
+  if (id) await bd.lembrete.update({ where: { id }, data: dados });
+  else await bd.lembrete.create({ data: { id: novoId(), ...dados } });
+  atualizarTudo();
+  return {};
+}
+
+export async function alternarLembrete(id: string, ativo: boolean) {
+  await exigirSessao();
+  await bd.lembrete.updateMany({ where: { id }, data: { ativo } });
+  atualizarTudo();
+}
+
+export async function apagarLembrete(id: string) {
+  await exigirSessao();
+  await bd.lembrete.deleteMany({ where: { id } });
+  atualizarTudo();
+}

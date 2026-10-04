@@ -1,5 +1,6 @@
 import "server-only";
 import { ApiError, GoogleGenAI, Type, type Part } from "@google/genai";
+import { lerRespostaDaFoto } from "./analise";
 import { ErroDeLeitura, interpretarResposta, type PlanoLido } from "./plano-lido";
 
 export { ErroDeLeitura };
@@ -139,4 +140,74 @@ export async function lerPlano(entrada: { texto?: string; arquivos?: { tipo: str
     throw new ErroDeLeitura("Não achei refeições nesse material. Confira se é o plano alimentar, ou mande fotos mais nítidas.");
   }
   return plano;
+}
+
+// ---------------------------------------------------------------------------
+// A foto do prato
+// ---------------------------------------------------------------------------
+
+const ESQUEMA_DA_FOTO = {
+  type: Type.OBJECT,
+  properties: {
+    descricao: { type: Type.STRING, description: "Uma frase dizendo o que há no prato." },
+    itens: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          alimento: { type: Type.STRING },
+          quantidade: { type: Type.STRING, description: "Estimativa em medida caseira e gramas, ex.: '4 col. de sopa (~100 g)'." },
+        },
+        required: ["alimento", "quantidade"],
+        propertyOrdering: ["alimento", "quantidade"],
+      },
+    },
+    calorias: { type: Type.INTEGER, description: "Estimativa total em kcal." },
+    proteinas: { type: Type.INTEGER, description: "Gramas." },
+    carboidratos: { type: Type.INTEGER, description: "Gramas." },
+    gorduras: { type: Type.INTEGER, description: "Gramas." },
+    noPlano: {
+      type: Type.STRING,
+      enum: ["sim", "parcial", "nao", "sem-plano"],
+      description: "O prato corresponde à refeição do plano (considerando as substituições)? 'sem-plano' se nenhuma refeição do plano foi dada.",
+    },
+    comentario: {
+      type: Type.STRING,
+      description: "Uma ou duas frases curtas comparando com o plano: o que bateu, o que faltou ou sobrou. Tom de apoio, sem sermão.",
+    },
+  },
+  required: ["descricao", "itens", "calorias", "proteinas", "carboidratos", "gorduras", "noPlano", "comentario"],
+  propertyOrdering: ["descricao", "itens", "calorias", "proteinas", "carboidratos", "gorduras", "noPlano", "comentario"],
+};
+
+const INSTRUCOES_DA_FOTO = `Você olha a foto de um prato de comida de uma pessoa brasileira que segue um plano de nutricionista.
+Identifique os alimentos, estime as quantidades pelo tamanho no prato e estime calorias e macronutrientes.
+Se receber a refeição do plano, compare: "sim" se o prato segue o plano (valem as substituições listadas e pequenas variações de quantidade), "parcial" se segue em parte, "nao" se é outra coisa.
+Seja realista nas estimativas e escreva em português do Brasil. Se a foto não for de comida, devolva itens vazios e explique na descrição.`;
+
+/**
+ * Lê a foto do prato. `plano` é o que a refeição pedia, em texto, quando a
+ * foto é de uma refeição do plano. Devolve null quando não deu para ler — a
+ * foto é salva mesmo assim.
+ */
+export async function analisarPrato(imagem: { tipo: string; base64: string }, plano?: { nome: string; texto: string }) {
+  const c = ia();
+  if (!c) return null;
+  const partes: Part[] = [{ inlineData: { mimeType: imagem.tipo, data: imagem.base64 } }];
+  partes.push({
+    text: plano
+      ? `Refeição do plano: ${plano.nome}\nO que o plano pede (linhas com "ou" são substituições):\n${plano.texto}`
+      : "Não há refeição do plano para comparar: use noPlano = 'sem-plano'.",
+  });
+  try {
+    const r = await c.models.generateContent({
+      model: MODELO,
+      contents: [{ role: "user", parts: partes }],
+      config: { systemInstruction: INSTRUCOES_DA_FOTO, responseMimeType: "application/json", responseSchema: ESQUEMA_DA_FOTO, temperature: 0.2 },
+    });
+    return lerRespostaDaFoto(r.text ?? "");
+  } catch (e) {
+    console.error("[foto]", e);
+    return null;
+  }
 }

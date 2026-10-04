@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { ConviteParaInstalar } from "./convite-instalar";
 import { IconeAjustes, IconeHistorico, IconeHoje, IconePlano } from "./icones";
 
 const DESTINOS = [
@@ -31,6 +32,7 @@ export function Casca({ children }: { children: React.ReactNode }) {
         className="mx-auto max-w-xl px-4 pt-4"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 104px)" }}
       >
+        <ConviteParaInstalar />
         {children}
       </main>
       <nav
