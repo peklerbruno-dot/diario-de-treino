@@ -19,3 +19,15 @@ describe("ajustes", () => {
     expect(litros(1250)).toBe("1,25 L");
   });
 });
+
+describe("ajustes novos", () => {
+  it("guardam dias de treino e textos", () => {
+    const a = { ...PADRAO, treinoDias: [1, 3, 5], preTreino: "Banana com aveia", treinoAvisos: true };
+    expect(lerAjustes(escreverAjustes(a))).toEqual(a);
+  });
+
+  it("limpam dias inválidos e aceitam lista vazia", () => {
+    expect(lerAjustes([{ chave: "treinoDias", valor: "9,1,1,x" }]).treinoDias).toEqual([1]);
+    expect(lerAjustes([{ chave: "treinoDias", valor: "" }]).treinoDias).toEqual([]);
+  });
+});

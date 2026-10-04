@@ -3,7 +3,8 @@ import { lerAjustes, type Ajustes } from "./ajustes";
 import { normalizarAnalise, somarDia, type Analise } from "./analise";
 import type { RefeicaoDoPlano } from "./agenda";
 import { bd } from "./bd";
-import { normalizarConteudo } from "./conteudo";
+import { escreverTexto, normalizarConteudo } from "./conteudo";
+import { normalizarPlanejamento } from "./semana";
 import { paraMinutos, somarDias } from "./datas";
 
 /** As leituras do banco que mais de uma tela usa. */
@@ -118,4 +119,37 @@ export async function historico(ate: string, n: number): Promise<DiaDoHistorico[
 
 export async function lembretes() {
   return bd.lembrete.findMany({ orderBy: [{ horario: "asc" }, { criadoEm: "asc" }] });
+}
+
+/** O plano em uso, em texto — o contexto que o Gemini recebe. */
+export function planoEmTexto(p: PlanoCompleto) {
+  return {
+    orientacoes: p.orientacoes,
+    refeicoes: p.refeicoes.map((r) => ({ nome: r.nome, horario: r.horario, texto: escreverTexto(r.conteudo), nota: r.nota })),
+  };
+}
+
+export type MedidaVista = { id: string; dia: string; peso: number | null; cintura: number | null; quadril: number | null; braco: number | null; nota: string };
+
+/** As medidas, da mais nova para a mais velha. Peso em kg, medidas em cm. */
+export async function medidas(limite = 120): Promise<MedidaVista[]> {
+  const linhas = await bd.medida.findMany({ orderBy: [{ dia: "desc" }, { criadoEm: "desc" }], take: limite });
+  const cm = (mm: number | null) => (mm == null ? null : mm / 10);
+  return linhas.map((m) => ({
+    id: m.id,
+    dia: m.dia,
+    peso: m.pesoG == null ? null : m.pesoG / 1000,
+    cintura: cm(m.cinturaMm),
+    quadril: cm(m.quadrilMm),
+    braco: cm(m.bracoMm),
+    nota: m.nota,
+  }));
+}
+
+/** O planejamento de semana mais recente. */
+export async function semanaAtual() {
+  const s = await bd.semana.findFirst({ orderBy: { criadoEm: "desc" } });
+  if (!s) return null;
+  const dados = normalizarPlanejamento(s.dados);
+  return dados ? { id: s.id, inicio: s.inicio, criadoEm: s.criadoEm.toISOString(), dados, marcados: s.marcados } : null;
 }

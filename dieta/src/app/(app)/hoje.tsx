@@ -5,6 +5,7 @@ import { useOptimistic, useState, useTransition } from "react";
 import { beberAgua, desfazerAgua, marcarRefeicao } from "@/app/acoes";
 import { ConviteDeAvisos } from "@/componentes/avisos";
 import { BotaoDeFoto, Miniaturas } from "@/componentes/foto-do-prato";
+import { PossoTrocar } from "@/componentes/posso-trocar";
 import { IconeGota } from "@/componentes/icones";
 import { Botao, Cartao, Titulo, campo } from "@/componentes/pecas";
 import { litros, type Ajustes } from "@/lib/ajustes";
@@ -12,7 +13,7 @@ import { ritmoDaAgua } from "@/lib/agenda";
 import type { Conteudo } from "@/lib/conteudo";
 import { milhar, somarDia } from "@/lib/analise";
 import type { FotoDoDia, Marca, RefeicaoCompleta } from "@/lib/consultas";
-import { type Agora, diaPorExtenso, horaFalada, paraMinutos } from "@/lib/datas";
+import { type Agora, diaPorExtenso, horaFalada, paraMinutos, valeNoDia } from "@/lib/datas";
 
 type Props = {
   agora: Agora;
@@ -26,6 +27,9 @@ type Props = {
   ajustes: Ajustes;
   chavePublica: string;
 };
+
+/** O app do Diário de treino, deste mesmo repositório. */
+const DIARIO = process.env.NEXT_PUBLIC_DIARIO_URL || "https://diario-de-treino-lemon.vercel.app";
 
 const maiuscula = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -89,9 +93,25 @@ export function TelaHoje(p: Props) {
         </Cartao>
       )}
 
-      <div className="mb-4">
+      <div className="mb-4 grid grid-cols-2 gap-2">
         <BotaoDeFoto dia={p.agora.dia} refeicoes={p.refeicoes} sugerida={maisPerto?.id} />
+        {p.temPlano ? <PossoTrocar refeicoes={p.refeicoes} sugerida={maisPerto?.id} /> : <span />}
       </div>
+
+      {p.ajustes.treinoAvisos && valeNoDia(p.ajustes.treinoDias, p.agora.diaDaSemana) && (
+        <Cartao className="mb-4 !bg-agua-clara">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="font-semibold">🏋️ Dia de treino · {horaFalada(p.ajustes.treinoHora)}</p>
+              {p.ajustes.preTreino && <p className="mt-1 text-[14.5px] text-grafite">Pré: {p.ajustes.preTreino}</p>}
+              {p.ajustes.posTreino && <p className="text-[14.5px] text-grafite">Pós: {p.ajustes.posTreino}</p>}
+            </div>
+            <a href={DIARIO} className="shrink-0 rounded-full bg-cartao px-3 py-1.5 text-[13.5px] font-medium text-agua shadow-cartao">
+              Diário de treino ↗
+            </a>
+          </div>
+        </Cartao>
+      )}
 
       <CartaoAgua agua={p.agua} ajustes={p.ajustes} minutos={p.agora.minutos} />
 

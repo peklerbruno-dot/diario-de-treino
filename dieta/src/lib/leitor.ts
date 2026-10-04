@@ -1,6 +1,7 @@
 import "server-only";
 import { ApiError, GoogleGenAI, Type, type Part } from "@google/genai";
 import { lerRespostaDaFoto } from "./analise";
+import { lerJson, normalizarPlanejamento, normalizarTroca, type Planejamento, type RespostaDeTroca } from "./semana";
 import { ErroDeLeitura, interpretarResposta, type PlanoLido } from "./plano-lido";
 
 export { ErroDeLeitura };
@@ -212,4 +213,136 @@ export async function analisarPrato(imagem: { tipo: string; base64: string }, pl
     console.error("[foto]", e);
     return null;
   }
+}
+
+// ---------------------------------------------------------------------------
+// O plano inteiro em texto — o contexto do "posso trocar?" e da semana
+// ---------------------------------------------------------------------------
+
+export type PlanoEmTexto = { orientacoes: string; refeicoes: { nome: string; horario: string; texto: string; nota: string }[] };
+
+const planoComoTexto = (p: PlanoEmTexto) =>
+  [
+    p.orientacoes && `Orientações gerais da nutricionista:\n${p.orientacoes}`,
+    ...p.refeicoes.map((r) => `${r.nome} (${r.horario}):\n${r.texto}${r.nota ? `\nObservação: ${r.nota}` : ""}`),
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+
+async function gerarJson(instrucoes: string, pedido: string, esquema: object, temperatura = 0.3): Promise<unknown> {
+  const c = ia();
+  if (!c) throw new ErroDeLeitura("A inteligência do app está desligada: falta a chave GEMINI_API_KEY na Vercel.");
+  try {
+    const r = await c.models.generateContent({
+      model: MODELO,
+      contents: [{ role: "user", parts: [{ text: pedido }] }],
+      config: { systemInstruction: instrucoes, responseMimeType: "application/json", responseSchema: esquema, temperature: temperatura },
+    });
+    return lerJson(r.text ?? "");
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 429) throw new ErroDeLeitura("A cota gratuita do Gemini acabou por agora. Tente de novo daqui a alguns minutos.");
+    console.error("[gemini]", e);
+    throw new ErroDeLeitura("Não consegui pensar nisso agora. Tente de novo em instantes.");
+  }
+}
+
+// ---------------------------------------------------------------------------
+// "Posso trocar isso?"
+// ---------------------------------------------------------------------------
+
+const ESQUEMA_DA_TROCA = {
+  type: Type.OBJECT,
+  properties: {
+    veredito: { type: Type.STRING, enum: ["pode", "com-ajuste", "melhor-nao"] },
+    resposta: { type: Type.STRING, description: "2 a 4 frases curtas, diretas, em tom de apoio." },
+    sugestao: { type: Type.STRING, description: "A troca mais próxima do plano ou como ajustar o pedido (porção, acompanhamento). Vazio se não precisar." },
+  },
+  required: ["veredito", "resposta", "sugestao"],
+  propertyOrdering: ["veredito", "resposta", "sugestao"],
+};
+
+const INSTRUCOES_DA_TROCA = `Você ajuda uma pessoa a seguir o plano alimentar que a nutricionista dela passou. Ela pergunta se pode trocar uma refeição ou um alimento por outro.
+Responda com base no plano e nas orientações dela — não em regras genéricas suas. Valem as substituições que o próprio plano lista.
+- "pode": a troca respeita o plano (ou é uma substituição prevista).
+- "com-ajuste": dá, desde que ajuste algo (porção, acompanhamento, preparo) — diga exatamente o quê.
+- "melhor-nao": foge do plano; sugira a alternativa mais parecida que caiba nele.
+Seja prático e gentil, sem sermão nem terrorismo nutricional. Se for algo para uma ocasião (aniversário, restaurante), ajude a escolher a melhor opção do cardápio. Não dê diagnóstico médico. Português do Brasil.`;
+
+export async function perguntarTroca(pergunta: string, plano: PlanoEmTexto, refeicao?: string): Promise<RespostaDeTroca> {
+  const pedido = `${planoComoTexto(plano)}\n\n${refeicao ? `Refeição em questão: ${refeicao}\n` : ""}Pergunta: ${pergunta.slice(0, 600)}`;
+  const r = normalizarTroca(await gerarJson(INSTRUCOES_DA_TROCA, pedido, ESQUEMA_DA_TROCA));
+  if (!r) throw new ErroDeLeitura("A resposta veio num formato estranho. Tente perguntar de novo.");
+  return r;
+}
+
+// ---------------------------------------------------------------------------
+// A semana: cardápio de marmitas, preparo e lista de compras
+// ---------------------------------------------------------------------------
+
+const ESQUEMA_DA_SEMANA = {
+  type: Type.OBJECT,
+  properties: {
+    cardapio: {
+      type: Type.ARRAY,
+      description: "Os 7 dias, de segunda a domingo.",
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          dia: { type: Type.STRING, description: "Ex.: 'Segunda'." },
+          refeicoes: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                nome: { type: Type.STRING, description: "O nome da refeição como está no plano." },
+                prato: { type: Type.STRING, description: "O que comer, concreto e com porção aproximada." },
+              },
+              required: ["nome", "prato"],
+              propertyOrdering: ["nome", "prato"],
+            },
+          },
+        },
+        required: ["dia", "refeicoes"],
+        propertyOrdering: ["dia", "refeicoes"],
+      },
+    },
+    preparo: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Passo a passo do preparo das marmitas no dia de cozinhar, em ordem, aproveitando forno e fogão ao mesmo tempo." },
+    compras: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          secao: { type: Type.STRING, description: "Hortifruti, Açougue e peixaria, Mercearia, Laticínios e ovos, Padaria, Congelados, Outros." },
+          itens: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: { item: { type: Type.STRING }, quantidade: { type: Type.STRING, description: "Quantidade para a semana inteira, em unidade de mercado (kg, g, maço, dúzia, pacote)." } },
+              required: ["item", "quantidade"],
+              propertyOrdering: ["item", "quantidade"],
+            },
+          },
+        },
+        required: ["secao", "itens"],
+        propertyOrdering: ["secao", "itens"],
+      },
+    },
+    dicas: { type: Type.STRING, description: "1 a 3 dicas curtas: conservação, congelar, variar." },
+  },
+  required: ["cardapio", "preparo", "compras", "dicas"],
+  propertyOrdering: ["cardapio", "preparo", "compras", "dicas"],
+};
+
+const INSTRUCOES_DA_SEMANA = `Você monta o planejamento da semana de uma pessoa brasileira que segue o plano alimentar da nutricionista.
+- Cardápio: para cada dia (segunda a domingo) e cada refeição do plano, diga o que comer, concreto. Onde o plano for exato, repita-o (variando entre as substituições previstas). Onde o plano for uma referência ("marmita", "PF", "lanche leve"), crie pratos que sigam as orientações dela e as regras de montagem, com comida brasileira do dia a dia, simples e barata, variando ao longo da semana.
+- Refeições que vão de marmita: cozinhe em lote (2 ou 3 bases de proteína e carboidrato combinadas de jeitos diferentes), para caber num preparo de 1h30 a 2h no dia de cozinhar.
+- Preparo: passo a passo prático, em ordem, do dia de cozinhar.
+- Compras: tudo o que a semana pede, somado, agrupado por seção do mercado.
+- Respeite as preferências e restrições informadas. Não invente regras nutricionais que o plano não tem. Português do Brasil.`;
+
+export async function planejarSemana(plano: PlanoEmTexto, preferencias: string): Promise<Planejamento> {
+  const pedido = `${planoComoTexto(plano)}\n\n${preferencias.trim() ? `Preferências e restrições: ${preferencias.trim().slice(0, 600)}` : "Sem preferências informadas."}`;
+  const p = normalizarPlanejamento(await gerarJson(INSTRUCOES_DA_SEMANA, pedido, ESQUEMA_DA_SEMANA, 0.6));
+  if (!p) throw new ErroDeLeitura("O planejamento veio vazio. Tente de novo.");
+  return p;
 }

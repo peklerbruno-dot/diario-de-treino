@@ -4,12 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { ConviteParaInstalar } from "./convite-instalar";
-import { IconeAjustes, IconeHistorico, IconeHoje, IconePlano } from "./icones";
+import { IconeAjustes, IconeHistorico, IconeHoje, IconePlano, IconeSemana } from "./icones";
 
 const DESTINOS = [
   { href: "/", rotulo: "Hoje", Icone: IconeHoje },
   { href: "/plano", rotulo: "Plano", Icone: IconePlano },
-  { href: "/historico", rotulo: "Histórico", Icone: IconeHistorico },
+  { href: "/semana", rotulo: "Semana", Icone: IconeSemana },
+  { href: "/historico", rotulo: "Progresso", Icone: IconeHistorico },
   { href: "/ajustes", rotulo: "Ajustes", Icone: IconeAjustes },
 ];
 

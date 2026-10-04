@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { Miniaturas } from "@/componentes/foto-do-prato";
-import { Botao, Cartao, Titulo } from "@/componentes/pecas";
+import { CompartilharSemana } from "@/componentes/compartilhar-semana";
+import { PesoEMedidas } from "@/componentes/medidas";
+import { Cartao, Titulo } from "@/componentes/pecas";
 import { milhar } from "@/lib/analise";
-import { textoParaNutricionista } from "@/lib/relatorio";
 import { litros } from "@/lib/ajustes";
-import type { DiaDoHistorico } from "@/lib/consultas";
+import type { DiaDoHistorico, MedidaVista } from "@/lib/consultas";
 import { diaCurto, diaPorExtenso, horaFalada } from "@/lib/datas";
 
 const COR = { seguiu: "bg-folha", trocou: "bg-troca", pulou: "bg-pulou" } as const;
@@ -16,7 +17,19 @@ const ROTULO = { seguiu: "segui", trocou: "troquei", pulou: "pulei" } as const;
  * Como foi o mês: por semana, quanto do plano foi seguido e quantos dias a
  * água bateu a meta; por dia, o detalhe. É o que levar para a consulta.
  */
-export function TelaHistorico({ dias, metaDeAgua, nomeDoPlano }: { dias: DiaDoHistorico[]; metaDeAgua: number; nomeDoPlano: string }) {
+export function TelaHistorico({
+  dias,
+  medidas,
+  hoje,
+  metaDeAgua,
+  nomeDoPlano,
+}: {
+  dias: DiaDoHistorico[];
+  medidas: MedidaVista[];
+  hoje: string;
+  metaDeAgua: number;
+  nomeDoPlano: string;
+}) {
   const temAlgo = (d: DiaDoHistorico) => d.seguiu + d.trocou + d.pulou + d.agua + d.fotos.length > 0;
   // Semana sem nada marcado não vira cartão, e a lista de dias para no
   // primeiro dia com registro: no começo do uso, 28 linhas vazias só assustam.
@@ -28,14 +41,18 @@ export function TelaHistorico({ dias, metaDeAgua, nomeDoPlano }: { dias: DiaDoHi
 
   return (
     <>
-      <Titulo>Histórico</Titulo>
+      <Titulo>Progresso</Titulo>
 
-      {algumRegistro && <Compartilhar dias={dias} metaDeAgua={metaDeAgua} nomeDoPlano={nomeDoPlano} />}
+      <div className="mb-4">
+        <PesoEMedidas lista={medidas} hoje={hoje} />
+      </div>
+
+      {(algumRegistro || medidas.length > 0) && <CompartilharSemana dias={dias} medidas={medidas} metaDeAgua={metaDeAgua} nomeDoPlano={nomeDoPlano} />}
 
       {!algumRegistro && (
         <Cartao>
           <p className="text-grafite">
-            Ainda não há nada aqui. Conforme você marcar as refeições e a água na tela Hoje, cada semana aparece com o
+            Ainda não há refeições marcadas. Conforme você marcar as refeições e a água na tela Hoje, cada semana aparece com o
             quanto seguiu do plano.
           </p>
         </Cartao>
@@ -130,41 +147,5 @@ function LinhaDoDia({ d, metaDeAgua }: { d: DiaDoHistorico; metaDeAgua: number }
       )}
       {aberto && <Miniaturas fotos={d.fotos} />}
     </div>
-  );
-}
-
-/** Manda o resumo das últimas semanas pelo share sheet do iPhone (WhatsApp, e-mail…). */
-function Compartilhar({ dias, metaDeAgua, nomeDoPlano }: { dias: DiaDoHistorico[]; metaDeAgua: number; nomeDoPlano: string }) {
-  const [recado, setRecado] = useState("");
-  const enviar = async (n: number) => {
-    const texto = textoParaNutricionista(
-      dias.slice(0, n).map((d) => ({ ...d, fotos: d.fotos.length })),
-      metaDeAgua,
-      nomeDoPlano,
-    );
-    try {
-      if (navigator.share) await navigator.share({ text: texto });
-      else {
-        await navigator.clipboard.writeText(texto);
-        setRecado("Resumo copiado. É só colar no WhatsApp ou no e-mail.");
-      }
-    } catch {
-      /* fechou o compartilhar sem escolher: tudo bem */
-    }
-  };
-  return (
-    <Cartao className="mb-4">
-      <p className="font-semibold">Para a nutricionista</p>
-      <p className="mt-0.5 text-[14px] text-grafite">Um resumo em texto: quanto seguiu do plano, água, trocas e o que mais pulou.</p>
-      <div className="mt-3 flex gap-2">
-        <Botao tipo="primario" className="flex-1" onClick={() => enviar(14)}>
-          Últimas 2 semanas
-        </Botao>
-        <Botao className="flex-1" onClick={() => enviar(28)}>
-          Últimas 4
-        </Botao>
-      </div>
-      {recado && <p className="mt-2 text-[14px] text-grafite">{recado}</p>}
-    </Cartao>
   );
 }

@@ -3,8 +3,9 @@
 import { useState, useTransition } from "react";
 import { acaoDeSair, salvarAjustes } from "@/app/acoes";
 import { useAvisos } from "@/componentes/avisos";
+import { SeletorDeDias } from "@/componentes/editor-de-refeicao";
 import { Lembretes } from "@/componentes/lembretes";
-import { Botao, Cartao, Chave, Titulo } from "@/componentes/pecas";
+import { Botao, Cartao, Chave, Titulo, campo } from "@/componentes/pecas";
 import type { LembreteSeu } from "@/lib/agenda";
 import { litros, type Ajustes } from "@/lib/ajustes";
 
@@ -48,6 +49,24 @@ export function TelaAjustes(p: Props) {
             <option value={30}>30 min antes</option>
           </select>
         </Linha>
+        <Linha rotulo="Perguntar “como foi?”">
+          <Chave ligado={a.cobrarMarcacao} rotulo="Perguntar como foi a refeição" aoMudar={(v) => salvar({ cobrarMarcacao: v })} />
+        </Linha>
+        {a.cobrarMarcacao && (
+          <Linha rotulo="Se não marcar em">
+            <select
+              className="rounded-[10px] bg-papel px-2 py-1.5 text-[16px]"
+              value={a.cobrarDepois}
+              onChange={(e) => salvar({ cobrarDepois: Number(e.target.value) })}
+            >
+              {[30, 60, 90, 120].map((m) => (
+                <option key={m} value={m}>
+                  {m < 60 ? `${m} min` : m % 60 ? `${Math.floor(m / 60)}h${m % 60}` : `${m / 60} h`}
+                </option>
+              ))}
+            </select>
+          </Linha>
+        )}
       </Cartao>
       <p className="mt-1.5 px-1 text-[13px] leading-snug text-fosco">
         Dá para desligar o aviso de uma refeição só na tela Plano. Refeição já marcada não avisa.
@@ -72,9 +91,27 @@ export function TelaAjustes(p: Props) {
           </Linha>
         )}
       </Cartao>
+      <Cartao className="mt-3 divide-y divide-linha !py-1">
+        <Linha rotulo="Resumo da semana (domingo)">
+          <Chave ligado={a.resumoSemanal} rotulo="Resumo da semana" aoMudar={(v) => salvar({ resumoSemanal: v })} />
+        </Linha>
+        {a.resumoSemanal && (
+          <Linha rotulo="Às">
+            <input
+              type="time"
+              className="w-[104px] rounded-[10px] bg-papel px-2 py-1 text-[16px] tabular"
+              defaultValue={a.resumoSemanalHora}
+              onBlur={(e) => e.target.value && salvar({ resumoSemanalHora: e.target.value })}
+            />
+          </Linha>
+        )}
+      </Cartao>
       <p className="mt-1.5 px-1 text-[13px] leading-snug text-fosco">
-        Uma notificação com quantas refeições seguiram o plano e quanto de água você bebeu.
+        À noite, quantas refeições seguiram o plano e a água. No domingo, a semana inteira e o ponto que mais pede atenção.
       </p>
+
+      <p className="sobrescrito mb-2 mt-6 px-1">Treino</p>
+      <Treino a={a} salvar={salvar} />
 
       <p className="sobrescrito mb-2 mt-6 px-1">Água</p>
       <Cartao className="divide-y divide-linha !py-1">
@@ -131,6 +168,53 @@ export function TelaAjustes(p: Props) {
           Sair deste aparelho
         </Botao>
       </form>
+    </>
+  );
+}
+
+function Treino({ a, salvar }: { a: Ajustes; salvar: (p: Partial<Ajustes>) => void }) {
+  return (
+    <>
+      <Cartao className="divide-y divide-linha !py-1">
+        <Linha rotulo="Avisos de pré e pós-treino">
+          <Chave ligado={a.treinoAvisos} rotulo="Avisos de treino" aoMudar={(v) => salvar({ treinoAvisos: v })} />
+        </Linha>
+        {a.treinoAvisos && (
+          <div className="space-y-3 py-3">
+            <SeletorDeDias dias={a.treinoDias.length === 0 ? [] : a.treinoDias} aoMudar={(dias) => salvar({ treinoDias: dias })} />
+            <div className="flex gap-2">
+              <label className="flex-1">
+                <span className="text-[13px] text-fosco">Começa às</span>
+                <input type="time" className={`${campo} tabular`} defaultValue={a.treinoHora} onBlur={(e) => e.target.value && salvar({ treinoHora: e.target.value })} />
+              </label>
+              <label className="flex-1">
+                <span className="text-[13px] text-fosco">Dura</span>
+                <select className={campo} value={a.treinoDuracao} onChange={(e) => salvar({ treinoDuracao: Number(e.target.value) })}>
+                  {[30, 45, 60, 75, 90, 120].map((m) => (
+                    <option key={m} value={m}>
+                      {m} min
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <label className="block">
+              <span className="text-[13px] text-fosco">Pré-treino (1 h antes)</span>
+              <input className={campo} defaultValue={a.preTreino} onBlur={(e) => salvar({ preTreino: e.target.value })} placeholder="Ex.: banana com aveia" />
+            </label>
+            <label className="block">
+              <span className="text-[13px] text-fosco">Pós-treino (quando acaba)</span>
+              <input className={campo} defaultValue={a.posTreino} onBlur={(e) => salvar({ posTreino: e.target.value })} placeholder="Ex.: whey com fruta" />
+            </label>
+          </div>
+        )}
+      </Cartao>
+      <p className="mt-1.5 px-1 text-[13px] leading-snug text-fosco">
+        {a.treinoDias.length === 0 && a.treinoAvisos
+          ? "Com nenhum dia escolhido, vale para todos os dias. "
+          : ""}
+        Nos dias de treino, a tela Hoje mostra o pré e o pós e um atalho para o Diário de treino.
+      </p>
     </>
   );
 }

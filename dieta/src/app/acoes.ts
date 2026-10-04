@@ -6,6 +6,7 @@ import { escreverAjustes, lerAjustes, type Ajustes } from "@/lib/ajustes";
 import { entrar, exigirSessao, sair } from "@/lib/auth";
 import { bd } from "@/lib/bd";
 import { lerTexto } from "@/lib/conteudo";
+import { normalizarPlanejamento } from "@/lib/semana";
 import { hoje, normalizarHora } from "@/lib/datas";
 import { novoId } from "@/lib/ids";
 
@@ -252,5 +253,69 @@ export async function alternarLembrete(id: string, ativo: boolean) {
 export async function apagarLembrete(id: string) {
   await exigirSessao();
   await bd.lembrete.deleteMany({ where: { id } });
+  atualizarTudo();
+}
+
+// ---------------------------------------------------------------------------
+// Peso e medidas
+// ---------------------------------------------------------------------------
+
+/** "72,4" → 72400 (gramas); "82,5" cm → 825 (mm). Vazio ou absurdo → null. */
+const decimal = (s: string, fator: number, min: number, max: number) => {
+  const n = Number(String(s).replace(",", ".").trim());
+  return s.trim() && Number.isFinite(n) && n >= min && n <= max ? Math.round(n * fator) : null;
+};
+
+export async function salvarMedida(m: { dia: string; peso: string; cintura: string; quadril: string; braco: string; nota: string }): Promise<{ erro?: string }> {
+  await exigirSessao();
+  const dia = ehDia(m.dia) ? m.dia : hoje();
+  const dados = {
+    pesoG: decimal(m.peso, 1000, 20, 400),
+    cinturaMm: decimal(m.cintura, 10, 30, 250),
+    quadrilMm: decimal(m.quadril, 10, 30, 250),
+    bracoMm: decimal(m.braco, 10, 10, 80),
+    nota: m.nota.trim().slice(0, 200),
+  };
+  if (dados.pesoG == null && dados.cinturaMm == null && dados.quadrilMm == null && dados.bracoMm == null) {
+    return { erro: "Preencha pelo menos o peso ou uma medida (use vírgula: 72,4)." };
+  }
+  await bd.medida.create({ data: { id: novoId(), dia, ...dados } });
+  atualizarTudo();
+  return {};
+}
+
+export async function apagarMedida(id: string) {
+  await exigirSessao();
+  await bd.medida.deleteMany({ where: { id } });
+  atualizarTudo();
+}
+
+// ---------------------------------------------------------------------------
+// Lista de compras da semana
+// ---------------------------------------------------------------------------
+
+export async function marcarComprado(semanaId: string, chave: string, comprado: boolean) {
+  await exigirSessao();
+  const s = await bd.semana.findUnique({ where: { id: semanaId }, select: { marcados: true } });
+  if (!s) return;
+  const marcados = new Set(s.marcados);
+  if (comprado) marcados.add(chave);
+  else marcados.delete(chave);
+  await bd.semana.update({ where: { id: semanaId }, data: { marcados: [...marcados] } });
+  atualizarTudo();
+}
+
+/** Acrescenta um item à mão na lista (seção "Outros"). */
+export async function adicionarCompra(semanaId: string, item: string) {
+  await exigirSessao();
+  const nome = item.trim().slice(0, 80);
+  const s = await bd.semana.findUnique({ where: { id: semanaId } });
+  if (!s || !nome) return;
+  const dados = normalizarPlanejamento(s.dados);
+  if (!dados) return;
+  const outros = dados.compras.find((c) => c.secao === "Outros") ?? { secao: "Outros", itens: [] };
+  if (!dados.compras.includes(outros)) dados.compras.push(outros);
+  outros.itens.push({ item: nome, quantidade: "" });
+  await bd.semana.update({ where: { id: semanaId }, data: { dados } });
   atualizarTudo();
 }

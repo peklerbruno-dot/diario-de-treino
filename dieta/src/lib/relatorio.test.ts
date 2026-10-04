@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { textoParaNutricionista, type DiaDoRelatorio } from "./relatorio";
+import { linhaDoPeso, resumoDaSemana, textoParaNutricionista, type DiaDoRelatorio } from "./relatorio";
 
 const dia = (d: string, extra: Partial<DiaDoRelatorio> = {}): DiaDoRelatorio => ({
   dia: d, seguiu: 0, trocou: 0, pulou: 0, agua: 0, calorias: 0, fotos: 0, registros: [], ...extra,
@@ -26,5 +26,34 @@ describe("textoParaNutricionista", () => {
 
   it("avisa quando não há nada", () => {
     expect(textoParaNutricionista([dia("2026-10-01")], 2000, "x")).toBe("Ainda não há registros para resumir.");
+  });
+});
+
+describe("resumoDaSemana", () => {
+  const r = (nome: string, estado: string) => ({ nome, horario: "16:00", estado, nota: "" });
+  it("aponta a refeição mais pulada", () => {
+    const dias = [
+      dia("a", { seguiu: 3, pulou: 1, agua: 2000, registros: [r("Lanche", "pulou")] }),
+      dia("b", { seguiu: 3, pulou: 1, agua: 2000, registros: [r("Lanche", "pulou")] }),
+    ];
+    expect(resumoDaSemana(dias, 2000)).toBe("75% no plano · água na meta em 2 de 2 dias — ⚠️ você pulou o lanche 2×");
+  });
+  it("comemora a semana boa", () => {
+    expect(resumoDaSemana([dia("a", { seguiu: 5, agua: 2000 })], 2000)).toBe("100% no plano · água na meta em 1 de 1 dias — 🎉 semana redonda");
+  });
+  it("lembra da água", () => {
+    expect(resumoDaSemana([dia("a", { seguiu: 1, agua: 100 }), dia("b", { agua: 0 })], 2000)).toContain("água ficou abaixo");
+  });
+});
+
+describe("linhaDoPeso", () => {
+  it("mostra o peso e a variação desde antes do período", () => {
+    const m = [
+      { dia: "2026-10-04", peso: 72.4 },
+      { dia: "2026-09-27", peso: 73 },
+    ];
+    expect(linhaDoPeso(m, "2026-09-28")).toEqual(["Peso: 72,4 kg (−0,6 kg desde 27/9)"]);
+    expect(linhaDoPeso(m.slice(0, 1), "2026-09-28")).toEqual(["Peso: 72,4 kg (4/10)"]);
+    expect(linhaDoPeso([], "x")).toEqual([]);
   });
 });

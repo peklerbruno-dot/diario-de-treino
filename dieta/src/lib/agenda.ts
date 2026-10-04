@@ -69,6 +69,8 @@ export type Situacao = {
   aguaHoje: number;
   /** Os lembretes que você criou. */
   lembretes?: LembreteSeu[];
+  /** O texto do resumo da semana (só aos domingos; quem chama monta). */
+  resumoDaSemana?: string;
   /** Chaves de avisos que já saíram. */
   enviadas: Set<string>;
 };
@@ -157,6 +159,43 @@ export function avisosDevidos(s: Situacao): Aviso[] {
     const chave = `${agora.dia}|lembrete:${l.id}`;
     if (s.enviadas.has(chave)) continue;
     avisos.push({ chave, titulo: `⏰ ${l.titulo}`, corpo: l.texto || `Lembrete das ${horaFalada(l.horario)}.`, url: "/" });
+  }
+
+  // "Como foi o almoço?": a refeição passou da hora e ninguém marcou. Um empurrão
+  // só, e só para as refeições que avisam — quem desligou o aviso de uma
+  // refeição não quer ouvir falar dela.
+  if (ajustes.cobrarMarcacao) {
+    for (const r of doDia) {
+      const horario = paraMinutos(r.horario);
+      if (horario == null || !r.avisar || s.marcadas.has(r.id)) continue;
+      if (!dentroDaJanela(agora.minutos, horario + ajustes.cobrarDepois)) continue;
+      const chave = `${agora.dia}|cobrar:${r.id}`;
+      if (s.enviadas.has(chave)) continue;
+      avisos.push({ chave, titulo: `Como foi o ${r.nome.toLowerCase()}?`, corpo: "Toque para marcar: segui, troquei ou pulei.", url: `/#r-${r.id}` });
+    }
+  }
+
+  // Treino: pré uma hora antes, pós quando acaba.
+  if (ajustes.treinoAvisos && valeNoDia(ajustes.treinoDias, agora.diaDaSemana)) {
+    const inicio = paraMinutos(ajustes.treinoHora);
+    if (inicio != null) {
+      const momentos = [
+        { tipo: "pre", alvo: inicio - 60, titulo: `🏋️ Treino às ${horaFalada(ajustes.treinoHora)} — hora do pré-treino`, corpo: ajustes.preTreino || "Uma refeição leve agora, para treinar bem." },
+        { tipo: "pos", alvo: inicio + ajustes.treinoDuracao, titulo: "🏋️ Pós-treino", corpo: ajustes.posTreino || "Hora da refeição pós-treino." },
+      ];
+      for (const m of momentos) {
+        const chave = `${agora.dia}|treino:${m.tipo}`;
+        if (m.alvo < 0 || !dentroDaJanela(agora.minutos, m.alvo) || s.enviadas.has(chave)) continue;
+        avisos.push({ chave, titulo: m.titulo, corpo: m.corpo, url: "/" });
+      }
+    }
+  }
+
+  // O resumo da semana, no domingo.
+  const horaDaSemana = paraMinutos(ajustes.resumoSemanalHora);
+  if (ajustes.resumoSemanal && agora.diaDaSemana === 0 && s.resumoDaSemana && horaDaSemana != null && dentroDaJanela(agora.minutos, horaDaSemana)) {
+    const chave = `${agora.dia}|semana`;
+    if (!s.enviadas.has(chave)) avisos.push({ chave, titulo: "Sua semana", corpo: s.resumoDaSemana, url: "/historico" });
   }
 
   // O resumo da noite: uma linha sobre o dia, para fechar com a cabeça no lugar.

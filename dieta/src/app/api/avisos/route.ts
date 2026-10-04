@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { avisosDevidos } from "@/lib/agenda";
 import { bd } from "@/lib/bd";
-import { ajustes, planoAtivo, situacaoDoDia } from "@/lib/consultas";
+import { ajustes, historico, planoAtivo, situacaoDoDia } from "@/lib/consultas";
+import { resumoDaSemana } from "@/lib/relatorio";
 import { agoraNoFuso } from "@/lib/datas";
 import { enviarParaTodos } from "@/lib/push";
 
@@ -41,6 +42,15 @@ export async function GET(req: Request) {
     bd.lembrete.findMany({ where: { ativo: true } }),
   ]);
 
+  // O resumo da semana só é montado no domingo, que é quando ele pode sair.
+  const semana =
+    agora.diaDaSemana === 0 && a.resumoSemanal
+      ? resumoDaSemana(
+          (await historico(agora.dia, 7)).map((d) => ({ ...d, fotos: d.fotos.length })),
+          a.aguaMeta,
+        )
+      : undefined;
+
   const devidos = avisosDevidos({
     agora,
     refeicoes: plano?.refeicoes ?? [],
@@ -49,6 +59,7 @@ export async function GET(req: Request) {
     seguidas: Object.values(dia.marcas).filter((m) => m.estado === "seguiu").length,
     aguaHoje: dia.agua,
     lembretes,
+    resumoDaSemana: semana,
     enviadas: new Set(enviadas.map((e) => e.chave)),
   });
 
