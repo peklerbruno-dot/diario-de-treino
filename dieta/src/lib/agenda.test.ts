@@ -131,3 +131,26 @@ describe("resumo da noite", () => {
     expect(avisosDevidos(as("21:30", { ajustes: { ...PADRAO, avisarAgua: false, resumoNoturno: false } }))).toEqual([]);
   });
 });
+
+describe("cobrança, treino e semana", () => {
+  it("pergunta como foi a refeição não marcada uma hora depois", () => {
+    const [a] = avisosDevidos(as("13:30"));
+    expect(a).toEqual({ chave: "2026-10-02|cobrar:alm", titulo: "Como foi o almoço?", corpo: "Toque para marcar: segui, troquei ou pulei.", url: "/#r-alm" });
+    expect(avisosDevidos(as("13:30", { marcadas: new Set(["alm"]) }))).toEqual([]);
+    expect(avisosDevidos(as("13:30", { ajustes: { ...PADRAO, avisarAgua: false, cobrarMarcacao: false } }))).toEqual([]);
+  });
+
+  it("avisa pré e pós-treino só nos dias de treino", () => {
+    const treino = { ...PADRAO, avisarAgua: false, treinoAvisos: true, treinoDias: [5], treinoHora: "18:00", treinoDuracao: 60, preTreino: "Banana" };
+    expect(avisosDevidos(as("17:00", { ajustes: treino }))[0]).toMatchObject({ chave: "2026-10-02|treino:pre", corpo: "Banana" });
+    expect(avisosDevidos(as("19:00", { ajustes: treino }))[0]).toMatchObject({ chave: "2026-10-02|treino:pos" });
+    expect(avisosDevidos(as("17:00", { ajustes: { ...treino, treinoDias: [1] } }))).toEqual([]);
+  });
+
+  it("manda o resumo da semana só no domingo", () => {
+    const domingo = as("19:00", { resumoDaSemana: "80% no plano" });
+    domingo.agora.diaDaSemana = 0;
+    expect(avisosDevidos(domingo).map((a) => a.chave)).toContain("2026-10-02|semana");
+    expect(avisosDevidos(as("19:00", { resumoDaSemana: "80% no plano" })).map((a) => a.chave)).not.toContain("2026-10-02|semana");
+  });
+});

@@ -62,7 +62,7 @@ export function BotaoDeFoto({ dia, refeicoes, sugerida }: { dia: string; refeico
   };
 
   return (
-    <>
+    <div>
       <input
         ref={seletor}
         type="file"
@@ -75,8 +75,8 @@ export function BotaoDeFoto({ dia, refeicoes, sugerida }: { dia: string; refeico
           if (f) enviar(f);
         }}
       />
-      <Botao tipo="primario" className="w-full" disabled={enviando} onClick={() => setEscolhendo(true)}>
-        {enviando ? "Analisando o prato…" : "📷 Foto do prato"}
+      <Botao tipo="primario" className="w-full whitespace-nowrap" disabled={enviando} onClick={() => setEscolhendo(true)}>
+        {enviando ? "Analisando…" : "📷 Foto do prato"}
       </Botao>
       {erro && <p className="mt-2 text-[14px] text-pulou">{erro}</p>}
 
@@ -105,7 +105,7 @@ export function BotaoDeFoto({ dia, refeicoes, sugerida }: { dia: string; refeico
       )}
 
       {resultado && <ResultadoDaFoto dia={dia} r={resultado} aoFechar={() => setResultado(null)} />}
-    </>
+    </div>
   );
 }
 

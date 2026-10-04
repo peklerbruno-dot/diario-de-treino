@@ -144,3 +144,34 @@ model Lembrete {
   ativo    Boolean  @default(true)
   criadoEm DateTime @default(now())
 }
+
+/// Peso e medidas, quando você se pesa. Tudo opcional menos o dia: dá para
+/// anotar só a cintura numa semana e só o peso na outra.
+model Medida {
+  id       String   @id
+  dia      String
+  /// Em gramas (72,4 kg = 72400): número inteiro, sem arredondamento de Float.
+  pesoG    Int?
+  /// Em milímetros (82,5 cm = 825).
+  cinturaMm Int?
+  quadrilMm Int?
+  bracoMm   Int?
+  nota     String   @default("")
+  criadoEm DateTime @default(now())
+
+  @@index([dia])
+}
+
+/// O planejamento de uma semana: cardápio de marmitas, preparo e lista de
+/// compras, gerados a partir do plano. Só o mais novo aparece; os antigos
+/// ficam para consulta.
+model Semana {
+  id       String   @id
+  /// O domingo (ou o dia) em que a semana começa.
+  inicio   String
+  /// Ver src/lib/semana.ts.
+  dados    Json
+  /// Itens da lista já comprados (índices "secao:item").
+  marcados String[] @default([])
+  criadoEm DateTime @default(now())
+}

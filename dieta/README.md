@@ -47,9 +47,26 @@ horário, dias da semana e o texto da notificação.
 refeições seguiram o plano e quanto de água você bebeu. Em Hoje, a **sequência**
 de dias no plano (dia com 80% das refeições marcadas como "segui").
 
-**Para a nutricionista**: no Histórico, um resumo em texto das últimas 2 ou 4
-semanas — adesão, água, calorias pelas fotos, o que trocou e o que mais pulou —
-pelo compartilhar do iPhone (WhatsApp, e-mail).
+**"Posso trocar?"**, em Hoje: "posso trocar o PF por um hambúrguer?" — o
+Gemini responde com base no plano e nas orientações da nutricionista: pode,
+pode com ajuste (e qual), ou melhor não (e a troca mais próxima).
+
+**Semana**: a partir do plano (e de preferências como "não gosto de peixe",
+"tenho airfryer"), o app monta o cardápio dos 7 dias com marmitas para cozinhar
+de uma vez, o passo a passo do preparo e a lista de compras por seção do
+mercado, para ir marcando no mercado.
+
+**Progresso**: peso e medidas (cintura, quadril, braço) com gráfico, o histórico
+dia a dia e, **para a nutricionista**, o resumo da semana em texto (WhatsApp)
+ou em **PDF com as fotos dos pratos**.
+
+**Cobrança gentil**: se uma refeição passa 1 hora (ajustável) da hora sem ser
+marcada, chega "Como foi o almoço?". No **domingo**, o resumo da semana com o
+ponto que mais pede atenção ("você pulou o lanche 3×").
+
+**Treino**: nos dias de treino (Ajustes), aviso de pré-treino 1 h antes e de
+pós-treino quando acaba, e um atalho para o Diário de treino na tela Hoje. Os
+dois apps não trocam dados — o diário guarda tudo só no aparelho.
 
 **Histórico** das últimas quatro semanas: quanto do plano você seguiu por
 semana, quantos dias bateu a água, e o detalhe de cada dia — o que levar para a
@@ -81,6 +98,7 @@ consulta.
 
     src/lib/agenda.ts        que avisos vencem agora: refeições, água, lembretes, resumo (puro, testado)
     src/lib/analise.ts       a leitura da foto do prato; sequencia.ts, relatorio.ts
+    src/lib/semana.ts        o formato do planejamento da semana e do "posso trocar?"
     src/lib/conteudo.ts      opções, itens e substituições ↔ texto editável
     src/lib/leitor.ts        o Gemini lendo o PDF; plano-lido.ts confere a resposta
     src/lib/push.ts          envio das notificações

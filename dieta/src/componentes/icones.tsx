@@ -59,3 +59,11 @@ export const IconeCompartilhar = ({ className }: P) => (
     <path d="M7 11H5.5v9.5h13V11H17" />
   </svg>
 );
+
+export const IconeSemana = ({ className }: P) => (
+  <svg {...base(className)}>
+    <path d="M4 6.5h2l2.2 9.5h9.3l2-7H7.3" />
+    <circle cx="9.5" cy="19.3" r="1.2" />
+    <circle cx="16.5" cy="19.3" r="1.2" />
+  </svg>
+);
