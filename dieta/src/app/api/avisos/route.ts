@@ -32,21 +32,23 @@ export async function GET(req: Request) {
   if (!autorizado(req)) return new Response("Não autorizado.", { status: 401 });
 
   const agora = agoraNoFuso();
-  const plano = await planoAtivo();
-  if (!plano) return NextResponse.json({ agora, avisos: 0, motivo: "Sem plano em uso." });
-
-  const [a, dia, enviadas] = await Promise.all([
+  // Sem plano ainda dá para ter lembretes seus e água: o relógio roda do mesmo jeito.
+  const [plano, a, dia, enviadas, lembretes] = await Promise.all([
+    planoAtivo(),
     ajustes(),
     situacaoDoDia(agora.dia),
     bd.avisoEnviado.findMany({ where: { chave: { startsWith: `${agora.dia}|` } }, select: { chave: true } }),
+    bd.lembrete.findMany({ where: { ativo: true } }),
   ]);
 
   const devidos = avisosDevidos({
     agora,
-    refeicoes: plano.refeicoes,
+    refeicoes: plano?.refeicoes ?? [],
     ajustes: a,
     marcadas: new Set(Object.keys(dia.marcas)),
+    seguidas: Object.values(dia.marcas).filter((m) => m.estado === "seguiu").length,
     aguaHoje: dia.agua,
+    lembretes,
     enviadas: new Set(enviadas.map((e) => e.chave)),
   });
 

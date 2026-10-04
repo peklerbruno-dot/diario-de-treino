@@ -13,13 +13,6 @@ export type Rascunho = { nome: string; horario: string; texto: string; nota: str
 
 export function CamposDaRefeicao({ valor, aoMudar }: { valor: Rascunho; aoMudar: (v: Rascunho) => void }) {
   const mudar = (parcial: Partial<Rascunho>) => aoMudar({ ...valor, ...parcial });
-  const todos = valor.dias.length === 0;
-  const alternarDia = (d: number) => {
-    const atuais = todos ? [0, 1, 2, 3, 4, 5, 6] : valor.dias;
-    const novos = atuais.includes(d) ? atuais.filter((x) => x !== d) : [...atuais, d].sort();
-    // Nenhum dia marcado não faz sentido; sete é o mesmo que "todo dia".
-    mudar({ dias: novos.length === 0 || novos.length === 7 ? [] : novos });
-  };
 
   return (
     <div className="space-y-3">
@@ -35,7 +28,7 @@ export function CamposDaRefeicao({ valor, aoMudar }: { valor: Rascunho; aoMudar:
       </div>
 
       <label className="block">
-        <span className="text-[13px] text-fosco">O que comer — um alimento por linha</span>
+        <span className="text-[13px] text-fosco">O que comer — um item por linha (pode ser só “Marmita” ou “PF”)</span>
         <textarea
           className={`${campo} min-h-[140px] leading-snug`}
           value={valor.texto}
@@ -54,24 +47,38 @@ export function CamposDaRefeicao({ valor, aoMudar }: { valor: Rascunho; aoMudar:
         <input className={campo} value={valor.nota} onChange={(e) => mudar({ nota: e.target.value })} placeholder="Ex.: sem açúcar" />
       </label>
 
-      <div>
-        <span className="text-[13px] text-fosco">Dias {todos && "— todos"}</span>
-        <div className="mt-1 flex gap-1">
-          {SEMANA_CURTA.map((nome, d) => {
-            const marcado = todos || valor.dias.includes(d);
-            return (
-              <button
-                key={d}
-                type="button"
-                aria-pressed={marcado}
-                onClick={() => alternarDia(d)}
-                className={`flex-1 rounded-[10px] py-1.5 text-[13px] ${marcado ? "bg-folha-clara font-semibold text-folha" : "bg-papel text-fosco"}`}
-              >
-                {nome}
-              </button>
-            );
-          })}
-        </div>
+      <SeletorDeDias dias={valor.dias} aoMudar={(dias) => mudar({ dias })} />
+    </div>
+  );
+}
+
+/** Os sete dias da semana em botões. Lista vazia = todos os dias. */
+export function SeletorDeDias({ dias, aoMudar }: { dias: number[]; aoMudar: (dias: number[]) => void }) {
+  const todos = dias.length === 0;
+  const alternar = (d: number) => {
+    const atuais = todos ? [0, 1, 2, 3, 4, 5, 6] : dias;
+    const novos = atuais.includes(d) ? atuais.filter((x) => x !== d) : [...atuais, d].sort();
+    // Nenhum dia marcado não faz sentido; sete é o mesmo que "todo dia".
+    aoMudar(novos.length === 0 || novos.length === 7 ? [] : novos);
+  };
+  return (
+    <div>
+      <span className="text-[13px] text-fosco">Dias {todos && "— todos"}</span>
+      <div className="mt-1 flex gap-1">
+        {SEMANA_CURTA.map((nome, d) => {
+          const marcado = todos || dias.includes(d);
+          return (
+            <button
+              key={d}
+              type="button"
+              aria-pressed={marcado}
+              onClick={() => alternar(d)}
+              className={`flex-1 rounded-[10px] py-1.5 text-[13px] ${marcado ? "bg-folha-clara font-semibold text-folha" : "bg-papel text-fosco"}`}
+            >
+              {nome}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

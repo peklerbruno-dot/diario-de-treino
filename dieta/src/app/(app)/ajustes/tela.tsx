@@ -3,11 +3,14 @@
 import { useState, useTransition } from "react";
 import { acaoDeSair, salvarAjustes } from "@/app/acoes";
 import { useAvisos } from "@/componentes/avisos";
+import { Lembretes } from "@/componentes/lembretes";
 import { Botao, Cartao, Chave, Titulo } from "@/componentes/pecas";
+import type { LembreteSeu } from "@/lib/agenda";
 import { litros, type Ajustes } from "@/lib/ajustes";
 
 type Props = {
   ajustes: Ajustes;
+  lembretes: LembreteSeu[];
   chavePublica: string;
   aparelhos: { nome: string; desde: string }[];
   falta: { push: boolean; cron: boolean; gemini: boolean };
@@ -48,6 +51,29 @@ export function TelaAjustes(p: Props) {
       </Cartao>
       <p className="mt-1.5 px-1 text-[13px] leading-snug text-fosco">
         Dá para desligar o aviso de uma refeição só na tela Plano. Refeição já marcada não avisa.
+      </p>
+
+      <p className="sobrescrito mb-2 mt-6 px-1">Lembretes</p>
+      <Lembretes lista={p.lembretes} />
+
+      <p className="sobrescrito mb-2 mt-6 px-1">Resumo do dia</p>
+      <Cartao className="divide-y divide-linha !py-1">
+        <Linha rotulo="Resumo à noite">
+          <Chave ligado={a.resumoNoturno} rotulo="Resumo à noite" aoMudar={(v) => salvar({ resumoNoturno: v })} />
+        </Linha>
+        {a.resumoNoturno && (
+          <Linha rotulo="Às">
+            <input
+              type="time"
+              className="w-[104px] rounded-[10px] bg-papel px-2 py-1 text-[16px] tabular"
+              defaultValue={a.resumoHora}
+              onBlur={(e) => e.target.value && salvar({ resumoHora: e.target.value })}
+            />
+          </Linha>
+        )}
+      </Cartao>
+      <p className="mt-1.5 px-1 text-[13px] leading-snug text-fosco">
+        Uma notificação com quantas refeições seguiram o plano e quanto de água você bebeu.
       </p>
 
       <p className="sobrescrito mb-2 mt-6 px-1">Água</p>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { IconeCompartilhar, IconeSino } from "./icones";
+import { IconeSino } from "./icones";
 import { Botao } from "./pecas";
 
 /**
@@ -111,24 +111,16 @@ export function useAvisos(chavePublica: string) {
 /** O convite que aparece no topo da tela Hoje enquanto os avisos não estão ligados. */
 export function ConviteDeAvisos({ chavePublica }: { chavePublica: string }) {
   const { estado, erro, ativar } = useAvisos(chavePublica);
-  if (estado === "carregando" || estado === "ligado" || estado === "sem-suporte") return null;
+  // "instalar" fica com o aviso da casca (convite-instalar.tsx), que já diz como.
+  if (estado === "carregando" || estado === "ligado" || estado === "sem-suporte" || estado === "instalar") return null;
 
   return (
     <div className="mb-4 rounded-cartao bg-folha-clara p-4">
       <div className="flex gap-3">
         <span className="mt-0.5 text-folha">
-          {estado === "instalar" ? <IconeCompartilhar /> : <IconeSino />}
+          <IconeSino />
         </span>
         <div className="flex-1">
-          {estado === "instalar" && (
-            <>
-              <p className="font-semibold">Instale o app para receber os avisos</p>
-              <p className="mt-1 text-[15px] leading-snug text-grafite">
-                No Safari, toque em <strong>Compartilhar</strong> → <strong>Adicionar à Tela de Início</strong> e abra
-                pelo ícone. O iPhone só manda notificação para app instalado.
-              </p>
-            </>
-          )}
           {estado === "negado" && (
             <>
               <p className="font-semibold">Os avisos foram recusados</p>

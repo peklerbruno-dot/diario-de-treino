@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Cartao, Titulo } from "@/componentes/pecas";
+import { Miniaturas } from "@/componentes/foto-do-prato";
+import { Botao, Cartao, Titulo } from "@/componentes/pecas";
+import { milhar } from "@/lib/analise";
+import { textoParaNutricionista } from "@/lib/relatorio";
 import { litros } from "@/lib/ajustes";
 import type { DiaDoHistorico } from "@/lib/consultas";
 import { diaCurto, diaPorExtenso, horaFalada } from "@/lib/datas";
@@ -13,8 +16,8 @@ const ROTULO = { seguiu: "segui", trocou: "troquei", pulou: "pulei" } as const;
  * Como foi o mês: por semana, quanto do plano foi seguido e quantos dias a
  * água bateu a meta; por dia, o detalhe. É o que levar para a consulta.
  */
-export function TelaHistorico({ dias, metaDeAgua }: { dias: DiaDoHistorico[]; metaDeAgua: number }) {
-  const temAlgo = (d: DiaDoHistorico) => d.seguiu + d.trocou + d.pulou + d.agua > 0;
+export function TelaHistorico({ dias, metaDeAgua, nomeDoPlano }: { dias: DiaDoHistorico[]; metaDeAgua: number; nomeDoPlano: string }) {
+  const temAlgo = (d: DiaDoHistorico) => d.seguiu + d.trocou + d.pulou + d.agua + d.fotos.length > 0;
   // Semana sem nada marcado não vira cartão, e a lista de dias para no
   // primeiro dia com registro: no começo do uso, 28 linhas vazias só assustam.
   const semanas = [0, 1, 2, 3].map((i) => dias.slice(i * 7, i * 7 + 7)).filter((s) => s.length && s.some(temAlgo));
@@ -26,6 +29,8 @@ export function TelaHistorico({ dias, metaDeAgua }: { dias: DiaDoHistorico[]; me
   return (
     <>
       <Titulo>Histórico</Titulo>
+
+      {algumRegistro && <Compartilhar dias={dias} metaDeAgua={metaDeAgua} nomeDoPlano={nomeDoPlano} />}
 
       {!algumRegistro && (
         <Cartao>
@@ -88,7 +93,7 @@ function ResumoDaSemana({ dias, metaDeAgua, titulo }: { dias: DiaDoHistorico[]; 
 
 function LinhaDoDia({ d, metaDeAgua }: { d: DiaDoHistorico; metaDeAgua: number }) {
   const [aberto, setAberto] = useState(false);
-  const vazio = d.registros.length === 0 && d.agua === 0;
+  const vazio = d.registros.length === 0 && d.agua === 0 && d.fotos.length === 0;
 
   return (
     <div className="py-2.5">
@@ -105,7 +110,8 @@ function LinhaDoDia({ d, metaDeAgua }: { d: DiaDoHistorico; metaDeAgua: number }
             <span key={i} className={`h-2.5 w-2.5 rounded-full ${COR[r.estado as keyof typeof COR] ?? "bg-regua"}`} />
           ))}
         </span>
-        <span className={`w-[64px] shrink-0 text-right text-[13px] tabular ${d.agua >= metaDeAgua ? "font-semibold text-agua" : "text-fosco"}`}>
+        <span className="w-[64px] shrink-0 text-right text-[13px] tabular text-fosco">{d.calorias ? `≈${milhar(d.calorias)}` : ""}</span>
+        <span className={`w-[52px] shrink-0 text-right text-[13px] tabular ${d.agua >= metaDeAgua ? "font-semibold text-agua" : "text-fosco"}`}>
           {d.agua ? litros(d.agua) : ""}
         </span>
       </button>
@@ -119,8 +125,46 @@ function LinhaDoDia({ d, metaDeAgua }: { d: DiaDoHistorico; metaDeAgua: number }
             </li>
           ))}
           {d.agua > 0 && <li className="text-[14.5px] text-grafite">💧 {litros(d.agua)} de água</li>}
+          {d.calorias > 0 && <li className="text-[14.5px] text-grafite">📷 ≈ {milhar(d.calorias)} kcal pelas fotos</li>}
         </ul>
       )}
+      {aberto && <Miniaturas fotos={d.fotos} />}
     </div>
+  );
+}
+
+/** Manda o resumo das últimas semanas pelo share sheet do iPhone (WhatsApp, e-mail…). */
+function Compartilhar({ dias, metaDeAgua, nomeDoPlano }: { dias: DiaDoHistorico[]; metaDeAgua: number; nomeDoPlano: string }) {
+  const [recado, setRecado] = useState("");
+  const enviar = async (n: number) => {
+    const texto = textoParaNutricionista(
+      dias.slice(0, n).map((d) => ({ ...d, fotos: d.fotos.length })),
+      metaDeAgua,
+      nomeDoPlano,
+    );
+    try {
+      if (navigator.share) await navigator.share({ text: texto });
+      else {
+        await navigator.clipboard.writeText(texto);
+        setRecado("Resumo copiado. É só colar no WhatsApp ou no e-mail.");
+      }
+    } catch {
+      /* fechou o compartilhar sem escolher: tudo bem */
+    }
+  };
+  return (
+    <Cartao className="mb-4">
+      <p className="font-semibold">Para a nutricionista</p>
+      <p className="mt-0.5 text-[14px] text-grafite">Um resumo em texto: quanto seguiu do plano, água, trocas e o que mais pulou.</p>
+      <div className="mt-3 flex gap-2">
+        <Botao tipo="primario" className="flex-1" onClick={() => enviar(14)}>
+          Últimas 2 semanas
+        </Botao>
+        <Botao className="flex-1" onClick={() => enviar(28)}>
+          Últimas 4
+        </Botao>
+      </div>
+      {recado && <p className="mt-2 text-[14px] text-grafite">{recado}</p>}
+    </Cartao>
   );
 }

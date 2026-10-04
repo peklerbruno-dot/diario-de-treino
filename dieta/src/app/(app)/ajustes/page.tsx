@@ -1,20 +1,22 @@
 import webpush from "web-push";
 import { bd } from "@/lib/bd";
-import { ajustes } from "@/lib/consultas";
+import { ajustes, lembretes } from "@/lib/consultas";
 import { temGemini } from "@/lib/leitor";
 import { chavePublica, pushConfigurado } from "@/lib/push";
 import { TelaAjustes } from "./tela";
 
 export default async function Ajustes() {
-  const [a, aparelhos] = await Promise.all([
+  const [a, aparelhos, lista] = await Promise.all([
     ajustes(),
     bd.aparelho.findMany({ orderBy: { criadoEm: "asc" }, select: { nome: true, criadoEm: true } }),
+    lembretes(),
   ]);
   const configurado = pushConfigurado();
 
   return (
     <TelaAjustes
       ajustes={a}
+      lembretes={lista}
       chavePublica={chavePublica()}
       aparelhos={aparelhos.map((x) => ({ nome: x.nome || "Aparelho", desde: x.criadoEm.toISOString() }))}
       falta={{

@@ -33,6 +33,24 @@ barra mostra um tracinho com o ritmo — onde você deveria estar a essa hora pa
 fechar a meta. Os lembretes param quando a meta é batida e pulam o horário que
 cairia colado numa refeição.
 
+**Foto do prato.** Em Hoje → *Foto do prato*: escolha a refeição, tire a foto,
+e o Gemini diz o que há no prato, estima calorias e macros (com "≈", porque é
+olho e não balança) e compara com o que o plano pedia — "dentro do plano",
+"parcialmente" ou "fora". Um toque marca a refeição como segui ou troquei. As
+fotos ficam nos cartões das refeições e no Histórico; a imagem é guardada
+reduzida no próprio banco.
+
+**Lembretes seus**, em Ajustes: remédio, creatina, vitamina, pesar-se — nome,
+horário, dias da semana e o texto da notificação.
+
+**Resumo da noite**: às 21h30 (ajustável), uma notificação com quantas
+refeições seguiram o plano e quanto de água você bebeu. Em Hoje, a **sequência**
+de dias no plano (dia com 80% das refeições marcadas como "segui").
+
+**Para a nutricionista**: no Histórico, um resumo em texto das últimas 2 ou 4
+semanas — adesão, água, calorias pelas fotos, o que trocou e o que mais pulou —
+pelo compartilhar do iPhone (WhatsApp, e-mail).
+
 **Histórico** das últimas quatro semanas: quanto do plano você seguiu por
 semana, quantos dias bateu a água, e o detalhe de cada dia — o que levar para a
 consulta.
@@ -61,7 +79,8 @@ consulta.
 
 ## Como o código está organizado
 
-    src/lib/agenda.ts        que avisos vencem agora (puro, testado)
+    src/lib/agenda.ts        que avisos vencem agora: refeições, água, lembretes, resumo (puro, testado)
+    src/lib/analise.ts       a leitura da foto do prato; sequencia.ts, relatorio.ts
     src/lib/conteudo.ts      opções, itens e substituições ↔ texto editável
     src/lib/leitor.ts        o Gemini lendo o PDF; plano-lido.ts confere a resposta
     src/lib/push.ts          envio das notificações
@@ -95,3 +114,11 @@ npm run dev             # http://localhost:3000
 npm test                # as regras dos avisos, do formato e da leitura
 npm run typecheck
 ```
+
+## "O app abre com as barras do Safari"
+
+É o iPhone abrindo o ícone como site, e não como app. Desde o iOS 26, a folha
+"Adicionar à Tela de Início" tem a chave **Abrir como App Web**: desligada, o
+ícone abre o Safari comum (e, fora do modo app, não há notificação). Apague o
+ícone e adicione de novo com a chave ligada. O app mostra esse passo a passo
+sozinho quando percebe que está no Safari.

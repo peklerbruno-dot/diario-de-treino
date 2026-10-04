@@ -106,3 +106,41 @@ model Ajuste {
   chave String @id
   valor String
 }
+
+/// Uma foto do prato, com o que o Gemini viu nela.
+///
+/// A imagem fica no próprio banco, reduzida (uns 100 KB): é um app de uma
+/// pessoa, e um serviço de arquivos à parte seria mais uma conta e mais uma
+/// chave para configurar. O plano gratuito do Neon (0,5 GB) guarda alguns
+/// milhares de fotos.
+model Foto {
+  id         String   @id
+  dia        String
+  /// "12:40" — a hora em que a foto foi tirada.
+  hora       String
+  /// A refeição do plano a que ela se refere, quando há uma.
+  refeicaoId String?
+  /// Nome da refeição na hora da foto (sobrevive à troca de plano).
+  nome       String   @default("")
+  tipo       String
+  imagem     Bytes
+  /// O que a leitura devolveu (ver src/lib/analise.ts). Nulo = sem leitura.
+  analise    Json?
+  criadoEm   DateTime @default(now())
+
+  @@index([dia])
+}
+
+/// Um lembrete seu, além da água e das refeições: remédio, creatina, vitamina…
+model Lembrete {
+  id       String   @id
+  titulo   String
+  /// Texto da notificação (opcional).
+  texto    String   @default("")
+  /// "08:00"
+  horario  String
+  /// Dias da semana, 0 = domingo. Vazio = todos.
+  dias     Int[]    @default([])
+  ativo    Boolean  @default(true)
+  criadoEm DateTime @default(now())
+}

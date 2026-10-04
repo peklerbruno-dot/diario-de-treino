@@ -4,12 +4,14 @@ import Link from "next/link";
 import { useOptimistic, useState, useTransition } from "react";
 import { beberAgua, desfazerAgua, marcarRefeicao } from "@/app/acoes";
 import { ConviteDeAvisos } from "@/componentes/avisos";
+import { BotaoDeFoto, Miniaturas } from "@/componentes/foto-do-prato";
 import { IconeGota } from "@/componentes/icones";
 import { Botao, Cartao, Titulo, campo } from "@/componentes/pecas";
 import { litros, type Ajustes } from "@/lib/ajustes";
 import { ritmoDaAgua } from "@/lib/agenda";
 import type { Conteudo } from "@/lib/conteudo";
-import type { Marca, RefeicaoCompleta } from "@/lib/consultas";
+import { milhar, somarDia } from "@/lib/analise";
+import type { FotoDoDia, Marca, RefeicaoCompleta } from "@/lib/consultas";
 import { type Agora, diaPorExtenso, horaFalada, paraMinutos } from "@/lib/datas";
 
 type Props = {
@@ -19,6 +21,8 @@ type Props = {
   refeicoes: RefeicaoCompleta[];
   marcas: Record<string, Marca>;
   agua: number;
+  fotos: FotoDoDia[];
+  sequencia: number;
   ajustes: Ajustes;
   chavePublica: string;
 };
@@ -32,6 +36,13 @@ export function TelaHoje(p: Props) {
   // uma hora. A que passou há mais tempo e não foi marcada fica quieta, sem
   // destaque — ela pede um toque, não uma bronca.
   const proxima = p.refeicoes.find((r) => !p.marcas[r.id] && (paraMinutos(r.horario) ?? 0) + 60 > p.agora.minutos);
+
+  // A foto sugere a refeição mais perto da hora atual, marcada ou não.
+  const maisPerto = [...p.refeicoes].sort(
+    (a, b) => Math.abs((paraMinutos(a.horario) ?? 0) - p.agora.minutos) - Math.abs((paraMinutos(b.horario) ?? 0) - p.agora.minutos),
+  )[0];
+  const doDia = somarDia(p.fotos.map((f) => f.analise));
+  const foraDoPlano = p.fotos.filter((f) => !f.refeicaoId || !p.refeicoes.some((r) => r.id === f.refeicaoId));
 
   return (
     <>
@@ -48,6 +59,21 @@ export function TelaHoje(p: Props) {
         Hoje
       </Titulo>
 
+      {(p.sequencia > 0 || doDia.fotos > 0) && (
+        <div className="-mt-2 mb-3 flex flex-wrap gap-2 text-[13.5px]">
+          {p.sequencia > 0 && (
+            <span className="rounded-full bg-folha-clara px-3 py-1 font-medium text-folha">
+              🔥 {p.sequencia} {p.sequencia === 1 ? "dia" : "dias seguidos"} no plano
+            </span>
+          )}
+          {doDia.fotos > 0 && (
+            <span className="rounded-full bg-cartao px-3 py-1 text-grafite shadow-cartao">
+              ≈ {milhar(doDia.calorias)} kcal pelas fotos · {doDia.proteinas} g prot.
+            </span>
+          )}
+        </div>
+      )}
+
       {p.temPlano && <ConviteDeAvisos chavePublica={p.chavePublica} />}
 
       {!p.temPlano && (
@@ -63,6 +89,10 @@ export function TelaHoje(p: Props) {
         </Cartao>
       )}
 
+      <div className="mb-4">
+        <BotaoDeFoto dia={p.agora.dia} refeicoes={p.refeicoes} sugerida={maisPerto?.id} />
+      </div>
+
       <CartaoAgua agua={p.agua} ajustes={p.ajustes} minutos={p.agora.minutos} />
 
       {p.temPlano && p.refeicoes.length === 0 && (
@@ -73,9 +103,23 @@ export function TelaHoje(p: Props) {
 
       <div className="mt-4 space-y-3">
         {p.refeicoes.map((r) => (
-          <CartaoRefeicao key={r.id} dia={p.agora.dia} refeicao={r} marca={p.marcas[r.id]} proxima={proxima?.id === r.id} />
+          <CartaoRefeicao
+            key={r.id}
+            dia={p.agora.dia}
+            refeicao={r}
+            marca={p.marcas[r.id]}
+            proxima={proxima?.id === r.id}
+            fotos={p.fotos.filter((f) => f.refeicaoId === r.id)}
+          />
         ))}
       </div>
+
+      {foraDoPlano.length > 0 && (
+        <Cartao className="mt-3">
+          <p className="font-semibold">Fora das refeições do plano</p>
+          <Miniaturas fotos={foraDoPlano} />
+        </Cartao>
+      )}
 
       {p.orientacoes && (
         <details className="mt-4 rounded-cartao bg-cartao p-4 shadow-cartao">
@@ -172,11 +216,13 @@ function CartaoRefeicao({
   refeicao: r,
   marca,
   proxima,
+  fotos,
 }: {
   dia: string;
   refeicao: RefeicaoCompleta;
   marca?: Marca;
   proxima: boolean;
+  fotos: FotoDoDia[];
 }) {
   const [pendente, iniciar] = useTransition();
   const [otimista, marcar] = useOptimistic(marca, (_: Marca | undefined, nova: Marca | undefined) => nova);
@@ -214,6 +260,8 @@ function CartaoRefeicao({
       {otimista?.estado === "trocou" && otimista.nota && !trocando && (
         <p className="mt-1 text-[15px] text-grafite">Comi: {otimista.nota}</p>
       )}
+
+      <Miniaturas fotos={fotos} />
 
       {aberta && (
         <>
