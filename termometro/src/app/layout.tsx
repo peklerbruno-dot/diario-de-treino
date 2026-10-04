@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Termômetro",
+  title: "Finanças do BP",
   description: "Entradas, saídas e o saldo de cada dia — o seu, em qualquer aparelho.",
   icons: {
     icon: [{ url: "/icone-192.png", sizes: "192x192", type: "image/png" }],
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    title: "Termômetro",
+    title: "Finanças BP",
     statusBarStyle: "default",
   },
   other: {

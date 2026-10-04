@@ -19,6 +19,8 @@ export function middleware(req: NextRequest) {
   // nasce com o quadrado cinza de sempre em vez do ícone do app.
   const publica =
     pathname === "/entrar" ||
+    // O convite chega a quem ainda não tem conta nem cookie.
+    pathname.startsWith("/convite/") ||
     pathname.startsWith("/_next") ||
     pathname === "/manifest.webmanifest" ||
     pathname === "/sw.js" ||

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { temSessao } from "@/lib/auth";
+import { sessao } from "@/lib/auth";
 import { bd } from "@/lib/bd";
 import { dataExiste } from "@/lib/datas";
 import { TETO_CENTS } from "@/lib/dinheiro";
@@ -142,9 +142,13 @@ const emData = (s: string | null | undefined) => (s ? new Date(s) : null);
 const VERSAO = process.env.NEXT_PUBLIC_VERSAO ?? "local";
 
 export async function POST(pedido: Request) {
-  if (!(await temSessao())) {
+  const quem = await sessao();
+  if (!quem) {
     return NextResponse.json({ erro: "Sem sessão." }, { status: 401 });
   }
+  // A parede entre uma pessoa e outra: TODA leitura e escrita abaixo leva este
+  // id. Ele vem só da sessão assinada — nunca do corpo do pedido.
+  const usuarioId = quem.usuarioId;
 
   // Um aparelho que não manda `x-versao` está rodando um app de antes deste
   // mecanismo existir — congelado em segundo plano no iPhone, ele nunca se
@@ -168,15 +172,15 @@ export async function POST(pedido: Request) {
   }
 
   const recusados: Recusado[] = [];
-  await gravarLancamentos(peneirar(corpo.lancamentos, zLancamento, idDe("id"), recusados));
-  await gravarFixos(peneirar(corpo.fixos, zFixo, idDe("id"), recusados));
-  await gravarAjustes(peneirar(corpo.ajustes, zAjuste, idDe("chave"), recusados));
+  await gravarLancamentos(usuarioId, peneirar(corpo.lancamentos, zLancamento, idDe("id"), recusados));
+  await gravarFixos(usuarioId, peneirar(corpo.fixos, zFixo, idDe("id"), recusados));
+  await gravarAjustes(usuarioId, peneirar(corpo.ajustes, zAjuste, idDe("chave"), recusados));
 
   const desde = emData(corpo.desde) ?? new Date(0);
   const [lancamentos, fixos, ajustes] = await Promise.all([
-    bd.lancamento.findMany({ where: { servidorEm: { gt: desde } } }),
-    bd.fixo.findMany({ where: { servidorEm: { gt: desde } } }),
-    bd.ajuste.findMany({ where: { servidorEm: { gt: desde } } }),
+    bd.lancamento.findMany({ where: { usuarioId, servidorEm: { gt: desde } } }),
+    bd.fixo.findMany({ where: { usuarioId, servidorEm: { gt: desde } } }),
+    bd.ajuste.findMany({ where: { usuarioId, servidorEm: { gt: desde } } }),
   ]);
 
   // O novo marcador é o relógio mais recente que veio do banco, e não o de
@@ -222,11 +226,14 @@ export async function POST(pedido: Request) {
  * seriam oitocentas idas ao banco — e um banco que dorme, como o da Vercel,
  * cobra caro por cada ida.
  */
-async function gravarLancamentos(entrando: Lancamento[]) {
+async function gravarLancamentos(usuarioId: string, entrando: Lancamento[]) {
   if (entrando.length === 0) return;
 
+  // Só as linhas DESTA pessoa contam como existentes. Um id que pertence a
+  // outra pessoa cai em "novos" e o createMany abaixo o pula (o id já existe):
+  // ninguém sobrescreve a linha de outro mandando o id dela.
   const existentes = await bd.lancamento.findMany({
-    where: { id: { in: entrando.map((l) => l.id) } },
+    where: { usuarioId, id: { in: entrando.map((l) => l.id) } },
     select: { id: true, atualizadoEm: true },
   });
   const relogio = new Map(existentes.map((l) => [l.id, l.atualizadoEm.getTime()]));
@@ -246,6 +253,7 @@ async function gravarLancamentos(entrando: Lancamento[]) {
     await bd.lancamento.createMany({
       data: novos.map((l) => ({
         id: l.id,
+        usuarioId,
         data: l.data,
         tipo: l.tipo,
         valorCents: l.valorCents,
@@ -272,7 +280,7 @@ async function gravarLancamentos(entrando: Lancamento[]) {
     await bd.$transaction(
       lote.map((l) =>
         bd.lancamento.updateMany({
-          where: { id: l.id, atualizadoEm: { lt: new Date(l.atualizadoEm) } },
+          where: { id: l.id, usuarioId, atualizadoEm: { lt: new Date(l.atualizadoEm) } },
           data: {
             data: l.data,
             tipo: l.tipo,
@@ -293,11 +301,11 @@ async function gravarLancamentos(entrando: Lancamento[]) {
   }
 }
 
-async function gravarFixos(entrando: Fixo[]) {
+async function gravarFixos(usuarioId: string, entrando: Fixo[]) {
   if (entrando.length === 0) return;
 
   const existentes = await bd.fixo.findMany({
-    where: { id: { in: entrando.map((f) => f.id) } },
+    where: { usuarioId, id: { in: entrando.map((f) => f.id) } },
     select: { id: true, atualizadoEm: true },
   });
   const relogio = new Map(existentes.map((f) => [f.id, f.atualizadoEm.getTime()]));
@@ -320,32 +328,37 @@ async function gravarFixos(entrando: Fixo[]) {
     };
 
     if (anterior === undefined) {
-      await bd.fixo.create({ data: { id: f.id, criadoEm: new Date(f.criadoEm), ...dados } });
+      // createMany com skipDuplicates, e não create: um id que já existe (de
+      // outra pessoa) é pulado em silêncio em vez de derrubar o pedido inteiro.
+      await bd.fixo.createMany({
+        data: [{ id: f.id, usuarioId, criadoEm: new Date(f.criadoEm), ...dados }],
+        skipDuplicates: true,
+      });
     } else if (new Date(f.atualizadoEm).getTime() > anterior) {
       // Condicional pelo mesmo motivo dos lançamentos: a fresta entre ler e
       // escrever não pode deixar uma edição velha vencer uma nova.
       await bd.fixo.updateMany({
-        where: { id: f.id, atualizadoEm: { lt: new Date(f.atualizadoEm) } },
+        where: { id: f.id, usuarioId, atualizadoEm: { lt: new Date(f.atualizadoEm) } },
         data: dados,
       });
     }
   }
 }
 
-async function gravarAjustes(entrando: Ajuste[]) {
+async function gravarAjustes(usuarioId: string, entrando: Ajuste[]) {
   for (const a of entrando) {
     const quando = new Date(a.atualizadoEm);
     // Primeiro tenta atualizar SÓ se o que está lá for mais velho — a condição
     // mora no banco, não numa leitura de antes. Se nada mudou, ou a chave não
     // existe (aí cria), ou o que está lá já é mais novo (aí fica).
     const mexidos = await bd.ajuste.updateMany({
-      where: { chave: a.chave, atualizadoEm: { lt: quando } },
+      where: { usuarioId, chave: a.chave, atualizadoEm: { lt: quando } },
       data: { valor: a.valor, atualizadoEm: quando },
     });
     if (mexidos.count === 0) {
       await bd.ajuste
         .createMany({
-          data: [{ chave: a.chave, valor: a.valor, atualizadoEm: quando }],
+          data: [{ usuarioId, chave: a.chave, valor: a.valor, atualizadoEm: quando }],
           skipDuplicates: true,
         })
         .catch(() => {});

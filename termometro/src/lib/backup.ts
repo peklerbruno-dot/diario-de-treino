@@ -26,10 +26,10 @@ export function lerBackup(texto: string): BackupLido | { erro: string } {
   try {
     bruto = JSON.parse(texto);
   } catch {
-    return { erro: "Este arquivo não é um backup do Termômetro." };
+    return { erro: "Este arquivo não é um backup do Finanças do BP." };
   }
   if (typeof bruto !== "object" || bruto === null) {
-    return { erro: "Este arquivo não é um backup do Termômetro." };
+    return { erro: "Este arquivo não é um backup do Finanças do BP." };
   }
 
   const b = bruto as Record<string, unknown>;
@@ -61,7 +61,7 @@ export function lerBackup(texto: string): BackupLido | { erro: string } {
   }
 
   if (lancamentos.length === 0 && fixos.length === 0 && ajustes.length === 0) {
-    return { erro: "Este arquivo não tem nada do Termômetro dentro." };
+    return { erro: "Este arquivo não tem nada do Finanças do BP dentro." };
   }
   return { lancamentos, fixos, ajustes, ignoradas };
 }

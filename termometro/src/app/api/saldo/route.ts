@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { hojeNoFuso } from "@/lib/atalho";
-import { codigoConfere, temSessao } from "@/lib/auth";
+import { usuarioDoPedido } from "@/lib/auth";
 import { nomeDoMes, partesDaData } from "@/lib/datas";
 import { comCifrao } from "@/lib/dinheiro";
 import { saldoNoServidor } from "@/lib/saldo-no-servidor";
@@ -16,13 +16,13 @@ export const dynamic = "force-dynamic";
  * cabeçalho `x-codigo`, como no /api/lancar, nunca no endereço.
  */
 export async function GET(pedido: Request) {
-  const autorizado = codigoConfere(pedido.headers.get("x-codigo")) || (await temSessao());
-  if (!autorizado) {
+  const usuarioId = await usuarioDoPedido(pedido.headers.get("x-codigo"));
+  if (!usuarioId) {
     return NextResponse.json({ erro: "Código de acesso inválido." }, { status: 401 });
   }
 
   const hoje = hojeNoFuso();
-  const { saldoDoDiaCents, sobra } = await saldoNoServidor(hoje);
+  const { saldoDoDiaCents, sobra } = await saldoNoServidor(hoje, usuarioId);
   const { mes } = partesDaData(hoje);
 
   const partes = [`Você tem ${comCifrao(saldoDoDiaCents)}.`];

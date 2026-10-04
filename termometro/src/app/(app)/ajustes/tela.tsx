@@ -16,6 +16,7 @@ import {
 } from "@/componentes/pecas";
 import { buscarAVersaoNova } from "@/componentes/casca";
 import { EditorDeAtalhos } from "@/componentes/editor-de-atalhos";
+import { MeuAcesso, PessoasDoApp } from "@/componentes/pessoas";
 import { useEstado } from "@/componentes/usar-loja";
 import { hoje, partesDaData } from "@/lib/datas";
 import { paraCentavos } from "@/lib/dinheiro";
@@ -69,6 +70,7 @@ export function TelaDeAjustes() {
   const [confirmandoApagar, setConfirmandoApagar] = useState(false);
 
   const lancamentos = lancamentosVivos(estado);
+  const ehDono = estado.usuario?.ehDono ?? false;
 
   return (
     <div className="pb-6">
@@ -159,7 +161,9 @@ export function TelaDeAjustes() {
       <section className="mt-6">
         <Subtitulo>Rateio do apartamento</Subtitulo>
         <p className="mt-1 text-[15px] leading-relaxed text-grafite">
-          Quanto das saídas marcadas como “do apartamento” é da outra pessoa. A planilha usava 40%.
+          {ehDono
+            ? "Quanto das saídas marcadas como “do apartamento” é da outra pessoa. A planilha usava 40%."
+            : "Se você divide a casa, marque as contas dela como “do apartamento” e diga aqui quanto é da outra pessoa. Sem divisão, deixe 0%."}
         </p>
         <div className="mt-2 flex items-center gap-2">
           <input
@@ -208,6 +212,8 @@ export function TelaDeAjustes() {
           Como montar o atalho
         </Link>
       </section>
+
+      {estado.usuario && (ehDono ? <PessoasDoApp /> : <MeuAcesso />)}
 
       <section className="mt-6">
         <Subtitulo>Sincronização</Subtitulo>
@@ -636,7 +642,7 @@ function baixarPlanilha(estado: EstadoDoApp) {
   // O BOM faz o Excel abrir os acentos certos.
   baixar(
     "﻿" + linhas.map((l) => l.map(campoCsv).join(";")).join("\r\n"),
-    `termometro-${hoje()}.csv`,
+    `financas-do-bp-${hoje()}.csv`,
     "text/csv;charset=utf-8",
   );
 }
@@ -663,7 +669,7 @@ function baixarBackup(estado: EstadoDoApp) {
     null,
     2,
   );
-  baixar(conteudo, `termometro-backup-${hoje()}.json`, "application/json");
+  baixar(conteudo, `financas-do-bp-backup-${hoje()}.json`, "application/json");
 }
 
 function baixar(conteudo: string, nome: string, tipo: string) {

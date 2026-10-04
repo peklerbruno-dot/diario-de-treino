@@ -10,7 +10,10 @@ import { partesDaData } from "./datas";
  * os dois endereços não divergirem: todos os lançamentos vivos (a corrente de
  * anos precisa deles), os saldos de abertura digitados e o rateio de verdade.
  */
-export async function saldoNoServidor(data: string): Promise<{
+export async function saldoNoServidor(
+  data: string,
+  usuarioId: string,
+): Promise<{
   ano: AnoCalculado;
   saldoDoDiaCents: number;
   sobra: SobraPorDia | null;
@@ -19,7 +22,7 @@ export async function saldoNoServidor(data: string): Promise<{
 
   const [vivos, aberturas, rateio] = await Promise.all([
     bd.lancamento.findMany({
-      where: { apagadoEm: null },
+      where: { usuarioId, apagadoEm: null },
       select: {
         id: true,
         data: true,
@@ -31,8 +34,8 @@ export async function saldoNoServidor(data: string): Promise<{
         previsto: true,
       },
     }),
-    bd.ajuste.findMany({ where: { chave: { startsWith: "saldoInicial:" } } }),
-    bd.ajuste.findUnique({ where: { chave: "rateioApto" } }),
+    bd.ajuste.findMany({ where: { usuarioId, chave: { startsWith: "saldoInicial:" } } }),
+    bd.ajuste.findUnique({ where: { usuarioId_chave: { usuarioId, chave: "rateioApto" } } }),
   ]);
 
   const saldosIniciais: Record<number, number> = {};
@@ -46,7 +49,13 @@ export async function saldoNoServidor(data: string): Promise<{
     ano,
     lancamentos: vivos,
     saldosIniciais,
-    rateioAptoPercent: Number.isFinite(Number(rateio?.valor)) ? Number(rateio?.valor) : 40,
+    // 40% era o rateio do apartamento do dono; quem chega começa sem rateio.
+    rateioAptoPercent:
+      rateio && Number.isFinite(Number(rateio.valor))
+        ? Number(rateio.valor)
+        : usuarioId === "dono"
+          ? 40
+          : 0,
   });
 
   return {
