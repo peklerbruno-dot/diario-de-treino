@@ -47,6 +47,16 @@ Quem só quer colocar no ar, sem mexer em código: [`docs/COLOCAR-NO-AR.md`](doc
   não tem conta; quando a pessoa abre o convite, escolhe “sou o Pedro” e herda
   tudo que já estava no nome dela.
 
+**Durante a viagem**
+- **Foto do recibo vira despesa**: o Gemini lê valor, moeda, data e estabelecimento; só falta dizer como divide.
+- **Sem internet**: as telas já vistas abrem do cache do celular (service worker em `public/sw.js`), os documentos abertos também, e despesa lançada sem sinal fica numa fila e sobe sozinha quando a conexão volta (`src/componentes/fila.tsx`, com `idCliente` para não duplicar).
+- **Avisos no celular** (web push, `src/lib/avisos.ts`): despesa que envolve você, acerto, lugares novos, votação aberta, tarefa passada para você, orçamento passando de 80% ou 100%, e às 7h (horário da Cidade do México) o roteiro do dia (`/api/cron/manha`, cron da Vercel). No iPhone, só com o app instalado na tela de início.
+- **Pix**: cada um cadastra a chave em Grupo; no “Acertar” aparece o Pix copia-e-cola (BR Code do Banco Central, `src/lib/pix.ts`) já com o valor.
+- **Documentos**: passagens, reservas, ingressos e seguro, guardados no próprio banco (só quem é da viagem baixa). Com o Gemini, a reserva lida vira itens do roteiro.
+- **Votações**, **tarefas com dono e prazo** (com sugestões para o México) e **orçamento** por total, pessoa e categoria, com o ritmo de gasto e a projeção.
+
+Variáveis a mais em produção: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (avisos; gere com `npx web-push generate-vapid-keys`) e `CRON_SECRET` (o lembrete da manhã).
+
 ## Mandar direto do Instagram, sem copiar link
 
 - **Android:** instale o app pelo Chrome (menu → *Instalar app*). Ele passa a

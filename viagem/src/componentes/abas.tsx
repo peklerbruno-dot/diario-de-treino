@@ -15,7 +15,7 @@ export function Abas({ viagemId, pendentes }: { viagemId: string; pendentes: num
   const caminho = usePathname();
   const base = `/v/${viagemId}`;
   const abas = [
-    { chave: "inicio", nome: "Início", href: base, ativa: caminho === base },
+    { chave: "inicio", nome: "Início", href: base, ativa: caminho === base || /\/(votacoes|tarefas|documentos)/.test(caminho) },
     { chave: "lugares", nome: "Lugares", href: `${base}/lugares`, ativa: /\/(lugares|adicionar|caixa|mapa)/.test(caminho) },
     { chave: "roteiro", nome: "Roteiro", href: `${base}/roteiro`, ativa: caminho.startsWith(`${base}/roteiro`) },
     { chave: "contas", nome: "Contas", href: `${base}/contas`, ativa: caminho.startsWith(`${base}/contas`) },

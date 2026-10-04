@@ -2,7 +2,7 @@ import Link from "next/link";
 import { bd } from "@/lib/bd";
 import { exigirMembro } from "@/lib/auth";
 import { contasDaViagem } from "@/lib/consultas";
-import { diferencaEmDias, hoje, periodo, porExtenso } from "@/lib/datas";
+import { curta, diferencaEmDias, hoje, periodo, porExtenso } from "@/lib/datas";
 import { formatar } from "@/lib/dinheiro";
 import { infoCategoria, linkDaRotaDoDia } from "@/lib/lugares";
 import { primeiroNome } from "@/lib/cores";
@@ -18,7 +18,7 @@ export default async function Visao({ params }: { params: Promise<{ id: string }
   // Antes da viagem mostra o primeiro dia; durante, o de hoje.
   const diaEmFoco = antes || depois ? viagem.inicio : dia;
 
-  const [itens, contas, maisQueridos, pendentes, totalLugares] = await Promise.all([
+  const [itens, contas, maisQueridos, pendentes, totalLugares, enquetesAbertas, minhasTarefas, totalDocs] = await Promise.all([
     bd.itemRoteiro.findMany({
       where: { viagemId: id, dia: diaEmFoco },
       include: { lugar: true },
@@ -33,7 +33,15 @@ export default async function Visao({ params }: { params: Promise<{ id: string }
     }),
     bd.importacao.count({ where: { viagemId: id, estado: { in: ["pronta", "falhou"] } } }),
     bd.lugar.count({ where: { viagemId: id, apagadoEm: null } }),
+    bd.enquete.findMany({
+      where: { viagemId: id, encerrada: false },
+      select: { id: true, pergunta: true, votos: { where: { membroId: eu.id }, select: { membroId: true } } },
+      orderBy: { criadoEm: "desc" },
+    }),
+    bd.tarefa.findMany({ where: { viagemId: id, feita: false, responsavelId: eu.id }, orderBy: [{ prazo: "asc" }, { criadoEm: "asc" }], take: 4 }),
+    bd.documento.count({ where: { viagemId: id, apagadoEm: null } }),
   ]);
+  const semMeuVoto = enquetesAbertas.filter((e) => e.votos.length === 0);
 
   const meu = contas.saldos.find((s) => s.membroId === eu.id);
   const falta = diferencaEmDias(dia, viagem.inicio);
@@ -66,6 +74,44 @@ export default async function Visao({ params }: { params: Promise<{ id: string }
           <span className="text-[13px] text-fosco">Quem pagou, e como divide</span>
         </Link>
       </div>
+
+      <div className="mt-3 grid grid-cols-4 gap-2 text-center text-[12px]">
+        {[
+          { href: `/v/${id}/votacoes`, emoji: "🗳️", nome: "Votações", n: semMeuVoto.length },
+          { href: `/v/${id}/tarefas`, emoji: "✅", nome: "Tarefas", n: minhasTarefas.length },
+          { href: `/v/${id}/documentos`, emoji: "📄", nome: "Documentos", n: 0, total: totalDocs },
+          { href: `/v/${id}/contas/orcamento`, emoji: "🎯", nome: "Orçamento", n: 0 },
+        ].map((a) => (
+          <Link key={a.href} href={a.href} className="cartao relative flex flex-col items-center gap-1 px-1 py-3">
+            <span className="text-2xl" aria-hidden>{a.emoji}</span>
+            <span className="font-medium text-grafite">{a.nome}</span>
+            {a.n > 0 && (
+              <span className="absolute right-1.5 top-1.5 min-w-[18px] rounded-full bg-realce px-1 text-[11px] font-bold leading-[18px] text-realce-tinta">{a.n}</span>
+            )}
+          </Link>
+        ))}
+      </div>
+
+      {semMeuVoto.length > 0 && (
+        <Link href={`/v/${id}/votacoes#${semMeuVoto[0].id}`} className="mt-3 flex items-center justify-between gap-2 rounded-cartao bg-realce-fraco px-4 py-3">
+          <span className="min-w-0 truncate">🗳️ Falta seu voto: <strong>{semMeuVoto[0].pergunta}</strong></span>
+          <span className="shrink-0 font-semibold text-realce">Votar →</span>
+        </Link>
+      )}
+
+      {minhasTarefas.length > 0 && (
+        <Secao titulo="Suas tarefas" acao={<Link href={`/v/${id}/tarefas?minhas=1`} className="text-[15px] font-semibold text-realce">Ver todas</Link>}>
+          <ul className="cartao divide-y divide-linha">
+            {minhasTarefas.map((t) => (
+              <li key={t.id} className="flex items-center gap-3 px-4 py-3 text-[15px]">
+                <span aria-hidden>☐</span>
+                <span className="min-w-0 flex-1">{t.texto}</span>
+                {t.prazo && <span className={`shrink-0 text-[13px] ${t.prazo < dia ? "font-semibold text-vermelho" : "text-fosco"}`}>até {curta(t.prazo)}</span>}
+              </li>
+            ))}
+          </ul>
+        </Secao>
+      )}
 
       {pendentes > 0 && (
         <Link href={`/v/${id}/caixa`} className="mt-3 flex items-center justify-between rounded-cartao bg-realce-fraco px-4 py-3">

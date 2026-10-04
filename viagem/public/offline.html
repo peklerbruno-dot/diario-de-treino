@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sem internet</title>
+<style>
+  :root { color-scheme: light dark; --papel:#faf6f0; --tinta:#1e1a17; --fosco:#756c65; --realce:#c2185b; }
+  @media (prefers-color-scheme: dark) { :root { --papel:#141211; --tinta:#f5f1ec; --fosco:#968d86; --realce:#ff6fa3; } }
+  body { margin:0; min-height:100dvh; display:flex; align-items:center; justify-content:center; background:var(--papel); color:var(--tinta);
+         font: 17px/1.45 -apple-system, BlinkMacSystemFont, system-ui, sans-serif; padding: 24px; text-align:center; }
+  h1 { font-size: 24px; margin: 12px 0 6px; }
+  p { color: var(--fosco); margin: 0 0 18px; }
+  button { font: inherit; font-weight: 600; color: #fff; background: var(--realce); border: 0; border-radius: 12px; padding: 12px 20px; }
+</style>
+</head>
+<body>
+  <main>
+    <div style="font-size:44px">📶</div>
+    <h1>Sem internet</h1>
+    <p>Esta tela ainda não tinha sido aberta neste celular.<br>As telas que você já viu abrem mesmo sem sinal.</p>
+    <button onclick="history.length > 1 ? history.back() : location.assign('/')">Voltar</button>
+  </main>
+</body>
+</html>

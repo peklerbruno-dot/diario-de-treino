@@ -9,6 +9,7 @@ import { valoresDigitados, type ComValores } from "@/lib/formulario";
 import { categoriaValida, ehLinkDoMaps, lerLinkDoMaps } from "@/lib/lugares";
 import { expandirLink, importar, MAXIMO_DE_IMAGENS, TIPOS_DE_IMAGEM } from "@/lib/importar";
 import { localizar } from "@/lib/localizar";
+import { avisarViagem } from "@/lib/avisos";
 import type { Sugestao } from "@/lib/leitor";
 
 const texto = (d: FormData, campo: string) => String(d.get(campo) ?? "").trim();
@@ -106,6 +107,18 @@ export async function confirmarImportacao(dados: FormData): Promise<void> {
     });
   }
   await bd.importacao.update({ where: { id: imp.id }, data: { estado: "revisada" } });
+  if (escolhidas.length) {
+    const n = escolhidas.length;
+    await avisarViagem(
+      viagemId,
+      {
+        titulo: n === 1 ? `📍 ${escolhidas[0].nome}` : `📍 ${n} lugares novos`,
+        corpo: `${eu.nome.split(" ")[0]} adicionou ${n === 1 ? "um lugar" : `${escolhidas.slice(0, 3).map((e) => e.nome).join(", ")}${n > 3 ? "…" : ""}`}.`,
+        url: pastaId ? `/v/${viagemId}/lugares?pasta=${pastaId}` : `/v/${viagemId}/lugares`,
+      },
+      { exceto: eu.id },
+    );
+  }
   revalidatePath(`/v/${viagemId}`, "layout");
   redirect(pastaId ? `/v/${viagemId}/lugares?pasta=${pastaId}` : `/v/${viagemId}/lugares`);
 }

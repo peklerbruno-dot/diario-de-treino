@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { RegistrarServiceWorker } from "@/componentes/fila";
 
 export const metadata: Metadata = {
   title: "Viagem",
@@ -30,7 +31,10 @@ export const viewport: Viewport = {
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
-      <body className="font-texto antialiased">{children}</body>
+      <body className="font-texto antialiased">
+        {children}
+        <RegistrarServiceWorker />
+      </body>
     </html>
   );
 }

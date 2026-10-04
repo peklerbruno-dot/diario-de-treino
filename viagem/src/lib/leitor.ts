@@ -275,3 +275,117 @@ export function interpretarResposta(bruto: string): Leitura {
   }
   return { resumo: texto(o.resumo).slice(0, 400), lugares };
 }
+
+// ---------------------------------------------------------------------------
+// Recibos e reservas — o mesmo Gemini, outras perguntas
+// ---------------------------------------------------------------------------
+
+async function gerarJson(partes: Part[], instrucoes: string, esquema: object): Promise<unknown> {
+  const cliente = await ia();
+  if (!cliente) {
+    throw new ErroDeLeitura("A leitura automática ainda está desligada. Quem organiza liga em Grupo → Leitura automática (é grátis).");
+  }
+  try {
+    const r = await cliente.models.generateContent({
+      model: MODELO,
+      contents: [{ role: "user", parts: partes }],
+      config: { systemInstruction: instrucoes, responseMimeType: "application/json", responseSchema: esquema, temperature: 0.1 },
+    });
+    return JSON.parse((r.text ?? "").replace(/^```(?:json)?\s*|\s*```$/g, ""));
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 429) throw new ErroDeLeitura("A cota gratuita do Gemini acabou por agora. Tente daqui a pouco.");
+    if (e instanceof SyntaxError) throw new ErroDeLeitura("A leitura voltou num formato estranho. Tente de novo.");
+    console.error("[leitor]", e);
+    throw new ErroDeLeitura("Não consegui ler agora. Tente de novo em instantes.");
+  }
+}
+
+export type Recibo = { descricao: string; valor: number; moeda: string; data: string; categoria: string };
+
+/** Foto de uma conta, nota ou comprovante → o que preenche a despesa. `valor` em centavos. */
+export async function lerRecibo(imagem: Part, hoje: string): Promise<Recibo> {
+  const j = (await gerarJson(
+    [imagem],
+    `Você lê a foto de uma conta, nota fiscal, recibo ou comprovante de pagamento de uma viagem (geralmente no México).
+Devolva:
+- descricao: o nome do estabelecimento, ou o que foi comprado, curto (ex.: "Contramar", "Uber aeroporto", "Oxxo").
+- total: o TOTAL efetivamente pago, incluindo gorjeta (propina) se estiver somada. Número com ponto decimal.
+- moeda: código ISO (MXN, BRL, USD, EUR). Em recibo mexicano com "$", é MXN.
+- data: AAAA-MM-DD, se aparecer; senão "${hoje}".
+- categoria: uma de comida, bebida, mercado, transporte, hospedagem, passeio, compras, outro.`,
+    {
+      type: Type.OBJECT,
+      properties: {
+        descricao: { type: Type.STRING },
+        total: { type: Type.NUMBER },
+        moeda: { type: Type.STRING },
+        data: { type: Type.STRING },
+        categoria: { type: Type.STRING, enum: ["comida", "bebida", "mercado", "transporte", "hospedagem", "passeio", "compras", "outro"] },
+      },
+      required: ["descricao", "total", "moeda", "data", "categoria"],
+    },
+  )) as Record<string, unknown>;
+  const total = Number(j.total);
+  if (!(total > 0)) throw new ErroDeLeitura("Não achei o valor total nessa foto. Tente uma foto mais de perto, com o total aparecendo.");
+  const moeda = String(j.moeda ?? "").toUpperCase();
+  return {
+    descricao: String(j.descricao ?? "").trim().slice(0, 140),
+    valor: Math.round(total * 100),
+    moeda: ["MXN", "BRL", "USD", "EUR"].includes(moeda) ? moeda : "MXN",
+    data: /^\d{4}-\d{2}-\d{2}$/.test(String(j.data)) ? String(j.data) : hoje,
+    categoria: String(j.categoria ?? "outro"),
+  };
+}
+
+export type Reserva = {
+  titulo: string;
+  tipo: string;
+  resumo: string;
+  itens: { dia: string; hora: string; titulo: string; notas: string }[];
+};
+
+/** Passagem, reserva de hotel, ingresso → título e os itens que entram no roteiro. */
+export async function lerReserva(arquivo: Part, ano: string): Promise<Reserva> {
+  const j = (await gerarJson(
+    [arquivo],
+    `Você lê um documento de viagem (passagem aérea, reserva de hotel/Airbnb, ingresso, aluguel de carro, seguro viagem) e devolve:
+- titulo: curto e útil (ex.: "Voo LATAM GRU → MEX", "Airbnb Roma Norte", "Ingresso Teotihuacán").
+- tipo: voo, hospedagem, seguro, passeio, transporte ou outro.
+- resumo: uma ou duas linhas com o que importa (código de reserva/localizador, endereço, quem está na reserva).
+- itens: os momentos que vão para o roteiro, cada um com dia (AAAA-MM-DD; se o ano não aparecer, use ${ano}), hora (HH:MM em 24h, ou vazio), titulo e notas.
+  Voo: um item na partida ("Voo LA8070 GRU → MEX", notas com localizador e terminal). Hospedagem: check-in e check-out. Ingresso: o horário da visita.
+  Seguro e documentos sem data marcada: lista vazia.`,
+    {
+      type: Type.OBJECT,
+      properties: {
+        titulo: { type: Type.STRING },
+        tipo: { type: Type.STRING, enum: ["voo", "hospedagem", "seguro", "passeio", "transporte", "outro"] },
+        resumo: { type: Type.STRING },
+        itens: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: { dia: { type: Type.STRING }, hora: { type: Type.STRING }, titulo: { type: Type.STRING }, notas: { type: Type.STRING } },
+            required: ["dia", "hora", "titulo", "notas"],
+          },
+        },
+      },
+      required: ["titulo", "tipo", "resumo", "itens"],
+    },
+  )) as Record<string, unknown>;
+  const itens = (Array.isArray(j.itens) ? j.itens : [])
+    .map((x) => x as Record<string, unknown>)
+    .map((x) => ({
+      dia: String(x.dia ?? ""),
+      hora: /^([01]\d|2[0-3]):[0-5]\d$/.test(String(x.hora)) ? String(x.hora) : "",
+      titulo: String(x.titulo ?? "").trim().slice(0, 140),
+      notas: String(x.notas ?? "").trim().slice(0, 500),
+    }))
+    .filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x.dia) && x.titulo);
+  return {
+    titulo: String(j.titulo ?? "").trim().slice(0, 140) || "Documento",
+    tipo: String(j.tipo ?? "outro"),
+    resumo: String(j.resumo ?? "").trim().slice(0, 600),
+    itens,
+  };
+}

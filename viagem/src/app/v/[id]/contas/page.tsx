@@ -7,12 +7,25 @@ import { infoCategoriaDeDespesa, naBase } from "@/lib/contas";
 import { primeiroNome } from "@/lib/cores";
 import { Avatar, Cabecalho, Pagina, Secao, Vazio } from "@/componentes/pecas";
 import { apagarPagamento } from "@/acoes/contas";
+import { acompanharOrcamento, lerOrcamento, ritmo } from "@/lib/orcamento";
+import { diasEntre, hoje } from "@/lib/datas";
+import { BarraDeOrcamento, LinkDoOrcamento } from "@/componentes/barras-orcamento";
 
 export default async function Contas({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ ver?: string }> }) {
   const { id } = await params;
   const { ver = "simples" } = await searchParams;
   const { eu, viagem } = await exigirMembro(id);
   const c = await contasDaViagem(id);
+  const orcamento = lerOrcamento(viagem.orcamento);
+  const temOrcamento = Boolean(orcamento.total || orcamento.porPessoa || Object.keys(orcamento.categorias ?? {}).length);
+  const acompanhamento = acompanharOrcamento(orcamento, {
+    total: c.totalDoGrupo,
+    porCategoria: new Map(c.porCategoria),
+    consumoPorPessoa: new Map(c.saldos.filter((s) => !c.membros.find((m) => m.id === s.membroId)?.saiuEm).map((s) => [s.membroId, s.consumiu])),
+  });
+  const diasDaViagem = diasEntre(viagem.inicio, viagem.fim).length;
+  const passados = Math.min(diasDaViagem, diasEntre(viagem.inicio, hoje()).length);
+  const andamento = hoje() >= viagem.inicio ? ritmo(c.totalDoGrupo, passados, diasDaViagem) : null;
   const base = viagem.moedaBase;
   const membro = (mid: string) => c.membros.find((m) => m.id === mid);
   const nome = (mid: string) => (mid === eu.id ? "Você" : primeiroNome(membro(mid)?.nome ?? "?"));
@@ -129,6 +142,31 @@ export default async function Contas({ params, searchParams }: { params: Promise
           </ul>
         </Secao>
       )}
+
+      <Secao titulo="Orçamento" acao={temOrcamento ? <LinkDoOrcamento viagemId={id} texto="Ajustar" /> : undefined}>
+        {!temOrcamento ? (
+          <div className="cartao p-4 text-[15px] text-fosco">
+            Combinem quanto gastar — no total, por pessoa ou por categoria — e o app avisa quando chegar perto.{" "}
+            <LinkDoOrcamento viagemId={id} texto="Definir orçamento" />
+          </div>
+        ) : (
+          <ul className="cartao divide-y divide-linha">
+            {acompanhamento.total && <BarraDeOrcamento nome={<strong>Total do grupo</strong>} linha={acompanhamento.total} moeda={base} />}
+            {acompanhamento.categorias.map((l) => (
+              <BarraDeOrcamento key={l.chave} nome={`${infoCategoriaDeDespesa(l.chave).emoji} ${infoCategoriaDeDespesa(l.chave).nome}`} linha={l} moeda={base} />
+            ))}
+            {acompanhamento.pessoas.map((l) => (
+              <BarraDeOrcamento key={l.chave} nome={nome(l.chave)} linha={l} moeda={base} />
+            ))}
+          </ul>
+        )}
+        {andamento && (
+          <p className="mt-2 text-[13px] text-fosco">
+            Ritmo: {formatar(andamento.porDia, base)} por dia. Nesse passo, a viagem fecha em {formatar(andamento.projecao, base)}
+            {orcamento.total ? ` (orçamento: ${formatar(orcamento.total, base)})` : ""}.
+          </p>
+        )}
+      </Secao>
 
       <Secao titulo="Movimentos">
         {movimentos.length === 0 ? (
