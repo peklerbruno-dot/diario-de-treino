@@ -45,7 +45,8 @@ model Pessoa {
   criadoEm     DateTime @default(now())
   ultimoAcesso DateTime?
 
-  membros Membro[]
+  membros    Membro[]
+  inscricoes InscricaoPush[]
 }
 
 model Viagem {
@@ -77,6 +78,13 @@ model Viagem {
   despesas   Despesa[]
   pagamentos Pagamento[]
   importacoes Importacao[]
+  documentos Documento[]
+  enquetes   Enquete[]
+  tarefas    Tarefa[]
+
+  /// O orçamento do grupo, na moeda base, em centavos:
+  /// {"total": 2000000, "porPessoa": 500000, "categorias": {"comida": 300000}}.
+  orcamento Json @default("{}")
 }
 
 model Membro {
@@ -106,6 +114,11 @@ model Membro {
   deve               ParteDespesa[]
   pagamentosFeitos   Pagamento[]    @relation("QuemPagou")
   pagamentosRecebidos Pagamento[]   @relation("QuemRecebeu")
+  tarefas            Tarefa[]
+  votosEmEnquetes    VotoEnquete[]
+
+  /// A chave Pix, para quem for acertar com esta pessoa copiar.
+  pix String @default("")
 
   @@unique([viagemId, pessoaId])
   @@index([viagemId])
@@ -319,4 +332,116 @@ model Configuracao {
   chave        String   @id
   valor        String
   atualizadoEm DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Avisos no celular (web push)
+// ---------------------------------------------------------------------------
+
+/// Um aparelho que aceitou receber avisos. Uma pessoa pode ter vários (o
+/// iPhone e o computador); cada um tem o seu endereço no serviço de push.
+model InscricaoPush {
+  id       String @id
+  pessoaId String
+  endpoint String @unique
+  p256dh   String
+  auth     String
+  criadoEm DateTime @default(now())
+
+  pessoa Pessoa @relation(fields: [pessoaId], references: [id], onDelete: Cascade)
+
+  @@index([pessoaId])
+}
+
+// ---------------------------------------------------------------------------
+// Documentos
+// ---------------------------------------------------------------------------
+
+/// Passagem, reserva, seguro. O arquivo mora no próprio banco, e não num
+/// armazenamento de links públicos: só quem é da viagem baixa, pela rota
+/// que confere isso. Arquivos são pequenos (PDF de reserva, print reduzido).
+model Documento {
+  id       String @id
+  viagemId String
+  titulo   String
+  /// "voo", "hospedagem", "seguro", "passeio", "transporte" ou "outro"
+  tipo     String @default("outro")
+  notas    String @default("")
+
+  nomeDoArquivo String @default("")
+  mime          String @default("")
+  tamanho       Int    @default(0)
+  dados         Bytes?
+
+  enviadoPorId String?
+  criadoEm     DateTime  @default(now())
+  apagadoEm    DateTime?
+
+  viagem Viagem @relation(fields: [viagemId], references: [id], onDelete: Cascade)
+
+  @@index([viagemId, apagadoEm])
+}
+
+// ---------------------------------------------------------------------------
+// Votações
+// ---------------------------------------------------------------------------
+
+model Enquete {
+  id          String  @id
+  viagemId    String
+  pergunta    String
+  criadaPorId String?
+  encerrada   Boolean @default(false)
+  criadoEm    DateTime @default(now())
+
+  viagem Viagem         @relation(fields: [viagemId], references: [id], onDelete: Cascade)
+  opcoes OpcaoEnquete[]
+  votos  VotoEnquete[]
+
+  @@index([viagemId])
+}
+
+model OpcaoEnquete {
+  id        String  @id
+  enqueteId String
+  texto     String
+  lugarId   String?
+  ordem     Int     @default(0)
+
+  enquete Enquete       @relation(fields: [enqueteId], references: [id], onDelete: Cascade)
+  votos   VotoEnquete[]
+}
+
+/// Um voto por pessoa por votação; votar de novo troca a escolha.
+model VotoEnquete {
+  enqueteId String
+  membroId  String
+  opcaoId   String
+
+  enquete Enquete      @relation(fields: [enqueteId], references: [id], onDelete: Cascade)
+  opcao   OpcaoEnquete @relation(fields: [opcaoId], references: [id], onDelete: Cascade)
+  membro  Membro       @relation(fields: [membroId], references: [id], onDelete: Cascade)
+
+  @@id([enqueteId, membroId])
+}
+
+// ---------------------------------------------------------------------------
+// Tarefas (o checklist da viagem)
+// ---------------------------------------------------------------------------
+
+model Tarefa {
+  id            String  @id
+  viagemId      String
+  texto         String
+  responsavelId String?
+  /// "AAAA-MM-DD", opcional.
+  prazo         String  @default("")
+  feita         Boolean @default(false)
+  feitaEm       DateTime?
+  criadoEm      DateTime @default(now())
+
+  viagem      Viagem  @relation(fields: [viagemId], references: [id], onDelete: Cascade)
+  responsavel Membro? @relation(fields: [responsavelId], references: [id], onDelete: SetNull)
+
+  @@index([viagemId])
 }

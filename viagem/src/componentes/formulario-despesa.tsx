@@ -1,6 +1,8 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useActionState, useEffect, useMemo, useState } from "react";
+import { guardarNaFila } from "./fila";
 import { salvarDespesa } from "@/acoes/contas";
 import { CATEGORIAS_DE_DESPESA, MODOS, dividir, ErroDeDivisao, type Modo } from "@/lib/contas";
 import { formatar, lerValor, LISTA_DE_MOEDAS, MOEDAS, paraCampo } from "@/lib/dinheiro";
@@ -35,6 +37,7 @@ export function FormularioDeDespesa({
   cambios,
   hoje,
   despesa,
+  inicial,
 }: {
   viagemId: string;
   membros: Membro[];
@@ -43,14 +46,25 @@ export function FormularioDeDespesa({
   cambios: Record<string, number>;
   hoje: string;
   despesa?: DespesaParaEditar;
+  inicial?: { descricao: string; valor: number; moeda: string; data: string; categoria: string; cambio?: number };
 }) {
   const [estado, agir] = useActionState(salvarDespesa, null);
   const v = estado?.valores;
 
-  const [valorTexto, setValorTexto] = useState(v?.valor ?? (despesa ? paraCampo(despesa.valor) : ""));
-  const [moeda, setMoeda] = useState(v?.moeda ?? despesa?.moeda ?? "MXN");
+  const router = useRouter();
+  const [valorTexto, setValorTexto] = useState(
+    v?.valor ?? (despesa ? paraCampo(despesa.valor) : inicial ? paraCampo(inicial.valor) : ""),
+  );
+  const [moeda, setMoeda] = useState(v?.moeda ?? despesa?.moeda ?? inicial?.moeda ?? "MXN");
+  // O id que o celular sorteia para a despesa nova: se ela for lançada sem
+  // internet e reenviada depois, o servidor reconhece e não duplica.
+  const [idCliente, setIdCliente] = useState("");
+  const [guardada, setGuardada] = useState(false);
+  useEffect(() => {
+    if (!despesa) setIdCliente(crypto.randomUUID());
+  }, [despesa]);
   const [cambioTexto, setCambioTexto] = useState(
-    v?.cambio ?? String(despesa && despesa.moeda === moeda ? despesa.cambio : (cambios[moeda] ?? "")).replace(".", ","),
+    v?.cambio ?? String(despesa && despesa.moeda === moeda ? despesa.cambio : (inicial?.cambio ?? cambios[moeda] ?? "")).replace(".", ","),
   );
   const [modo, setModo] = useState<Modo>((v?.modo as Modo) ?? (despesa?.modo as Modo) ?? "igual");
   const [pagador, setPagador] = useState(
@@ -118,14 +132,31 @@ export function FormularioDeDespesa({
   const nome = (m: Membro) => (m.id === euId ? "Você" : m.nome.split(" ")[0]);
 
   return (
-    <form action={agir} className="space-y-5">
+    <form
+      action={agir}
+      onSubmit={(e) => {
+        // Sem internet: guarda no celular e a fila envia quando o sinal voltar.
+        if (despesa || navigator.onLine) return;
+        e.preventDefault();
+        const campos: Record<string, string> = {};
+        new FormData(e.currentTarget).forEach((valor, nome) => {
+          if (typeof valor === "string") campos[nome] = valor;
+        });
+        if (guardarNaFila(viagemId, campos)) {
+          setGuardada(true);
+          setTimeout(() => router.push(`/v/${viagemId}/contas`), 1200);
+        }
+      }}
+      className="space-y-5"
+    >
       <input type="hidden" name="viagemId" value={viagemId} />
+      {idCliente && <input type="hidden" name="idCliente" value={idCliente} />}
       {despesa && <input type="hidden" name="despesaId" value={despesa.id} />}
       <input type="hidden" name="modo" value={modo} />
 
       <label className="block">
         <span className="rotulo">O que foi</span>
-        <input name="descricao" required className="campo" defaultValue={v?.descricao ?? despesa?.descricao} placeholder="Jantar no Contramar" />
+        <input name="descricao" required className="campo" defaultValue={v?.descricao ?? despesa?.descricao ?? inicial?.descricao} placeholder="Jantar no Contramar" />
       </label>
 
       <div className="grid grid-cols-[1fr_auto] gap-2">
@@ -172,11 +203,11 @@ export function FormularioDeDespesa({
       <div className="grid grid-cols-2 gap-2">
         <label className="block">
           <span className="rotulo">Data</span>
-          <input name="data" type="date" className="campo" defaultValue={v?.data ?? despesa?.data ?? hoje} />
+          <input name="data" type="date" className="campo" defaultValue={v?.data ?? despesa?.data ?? inicial?.data ?? hoje} />
         </label>
         <label className="block">
           <span className="rotulo">Tipo</span>
-          <select name="categoria" className="campo" defaultValue={v?.categoria ?? despesa?.categoria ?? "comida"}>
+          <select name="categoria" className="campo" defaultValue={v?.categoria ?? despesa?.categoria ?? inicial?.categoria ?? "comida"}>
             {CATEGORIAS_DE_DESPESA.map((c) => <option key={c.valor} value={c.valor}>{c.emoji} {c.nome}</option>)}
           </select>
         </label>
@@ -273,6 +304,7 @@ export function FormularioDeDespesa({
       </label>
 
       {estado?.erro && <Aviso tom="erro">{estado.erro}</Aviso>}
+      {guardada && <Aviso tom="atencao">📶 Sem internet: guardei no celular. Ela sobe sozinha quando o sinal voltar.</Aviso>}
       <BotaoEnviar>{despesa ? "Salvar" : "Lançar despesa"}</BotaoEnviar>
       <p className="text-center text-[13px] text-fosco">Moeda das contas: {MOEDAS[moedaBase as keyof typeof MOEDAS]?.nome ?? moedaBase}.</p>
     </form>

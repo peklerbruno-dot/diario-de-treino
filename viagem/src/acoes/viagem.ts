@@ -11,6 +11,7 @@ import { ehMoeda, LISTA_DE_MOEDAS } from "@/lib/dinheiro";
 import { buscarCambios } from "@/lib/cambio";
 import { corDoMembro } from "@/lib/cores";
 import { chaveFunciona, guardarChaveDoGemini } from "@/lib/configuracao";
+import { normalizarChave } from "@/lib/pix";
 
 const texto = (d: FormData, campo: string) => String(d.get(campo) ?? "").trim();
 
@@ -191,4 +192,20 @@ export async function salvarChaveDoGemini(_: ComValores, dados: FormData): Promi
   await guardarChaveDoGemini(chave);
   revalidatePath("/", "layout");
   return { valores: { ok: "ligada" } };
+}
+
+/** A própria chave Pix — cada um só mexe na sua. */
+export async function salvarPix(_: ComValores, dados: FormData): Promise<ComValores> {
+  const viagemId = texto(dados, "viagemId");
+  const { eu, pessoa } = await exigirMembro(viagemId);
+  const bruta = texto(dados, "pix");
+  if (bruta && !normalizarChave(bruta)) {
+    return { erro: "Não reconheci essa chave. Use CPF, celular com DDD, e-mail ou a chave aleatória.", valores: { pix: bruta } };
+  }
+  const pix = bruta ? normalizarChave(bruta)!.chave : "";
+  // A chave vale para todas as viagens da pessoa: ninguém quer cadastrar duas vezes.
+  await bd.membro.updateMany({ where: { pessoaId: pessoa.id }, data: { pix } });
+  if (!eu.pessoaId) await bd.membro.update({ where: { id: eu.id }, data: { pix } });
+  revalidatePath("/", "layout");
+  return { valores: { ok: "1", pix } };
 }

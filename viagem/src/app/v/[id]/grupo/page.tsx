@@ -5,6 +5,9 @@ import { periodo } from "@/lib/datas";
 import { temGemini } from "@/lib/leitor";
 import { chaveVemDaVercel } from "@/lib/configuracao";
 import { FormularioDoGemini } from "@/componentes/formulario-gemini";
+import { FormularioDoPix } from "@/componentes/formulario-pix";
+import { AtivarAvisos } from "@/componentes/ativar-avisos";
+import { avisosLigados, chavePublica } from "@/lib/avisos";
 import { temGoogle } from "@/lib/localizar";
 import { Aviso, Avatar, Cabecalho, Pagina, Secao } from "@/componentes/pecas";
 import { Compartilhar, Copiar } from "@/componentes/copiar";
@@ -115,6 +118,20 @@ export default async function Grupo({ params, searchParams }: { params: Promise<
           </div>
         </Secao>
       )}
+
+      {avisosLigados() && (
+        <Secao titulo="Avisos no celular">
+          <div id="avisos" className="cartao p-4">
+            <AtivarAvisos chavePublica={chavePublica()} />
+          </div>
+        </Secao>
+      )}
+
+      <Secao titulo="Sua chave Pix">
+        <div className="cartao p-4">
+          <FormularioDoPix viagemId={id} pix={eu.pix} />
+        </div>
+      </Secao>
 
       <Secao titulo="Câmbio">
         <div className="cartao p-4">

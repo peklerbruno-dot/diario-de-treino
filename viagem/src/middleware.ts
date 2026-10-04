@@ -24,5 +24,5 @@ export function middleware(pedido: NextRequest) {
 
 export const config = {
   // O atalho do iPhone entra pela chave própria, sem cookie.
-  matcher: ["/((?!api/atalho|api/saude|manifest.webmanifest|icone-|apple-touch-icon|favicon).*)"],
+  matcher: ["/((?!api/atalho|api/saude|api/cron|manifest.webmanifest|sw.js|offline.html|icone-|apple-touch-icon|favicon).*)"],
 };
