@@ -569,6 +569,15 @@ por **Ajustes → Centavos que sobraram** — uma seção que só existe enquant
 houver o que arrumar e some depois. O backup é baixado antes da alteração, não
 oferecido depois: quem clicou num botão que diz "não tem volta" já decidiu.
 
+## O limite de publicações da Vercel
+
+No plano gratuito (Hobby), a Vercel aceita cerca de 100 publicações a cada 24
+horas, contadas por conta. Este repositório está ligado a vários projetos da
+Vercel, e cada envio ao GitHub dispara uma publicação em **cada um** deles — um
+dia de muitas mudanças esgota o limite, e a Vercel passa a responder
+"Deployment rate limited". Nada se perde: o código fica no GitHub, e a próxima
+publicação, depois que a janela de 24 horas libera espaço, leva tudo junto.
+
 ## Rodar no computador
 
 ```sh
