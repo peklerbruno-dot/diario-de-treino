@@ -125,6 +125,24 @@ segundo plano e ela aparece na abertura seguinte.
 
 ## Outros projetos neste repositório
 
+### Cada app só publica quando a pasta dele muda
+
+Este repositório está ligado a vários projetos da Vercel, e o plano gratuito
+aceita cerca de 100 publicações por dia, somando todos. Sem cuidado, um envio
+que muda só a dieta publicava os oito projetos.
+
+Por isso cada pasta tem, no seu `vercel.json`, um `ignoreCommand`:
+
+    git diff --quiet HEAD^ HEAD -- .
+
+A Vercel roda esse comando antes de publicar: se nada mudou na pasta do
+projeto, ele sai com 0 e a publicação é pulada. O diário de treino, que mora na
+raiz, usa a mesma ideia excluindo as pastas dos outros apps.
+
+Um efeito a lembrar: se uma publicação falhar (por exemplo, por limite
+estourado), o envio seguinte que não mexer naquela pasta **não** a refaz. Nesse
+caso, abra o projeto na Vercel → **Deployments** → **⋯** → **Redeploy**.
+
 Cada um é um app independente deste diário, com o seu próprio `package.json` e
 o seu próprio deploy na Vercel (pasta escolhida em *Root Directory*).
 

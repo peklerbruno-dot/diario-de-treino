@@ -5,19 +5,29 @@ import { useRef, useState, useTransition } from "react";
 import { apagarFoto, marcarRefeicao } from "@/app/acoes";
 import { milhar, type Analise } from "@/lib/analise";
 import type { FotoDoDia } from "@/lib/consultas";
-import { horaFalada } from "@/lib/datas";
+import { horaFalada, somarDias } from "@/lib/datas";
 import { Botao } from "./pecas";
 import { reduzirImagem } from "./reduzir";
 
 /**
- * Foto do prato: escolher a refeição, tirar a foto, ver o que o Gemini achou.
+ * Foto do prato: escolher o dia e a refeição, tirar a foto ou pegar uma da
+ * galeria, e ver o que o Gemini achou.
  *
- * A câmera abre direto (`capture`), mas o iPhone ainda deixa escolher da
- * galeria — serve para a foto que se tirou no restaurante e se lembrou depois.
+ * São dois seletores de arquivo, e não um: com `capture` o iPhone abre a
+ * câmera direto e esconde a galeria; sem ele, abre a galeria (com a câmera
+ * como opção a mais). A galeria é para a foto tirada no restaurante e
+ * lembrada depois — por isso dá para escolher "ontem" e "anteontem".
  */
 
 type RefeicaoCurta = { id: string; nome: string; horario: string };
-type Resultado = { id: string; analise: Analise | null; sugestao: "seguiu" | "trocou" | null; refeicao: RefeicaoCurta | null; previa: string };
+type Resultado = {
+  id: string;
+  dia: string;
+  analise: Analise | null;
+  sugestao: "seguiu" | "trocou" | null;
+  refeicao: RefeicaoCurta | null;
+  previa: string;
+};
 
 const VEREDITO = {
   sim: { rotulo: "Dentro do plano", cor: "bg-folha-clara text-folha" },
@@ -26,19 +36,35 @@ const VEREDITO = {
   "sem-plano": { rotulo: "Fora das refeições do plano", cor: "bg-papel text-grafite" },
 } as const;
 
+const DIAS = [
+  { rotulo: "Hoje", atras: 0 },
+  { rotulo: "Ontem", atras: 1 },
+  { rotulo: "Anteontem", atras: 2 },
+];
+
+/** "12:40" no relógio do aparelho — a hora da foto quando ela é de agora. */
+const horaAgora = () => {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+};
+
 export function BotaoDeFoto({ dia, refeicoes, sugerida }: { dia: string; refeicoes: RefeicaoCurta[]; sugerida?: string }) {
   const router = useRouter();
-  const seletor = useRef<HTMLInputElement>(null);
+  const camera = useRef<HTMLInputElement>(null);
+  const galeria = useRef<HTMLInputElement>(null);
   const [escolhendo, setEscolhendo] = useState(false);
-  const [refeicao, setRefeicao] = useState<RefeicaoCurta | null>(null);
+  const [atras, setAtras] = useState(0);
+  const [refeicaoId, setRefeicaoId] = useState<string | null>(sugerida ?? null);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState("");
   const [resultado, setResultado] = useState<Resultado | null>(null);
 
-  const abrirCamera = (r: RefeicaoCurta | null) => {
-    setRefeicao(r);
+  const refeicao = refeicoes.find((r) => r.id === refeicaoId) ?? null;
+  const diaDaFoto = somarDias(dia, -atras);
+
+  const abrir = (origem: "camera" | "galeria") => {
     setEscolhendo(false);
-    seletor.current?.click();
+    (origem === "camera" ? camera : galeria).current?.click();
   };
 
   const enviar = async (arquivo: File) => {
@@ -49,10 +75,13 @@ export function BotaoDeFoto({ dia, refeicoes, sugerida }: { dia: string; refeico
       const dados = new FormData();
       dados.append("imagem", new File([reduzida], "prato.jpg", { type: "image/jpeg" }));
       if (refeicao) dados.append("refeicaoId", refeicao.id);
+      dados.append("dia", diaDaFoto);
+      // Foto de outro dia: vale o horário da refeição, que é o que se sabe dela.
+      dados.append("hora", atras > 0 && refeicao ? refeicao.horario : horaAgora());
       const r = await fetch("/api/foto", { method: "POST", body: dados });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(j.erro ?? "Não consegui salvar a foto.");
-      setResultado({ id: j.id, analise: j.analise, sugestao: j.sugestao, refeicao, previa: URL.createObjectURL(reduzida) });
+      setResultado({ id: j.id, dia: j.dia ?? diaDaFoto, analise: j.analise, sugestao: j.sugestao, refeicao, previa: URL.createObjectURL(reduzida) });
       router.refresh();
     } catch (e) {
       setErro(e instanceof Error ? e.message : "Não consegui salvar a foto.");
@@ -61,50 +90,75 @@ export function BotaoDeFoto({ dia, refeicoes, sugerida }: { dia: string; refeico
     }
   };
 
+  const aoEscolher = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    if (f) enviar(f);
+  };
+
   return (
     <div>
-      <input
-        ref={seletor}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          e.target.value = "";
-          if (f) enviar(f);
-        }}
-      />
+      <input ref={camera} type="file" accept="image/*" capture="environment" className="hidden" onChange={aoEscolher} />
+      <input ref={galeria} type="file" accept="image/*" className="hidden" onChange={aoEscolher} />
       <Botao tipo="primario" className="w-full whitespace-nowrap" disabled={enviando} onClick={() => setEscolhendo(true)}>
         {enviando ? "Analisando…" : "📷 Foto do prato"}
       </Botao>
       {erro && <p className="mt-2 text-[14px] text-pulou">{erro}</p>}
 
       {escolhendo && (
-        <Folha aoFechar={() => setEscolhendo(false)} titulo="De qual refeição é a foto?">
+        <Folha aoFechar={() => setEscolhendo(false)} titulo="Foto do prato">
+          <p className="sobrescrito mb-1.5">Quando</p>
+          <div className="mb-4 grid grid-cols-3 gap-1.5">
+            {DIAS.map((d) => (
+              <button
+                key={d.atras}
+                type="button"
+                aria-pressed={atras === d.atras}
+                onClick={() => setAtras(d.atras)}
+                className={`rounded-folha py-2 text-[15px] ${atras === d.atras ? "bg-folha-clara font-semibold text-folha" : "bg-papel text-grafite"}`}
+              >
+                {d.rotulo}
+              </button>
+            ))}
+          </div>
+
+          <p className="sobrescrito mb-1.5">Qual refeição</p>
           <ul className="space-y-1.5">
             {refeicoes.map((r) => (
               <li key={r.id}>
                 <button
                   type="button"
-                  onClick={() => abrirCamera(r)}
-                  className={`flex w-full items-center justify-between rounded-folha px-4 py-3 text-left ${r.id === sugerida ? "bg-folha-clara" : "bg-papel"}`}
+                  aria-pressed={r.id === refeicaoId}
+                  onClick={() => setRefeicaoId(r.id)}
+                  className={`flex w-full items-center justify-between rounded-folha px-4 py-3 text-left ${r.id === refeicaoId ? "bg-folha-clara font-semibold text-folha" : "bg-papel"}`}
                 >
-                  <span className="font-medium">{r.nome}</span>
+                  <span>{r.nome}</span>
                   <span className="tabular text-[14px] text-fosco">{horaFalada(r.horario)}</span>
                 </button>
               </li>
             ))}
             <li>
-              <button type="button" onClick={() => abrirCamera(null)} className="w-full rounded-folha bg-papel px-4 py-3 text-left text-grafite">
+              <button
+                type="button"
+                aria-pressed={refeicaoId === null}
+                onClick={() => setRefeicaoId(null)}
+                className={`w-full rounded-folha px-4 py-3 text-left ${refeicaoId === null ? "bg-folha-clara font-semibold text-folha" : "bg-papel text-grafite"}`}
+              >
                 Outra coisa (fora do plano)
               </button>
             </li>
           </ul>
+
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <Botao tipo="primario" onClick={() => abrir("camera")}>
+              📷 Tirar foto
+            </Botao>
+            <Botao onClick={() => abrir("galeria")}>🖼️ Da galeria</Botao>
+          </div>
         </Folha>
       )}
 
-      {resultado && <ResultadoDaFoto dia={dia} r={resultado} aoFechar={() => setResultado(null)} />}
+      {resultado && <ResultadoDaFoto dia={resultado.dia} r={resultado} aoFechar={() => setResultado(null)} />}
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { sugestaoDeMarca } from "@/lib/analise";
 import { temSessao } from "@/lib/auth";
 import { bd } from "@/lib/bd";
 import { escreverTexto, normalizarConteudo } from "@/lib/conteudo";
-import { agoraNoFuso, paraHora } from "@/lib/datas";
+import { agoraNoFuso, normalizarHora, paraHora, somarDias } from "@/lib/datas";
 import { novoId } from "@/lib/ids";
 import { analisarPrato } from "@/lib/leitor";
 
@@ -37,13 +37,17 @@ export async function POST(req: Request) {
     refeicao ? { nome: refeicao.nome, texto: escreverTexto(normalizarConteudo(refeicao.conteudo)), nota: refeicao.nota } : undefined,
   );
 
+  // Foto da galeria pode ser de até uma semana atrás; nunca do futuro.
   const agora = agoraNoFuso();
+  const diaPedido = String(dados?.get("dia") ?? "");
+  const dia = /^\d{4}-\d{2}-\d{2}$/.test(diaPedido) && diaPedido <= agora.dia && diaPedido >= somarDias(agora.dia, -7) ? diaPedido : agora.dia;
+  const hora = normalizarHora(String(dados?.get("hora") ?? "")) ?? paraHora(agora.minutos);
   const id = novoId();
   await bd.foto.create({
     data: {
       id,
-      dia: agora.dia,
-      hora: paraHora(agora.minutos),
+      dia,
+      hora,
       refeicaoId: refeicao?.id ?? null,
       nome: refeicao?.nome ?? "",
       tipo: arquivo.type,
@@ -52,5 +56,5 @@ export async function POST(req: Request) {
     },
   });
 
-  return NextResponse.json({ id, analise, sugestao: sugestaoDeMarca(analise), dia: agora.dia });
+  return NextResponse.json({ id, analise, sugestao: sugestaoDeMarca(analise), dia });
 }
