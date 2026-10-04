@@ -34,7 +34,7 @@ export async function POST(req: Request) {
 
   const analise = await analisarPrato(
     { tipo: arquivo.type, base64: bytes.toString("base64") },
-    refeicao ? { nome: refeicao.nome, texto: escreverTexto(normalizarConteudo(refeicao.conteudo)) } : undefined,
+    refeicao ? { nome: refeicao.nome, texto: escreverTexto(normalizarConteudo(refeicao.conteudo)), nota: refeicao.nota } : undefined,
   );
 
   const agora = agoraNoFuso();

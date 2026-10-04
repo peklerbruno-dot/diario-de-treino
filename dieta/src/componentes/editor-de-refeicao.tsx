@@ -28,7 +28,7 @@ export function CamposDaRefeicao({ valor, aoMudar }: { valor: Rascunho; aoMudar:
       </div>
 
       <label className="block">
-        <span className="text-[13px] text-fosco">O que comer — um alimento por linha</span>
+        <span className="text-[13px] text-fosco">O que comer — um item por linha (pode ser só “Marmita” ou “PF”)</span>
         <textarea
           className={`${campo} min-h-[140px] leading-snug`}
           value={valor.texto}

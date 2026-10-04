@@ -59,7 +59,7 @@ const ESQUEMA = {
                   items: {
                     type: Type.OBJECT,
                     properties: {
-                      texto: { type: Type.STRING, description: "Alimento e quantidade, ex.: 'Pão integral — 2 fatias (50 g)'." },
+                      texto: { type: Type.STRING, description: "Alimento e quantidade, ex.: 'Pão integral — 2 fatias (50 g)'; ou a referência como o plano escreve, ex.: 'Marmita', 'PF (prato feito)'." },
                       subs: {
                         type: Type.ARRAY,
                         items: { type: Type.STRING },
@@ -91,6 +91,7 @@ Recebe o plano (PDF, fotos ou texto) e devolve as refeições do dia, na ordem, 
 Regras:
 - Transcreva fielmente. Não invente alimento, quantidade nem substituição que não esteja no plano, e não "melhore" a dieta.
 - Mantenha as quantidades como o plano escreve (medida caseira e gramas, se houver as duas): "Arroz integral — 4 col. de sopa (100 g)".
+- Muitos planos são de referência, sem cardápio exato: "comer marmita", "PF (prato feito)", "lanche leve", "fruta", "refeição livre". Transcreva assim mesmo, como itens, SEM inventar alimentos nem quantidades. Regras de montagem que acompanham a referência ("metade do prato de salada, 1/4 de proteína, 1/4 de carboidrato", "evitar fritura nessa refeição") vão na "nota" da refeição.
 - Lista de substituições/equivalentes de um item vai em "subs" daquele item. Uma tabela de substituições geral no fim do plano deve ser distribuída pelos itens a que se refere.
 - Quando a refeição tem alternativas inteiras ("Opção 1 / Opção 2"), cada uma é uma opção. Senão, uma opção só, com título vazio.
 - Se houver planos diferentes para dias de treino e de descanso, ou para fim de semana, use o campo "dias" e repita a refeição com o nome indicando a diferença (ex.: "Lanche (dia de treino)").
@@ -183,6 +184,7 @@ const ESQUEMA_DA_FOTO = {
 const INSTRUCOES_DA_FOTO = `Você olha a foto de um prato de comida de uma pessoa brasileira que segue um plano de nutricionista.
 Identifique os alimentos, estime as quantidades pelo tamanho no prato e estime calorias e macronutrientes.
 Se receber a refeição do plano, compare: "sim" se o prato segue o plano (valem as substituições listadas e pequenas variações de quantidade), "parcial" se segue em parte, "nao" se é outra coisa.
+Quando o plano for uma referência genérica ("marmita", "PF", "lanche leve", "refeição livre"), julgue pelo espírito dela e pelas regras da observação, se houver: um PF equilibrado (salada ou legumes, uma proteína, um carboidrato, sem excesso de fritura) é "sim"; um PF só de fritura e massa é "parcial" ou "nao". No comentário, diga em uma frase o que deixaria o prato mais próximo do ideal, se algo.
 Seja realista nas estimativas e escreva em português do Brasil. Se a foto não for de comida, devolva itens vazios e explique na descrição.`;
 
 /**
@@ -190,13 +192,13 @@ Seja realista nas estimativas e escreva em português do Brasil. Se a foto não 
  * foto é de uma refeição do plano. Devolve null quando não deu para ler — a
  * foto é salva mesmo assim.
  */
-export async function analisarPrato(imagem: { tipo: string; base64: string }, plano?: { nome: string; texto: string }) {
+export async function analisarPrato(imagem: { tipo: string; base64: string }, plano?: { nome: string; texto: string; nota?: string }) {
   const c = ia();
   if (!c) return null;
   const partes: Part[] = [{ inlineData: { mimeType: imagem.tipo, data: imagem.base64 } }];
   partes.push({
     text: plano
-      ? `Refeição do plano: ${plano.nome}\nO que o plano pede (linhas com "ou" são substituições):\n${plano.texto}`
+      ? `Refeição do plano: ${plano.nome}\nO que o plano pede (linhas com "ou" são substituições):\n${plano.texto}${plano.nota ? `\nObservação da nutricionista: ${plano.nota}` : ""}`
       : "Não há refeição do plano para comparar: use noPlano = 'sem-plano'.",
   });
   try {
