@@ -129,7 +129,7 @@ segundo plano e ela aparece na abertura seguinte.
 
 Este repositório está ligado a vários projetos da Vercel, e o plano gratuito
 aceita cerca de 100 publicações por dia, somando todos. Sem cuidado, um envio
-que muda só a dieta publicava os oito projetos.
+que muda só um app publicava todos os projetos.
 
 Por isso cada pasta tem, no seu `vercel.json`, um `ignoreCommand`:
 
@@ -172,8 +172,6 @@ o seu próprio deploy na Vercel (pasta escolhida em *Root Directory*).
   simplificar dívidas). Uma conta por pessoa, convite por link.
   Veja [`viagem/README.md`](viagem/README.md) e, para publicar,
   [`viagem/docs/COLOCAR-NO-AR.md`](viagem/docs/COLOCAR-NO-AR.md).
-- `dieta/` — o plano da nutricionista no celular: o PDF lido pelo Gemini vira
-  as refeições do dia, com opções e substituições; um aviso no iPhone na hora
-  de cada refeição; segui / troquei / pulei; e a água do dia, com lembretes.
-  Veja [`dieta/README.md`](dieta/README.md) e, para publicar,
-  [`dieta/docs/COLOCAR-NO-AR.md`](dieta/docs/COLOCAR-NO-AR.md).
+- A **Dieta** (o plano da nutricionista no celular) mudou para um repositório
+  próprio, [peklerbruno-dot/dieta](https://github.com/peklerbruno-dot/dieta):
+  cada envio dela agora publica um projeto só na Vercel, e não os oito.
