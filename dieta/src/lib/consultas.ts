@@ -54,16 +54,34 @@ export async function ajustes(): Promise<Ajustes> {
 
 export type Marca = { estado: "seguiu" | "trocou" | "pulou"; nota: string; humor?: string };
 
-export type FotoDoDia = { id: string; dia: string; hora: string; refeicaoId: string | null; nome: string; analise: Analise | null };
+export type FotoDoDia = {
+  id: string;
+  dia: string;
+  hora: string;
+  refeicaoId: string | null;
+  nome: string;
+  analise: Analise | null;
+  /** Falso = anotação só em texto, sem foto. */
+  temImagem: boolean;
+  /** O que foi escrito, nas anotações sem foto. */
+  texto: string;
+};
+
+const CAMPOS_DA_FOTO = { id: true, dia: true, hora: true, refeicaoId: true, nome: true, analise: true, tipo: true, texto: true } as const;
+const paraFotoDoDia = ({ tipo, analise, ...f }: { tipo: string; analise: unknown } & Omit<FotoDoDia, "analise" | "temImagem">): FotoDoDia => ({
+  ...f,
+  analise: normalizarAnalise(analise),
+  temImagem: tipo !== "",
+});
 
 /** As fotos de um intervalo de dias, sem a imagem (que vem por /api/foto/[id]). */
 async function fotosEntre(desde: string, ate: string): Promise<FotoDoDia[]> {
   const fotos = await bd.foto.findMany({
     where: { dia: { gte: desde, lte: ate } },
     orderBy: [{ dia: "desc" }, { hora: "asc" }],
-    select: { id: true, dia: true, hora: true, refeicaoId: true, nome: true, analise: true },
+    select: CAMPOS_DA_FOTO,
   });
-  return fotos.map((f) => ({ ...f, analise: normalizarAnalise(f.analise) }));
+  return fotos.map(paraFotoDoDia);
 }
 
 /** O que já foi marcado num dia, por id de refeição, a água e as fotos do dia. */
@@ -139,19 +157,20 @@ export async function galeria({ nome, antesDe, porPagina = 60 }: { nome?: string
     ? { OR: [{ dia: { lt: dia } }, { dia, hora: { lt: hora } }, { dia, hora, id: { lt: id } }] }
     : {};
   const fotos = await bd.foto.findMany({
-    where: { ...(nome ? { nome } : {}), ...depois },
+    // Só as fotos de verdade: as anotações em texto ficam no dia, não na galeria.
+    where: { tipo: { not: "" }, ...(nome ? { nome } : {}), ...depois },
     orderBy: [{ dia: "desc" }, { hora: "desc" }, { id: "desc" }],
     take: porPagina + 1,
-    select: { id: true, dia: true, hora: true, refeicaoId: true, nome: true, analise: true },
+    select: CAMPOS_DA_FOTO,
   });
-  const pagina = fotos.slice(0, porPagina).map((f) => ({ ...f, analise: normalizarAnalise(f.analise) }));
+  const pagina = fotos.slice(0, porPagina).map(paraFotoDoDia);
   const ultima = pagina.at(-1);
   return { fotos: pagina, proxima: fotos.length > porPagina && ultima ? `${ultima.dia}|${ultima.hora}|${ultima.id}` : null };
 }
 
 /** Os nomes de refeição que aparecem nas fotos (para o filtro da galeria). */
 export async function nomesDasFotos(): Promise<string[]> {
-  const g = await bd.foto.groupBy({ by: ["nome"], _count: { _all: true }, orderBy: { _count: { nome: "desc" } } });
+  const g = await bd.foto.groupBy({ by: ["nome"], where: { tipo: { not: "" } }, _count: { _all: true }, orderBy: { _count: { nome: "desc" } } });
   return g.map((x) => x.nome).filter(Boolean);
 }
 

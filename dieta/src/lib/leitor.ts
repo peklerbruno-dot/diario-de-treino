@@ -212,23 +212,39 @@ const INSTRUCOES_DA_FOTO = `Você olha a foto de um prato de comida de uma pesso
 Identifique os alimentos, estime as quantidades pelo tamanho no prato e estime calorias e macronutrientes.
 Se receber a refeição do plano, compare: "sim" se o prato segue o plano (valem as substituições listadas e pequenas variações de quantidade), "parcial" se segue em parte, "nao" se é outra coisa.
 Quando o plano for uma referência genérica ("marmita", "PF", "lanche leve", "refeição livre"), julgue pelo espírito dela e pelas regras da observação, se houver: um PF equilibrado (salada ou legumes, uma proteína, um carboidrato, sem excesso de fritura) é "sim"; um PF só de fritura e massa é "parcial" ou "nao". No comentário, diga em uma frase o que deixaria o prato mais próximo do ideal, se algo.
-Seja realista nas estimativas e escreva em português do Brasil. Se a foto não for de comida, devolva itens vazios e explique na descrição.`;
+Seja realista nas estimativas e escreva em português do Brasil. Quando não houver foto, só a descrição em texto, faça o mesmo a partir dela. Se a foto não for de comida, devolva itens vazios e explique na descrição.`;
 
 /**
- * Lê a foto do prato. `plano` é o que a refeição pedia, em texto, quando a
- * foto é de uma refeição do plano. `analise` vem null quando não deu para ler
- * — a foto é salva mesmo assim, e `semCota` diz se o motivo foi a cota (aí
- * vale tentar de novo mais tarde, pelo botão "Analisar agora").
+ * Lê a foto do prato — ou, sem foto, o que a pessoa escreveu que comeu.
+ * `plano` é o que a refeição pedia, em texto, quando é uma refeição do plano.
+ * `correcao` é o que a pessoa corrigiu ("era peito de peru", "foram 2
+ * hambúrgueres"), que vale mais que o olho do Gemini; `anterior` é a leitura
+ * que está sendo corrigida.
+ *
+ * `analise` vem null quando não deu para ler — a foto é salva mesmo assim, e
+ * `semCota` diz se o motivo foi a cota (aí vale tentar de novo mais tarde,
+ * pelo botão "Analisar agora").
  */
-export async function analisarPrato(imagem: { tipo: string; base64: string }, plano?: { nome: string; texto: string; nota?: string }) {
+export async function analisarPrato(
+  entrada: { imagem?: { tipo: string; base64: string } | null; texto?: string; correcao?: string; anterior?: unknown },
+  plano?: { nome: string; texto: string; nota?: string },
+) {
   const c = ia();
   if (!c) return { analise: null, semCota: false };
-  const partes: Part[] = [{ inlineData: { mimeType: imagem.tipo, data: imagem.base64 } }];
+  const partes: Part[] = [];
+  if (entrada.imagem) partes.push({ inlineData: { mimeType: entrada.imagem.tipo, data: entrada.imagem.base64 } });
+  else partes.push({ text: `Não há foto. A pessoa escreveu o que comeu:\n"${(entrada.texto ?? "").slice(0, 600)}"\nEstime a partir do texto, com porções típicas quando a quantidade não for dita.` });
   partes.push({
     text: plano
       ? `Refeição do plano: ${plano.nome}\nO que o plano pede (linhas com "ou" são substituições):\n${plano.texto}${plano.nota ? `\nObservação da nutricionista: ${plano.nota}` : ""}`
       : "Não há refeição do plano para comparar: use noPlano = 'sem-plano'.",
   });
+  if (entrada.correcao) {
+    partes.push({
+      text: `${entrada.anterior ? `Leitura anterior: ${JSON.stringify(entrada.anterior)}\n` : ""}A pessoa corrigiu: "${entrada.correcao.slice(0, 400)}"
+A correção é verdade e vale mais que a foto: troque os alimentos, as quantidades e as contas conforme ela (se disser "foram 2", dobre aquele item), mantenha o resto e refaça calorias, macros e a comparação com o plano.`,
+    });
+  }
   try {
     const r = await gerar(c, {
       contents: [{ role: "user", parts: partes }],
