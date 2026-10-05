@@ -10,7 +10,7 @@ import { Botao, Cartao } from "./pecas";
  * vez, e um mês de fotos já passa disso.
  */
 
-type Exportado = { fotos: { id: string; dia: string; hora: string; nome: string }[]; fotosDoCorpo: { id: string; dia: string }[] };
+type Exportado = { fotos: { id: string; dia: string; hora: string; nome: string; tipo: string }[]; fotosDoCorpo: { id: string; dia: string }[] };
 
 const limpo = (s: string) =>
   s
@@ -52,9 +52,10 @@ export function Backup({ hoje }: { hoje: string }) {
       const arquivos: Record<string, Uint8Array | [Uint8Array, { level: 0 }]> = { "dados.json": strToU8(texto) };
 
       const fila = [
-        ...dados.fotos.map((f) => ({ url: `/api/foto/${f.id}`, nome: `pratos/${f.dia}_${f.hora.replace(":", "h")}_${limpo(f.nome)}_${f.id.slice(-6)}.jpg` })),
+        ...dados.fotos.filter((f) => f.tipo).map((f) => ({ url: `/api/foto/${f.id}`, nome: `pratos/${f.dia}_${f.hora.replace(":", "h")}_${limpo(f.nome)}_${f.id.slice(-6)}.jpg` })),
         ...dados.fotosDoCorpo.map((f) => ({ url: `/api/corpo/${f.id}`, nome: `corpo/${f.dia}_${f.id.slice(-6)}.jpg` })),
       ];
+      const total = fila.length;
       let feitas = 0;
       let falhas = 0;
       // Quatro de cada vez: rápido sem afogar a conexão do celular.
@@ -69,7 +70,7 @@ export function Backup({ hoje }: { hoje: string }) {
             falhas++;
           }
           feitas++;
-          setAndamento(`Baixando as fotos: ${feitas} de ${dados.fotos.length + dados.fotosDoCorpo.length}…`);
+          setAndamento(`Baixando as fotos: ${feitas} de ${total}…`);
         }
       };
       await Promise.all([trabalhar(), trabalhar(), trabalhar(), trabalhar()]);

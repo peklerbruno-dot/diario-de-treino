@@ -8,7 +8,8 @@ import { novoId } from "@/lib/ids";
 import { analisarPrato } from "@/lib/leitor";
 
 /**
- * Recebe a foto do prato (já reduzida pelo aparelho), guarda, e pede ao Gemini
+ * Recebe a foto do prato (já reduzida pelo aparelho) — ou, quando não deu
+ * tempo de fotografar, o texto do que se comeu —, guarda, e pede ao Gemini
  * para dizer o que há nela e se bate com a refeição do plano.
  *
  * A foto é salva mesmo quando a leitura falha: ela vale como registro do que
@@ -23,17 +24,17 @@ export async function POST(req: Request) {
 
   const dados = await req.formData().catch(() => null);
   const arquivo = dados?.get("imagem");
-  if (!(arquivo instanceof File) || !arquivo.type.startsWith("image/")) {
-    return NextResponse.json({ erro: "Não chegou nenhuma foto." }, { status: 400 });
-  }
-  if (arquivo.size > MAXIMO) return NextResponse.json({ erro: "Foto grande demais." }, { status: 413 });
+  const texto = String(dados?.get("texto") ?? "").trim().slice(0, 600);
+  const temFoto = arquivo instanceof File && arquivo.type.startsWith("image/");
+  if (!temFoto && !texto) return NextResponse.json({ erro: "Não chegou nenhuma foto nem texto." }, { status: 400 });
+  if (temFoto && arquivo.size > MAXIMO) return NextResponse.json({ erro: "Foto grande demais." }, { status: 413 });
 
-  const bytes = Buffer.from(await arquivo.arrayBuffer());
+  const bytes = temFoto ? Buffer.from(await arquivo.arrayBuffer()) : null;
   const refeicaoId = String(dados?.get("refeicaoId") ?? "") || null;
   const refeicao = refeicaoId ? await bd.refeicao.findUnique({ where: { id: refeicaoId } }) : null;
 
   const { analise, semCota } = await analisarPrato(
-    { tipo: arquivo.type, base64: bytes.toString("base64") },
+    { imagem: temFoto && bytes ? { tipo: arquivo.type, base64: bytes.toString("base64") } : null, texto },
     refeicao ? { nome: refeicao.nome, texto: escreverTexto(normalizarConteudo(refeicao.conteudo)), nota: refeicao.nota } : undefined,
   );
 
@@ -50,8 +51,9 @@ export async function POST(req: Request) {
       hora,
       refeicaoId: refeicao?.id ?? null,
       nome: refeicao?.nome ?? "",
-      tipo: arquivo.type,
+      tipo: temFoto ? arquivo.type : "",
       imagem: bytes,
+      texto,
       analise: analise ?? undefined,
     },
   });

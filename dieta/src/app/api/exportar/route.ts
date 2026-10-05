@@ -20,7 +20,7 @@ export async function GET() {
     bd.lembrete.findMany(),
     bd.semana.findMany({ orderBy: { criadoEm: "asc" } }),
     bd.ajuste.findMany(),
-    bd.foto.findMany({ orderBy: [{ dia: "asc" }, { hora: "asc" }], select: { id: true, dia: true, hora: true, refeicaoId: true, nome: true, analise: true, criadoEm: true } }),
+    bd.foto.findMany({ orderBy: [{ dia: "asc" }, { hora: "asc" }], select: { id: true, dia: true, hora: true, refeicaoId: true, nome: true, tipo: true, texto: true, correcao: true, analise: true, criadoEm: true } }),
     bd.fotoCorpo.findMany({ orderBy: { dia: "asc" }, select: { id: true, dia: true, nota: true, criadoEm: true } }),
   ]);
   const corpo = JSON.stringify(

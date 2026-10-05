@@ -113,7 +113,7 @@ model Ajuste {
   valor String
 }
 
-/// Uma foto do prato, com o que o Gemini viu nela.
+/// Uma foto do prato (ou uma anotação em texto), com o que o Gemini viu nela.
 ///
 /// A imagem fica no próprio banco, reduzida (uns 100 KB): é um app de uma
 /// pessoa, e um serviço de arquivos à parte seria mais uma conta e mais uma
@@ -128,8 +128,15 @@ model Foto {
   refeicaoId String?
   /// Nome da refeição na hora da foto (sobrevive à troca de plano).
   nome       String   @default("")
+  /// Tipo da imagem ("image/jpeg"). Vazio = anotação só em texto, sem foto
+  /// (quando não deu tempo de fotografar).
   tipo       String
-  imagem     Bytes
+  imagem     Bytes?
+  /// O que a pessoa escreveu que comeu, quando anotou sem foto.
+  texto      String   @default("")
+  /// A última correção pedida ("eram 2 hambúrgueres"). Entra em toda nova
+  /// leitura, para a correção não se perder ao analisar de novo.
+  correcao   String   @default("")
   /// O que a leitura devolveu (ver src/lib/analise.ts). Nulo = sem leitura.
   analise    Json?
   criadoEm   DateTime @default(now())

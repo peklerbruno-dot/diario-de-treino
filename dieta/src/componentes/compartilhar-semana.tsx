@@ -147,7 +147,7 @@ async function montarPdf(semana: DiaDoHistorico[], resumo: string, desde: string
   }
 
   // Fotos
-  const fotos = semana.flatMap((d) => d.fotos).slice(0, 15);
+  const fotos = semana.flatMap((d) => d.fotos).filter((f) => f.temImagem).slice(0, 15);
   if (fotos.length) {
     y += 4;
     novaPaginaSe(14);

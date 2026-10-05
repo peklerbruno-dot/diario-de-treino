@@ -40,6 +40,16 @@ olho e não balança) e compara com o que o plano pedia — "dentro do plano",
 fotos ficam nos cartões das refeições e no Histórico; a imagem é guardada
 reduzida no próprio banco.
 
+**Corrigir a análise.** O Gemini errou ("era peito de peru, não presunto",
+"foram 2 hambúrgueres")? Toque na foto → *Corrigir*, escreva o que está errado,
+e ele refaz a conta com a correção como verdade. Ou *Editar à mão*: os itens,
+as calorias, os macros e se seguiu o plano — o caminho quando a cota acabou.
+
+**Sem foto.** Não deu tempo de fotografar? *O que comi* → *Sem foto: escrever o
+que comi* ("2 hambúrgueres de frango com queijo, coca zero"), e o Gemini estima
+a partir do texto. A anotação aparece no cartão da refeição e no dia, e entra
+nas calorias do dia.
+
 **Lembretes seus**, em Ajustes: remédio, creatina, vitamina, pesar-se — nome,
 horário, dias da semana e o texto da notificação.
 

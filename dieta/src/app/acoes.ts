@@ -7,6 +7,7 @@ import { entrar, exigirSessao, sair } from "@/lib/auth";
 import { bd } from "@/lib/bd";
 import { lerTexto } from "@/lib/conteudo";
 import { normalizarPlanejamento } from "@/lib/semana";
+import { normalizarAnalise, type Analise } from "@/lib/analise";
 import { agoraNoFuso, hoje, normalizarHora, paraHora } from "@/lib/datas";
 import { ehHumor } from "@/lib/padroes";
 import { novoId } from "@/lib/ids";
@@ -234,6 +235,22 @@ export async function salvarAjustes(parcial: Partial<Ajustes>) {
 // ---------------------------------------------------------------------------
 // Fotos e lembretes
 // ---------------------------------------------------------------------------
+
+/**
+ * A análise corrigida à mão: os itens e os números, quando a correção pelo
+ * Gemini não serve (ou a cota acabou). O que não vier fica como estava.
+ */
+export async function editarAnalise(id: string, nova: Partial<Analise>) {
+  await exigirSessao();
+  const foto = await bd.foto.findUnique({ where: { id }, select: { analise: true, texto: true } });
+  if (!foto) return;
+  const junto = { descricao: "", comentario: "", noPlano: "sem-plano", ...normalizarAnalise(foto.analise), ...nova };
+  // Sem descrição a análise não vale; a lista de itens (ou o texto anotado) faz as vezes dela.
+  if (!junto.descricao) junto.descricao = (junto.itens ?? []).map((i) => i.alimento).join(", ") || foto.texto || "Refeição";
+  const analise = normalizarAnalise(junto);
+  if (analise) await bd.foto.update({ where: { id }, data: { analise } });
+  atualizarTudo();
+}
 
 export async function apagarFoto(id: string) {
   await exigirSessao();

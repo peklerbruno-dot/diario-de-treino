@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Foto" ADD COLUMN     "correcao" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "texto" TEXT NOT NULL DEFAULT '',
+ALTER COLUMN "imagem" DROP NOT NULL;
