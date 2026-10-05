@@ -32,7 +32,7 @@ export async function POST(req: Request) {
   const refeicaoId = String(dados?.get("refeicaoId") ?? "") || null;
   const refeicao = refeicaoId ? await bd.refeicao.findUnique({ where: { id: refeicaoId } }) : null;
 
-  const analise = await analisarPrato(
+  const { analise, semCota } = await analisarPrato(
     { tipo: arquivo.type, base64: bytes.toString("base64") },
     refeicao ? { nome: refeicao.nome, texto: escreverTexto(normalizarConteudo(refeicao.conteudo)), nota: refeicao.nota } : undefined,
   );
@@ -56,5 +56,5 @@ export async function POST(req: Request) {
     },
   });
 
-  return NextResponse.json({ id, analise, sugestao: sugestaoDeMarca(analise), dia });
+  return NextResponse.json({ id, analise, semCota, sugestao: sugestaoDeMarca(analise), dia });
 }

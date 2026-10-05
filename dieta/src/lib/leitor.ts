@@ -17,6 +17,33 @@ export { ErroDeLeitura };
  */
 
 const MODELO = process.env.GEMINI_MODELO || "gemini-flash-latest";
+/**
+ * O modelo de reserva. No plano gratuito cada modelo tem a sua cota por minuto
+ * e por dia, e a do "lite" é bem maior — é o que o assistente deste
+ * repositório usa. Quando o principal responde "cota acabou" (429) ou
+ * "sobrecarregado" (503), a mesma pergunta vai para o reserva: lê um pouco
+ * pior, mas responde em vez de falhar.
+ */
+const MODELO_RESERVA = process.env.GEMINI_MODELO_RESERVA || "gemini-flash-lite-latest";
+
+/** A cota acabou nos dois modelos — dá para tentar de novo mais tarde. */
+export const ehFaltaDeCota = (e: unknown) => e instanceof ApiError && e.status === 429;
+
+const COTA =
+  "A cota gratuita do Gemini acabou por agora (ela é contada por minuto e por dia). Tente de novo daqui a alguns minutos — ou amanhã, se foram muitas leituras hoje.";
+
+type Pedido = Omit<Parameters<GoogleGenAI["models"]["generateContent"]>[0], "model">;
+
+/** Chama o Gemini no modelo principal e, se ele estiver sem cota, no reserva. */
+async function gerar(c: GoogleGenAI, pedido: Pedido) {
+  try {
+    return await c.models.generateContent({ ...pedido, model: MODELO });
+  } catch (e) {
+    if (!(e instanceof ApiError) || (e.status !== 429 && e.status !== 503) || MODELO_RESERVA === MODELO) throw e;
+    console.warn(`[gemini] ${MODELO} respondeu ${e.status}; tentando ${MODELO_RESERVA}`);
+    return await c.models.generateContent({ ...pedido, model: MODELO_RESERVA });
+  }
+}
 
 let cliente: GoogleGenAI | null = null;
 function ia(): GoogleGenAI | null {
@@ -116,8 +143,7 @@ export async function lerPlano(entrada: { texto?: string; arquivos?: { tipo: str
 
   let r;
   try {
-    r = await c.models.generateContent({
-      model: MODELO,
+    r = await gerar(c, {
       contents: [{ role: "user", parts: partes }],
       config: {
         systemInstruction: INSTRUCOES,
@@ -128,7 +154,7 @@ export async function lerPlano(entrada: { texto?: string; arquivos?: { tipo: str
     });
   } catch (e) {
     if (e instanceof ApiError && e.status === 429) {
-      throw new ErroDeLeitura("A cota gratuita do Gemini acabou por agora. Tente de novo daqui a alguns minutos.");
+      throw new ErroDeLeitura(COTA);
     }
     if (e instanceof ApiError && (e.status === 400 || e.status === 413)) {
       throw new ErroDeLeitura("O Gemini não aceitou o arquivo. Tente mandar fotos das páginas em vez do PDF.");
@@ -190,12 +216,13 @@ Seja realista nas estimativas e escreva em português do Brasil. Se a foto não 
 
 /**
  * Lê a foto do prato. `plano` é o que a refeição pedia, em texto, quando a
- * foto é de uma refeição do plano. Devolve null quando não deu para ler — a
- * foto é salva mesmo assim.
+ * foto é de uma refeição do plano. `analise` vem null quando não deu para ler
+ * — a foto é salva mesmo assim, e `semCota` diz se o motivo foi a cota (aí
+ * vale tentar de novo mais tarde, pelo botão "Analisar agora").
  */
 export async function analisarPrato(imagem: { tipo: string; base64: string }, plano?: { nome: string; texto: string; nota?: string }) {
   const c = ia();
-  if (!c) return null;
+  if (!c) return { analise: null, semCota: false };
   const partes: Part[] = [{ inlineData: { mimeType: imagem.tipo, data: imagem.base64 } }];
   partes.push({
     text: plano
@@ -203,15 +230,14 @@ export async function analisarPrato(imagem: { tipo: string; base64: string }, pl
       : "Não há refeição do plano para comparar: use noPlano = 'sem-plano'.",
   });
   try {
-    const r = await c.models.generateContent({
-      model: MODELO,
+    const r = await gerar(c, {
       contents: [{ role: "user", parts: partes }],
       config: { systemInstruction: INSTRUCOES_DA_FOTO, responseMimeType: "application/json", responseSchema: ESQUEMA_DA_FOTO, temperature: 0.2 },
     });
-    return lerRespostaDaFoto(r.text ?? "");
+    return { analise: lerRespostaDaFoto(r.text ?? ""), semCota: false };
   } catch (e) {
-    console.error("[foto]", e);
-    return null;
+    if (!ehFaltaDeCota(e)) console.error("[foto]", e);
+    return { analise: null, semCota: ehFaltaDeCota(e) };
   }
 }
 
@@ -233,14 +259,13 @@ async function gerarJson(instrucoes: string, pedido: string, esquema: object, te
   const c = ia();
   if (!c) throw new ErroDeLeitura("A inteligência do app está desligada: falta a chave GEMINI_API_KEY na Vercel.");
   try {
-    const r = await c.models.generateContent({
-      model: MODELO,
+    const r = await gerar(c, {
       contents: [{ role: "user", parts: [{ text: pedido }] }],
       config: { systemInstruction: instrucoes, responseMimeType: "application/json", responseSchema: esquema, temperature: temperatura },
     });
     return lerJson(r.text ?? "");
   } catch (e) {
-    if (e instanceof ApiError && e.status === 429) throw new ErroDeLeitura("A cota gratuita do Gemini acabou por agora. Tente de novo daqui a alguns minutos.");
+    if (ehFaltaDeCota(e)) throw new ErroDeLeitura(COTA);
     console.error("[gemini]", e);
     throw new ErroDeLeitura("Não consegui pensar nisso agora. Tente de novo em instantes.");
   }
