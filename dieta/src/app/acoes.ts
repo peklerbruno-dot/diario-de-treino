@@ -7,7 +7,8 @@ import { entrar, exigirSessao, sair } from "@/lib/auth";
 import { bd } from "@/lib/bd";
 import { lerTexto } from "@/lib/conteudo";
 import { normalizarPlanejamento } from "@/lib/semana";
-import { hoje, normalizarHora } from "@/lib/datas";
+import { agoraNoFuso, hoje, normalizarHora, paraHora } from "@/lib/datas";
+import { ehHumor } from "@/lib/padroes";
 import { novoId } from "@/lib/ids";
 
 /**
@@ -44,12 +45,24 @@ export async function marcarRefeicao(dia: string, refeicaoId: string, estado: ""
     const r = await bd.refeicao.findUnique({ where: { id: refeicaoId } });
     if (!r) return;
     const dados = { estado, nota: estado === "trocou" ? nota.trim().slice(0, 300) : "", nome: r.nome, horario: r.horario };
+    // A hora só vale quando a marcação é no próprio dia: marcar o almoço de
+    // ontem hoje cedo não diz nada sobre a hora em que se almoçou.
+    const agora = agoraNoFuso();
+    const hora = agora.dia === dia ? paraHora(agora.minutos) : "";
     await bd.registro.upsert({
       where: { dia_refeicaoId: { dia, refeicaoId } },
-      create: { id: novoId(), dia, refeicaoId, ...dados },
+      create: { id: novoId(), dia, refeicaoId, hora, ...dados },
       update: dados,
     });
   }
+  atualizarTudo();
+}
+
+/** Como estava na refeição: "bem", "ok" ou "mal". Tocar de novo apaga. */
+export async function marcarHumor(dia: string, refeicaoId: string, humor: string) {
+  await exigirSessao();
+  if (!ehDia(dia) || !(humor === "" || ehHumor(humor))) return;
+  await bd.registro.updateMany({ where: { dia, refeicaoId }, data: { humor } });
   atualizarTudo();
 }
 
@@ -317,5 +330,15 @@ export async function adicionarCompra(semanaId: string, item: string) {
   if (!dados.compras.includes(outros)) dados.compras.push(outros);
   outros.itens.push({ item: nome, quantidade: "" });
   await bd.semana.update({ where: { id: semanaId }, data: { dados } });
+  atualizarTudo();
+}
+
+// ---------------------------------------------------------------------------
+// Fotos do corpo
+// ---------------------------------------------------------------------------
+
+export async function apagarFotoDoCorpo(id: string) {
+  await exigirSessao();
+  await bd.fotoCorpo.deleteMany({ where: { id } });
   atualizarTudo();
 }

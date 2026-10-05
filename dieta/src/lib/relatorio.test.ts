@@ -9,7 +9,7 @@ describe("textoParaNutricionista", () => {
   it("resume adesão, água, calorias, trocas e puladas", () => {
     const t = textoParaNutricionista(
       [
-        dia("2026-10-03", { seguiu: 4, pulou: 1, agua: 2000, calorias: 1800, fotos: 3, registros: [{ nome: "Lanche", horario: "16:00", estado: "pulou", nota: "" }] }),
+        dia("2026-10-03", { seguiu: 4, pulou: 1, agua: 2000, calorias: 1800, fotos: 3, registros: [{ nome: "Lanche", horario: "16:00", estado: "pulou", nota: "" }, { nome: "Jantar", horario: "20:00", estado: "seguiu", nota: "", humor: "mal" }] }),
         dia("2026-10-02", { seguiu: 3, trocou: 1, agua: 1500, registros: [{ nome: "Almoço", horario: "12:30", estado: "trocou", nota: "pizza" }] }),
         dia("2026-10-01"),
       ],
@@ -22,6 +22,7 @@ describe("textoParaNutricionista", () => {
     expect(t).toContain("≈ 1.800 kcal por dia");
     expect(t).toContain("• 2/10, Almoço (12h30): pizza");
     expect(t).toContain("Refeições que mais pulei: Lanche (1×)");
+    expect(t).toContain("Com fome demais ou ansiedade: Jantar (1×)");
   });
 
   it("avisa quando não há nada", () => {

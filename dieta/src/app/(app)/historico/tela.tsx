@@ -1,17 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { Miniaturas } from "@/componentes/foto-do-prato";
+import Link from "next/link";
+import { ESTADO } from "@/componentes/cores-do-dia";
 import { CompartilharSemana } from "@/componentes/compartilhar-semana";
+import { FotosDoCorpo } from "@/componentes/fotos-do-corpo";
 import { PesoEMedidas } from "@/componentes/medidas";
-import { Cartao, Titulo } from "@/componentes/pecas";
+import { Cartao } from "@/componentes/pecas";
 import { milhar } from "@/lib/analise";
 import { litros } from "@/lib/ajustes";
-import type { DiaDoHistorico, MedidaVista } from "@/lib/consultas";
-import { diaCurto, diaPorExtenso, horaFalada } from "@/lib/datas";
-
-const COR = { seguiu: "bg-folha", trocou: "bg-troca", pulou: "bg-pulou" } as const;
-const ROTULO = { seguiu: "segui", trocou: "troquei", pulou: "pulei" } as const;
+import type { DiaDoHistorico, FotoDoCorpo, MedidaVista } from "@/lib/consultas";
+import { diaCurto, diaPorExtenso } from "@/lib/datas";
 
 /**
  * Como foi o mês: por semana, quanto do plano foi seguido e quantos dias a
@@ -20,12 +18,14 @@ const ROTULO = { seguiu: "segui", trocou: "troquei", pulou: "pulei" } as const;
 export function TelaHistorico({
   dias,
   medidas,
+  corpo,
   hoje,
   metaDeAgua,
   nomeDoPlano,
 }: {
   dias: DiaDoHistorico[];
   medidas: MedidaVista[];
+  corpo: FotoDoCorpo[];
   hoje: string;
   metaDeAgua: number;
   nomeDoPlano: string;
@@ -41,10 +41,9 @@ export function TelaHistorico({
 
   return (
     <>
-      <Titulo>Progresso</Titulo>
-
-      <div className="mb-4">
+      <div className="mb-4 space-y-4">
         <PesoEMedidas lista={medidas} hoje={hoje} />
+        <FotosDoCorpo lista={corpo} hoje={hoje} />
       </div>
 
       {(algumRegistro || medidas.length > 0) && <CompartilharSemana dias={dias} medidas={medidas} metaDeAgua={metaDeAgua} nomeDoPlano={nomeDoPlano} />}
@@ -67,7 +66,10 @@ export function TelaHistorico({
       )}
 
       {algumRegistro && (
-        <Cartao className="mt-4 divide-y divide-linha !py-1">
+        <p className="mt-5 px-1 text-[13px] text-fosco">Toque num dia para ver tudo dele: refeições, fotos e água.</p>
+      )}
+      {algumRegistro && (
+        <Cartao className="mt-2 divide-y divide-linha !py-1">
           {visiveis.map((d) => (
             <LinhaDoDia key={d.dia} d={d} metaDeAgua={metaDeAgua} />
           ))}
@@ -109,43 +111,29 @@ function ResumoDaSemana({ dias, metaDeAgua, titulo }: { dias: DiaDoHistorico[]; 
 }
 
 function LinhaDoDia({ d, metaDeAgua }: { d: DiaDoHistorico; metaDeAgua: number }) {
-  const [aberto, setAberto] = useState(false);
   const vazio = d.registros.length === 0 && d.agua === 0 && d.fotos.length === 0;
-
+  const conteudo = (
+    <>
+      <span className={`w-[112px] shrink-0 text-[15px] capitalize ${vazio ? "text-fosco" : ""}`}>{diaPorExtenso(d.dia).replace(/ de \w+$/, "")}</span>
+      <span className="flex flex-1 flex-wrap items-center gap-1" aria-label={`${d.seguiu} segui, ${d.trocou} troquei, ${d.pulou} pulei`}>
+        {d.registros.map((r, i) => (
+          <span key={i} className={`h-2.5 w-2.5 rounded-full ${ESTADO[r.estado]?.ponto ?? "bg-regua"}`} />
+        ))}
+        {d.fotos.length > 0 && <span className="ml-1 text-[12px] text-fosco">📷 {d.fotos.length}</span>}
+      </span>
+      <span className="w-[56px] shrink-0 text-right text-[13px] tabular text-fosco">{d.calorias ? `≈${milhar(d.calorias)}` : ""}</span>
+      <span className={`w-[48px] shrink-0 text-right text-[13px] tabular ${d.agua >= metaDeAgua ? "font-semibold text-agua" : "text-fosco"}`}>
+        {d.agua ? litros(d.agua) : ""}
+      </span>
+    </>
+  );
+  if (vazio) return <div className="flex items-center gap-3 py-2.5">{conteudo}</div>;
   return (
-    <div className="py-2.5">
-      <button
-        type="button"
-        disabled={vazio}
-        onClick={() => setAberto((a) => !a)}
-        className="flex w-full items-center justify-between gap-3 text-left"
-        aria-expanded={aberto}
-      >
-        <span className={`w-[112px] shrink-0 text-[15px] capitalize ${vazio ? "text-fosco" : ""}`}>{diaPorExtenso(d.dia).replace(/ de \w+$/, "")}</span>
-        <span className="flex flex-1 flex-wrap gap-1" aria-label={`${d.seguiu} segui, ${d.trocou} troquei, ${d.pulou} pulei`}>
-          {d.registros.map((r, i) => (
-            <span key={i} className={`h-2.5 w-2.5 rounded-full ${COR[r.estado as keyof typeof COR] ?? "bg-regua"}`} />
-          ))}
-        </span>
-        <span className="w-[64px] shrink-0 text-right text-[13px] tabular text-fosco">{d.calorias ? `≈${milhar(d.calorias)}` : ""}</span>
-        <span className={`w-[52px] shrink-0 text-right text-[13px] tabular ${d.agua >= metaDeAgua ? "font-semibold text-agua" : "text-fosco"}`}>
-          {d.agua ? litros(d.agua) : ""}
-        </span>
-      </button>
-      {aberto && (
-        <ul className="mt-2 space-y-1 pl-1">
-          {d.registros.map((r, i) => (
-            <li key={i} className="text-[14.5px] text-grafite">
-              <span className="tabular text-fosco">{horaFalada(r.horario)}</span> {r.nome} —{" "}
-              {ROTULO[r.estado as keyof typeof ROTULO] ?? r.estado}
-              {r.nota && <>: {r.nota}</>}
-            </li>
-          ))}
-          {d.agua > 0 && <li className="text-[14.5px] text-grafite">💧 {litros(d.agua)} de água</li>}
-          {d.calorias > 0 && <li className="text-[14.5px] text-grafite">📷 ≈ {milhar(d.calorias)} kcal pelas fotos</li>}
-        </ul>
-      )}
-      {aberto && <Miniaturas fotos={d.fotos} />}
-    </div>
+    <Link href={`/historico/dia/${d.dia}`} className="flex items-center gap-3 py-2.5">
+      {conteudo}
+      <span className="text-fosco" aria-hidden>
+        ›
+      </span>
+    </Link>
   );
 }

@@ -110,3 +110,6 @@ export function diaCurto(dia: string): string {
 
 /** A refeição vale neste dia da semana? Lista vazia quer dizer todos os dias. */
 export const valeNoDia = (dias: number[], semana: number) => dias.length === 0 || dias.includes(semana);
+
+/** "domingo, 27 de set" → "Domingo, 27 de set". (O `capitalize` do CSS faria "De Set".) */
+export const maiuscula = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);

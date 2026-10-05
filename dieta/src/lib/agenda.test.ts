@@ -120,7 +120,7 @@ describe("lembretes seus", () => {
 describe("resumo da noite", () => {
   it("sai na hora do resumo, contando o dia", () => {
     const [r] = avisosDevidos(as("21:30", { marcadas: new Set(["alm"]), seguidas: 1, aguaHoje: 1500 }));
-    expect(r).toEqual({ chave: "2026-10-02|resumo", titulo: "Seu dia", corpo: "1 de 1 refeições no plano · 💧 1,5 L de 2 L", url: "/historico" });
+    expect(r).toEqual({ chave: "2026-10-02|resumo", titulo: "Seu dia", corpo: "1 de 1 refeições no plano · 💧 1,5 L de 2 L", url: "/historico/dia/2026-10-02" });
   });
 
   it("conta o que ficou sem marcar e a meta batida", () => {

@@ -52,7 +52,7 @@ export async function ajustes(): Promise<Ajustes> {
   return lerAjustes(await bd.ajuste.findMany());
 }
 
-export type Marca = { estado: "seguiu" | "trocou" | "pulou"; nota: string };
+export type Marca = { estado: "seguiu" | "trocou" | "pulou"; nota: string; humor?: string };
 
 export type FotoDoDia = { id: string; dia: string; hora: string; refeicaoId: string | null; nome: string; analise: Analise | null };
 
@@ -74,7 +74,7 @@ export async function situacaoDoDia(dia: string) {
     fotosEntre(dia, dia),
   ]);
   const marcas: Record<string, Marca> = {};
-  for (const r of registros) marcas[r.refeicaoId] = { estado: r.estado as Marca["estado"], nota: r.nota };
+  for (const r of registros) marcas[r.refeicaoId] = { estado: r.estado as Marca["estado"], nota: r.nota, humor: r.humor };
   return { marcas, agua: agua._sum.ml ?? 0, fotos };
 }
 
@@ -87,12 +87,18 @@ export type DiaDoHistorico = {
   /** Soma das estimativas das fotos do dia. */
   calorias: number;
   fotos: FotoDoDia[];
-  registros: { nome: string; horario: string; estado: string; nota: string }[];
+  registros: { refeicaoId: string; nome: string; horario: string; estado: string; nota: string; humor: string; hora: string }[];
 };
 
 /** Os últimos `n` dias, do mais novo para o mais velho, terminando em `ate`. */
 export async function historico(ate: string, n: number): Promise<DiaDoHistorico[]> {
-  const desde = somarDias(ate, -(n - 1));
+  return historicoEntre(somarDias(ate, -(n - 1)), ate);
+}
+
+/** Os dias de `desde` a `ate` (inclusive), do mais novo para o mais velho. */
+export async function historicoEntre(desde: string, ate: string): Promise<DiaDoHistorico[]> {
+  let n = 0;
+  for (let d = desde; d <= ate && n < 400; d = somarDias(d, 1)) n++;
   const [registros, agua, fotos] = await Promise.all([
     bd.registro.findMany({ where: { dia: { gte: desde, lte: ate } }, orderBy: { horario: "asc" } }),
     bd.agua.groupBy({ by: ["dia"], where: { dia: { gte: desde, lte: ate } }, _sum: { ml: true } }),
@@ -111,10 +117,48 @@ export async function historico(ate: string, n: number): Promise<DiaDoHistorico[
       agua: agua.find((a) => a.dia === dia)?._sum.ml ?? 0,
       calorias: somarDia(fotosDoDia.map((f) => f.analise)).calorias,
       fotos: fotosDoDia,
-      registros: doDia.map((r) => ({ nome: r.nome, horario: r.horario, estado: r.estado, nota: r.nota })),
+      registros: doDia.map((r) => ({ refeicaoId: r.refeicaoId, nome: r.nome, horario: r.horario, estado: r.estado, nota: r.nota, humor: r.humor, hora: r.hora })),
     });
   }
   return dias;
+}
+
+/** Um dia só, com o peso anotado nele. */
+export async function umDia(dia: string) {
+  const [[d], medida] = await Promise.all([historicoEntre(dia, dia), bd.medida.findFirst({ where: { dia }, orderBy: { criadoEm: "desc" } })]);
+  return { ...d, peso: medida?.pesoG == null ? null : medida.pesoG / 1000 };
+}
+
+/**
+ * As fotos dos pratos, da mais nova para a mais velha, de `porPagina` em
+ * `porPagina`. `antesDe` é o "dia|hora|id" da última foto da página anterior.
+ */
+export async function galeria({ nome, antesDe, porPagina = 60 }: { nome?: string; antesDe?: string; porPagina?: number }) {
+  const [dia, hora, id] = (antesDe ?? "").split("|");
+  const depois = dia && hora && id
+    ? { OR: [{ dia: { lt: dia } }, { dia, hora: { lt: hora } }, { dia, hora, id: { lt: id } }] }
+    : {};
+  const fotos = await bd.foto.findMany({
+    where: { ...(nome ? { nome } : {}), ...depois },
+    orderBy: [{ dia: "desc" }, { hora: "desc" }, { id: "desc" }],
+    take: porPagina + 1,
+    select: { id: true, dia: true, hora: true, refeicaoId: true, nome: true, analise: true },
+  });
+  const pagina = fotos.slice(0, porPagina).map((f) => ({ ...f, analise: normalizarAnalise(f.analise) }));
+  const ultima = pagina.at(-1);
+  return { fotos: pagina, proxima: fotos.length > porPagina && ultima ? `${ultima.dia}|${ultima.hora}|${ultima.id}` : null };
+}
+
+/** Os nomes de refeição que aparecem nas fotos (para o filtro da galeria). */
+export async function nomesDasFotos(): Promise<string[]> {
+  const g = await bd.foto.groupBy({ by: ["nome"], _count: { _all: true }, orderBy: { _count: { nome: "desc" } } });
+  return g.map((x) => x.nome).filter(Boolean);
+}
+
+export type FotoDoCorpo = { id: string; dia: string; nota: string };
+
+export async function fotosDoCorpo(): Promise<FotoDoCorpo[]> {
+  return bd.fotoCorpo.findMany({ orderBy: [{ dia: "asc" }, { criadoEm: "asc" }], select: { id: true, dia: true, nota: true } });
 }
 
 export async function lembretes() {

@@ -2,6 +2,7 @@ import webpush from "web-push";
 import { bd } from "@/lib/bd";
 import { ajustes, lembretes } from "@/lib/consultas";
 import { temGemini } from "@/lib/leitor";
+import { hoje } from "@/lib/datas";
 import { chavePublica, pushConfigurado } from "@/lib/push";
 import { TelaAjustes } from "./tela";
 
@@ -27,6 +28,7 @@ export default async function Ajustes() {
       // Sem chaves ainda: a tela já oferece um par novo para colar na Vercel, e
       // ninguém precisa abrir um terminal.
       chavesSugeridas={configurado ? null : webpush.generateVAPIDKeys()}
+      hoje={hoje()}
     />
   );
 }
