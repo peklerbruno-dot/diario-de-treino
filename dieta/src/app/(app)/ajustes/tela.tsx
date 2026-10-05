@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { acaoDeSair, salvarAjustes } from "@/app/acoes";
 import { useAvisos } from "@/componentes/avisos";
+import { Backup } from "@/componentes/backup";
 import { SeletorDeDias } from "@/componentes/editor-de-refeicao";
 import { Lembretes } from "@/componentes/lembretes";
 import { Botao, Cartao, Chave, Titulo, campo } from "@/componentes/pecas";
@@ -16,6 +17,7 @@ type Props = {
   aparelhos: { nome: string; desde: string }[];
   falta: { push: boolean; cron: boolean; gemini: boolean };
   chavesSugeridas: { publicKey: string; privateKey: string } | null;
+  hoje: string;
 };
 
 export function TelaAjustes(p: Props) {
@@ -162,6 +164,9 @@ export function TelaAjustes(p: Props) {
       <p className="mt-1.5 px-1 text-[13px] leading-snug text-fosco">
         Os lembretes param quando a meta do dia é batida, e pulam o horário que cairia colado numa refeição.
       </p>
+
+      <p className="sobrescrito mb-2 mt-6 px-1">Seus dados</p>
+      <Backup hoje={p.hoje} />
 
       <form action={acaoDeSair} className="mt-8">
         <Botao type="submit" tipo="fantasma" className="w-full">

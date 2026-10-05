@@ -195,7 +195,7 @@ export function avisosDevidos(s: Situacao): Aviso[] {
   const horaDaSemana = paraMinutos(ajustes.resumoSemanalHora);
   if (ajustes.resumoSemanal && agora.diaDaSemana === 0 && s.resumoDaSemana && horaDaSemana != null && dentroDaJanela(agora.minutos, horaDaSemana)) {
     const chave = `${agora.dia}|semana`;
-    if (!s.enviadas.has(chave)) avisos.push({ chave, titulo: "Sua semana", corpo: s.resumoDaSemana, url: "/historico" });
+    if (!s.enviadas.has(chave)) avisos.push({ chave, titulo: "Sua semana", corpo: s.resumoDaSemana, url: "/historico/relatorio" });
   }
 
   // O resumo da noite: uma linha sobre o dia, para fechar com a cabeça no lugar.
@@ -203,7 +203,7 @@ export function avisosDevidos(s: Situacao): Aviso[] {
   if (ajustes.resumoNoturno && horaDoResumo != null && dentroDaJanela(agora.minutos, horaDoResumo)) {
     const chave = `${agora.dia}|resumo`;
     if (!s.enviadas.has(chave) && (doDia.length > 0 || s.aguaHoje > 0)) {
-      avisos.push({ chave, titulo: "Seu dia", corpo: resumoDoDia(doDia.length, s.marcadas.size, s.seguidas ?? 0, s.aguaHoje, ajustes.aguaMeta), url: "/historico" });
+      avisos.push({ chave, titulo: "Seu dia", corpo: resumoDoDia(doDia.length, s.marcadas.size, s.seguidas ?? 0, s.aguaHoje, ajustes.aguaMeta), url: `/historico/dia/${agora.dia}` });
     }
   }
 

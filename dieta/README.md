@@ -68,9 +68,31 @@ ponto que mais pede atenção ("você pulou o lanche 3×").
 pós-treino quando acaba, e um atalho para o Diário de treino na tela Hoje. Os
 dois apps não trocam dados — o diário guarda tudo só no aparelho.
 
-**Histórico** das últimas quatro semanas: quanto do plano você seguiu por
-semana, quantos dias bateu a água, e o detalhe de cada dia — o que levar para a
-consulta.
+**Progresso**, em quatro abas:
+
+- **Geral** — peso e medidas, **fotos do corpo** (uma por mês, com antes e
+  depois lado a lado; ficam escondidas até tocar em "Mostrar"), as semanas e a
+  lista de dias.
+- **Calendário** — o mês com cada dia pintado (verde = 80%+ no plano, amarelo =
+  metade ou mais, vermelho = menos), um pontinho onde há foto e onde a água
+  bateu a meta. Embaixo, os números do mês contra o anterior, o peso no mês e os
+  **padrões**: refeição que acontece bem depois do horário (pela hora da foto ou
+  da marcação), a mais pulada, o dia da semana mais difícil, a refeição em que
+  bate fome demais, o fim de semana mais calórico. Tocar num dia abre a
+  **página do dia**: cada refeição com o que foi marcado, como você estava e as
+  fotos dela; água, calorias e macros somados; o peso, se pesou.
+- **Fotos** — todas as fotos dos pratos por dia, com filtro por refeição
+  ("todos os almoços").
+- **Relatório** — a semana com os números, o dia a dia, os padrões das últimas
+  quatro semanas e o texto exatamente como vai para a nutricionista (em texto
+  ou PDF). As setas voltam de semana em semana.
+
+**Como você estava?** Depois de marcar uma refeição, um toque opcional: 😌
+tranquilo, 😐 normal ou 😣 fome demais/ansiedade. Entra nos padrões e no
+resumo da nutricionista.
+
+**Backup**, em Ajustes: tudo num ZIP (os dados em JSON e todas as fotos), ou só
+os dados. O ZIP é montado no próprio aparelho, foto a foto.
 
 ## Como funciona
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useOptimistic, useState, useTransition } from "react";
-import { beberAgua, desfazerAgua, marcarRefeicao } from "@/app/acoes";
+import { beberAgua, desfazerAgua, marcarHumor, marcarRefeicao } from "@/app/acoes";
 import { ConviteDeAvisos } from "@/componentes/avisos";
 import { BotaoDeFoto, Miniaturas } from "@/componentes/foto-do-prato";
 import { PossoTrocar } from "@/componentes/posso-trocar";
@@ -13,6 +13,7 @@ import { ritmoDaAgua } from "@/lib/agenda";
 import type { Conteudo } from "@/lib/conteudo";
 import { milhar, somarDia } from "@/lib/analise";
 import type { FotoDoDia, Marca, RefeicaoCompleta } from "@/lib/consultas";
+import { HUMORES, type Humor } from "@/lib/padroes";
 import { type Agora, diaPorExtenso, horaFalada, paraMinutos, valeNoDia } from "@/lib/datas";
 
 type Props = {
@@ -252,7 +253,7 @@ function CartaoRefeicao({
 
   const gravar = (estado: Estado | "", nota = "") =>
     iniciar(async () => {
-      marcar(estado ? { estado, nota } : undefined);
+      marcar(estado ? { estado, nota, humor: otimista?.humor } : undefined);
       setTrocando(false);
       if (estado) setAberta(false);
       await marcarRefeicao(dia, r.id, estado, nota);
@@ -338,7 +339,42 @@ function CartaoRefeicao({
           })}
         </div>
       )}
+
+      {otimista && !trocando && <ComoEstava dia={dia} refeicaoId={r.id} humor={otimista.humor ?? ""} />}
     </Cartao>
+  );
+}
+
+/**
+ * Um toque, opcional: como estava na refeição. É o que mostra à nutricionista
+ * que o jantar "trocado" toda noite vem de chegar com fome demais, e não de
+ * falta de vontade.
+ */
+function ComoEstava({ dia, refeicaoId, humor }: { dia: string; refeicaoId: string; humor: string }) {
+  const [atual, setAtual] = useState(humor);
+  const [, iniciar] = useTransition();
+  const escolher = (h: Humor) => {
+    const novo = atual === h ? "" : h;
+    setAtual(novo);
+    iniciar(() => marcarHumor(dia, refeicaoId, novo));
+  };
+  return (
+    <div className="mt-2.5 flex items-center gap-1.5">
+      <span className="mr-auto text-[13px] text-fosco">Como você estava?</span>
+      {(Object.keys(HUMORES) as Humor[]).map((h) => (
+        <button
+          key={h}
+          type="button"
+          aria-pressed={atual === h}
+          aria-label={HUMORES[h].rotulo}
+          title={HUMORES[h].rotulo}
+          onClick={() => escolher(h)}
+          className={`h-9 w-9 rounded-full text-[18px] transition ${atual === h ? "bg-folha-clara ring-2 ring-folha" : atual ? "bg-papel opacity-50" : "bg-papel"}`}
+        >
+          {HUMORES[h].emoji}
+        </button>
+      ))}
+    </div>
   );
 }
 

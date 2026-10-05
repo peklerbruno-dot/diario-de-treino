@@ -6,6 +6,7 @@ import { milhar } from "@/lib/analise";
 import type { DiaDoHistorico, MedidaVista } from "@/lib/consultas";
 import { diaCurto, diaPorExtenso, horaFalada } from "@/lib/datas";
 import { linhaDoPeso, textoParaNutricionista } from "@/lib/relatorio";
+import { entregarArquivo, foiCancelado } from "./arquivo";
 import { Botao, Cartao } from "./pecas";
 
 /**
@@ -43,19 +44,9 @@ export function CompartilharSemana({ dias, medidas, metaDeAgua, nomeDoPlano }: P
     setRecado("");
     setGerando(true);
     try {
-      const arquivo = await montarPdf(semana, texto(), desde);
-      const dados = { files: [arquivo], title: arquivo.name };
-      if (navigator.canShare?.(dados)) await navigator.share(dados);
-      else {
-        const url = URL.createObjectURL(arquivo);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = arquivo.name;
-        a.click();
-        setTimeout(() => URL.revokeObjectURL(url), 10_000);
-      }
+      await entregarArquivo(await montarPdf(semana, texto(), desde));
     } catch (e) {
-      if (!(e instanceof DOMException && e.name === "AbortError")) setRecado("Não consegui gerar o PDF agora.");
+      if (!foiCancelado(e)) setRecado("Não consegui gerar o PDF agora.");
     } finally {
       setGerando(false);
     }

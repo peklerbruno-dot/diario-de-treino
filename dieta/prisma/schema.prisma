@@ -66,6 +66,12 @@ model Registro {
   estado     String
   /// O que comeu no lugar, quando trocou.
   nota       String   @default("")
+  /// Como estava na refeição: "bem" | "ok" | "mal" (fome demais, ansiedade).
+  /// Vazio = não disse.
+  humor      String   @default("")
+  /// "12:55" — quando marcou, se marcou no próprio dia. É o que mostra se o
+  /// almoço do plano às 12h30 está acontecendo às 14h. Vazio = marcou depois.
+  hora       String   @default("")
   criadoEm   DateTime @default(now())
 
   @@unique([dia, refeicaoId])
@@ -174,4 +180,18 @@ model Semana {
   /// Itens da lista já comprados (índices "secao:item").
   marcados String[] @default([])
   criadoEm DateTime @default(now())
+}
+
+/// Foto do corpo, para comparar a evolução mês a mês. Fica à parte das fotos
+/// do prato: não passa pelo Gemini, não entra no PDF da nutricionista nem na
+/// galeria de pratos.
+model FotoCorpo {
+  id       String   @id
+  dia      String
+  tipo     String
+  imagem   Bytes
+  nota     String   @default("")
+  criadoEm DateTime @default(now())
+
+  @@index([dia])
 }

@@ -1,11 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { apagarFoto, marcarRefeicao } from "@/app/acoes";
 import { milhar, type Analise } from "@/lib/analise";
 import type { FotoDoDia } from "@/lib/consultas";
-import { horaFalada, somarDias } from "@/lib/datas";
+import { diaPorExtenso, horaFalada, somarDias } from "@/lib/datas";
 import { Botao } from "./pecas";
 import { reduzirImagem } from "./reduzir";
 
@@ -238,21 +239,41 @@ export function AnaliseDetalhada({ a }: { a: Analise }) {
   );
 }
 
-/** Miniaturas das fotos; tocar abre a foto com a análise. */
-export function Miniaturas({ fotos }: { fotos: FotoDoDia[] }) {
+/**
+ * As fotos; tocar abre a foto com a análise. Pequenas numa fileira (no cartão
+ * da refeição) ou `grande`, em grade (no dia e na galeria). Com `comDia`, a
+ * folha da foto leva ao dia dela.
+ */
+export function Miniaturas({ fotos, grande = false, comDia = false }: { fotos: FotoDoDia[]; grande?: boolean; comDia?: boolean }) {
   const [aberta, setAberta] = useState<FotoDoDia | null>(null);
   const [, iniciar] = useTransition();
   if (fotos.length === 0) return null;
   return (
     <>
-      <div className="mt-3 flex gap-2 overflow-x-auto">
+      <div className={grande ? "grid grid-cols-3 gap-1.5" : "mt-3 flex gap-2 overflow-x-auto"}>
         {fotos.map((f) => (
-          <button key={f.id} type="button" onClick={() => setAberta(f)} className="relative shrink-0" aria-label={`Foto das ${horaFalada(f.hora)}`}>
+          <button
+            key={f.id}
+            type="button"
+            onClick={() => setAberta(f)}
+            className={`relative ${grande ? "aspect-square w-full" : "shrink-0"}`}
+            aria-label={`Foto ${f.nome ? `do ${f.nome.toLowerCase()} ` : ""}das ${horaFalada(f.hora)}`}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`/api/foto/${f.id}`} alt="" loading="lazy" className="h-16 w-16 rounded-[12px] object-cover" />
+            <img
+              src={`/api/foto/${f.id}`}
+              alt=""
+              loading="lazy"
+              className={grande ? "h-full w-full rounded-[10px] object-cover" : "h-16 w-16 rounded-[12px] object-cover"}
+            />
             {f.analise && (
               <span className="absolute bottom-0.5 left-0.5 rounded-full bg-black/60 px-1.5 text-[10.5px] text-white tabular">
                 {milhar(f.analise.calorias)}
+              </span>
+            )}
+            {grande && f.nome && (
+              <span className="absolute right-0.5 top-0.5 max-w-[90%] truncate rounded-full bg-black/60 px-1.5 text-[10.5px] text-white">
+                {f.nome}
               </span>
             )}
           </button>
@@ -262,6 +283,11 @@ export function Miniaturas({ fotos }: { fotos: FotoDoDia[] }) {
         <Folha aoFechar={() => setAberta(null)} titulo={`${aberta.nome || "Foto"} · ${horaFalada(aberta.hora)}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={`/api/foto/${aberta.id}`} alt="Foto do prato" className="max-h-[300px] w-full rounded-folha object-cover" />
+          {comDia && (
+            <Link href={`/historico/dia/${aberta.dia}`} className="mt-2 block text-[15px] font-medium text-folha">
+              Ver o dia: {diaPorExtenso(aberta.dia)} →
+            </Link>
+          )}
           {aberta.analise ? <AnaliseDetalhada a={aberta.analise} /> : <AnalisarDeNovo id={aberta.id} aoAnalisar={(a) => setAberta({ ...aberta, analise: a })} />}
           <Botao
             tipo="perigo"

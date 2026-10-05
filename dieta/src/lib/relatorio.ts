@@ -15,7 +15,7 @@ export type DiaDoRelatorio = {
   agua: number;
   calorias: number;
   fotos: number;
-  registros: { nome: string; horario: string; estado: string; nota: string }[];
+  registros: { nome: string; horario: string; estado: string; nota: string; humor?: string }[];
 };
 
 const pct = (parte: number, todo: number) => (todo ? `${Math.round((parte / todo) * 100)}%` : "—");
@@ -63,6 +63,13 @@ export function textoParaNutricionista(dias: DiaDoRelatorio[], metaDeAgua: numbe
   if (puladas.size) {
     const lista = [...puladas].sort((a, b) => b[1] - a[1]).map(([nome, n]) => `${nome} (${n}×)`);
     linhas.push("", `Refeições que mais pulei: ${lista.join(", ")}`);
+  }
+
+  const mal = new Map<string, number>();
+  for (const d of comAlgo) for (const r of d.registros) if (r.humor === "mal") mal.set(r.nome, (mal.get(r.nome) ?? 0) + 1);
+  if (mal.size) {
+    const lista = [...mal].sort((a, b) => b[1] - a[1]).map(([nome, n]) => `${nome} (${n}×)`);
+    linhas.push(`Com fome demais ou ansiedade: ${lista.join(", ")}`);
   }
   return linhas.join("\n");
 }
