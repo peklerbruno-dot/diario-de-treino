@@ -146,8 +146,6 @@ caso, abra o projeto na Vercel → **Deployments** → **⋯** → **Redeploy**.
 Cada um é um app independente deste diário, com o seu próprio `package.json` e
 o seu próprio deploy na Vercel (pasta escolhida em *Root Directory*).
 
-- `machanot/` — a plataforma de precificação de machanot da Chazit Hanoar.
-  Veja [`machanot/README.md`](machanot/README.md).
 - `site/` — o site público da Chazit Hanoar São Paulo, que a equipe edita no
   próprio site depois de entrar com nome e código.
   Veja [`site/README.md`](site/README.md) e, para publicar,
