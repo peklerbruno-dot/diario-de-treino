@@ -17,9 +17,29 @@ pede uma meta de água, ela vira a sua.
 A cada consulta, um plano novo; o anterior fica guardado em Plano e dá para
 voltar a ele.
 
-**Hoje** mostra as refeições do dia na ordem, com a próxima destacada. Cada uma
-tem três botões: **Segui**, **Troquei** (com "o que comeu no lugar", opcional)
-e **Pulei**. As substituições de cada item ficam a um toque ("3 trocas").
+**Hoje** mostra as refeições do dia na ordem. A próxima vem aberta e em
+destaque, com o que o plano sugere (as opções em abas, as substituições de cada
+item a um toque). As outras ficam numa linha, que abre ao tocar. Cada uma tem
+**Segui**, **Troquei** e **Pulei**, e qualquer um deles abre a **ficha da
+refeição**, um lugar só para tudo:
+
+1. como foi (dá para mudar ali mesmo);
+2. o que comeu — em "Segui", a opção do plano já vem escrita; as suas
+   **refeições padrão** (⭐) e o que comeu nela nos últimos dias (↺) ficam a um
+   toque; em "Pulei", o motivo;
+3. foto, opcional (câmera ou galeria; com foto, o Gemini estima as calorias, e
+   o que você escreveu ajuda a leitura);
+4. fome antes (🤤 🙂 😶) e como ficou depois (😌 🙂 😣);
+5. observação.
+
+Registrada, a refeição vira um resumo (o que comeu, os emojis, a foto), e um
+toque reabre a ficha. **＋ Outra coisa** é para o que se come fora das
+refeições do plano.
+
+**Refeições padrão**: em Plano, cada refeição tem "Minhas refeições padrão" —
+"Omelete com peito de peru", "Marmita de frango" — para escolher com um toque
+na ficha. Também dá para criar na própria ficha, marcando "salvar como
+refeição padrão".
 
 **Avisos no iPhone.** Na hora de cada refeição chega uma notificação com o que
 comer — "Almoço · 12h30 — Arroz integral 4 col. · Feijão 1 concha · Frango

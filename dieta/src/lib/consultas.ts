@@ -52,7 +52,7 @@ export async function ajustes(): Promise<Ajustes> {
   return lerAjustes(await bd.ajuste.findMany());
 }
 
-export type Marca = { estado: "seguiu" | "trocou" | "pulou"; nota: string; humor?: string };
+export type Marca = { estado: "seguiu" | "trocou" | "pulou"; nota: string; humor: string; fome: string; obs: string };
 
 export type FotoDoDia = {
   id: string;
@@ -92,7 +92,7 @@ export async function situacaoDoDia(dia: string) {
     fotosEntre(dia, dia),
   ]);
   const marcas: Record<string, Marca> = {};
-  for (const r of registros) marcas[r.refeicaoId] = { estado: r.estado as Marca["estado"], nota: r.nota, humor: r.humor };
+  for (const r of registros) marcas[r.refeicaoId] = { estado: r.estado as Marca["estado"], nota: r.nota, humor: r.humor, fome: r.fome, obs: r.obs };
   return { marcas, agua: agua._sum.ml ?? 0, fotos };
 }
 
@@ -105,7 +105,7 @@ export type DiaDoHistorico = {
   /** Soma das estimativas das fotos do dia. */
   calorias: number;
   fotos: FotoDoDia[];
-  registros: { refeicaoId: string; nome: string; horario: string; estado: string; nota: string; humor: string; hora: string }[];
+  registros: { refeicaoId: string; nome: string; horario: string; estado: string; nota: string; humor: string; hora: string; fome: string; obs: string }[];
 };
 
 /** Os últimos `n` dias, do mais novo para o mais velho, terminando em `ate`. */
@@ -135,7 +135,7 @@ export async function historicoEntre(desde: string, ate: string): Promise<DiaDoH
       agua: agua.find((a) => a.dia === dia)?._sum.ml ?? 0,
       calorias: somarDia(fotosDoDia.map((f) => f.analise)).calorias,
       fotos: fotosDoDia,
-      registros: doDia.map((r) => ({ refeicaoId: r.refeicaoId, nome: r.nome, horario: r.horario, estado: r.estado, nota: r.nota, humor: r.humor, hora: r.hora })),
+      registros: doDia.map((r) => ({ refeicaoId: r.refeicaoId, nome: r.nome, horario: r.horario, estado: r.estado, nota: r.nota, humor: r.humor, hora: r.hora, fome: r.fome, obs: r.obs })),
     });
   }
   return dias;
@@ -193,6 +193,33 @@ export type FotoDoCorpo = { id: string; dia: string; nota: string };
 
 export async function fotosDoCorpo(): Promise<FotoDoCorpo[]> {
   return bd.fotoCorpo.findMany({ orderBy: [{ dia: "asc" }, { criadoEm: "asc" }], select: { id: true, dia: true, nota: true } });
+}
+
+export type Atalhos = { padroes: { id: string; texto: string }[]; recentes: string[] };
+
+/**
+ * O que oferecer, a um toque, no "o que comi" de cada refeição (pelo nome):
+ * as refeições padrão que você cadastrou e o que comeu nela nas últimas duas
+ * semanas (o "repetir de ontem"), sem repetir o que já é padrão.
+ */
+export async function atalhosPorRefeicao(hoje: string): Promise<Record<string, Atalhos>> {
+  const [padroes, recentes] = await Promise.all([
+    bd.padrao.findMany({ orderBy: [{ ordem: "asc" }, { criadoEm: "asc" }] }),
+    bd.registro.findMany({
+      where: { dia: { gte: somarDias(hoje, -14), lt: hoje }, estado: { in: ["seguiu", "trocou"] }, nota: { not: "" } },
+      orderBy: [{ dia: "desc" }],
+      select: { nome: true, nota: true },
+    }),
+  ]);
+  const mapa: Record<string, Atalhos> = {};
+  const de = (nome: string) => (mapa[nome] ??= { padroes: [], recentes: [] });
+  for (const p of padroes) de(p.refeicao).padroes.push({ id: p.id, texto: p.texto });
+  for (const r of recentes) {
+    const a = de(r.nome);
+    const igual = (t: string) => t.trim().toLowerCase() === r.nota.trim().toLowerCase();
+    if (a.recentes.length < 3 && !a.recentes.some(igual) && !a.padroes.some((p) => igual(p.texto))) a.recentes.push(r.nota);
+  }
+  return mapa;
 }
 
 export async function lembretes() {

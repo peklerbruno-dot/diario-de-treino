@@ -232,7 +232,11 @@ export async function analisarPrato(
   const c = ia();
   if (!c) return { analise: null, semCota: false };
   const partes: Part[] = [];
-  if (entrada.imagem) partes.push({ inlineData: { mimeType: entrada.imagem.tipo, data: entrada.imagem.base64 } });
+  if (entrada.imagem) {
+    partes.push({ inlineData: { mimeType: entrada.imagem.tipo, data: entrada.imagem.base64 } });
+    // O que a pessoa escreveu vale mais que o olho: "peito de peru", e não "presunto".
+    if (entrada.texto) partes.push({ text: `A pessoa disse que comeu: "${entrada.texto.slice(0, 600)}". Use isso para identificar os alimentos e as quantidades na foto.` });
+  }
   else partes.push({ text: `Não há foto. A pessoa escreveu o que comeu:\n"${(entrada.texto ?? "").slice(0, 600)}"\nEstime a partir do texto, com porções típicas quando a quantidade não for dita.` });
   partes.push({
     text: plano

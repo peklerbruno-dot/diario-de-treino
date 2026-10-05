@@ -65,7 +65,7 @@ describe("padrões", () => {
     );
     const textos = padroes(dias).map((p) => p.texto);
     expect(textos).toContain("Lanche: pulado em 2 de 4 dias.");
-    expect(textos).toContain("Jantar: 2 vezes com fome demais ou ansiedade.");
+    expect(textos).toContain("Jantar: 2 vezes saindo pesado, ansioso ou ainda com fome.");
   });
   it("acha o dia da semana difícil", () => {
     const dias: DiaParaPadrao[] = [];

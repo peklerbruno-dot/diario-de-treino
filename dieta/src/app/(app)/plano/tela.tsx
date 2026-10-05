@@ -17,13 +17,22 @@ import { escreverTexto } from "@/lib/conteudo";
 import type { PlanoCompleto, RefeicaoCompleta } from "@/lib/consultas";
 import { SEMANA_CURTA, horaFalada } from "@/lib/datas";
 import { OQueComer } from "../hoje";
+import { PadroesDaRefeicao } from "@/componentes/padroes-da-refeicao";
 
 type Anterior = { id: string; nome: string; criadoEm: string; refeicoes: number };
 
 const dataCurta = (iso: string) => new Date(iso).toLocaleDateString("pt-BR", { day: "numeric", month: "short", year: "numeric" });
 const diasPorExtenso = (dias: number[]) => (dias.length === 0 ? "" : dias.map((d) => SEMANA_CURTA[d]).join(", "));
 
-export function TelaPlano({ plano, anteriores }: { plano: PlanoCompleto | null; anteriores: Anterior[] }) {
+export function TelaPlano({
+  plano,
+  anteriores,
+  padroes,
+}: {
+  plano: PlanoCompleto | null;
+  anteriores: Anterior[];
+  padroes: Record<string, { id: string; texto: string }[]>;
+}) {
   const [, iniciar] = useTransition();
   const [editando, setEditando] = useState<string | "nova" | null>(null);
 
@@ -80,6 +89,7 @@ export function TelaPlano({ plano, anteriores }: { plano: PlanoCompleto | null; 
                   </div>
                   <OQueComer conteudo={r.conteudo} />
                   {r.nota && <p className="mt-2 rounded-folha bg-papel px-3 py-2 text-[14px] text-grafite">{r.nota}</p>}
+                  <PadroesDaRefeicao refeicao={r.nome} lista={padroes[r.nome] ?? []} />
                   <Botao className="mt-3 w-full" onClick={() => setEditando(r.id)}>
                     Editar
                   </Botao>

@@ -2,18 +2,19 @@
 
 import Link from "next/link";
 import { useOptimistic, useState, useTransition } from "react";
-import { beberAgua, desfazerAgua, marcarHumor, marcarRefeicao } from "@/app/acoes";
+import { beberAgua, desfazerAgua } from "@/app/acoes";
 import { ConviteDeAvisos } from "@/componentes/avisos";
 import { BotaoDeFoto, Miniaturas } from "@/componentes/foto-do-prato";
 import { PossoTrocar } from "@/componentes/posso-trocar";
 import { IconeGota } from "@/componentes/icones";
-import { Botao, Cartao, Titulo, campo } from "@/componentes/pecas";
+import { ESTADOS, FichaDaRefeicao, type Estado } from "@/componentes/ficha";
+import { Botao, Cartao, Titulo } from "@/componentes/pecas";
 import { litros, type Ajustes } from "@/lib/ajustes";
 import { ritmoDaAgua } from "@/lib/agenda";
-import type { Conteudo } from "@/lib/conteudo";
+import { resumir, type Conteudo } from "@/lib/conteudo";
 import { milhar, somarDia } from "@/lib/analise";
-import type { FotoDoDia, Marca, RefeicaoCompleta } from "@/lib/consultas";
-import { HUMORES, type Humor } from "@/lib/padroes";
+import type { Atalhos, FotoDoDia, Marca, RefeicaoCompleta } from "@/lib/consultas";
+import { ehFome, ehHumor, FOMES, HUMORES } from "@/lib/padroes";
 import { type Agora, diaPorExtenso, horaFalada, paraMinutos, valeNoDia } from "@/lib/datas";
 
 type Props = {
@@ -27,6 +28,7 @@ type Props = {
   sequencia: number;
   ajustes: Ajustes;
   chavePublica: string;
+  atalhos: Record<string, Atalhos>;
 };
 
 /** O app do Diário de treino, deste mesmo repositório. */
@@ -94,13 +96,48 @@ export function TelaHoje(p: Props) {
         </Cartao>
       )}
 
-      <div className="mb-4 grid grid-cols-2 gap-2">
-        <BotaoDeFoto dia={p.agora.dia} refeicoes={p.refeicoes} sugerida={maisPerto?.id} />
-        {p.temPlano ? <PossoTrocar refeicoes={p.refeicoes} sugerida={maisPerto?.id} /> : <span />}
+
+      {p.temPlano && p.refeicoes.length === 0 && (
+        <Cartao className="mt-4">
+          <p className="text-grafite">Nenhuma refeição no plano para hoje.</p>
+        </Cartao>
+      )}
+
+      <div className="space-y-3">
+        {p.refeicoes.map((r) => (
+          <CartaoRefeicao
+            key={r.id}
+            dia={p.agora.dia}
+            refeicao={r}
+            marca={p.marcas[r.id]}
+            proxima={proxima?.id === r.id}
+            fotos={p.fotos.filter((f) => f.refeicaoId === r.id)}
+            atalhos={p.atalhos[r.nome]}
+            passou={(paraMinutos(r.horario) ?? 0) < p.agora.minutos}
+          />
+        ))}
+      </div>
+
+      {p.temPlano && (
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <BotaoDeFoto dia={p.agora.dia} refeicoes={p.refeicoes} rotulo="＋ Outra coisa" />
+          <PossoTrocar refeicoes={p.refeicoes} sugerida={maisPerto?.id} />
+        </div>
+      )}
+
+      {foraDoPlano.length > 0 && (
+        <Cartao className="mt-3">
+          <p className="font-semibold">Fora das refeições do plano</p>
+          <Miniaturas fotos={foraDoPlano} />
+        </Cartao>
+      )}
+
+      <div className="mt-4">
+        <CartaoAgua agua={p.agua} ajustes={p.ajustes} minutos={p.agora.minutos} />
       </div>
 
       {p.ajustes.treinoAvisos && valeNoDia(p.ajustes.treinoDias, p.agora.diaDaSemana) && (
-        <Cartao className="mb-4 !bg-agua-clara">
+        <Cartao className="mt-4 !bg-agua-clara">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="font-semibold">🏋️ Dia de treino · {horaFalada(p.ajustes.treinoHora)}</p>
@@ -111,34 +148,6 @@ export function TelaHoje(p: Props) {
               Diário de treino ↗
             </a>
           </div>
-        </Cartao>
-      )}
-
-      <CartaoAgua agua={p.agua} ajustes={p.ajustes} minutos={p.agora.minutos} />
-
-      {p.temPlano && p.refeicoes.length === 0 && (
-        <Cartao className="mt-4">
-          <p className="text-grafite">Nenhuma refeição no plano para hoje.</p>
-        </Cartao>
-      )}
-
-      <div className="mt-4 space-y-3">
-        {p.refeicoes.map((r) => (
-          <CartaoRefeicao
-            key={r.id}
-            dia={p.agora.dia}
-            refeicao={r}
-            marca={p.marcas[r.id]}
-            proxima={proxima?.id === r.id}
-            fotos={p.fotos.filter((f) => f.refeicaoId === r.id)}
-          />
-        ))}
-      </div>
-
-      {foraDoPlano.length > 0 && (
-        <Cartao className="mt-3">
-          <p className="font-semibold">Fora das refeições do plano</p>
-          <Miniaturas fotos={foraDoPlano} />
         </Cartao>
       )}
 
@@ -225,156 +234,105 @@ function CartaoAgua({ agua, ajustes, minutos }: { agua: number; ajustes: Ajustes
 // Refeição
 // ---------------------------------------------------------------------------
 
-const ESTADOS = {
-  seguiu: { rotulo: "Segui", simbolo: "✓", cor: "bg-folha-clara text-folha" },
-  trocou: { rotulo: "Troquei", simbolo: "⇄", cor: "bg-troca-clara text-troca" },
-  pulou: { rotulo: "Pulei", simbolo: "✕", cor: "bg-pulou-clara text-pulou" },
-} as const;
-type Estado = keyof typeof ESTADOS;
-
+/**
+ * Uma refeição do dia, em três jeitos:
+ *  - registrada: um resumo (como foi, o que comeu, os emojis, a foto), e um
+ *    toque reabre a ficha para mudar;
+ *  - a próxima: aberta e em destaque, com o que o plano sugere e os três botões;
+ *  - as outras: fechadas numa linha, que abre ao tocar.
+ * Os três botões abrem a ficha (componentes/ficha.tsx) já no estado tocado.
+ */
 function CartaoRefeicao({
   dia,
   refeicao: r,
   marca,
   proxima,
   fotos,
+  atalhos,
+  passou,
 }: {
   dia: string;
   refeicao: RefeicaoCompleta;
   marca?: Marca;
   proxima: boolean;
+  /** O horário já passou e ela não foi registrada. */
+  passou: boolean;
   fotos: FotoDoDia[];
+  atalhos?: Atalhos;
 }) {
-  const [pendente, iniciar] = useTransition();
-  const [otimista, marcar] = useOptimistic(marca, (_: Marca | undefined, nova: Marca | undefined) => nova);
-  const [aberta, setAberta] = useState(!marca);
-  const [trocando, setTrocando] = useState(false);
-  const [oQueComeu, setOQueComeu] = useState(marca?.nota ?? "");
+  const [aberta, setAberta] = useState(proxima);
+  const [ficha, setFicha] = useState<Estado | null>(null);
 
-  const gravar = (estado: Estado | "", nota = "") =>
-    iniciar(async () => {
-      marcar(estado ? { estado, nota, humor: otimista?.humor } : undefined);
-      setTrocando(false);
-      if (estado) setAberta(false);
-      await marcarRefeicao(dia, r.id, estado, nota);
-    });
+  const abrirFicha = ficha && (
+    <FichaDaRefeicao dia={dia} hoje={dia} refeicao={r} marca={marca} estadoInicial={ficha} atalhos={atalhos} fotos={fotos} aoFechar={() => setFicha(null)} />
+  );
 
-  const tocar = (estado: Estado) => {
-    if (otimista?.estado === estado) return gravar(""); // tocar de novo desmarca
-    if (estado === "trocou") return setTrocando(true);
-    gravar(estado);
-  };
+  if (marca) {
+    const e = ESTADOS[marca.estado];
+    return (
+      <Cartao id={`r-${r.id}`}>
+        <button type="button" className="flex w-full items-start justify-between gap-3 text-left" onClick={() => setFicha(marca.estado)} aria-label={`${r.nome}: ${e.rotulo}. Tocar para editar`}>
+          <div className="min-w-0">
+            <p className="text-[13px] tabular text-fosco">{horaFalada(r.horario)}</p>
+            <p className="text-[18px] font-semibold leading-tight">{r.nome}</p>
+          </div>
+          <span className={`shrink-0 rounded-full px-2.5 py-1 text-[13.5px] font-semibold ${e.claro}`}>
+            {e.simbolo} {e.rotulo}
+          </span>
+        </button>
+        {marca.nota && <p className="mt-1.5 text-[15px] leading-snug text-grafite">{marca.estado === "pulou" ? `Motivo: ${marca.nota}` : marca.nota}</p>}
+        {(ehFome(marca.fome) || ehHumor(marca.humor) || marca.obs) && (
+          <p className="mt-1 text-[14px] text-fosco">
+            {ehFome(marca.fome) && <span title={FOMES[marca.fome].rotulo}>{FOMES[marca.fome].emoji}</span>}
+            {ehFome(marca.fome) && ehHumor(marca.humor) && " → "}
+            {ehHumor(marca.humor) && <span title={HUMORES[marca.humor].rotulo}>{HUMORES[marca.humor].emoji}</span>}
+            {marca.obs && <span className="italic">{(ehFome(marca.fome) || ehHumor(marca.humor)) && " · "}“{marca.obs}”</span>}
+          </p>
+        )}
+        <Miniaturas fotos={fotos} />
+        {abrirFicha}
+      </Cartao>
+    );
+  }
 
   return (
     <Cartao id={`r-${r.id}`} className={proxima ? "ring-2 ring-folha" : ""}>
-      <button type="button" className="flex w-full items-start justify-between gap-3 text-left" onClick={() => setAberta((a) => !a)}>
-        <div>
+      <button type="button" className="flex w-full items-start justify-between gap-3 text-left" onClick={() => setAberta((a) => !a)} aria-expanded={aberta}>
+        <div className="min-w-0">
           <p className="text-[13px] tabular text-fosco">
             {horaFalada(r.horario)}
             {proxima && <span className="ml-2 font-semibold uppercase tracking-wide text-folha">Próxima</span>}
+            {passou && !proxima && <span className="ml-2">· sem registro</span>}
           </p>
-          <p className="text-[19px] font-semibold leading-tight">{r.nome}</p>
+          <p className={`${proxima ? "text-[22px]" : "text-[18px]"} font-semibold leading-tight`}>{r.nome}</p>
+          {!aberta && r.conteudo.length > 0 && <p className="mt-0.5 line-clamp-1 text-[14px] text-fosco">{resumir(r.conteudo, 80)}</p>}
         </div>
-        {!aberta && <span className="shrink-0 pt-1 text-[13px] text-fosco">ver ▾</span>}
+        <span className="shrink-0 pt-1 text-[13px] text-fosco">{aberta ? "▴" : "ver ▾"}</span>
       </button>
-
-      {otimista?.estado === "trocou" && otimista.nota && !trocando && (
-        <p className="mt-1 text-[15px] text-grafite">Comi: {otimista.nota}</p>
-      )}
-
-      <Miniaturas fotos={fotos} />
 
       {aberta && (
         <>
           <OQueComer conteudo={r.conteudo} />
           {r.nota && <p className="mt-2 rounded-folha bg-papel px-3 py-2 text-[14px] leading-snug text-grafite">{r.nota}</p>}
+          {(atalhos?.padroes.length ?? 0) > 0 && (
+            <p className="mt-2 text-[13.5px] text-fosco">⭐ {atalhos!.padroes.map((p) => p.texto).join(" · ")}</p>
+          )}
         </>
       )}
 
-      {trocando ? (
-        <form
-          className="mt-3"
-          onSubmit={(e) => {
-            e.preventDefault();
-            gravar("trocou", oQueComeu);
-          }}
-        >
-          <label className="text-[14px] text-grafite" htmlFor={`troca-${r.id}`}>
-            O que você comeu no lugar? (opcional)
-          </label>
-          <input
-            id={`troca-${r.id}`}
-            className={`${campo} mt-1`}
-            value={oQueComeu}
-            onChange={(e) => setOQueComeu(e.target.value)}
-            placeholder="Ex.: sanduíche natural"
-            autoFocus
-          />
-          <div className="mt-2 flex gap-2">
-            <Botao type="submit" tipo="primario" className="flex-1 !bg-troca">
-              Salvar troca
-            </Botao>
-            <Botao tipo="fantasma" onClick={() => setTrocando(false)}>
-              Cancelar
-            </Botao>
-          </div>
-        </form>
-      ) : (
-        <div className="mt-3 grid grid-cols-3 gap-2" aria-busy={pendente}>
-          {(Object.keys(ESTADOS) as Estado[]).map((e) => {
-            const ativo = otimista?.estado === e;
-            return (
-              <button
-                key={e}
-                type="button"
-                aria-pressed={ativo}
-                onClick={() => tocar(e)}
-                className={`rounded-folha py-2.5 text-[15px] font-medium transition-colors ${
-                  ativo ? ESTADOS[e].cor : "bg-papel text-grafite"
-                }`}
-              >
-                {ESTADOS[e].simbolo} {ESTADOS[e].rotulo}
-              </button>
-            );
-          })}
+      <Miniaturas fotos={fotos} />
+
+      {(aberta || proxima) && (
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          {(Object.keys(ESTADOS) as Estado[]).map((e) => (
+            <button key={e} type="button" onClick={() => setFicha(e)} className={`rounded-folha py-2.5 text-[15px] font-semibold ${e === "seguiu" ? ESTADOS[e].cheio : ESTADOS[e].claro}`}>
+              {ESTADOS[e].simbolo} {ESTADOS[e].rotulo}
+            </button>
+          ))}
         </div>
       )}
-
-      {otimista && !trocando && <ComoEstava dia={dia} refeicaoId={r.id} humor={otimista.humor ?? ""} />}
+      {abrirFicha}
     </Cartao>
-  );
-}
-
-/**
- * Um toque, opcional: como estava na refeição. É o que mostra à nutricionista
- * que o jantar "trocado" toda noite vem de chegar com fome demais, e não de
- * falta de vontade.
- */
-function ComoEstava({ dia, refeicaoId, humor }: { dia: string; refeicaoId: string; humor: string }) {
-  const [atual, setAtual] = useState(humor);
-  const [, iniciar] = useTransition();
-  const escolher = (h: Humor) => {
-    const novo = atual === h ? "" : h;
-    setAtual(novo);
-    iniciar(() => marcarHumor(dia, refeicaoId, novo));
-  };
-  return (
-    <div className="mt-2.5 flex items-center gap-1.5">
-      <span className="mr-auto text-[13px] text-fosco">Como você estava?</span>
-      {(Object.keys(HUMORES) as Humor[]).map((h) => (
-        <button
-          key={h}
-          type="button"
-          aria-pressed={atual === h}
-          aria-label={HUMORES[h].rotulo}
-          title={HUMORES[h].rotulo}
-          onClick={() => escolher(h)}
-          className={`h-9 w-9 rounded-full text-[18px] transition ${atual === h ? "bg-folha-clara ring-2 ring-folha" : atual ? "bg-papel opacity-50" : "bg-papel"}`}
-        >
-          {HUMORES[h].emoji}
-        </button>
-      ))}
-    </div>
   );
 }
 

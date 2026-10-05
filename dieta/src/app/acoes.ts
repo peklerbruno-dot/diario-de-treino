@@ -9,7 +9,7 @@ import { lerTexto } from "@/lib/conteudo";
 import { normalizarPlanejamento } from "@/lib/semana";
 import { normalizarAnalise, type Analise } from "@/lib/analise";
 import { agoraNoFuso, hoje, normalizarHora, paraHora } from "@/lib/datas";
-import { ehHumor } from "@/lib/padroes";
+import { ehFome, ehHumor } from "@/lib/padroes";
 import { novoId } from "@/lib/ids";
 
 /**
@@ -56,6 +56,65 @@ export async function marcarRefeicao(dia: string, refeicaoId: string, estado: ""
       update: dados,
     });
   }
+  atualizarTudo();
+}
+
+export type FichaDaRefeicao = {
+  dia: string;
+  refeicaoId: string;
+  estado: "seguiu" | "trocou" | "pulou";
+  /** O que comeu, ou o motivo de ter pulado. */
+  nota: string;
+  fome: string;
+  humor: string;
+  obs: string;
+};
+
+/**
+ * Salva a ficha inteira de uma refeição: como foi, o que comeu, a fome antes,
+ * como ficou e a observação. A hora entra só na primeira vez, e só se for
+ * no próprio dia (ver marcarRefeicao).
+ */
+export async function salvarFicha(f: FichaDaRefeicao) {
+  await exigirSessao();
+  if (!ehDia(f.dia) || !["seguiu", "trocou", "pulou"].includes(f.estado)) return;
+  const r = await bd.refeicao.findUnique({ where: { id: f.refeicaoId } });
+  if (!r) return;
+  const dados = {
+    estado: f.estado,
+    nota: f.nota.trim().slice(0, 300),
+    fome: ehFome(f.fome) ? f.fome : "",
+    humor: ehHumor(f.humor) ? f.humor : "",
+    obs: f.obs.trim().slice(0, 500),
+    nome: r.nome,
+    horario: r.horario,
+  };
+  const agora = agoraNoFuso();
+  const hora = agora.dia === f.dia ? paraHora(agora.minutos) : "";
+  await bd.registro.upsert({
+    where: { dia_refeicaoId: { dia: f.dia, refeicaoId: f.refeicaoId } },
+    create: { id: novoId(), dia: f.dia, refeicaoId: f.refeicaoId, hora, ...dados },
+    update: dados,
+  });
+  atualizarTudo();
+}
+
+/** Cadastra uma refeição padrão para a refeição `refeicao` (pelo nome). */
+export async function salvarPadrao(refeicao: string, texto: string) {
+  await exigirSessao();
+  const t = texto.trim().slice(0, 200);
+  const nome = refeicao.trim().slice(0, 80);
+  if (!t || !nome) return;
+  const ja = await bd.padrao.findFirst({ where: { refeicao: nome, texto: { equals: t, mode: "insensitive" } } });
+  if (ja) return;
+  const n = await bd.padrao.count({ where: { refeicao: nome } });
+  await bd.padrao.create({ data: { id: novoId(), refeicao: nome, texto: t, ordem: n } });
+  atualizarTudo();
+}
+
+export async function apagarPadrao(id: string) {
+  await exigirSessao();
+  await bd.padrao.deleteMany({ where: { id } });
   atualizarTudo();
 }
 

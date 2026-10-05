@@ -64,11 +64,16 @@ model Registro {
   horario    String
   /// "seguiu" | "trocou" | "pulou"
   estado     String
-  /// O que comeu no lugar, quando trocou.
+  /// O que comeu (em "segui", a opção do plano ou a refeição padrão; em
+  /// "troquei", o que foi no lugar) ou, em "pulei", o motivo.
   nota       String   @default("")
-  /// Como estava na refeição: "bem" | "ok" | "mal" (fome demais, ansiedade).
-  /// Vazio = não disse.
+  /// Como ficou depois: "bem" (satisfeito) | "ok" | "mal" (pesado, ansioso,
+  /// com fome ainda). Vazio = não disse.
   humor      String   @default("")
+  /// A fome antes de comer: "muita" | "normal" | "pouca". Vazio = não disse.
+  fome       String   @default("")
+  /// Observação livre: "comi na rua", "almocei correndo".
+  obs        String   @default("")
   /// "12:55" — quando marcou, se marcou no próprio dia. É o que mostra se o
   /// almoço do plano às 12h30 está acontecendo às 14h. Vazio = marcou depois.
   hora       String   @default("")
@@ -201,4 +206,18 @@ model FotoCorpo {
   criadoEm DateTime @default(now())
 
   @@index([dia])
+}
+
+/// Uma refeição padrão sua, para escolher com um toque: "Ovos mexidos com pão
+/// integral" no café, "Marmita de frango com arroz" no almoço. Fica presa ao
+/// NOME da refeição, e não ao id: sobrevive à troca de plano.
+model Padrao {
+  id       String   @id
+  /// "Café da manhã" — o nome da refeição do plano.
+  refeicao String
+  texto    String
+  ordem    Int      @default(0)
+  criadoEm DateTime @default(now())
+
+  @@index([refeicao])
 }

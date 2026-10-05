@@ -7,7 +7,7 @@ import { litros } from "@/lib/ajustes";
 import { milhar, somarDia } from "@/lib/analise";
 import { ajustes, umDia } from "@/lib/consultas";
 import { diaPorExtenso, hoje, horaFalada, somarDias, maiuscula } from "@/lib/datas";
-import { corDoDia, HUMORES, ehHumor } from "@/lib/padroes";
+import { corDoDia, ehFome, ehHumor, FOMES, HUMORES } from "@/lib/padroes";
 
 /**
  * Um dia inteiro numa tela só: o que foi marcado em cada refeição (e como
@@ -97,6 +97,11 @@ export default async function PaginaDoDia({ params }: { params: Promise<{ dia: s
                   <p className="text-[18px] font-semibold leading-tight">{r.nome}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
+                  {ehFome(r.fome) && (
+                    <span title={FOMES[r.fome].rotulo} aria-label={FOMES[r.fome].rotulo} className="text-[20px]">
+                      {FOMES[r.fome].emoji}
+                    </span>
+                  )}
                   {ehHumor(r.humor) && (
                     <span title={HUMORES[r.humor].rotulo} aria-label={HUMORES[r.humor].rotulo} className="text-[20px]">
                       {HUMORES[r.humor].emoji}
@@ -105,7 +110,8 @@ export default async function PaginaDoDia({ params }: { params: Promise<{ dia: s
                   <span className={`rounded-full px-2.5 py-1 text-[13px] font-medium ${e?.cor ?? "bg-papel"}`}>{e?.rotulo ?? r.estado}</span>
                 </div>
               </div>
-              {r.nota && <p className="mt-1 text-[15px] text-grafite">Comi: {r.nota}</p>}
+              {r.nota && <p className="mt-1 text-[15px] text-grafite">{r.estado === "pulou" ? `Motivo: ${r.nota}` : r.nota}</p>}
+              {r.obs && <p className="mt-1 text-[14.5px] italic text-fosco">“{r.obs}”</p>}
               {fotos.length > 0 && (
                 <div className="mt-3">
                   <Miniaturas fotos={fotos} grande />
