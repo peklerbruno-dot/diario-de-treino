@@ -1,7 +1,7 @@
 # Como colocar o site no ar
 
-Uns 15 minutos, tudo pelo navegador. É o mesmo caminho da plataforma de
-machanot e do sistema do CEJ, que estão neste mesmo repositório.
+Uns 15 minutos, tudo pelo navegador. É o mesmo caminho do sistema do CEJ, que
+está neste mesmo repositório.
 
 ## Passo 1 — Criar o banco de dados
 
