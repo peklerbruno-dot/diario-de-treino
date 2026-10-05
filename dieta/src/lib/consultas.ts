@@ -4,6 +4,7 @@ import { normalizarAnalise, somarDia, type Analise } from "./analise";
 import type { RefeicaoDoPlano } from "./agenda";
 import { bd } from "./bd";
 import { escreverTexto, normalizarConteudo } from "./conteudo";
+import type { RefeicaoPadrao } from "./refeicoes-padrao";
 import { normalizarPlanejamento } from "./semana";
 import { paraMinutos, somarDias } from "./datas";
 
@@ -48,11 +49,28 @@ export async function planoAtivo(): Promise<PlanoCompleto | null> {
   };
 }
 
+/** As refeições padrão cadastradas, para as telas que as listam ou escolhem. */
+export async function refeicoesPadrao(): Promise<RefeicaoPadrao[]> {
+  const lista = await bd.refeicaoPadrao.findMany({ orderBy: [{ vezes: "desc" }, { titulo: "asc" }] });
+  return lista.map((p) => ({
+    id: p.id,
+    refeicao: p.refeicao,
+    titulo: p.titulo,
+    itens: p.itens,
+    calorias: p.calorias,
+    proteinas: p.proteinas,
+    carboidratos: p.carboidratos,
+    gorduras: p.gorduras,
+    seguePlano: p.seguePlano,
+    vezes: p.vezes,
+  }));
+}
+
 export async function ajustes(): Promise<Ajustes> {
   return lerAjustes(await bd.ajuste.findMany());
 }
 
-export type Marca = { estado: "seguiu" | "trocou" | "pulou"; nota: string; humor?: string };
+export type Marca = { estado: "seguiu" | "trocou" | "pulou"; nota: string; humor?: string; padraoId?: string };
 
 export type FotoDoDia = {
   id: string;
@@ -92,7 +110,9 @@ export async function situacaoDoDia(dia: string) {
     fotosEntre(dia, dia),
   ]);
   const marcas: Record<string, Marca> = {};
-  for (const r of registros) marcas[r.refeicaoId] = { estado: r.estado as Marca["estado"], nota: r.nota, humor: r.humor };
+  for (const r of registros) {
+    marcas[r.refeicaoId] = { estado: r.estado as Marca["estado"], nota: r.nota, humor: r.humor, padraoId: r.padraoId };
+  }
   return { marcas, agua: agua._sum.ml ?? 0, fotos };
 }
 

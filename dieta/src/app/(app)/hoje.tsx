@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useOptimistic, useState, useTransition } from "react";
-import { beberAgua, desfazerAgua, marcarHumor, marcarRefeicao } from "@/app/acoes";
+import { beberAgua, desfazerAgua, marcarHumor, marcarRefeicao, usarRefeicaoPadrao } from "@/app/acoes";
 import { ConviteDeAvisos } from "@/componentes/avisos";
 import { BotaoDeFoto, Miniaturas } from "@/componentes/foto-do-prato";
 import { PossoTrocar } from "@/componentes/posso-trocar";
 import { IconeGota } from "@/componentes/icones";
+import { LinkNovaRefeicao, ResumoDoPadrao } from "@/componentes/minhas-refeicoes";
 import { Botao, Cartao, Titulo, campo } from "@/componentes/pecas";
 import { litros, type Ajustes } from "@/lib/ajustes";
 import { ritmoDaAgua } from "@/lib/agenda";
@@ -14,6 +15,7 @@ import type { Conteudo } from "@/lib/conteudo";
 import { milhar, somarDia } from "@/lib/analise";
 import type { FotoDoDia, Marca, RefeicaoCompleta } from "@/lib/consultas";
 import { HUMORES, type Humor } from "@/lib/padroes";
+import { paraEstaRefeicao, type RefeicaoPadrao } from "@/lib/refeicoes-padrao";
 import { type Agora, diaPorExtenso, horaFalada, paraMinutos, valeNoDia } from "@/lib/datas";
 
 type Props = {
@@ -21,6 +23,8 @@ type Props = {
   temPlano: boolean;
   orientacoes: string;
   refeicoes: RefeicaoCompleta[];
+  /** As refeições padrão cadastradas (de todas as refeições; cada cartão pega as suas). */
+  padroes: RefeicaoPadrao[];
   marcas: Record<string, Marca>;
   agua: number;
   fotos: FotoDoDia[];
@@ -128,6 +132,7 @@ export function TelaHoje(p: Props) {
             key={r.id}
             dia={p.agora.dia}
             refeicao={r}
+            padroes={p.padroes}
             marca={p.marcas[r.id]}
             proxima={proxima?.id === r.id}
             fotos={p.fotos.filter((f) => f.refeicaoId === r.id)}
@@ -235,12 +240,14 @@ type Estado = keyof typeof ESTADOS;
 function CartaoRefeicao({
   dia,
   refeicao: r,
+  padroes,
   marca,
   proxima,
   fotos,
 }: {
   dia: string;
   refeicao: RefeicaoCompleta;
+  padroes: RefeicaoPadrao[];
   marca?: Marca;
   proxima: boolean;
   fotos: FotoDoDia[];
@@ -249,15 +256,33 @@ function CartaoRefeicao({
   const [otimista, marcar] = useOptimistic(marca, (_: Marca | undefined, nova: Marca | undefined) => nova);
   const [aberta, setAberta] = useState(!marca);
   const [trocando, setTrocando] = useState(false);
+  const [escolhendo, setEscolhendo] = useState(false);
+  const [guardarTroca, setGuardarTroca] = useState(false);
   const [oQueComeu, setOQueComeu] = useState(marca?.nota ?? "");
 
-  const gravar = (estado: Estado | "", nota = "") =>
+  const minhas = paraEstaRefeicao(padroes, r.nome);
+  const quantas = minhas.dela.length + minhas.gerais.length;
+
+  const gravar = (estado: Estado | "", nota = "", guardar = false) =>
     iniciar(async () => {
       marcar(estado ? { estado, nota, humor: otimista?.humor } : undefined);
       setTrocando(false);
+      setEscolhendo(false);
       if (estado) setAberta(false);
-      await marcarRefeicao(dia, r.id, estado, nota);
+      await marcarRefeicao(dia, r.id, estado, nota, guardar);
     });
+
+  // Escolher uma das refeições padrão: um toque marca (segui ou troquei, conforme
+  // ela esteja no plano) e já deixa escrito o que foi comido.
+  const escolher = (p: RefeicaoPadrao) =>
+    iniciar(async () => {
+      marcar({ estado: p.seguePlano ? "seguiu" : "trocou", nota: p.titulo, humor: otimista?.humor, padraoId: p.id });
+      setEscolhendo(false);
+      setTrocando(false);
+      setAberta(false);
+      await usarRefeicaoPadrao(dia, r.id, p.id);
+    });
+
 
   const tocar = (estado: Estado) => {
     if (otimista?.estado === estado) return gravar(""); // tocar de novo desmarca
@@ -278,9 +303,7 @@ function CartaoRefeicao({
         {!aberta && <span className="shrink-0 pt-1 text-[13px] text-fosco">ver ▾</span>}
       </button>
 
-      {otimista?.estado === "trocou" && otimista.nota && !trocando && (
-        <p className="mt-1 text-[15px] text-grafite">Comi: {otimista.nota}</p>
-      )}
+      {otimista?.nota && !trocando && <p className="mt-1 text-[15px] text-grafite">Comi: {otimista.nota}</p>}
 
       <Miniaturas fotos={fotos} />
 
@@ -296,7 +319,10 @@ function CartaoRefeicao({
           className="mt-3"
           onSubmit={(e) => {
             e.preventDefault();
-            gravar("trocou", oQueComeu);
+            // A troca que acabou de ser escrita pode virar uma das suas: da
+            // próxima vez é um toque.
+            gravar("trocou", oQueComeu, guardarTroca);
+            setGuardarTroca(false);
           }}
         >
           <label className="text-[14px] text-grafite" htmlFor={`troca-${r.id}`}>
@@ -310,6 +336,12 @@ function CartaoRefeicao({
             placeholder="Ex.: sanduíche natural"
             autoFocus
           />
+          {oQueComeu.trim() && (
+            <label className="mt-2 flex items-center gap-2 text-[14px] text-grafite">
+              <input type="checkbox" className="h-4 w-4" checked={guardarTroca} onChange={(e) => setGuardarTroca(e.target.checked)} />
+              Guardar nas minhas refeições
+            </label>
+          )}
           <div className="mt-2 flex gap-2">
             <Botao type="submit" tipo="primario" className="flex-1 !bg-troca">
               Salvar troca
@@ -340,8 +372,71 @@ function CartaoRefeicao({
         </div>
       )}
 
+      {!trocando && (
+        <div className="mt-2">
+          <button
+            type="button"
+            aria-expanded={escolhendo}
+            onClick={() => setEscolhendo((v) => !v)}
+            className="flex w-full items-center justify-between rounded-folha bg-papel px-3.5 py-2.5 text-left text-[15px] font-medium text-grafite"
+          >
+            <span>🍽 Minhas refeições{quantas > 0 && <span className="ml-1.5 font-normal text-fosco">({quantas})</span>}</span>
+            <span className="text-[13px] text-fosco">{escolhendo ? "fechar ▴" : "escolher ▾"}</span>
+          </button>
+          {escolhendo && (
+            <EscolherUma dela={minhas.dela} gerais={minhas.gerais} atual={otimista?.padraoId} refeicao={r.nome} aoEscolher={escolher} />
+          )}
+        </div>
+      )}
+
       {otimista && !trocando && <ComoEstava dia={dia} refeicaoId={r.id} humor={otimista.humor ?? ""} />}
     </Cartao>
+  );
+}
+
+/** A lista das suas refeições para esta refeição: um toque escolhe. */
+function EscolherUma({
+  dela,
+  gerais,
+  atual,
+  refeicao,
+  aoEscolher,
+}: {
+  dela: RefeicaoPadrao[];
+  gerais: RefeicaoPadrao[];
+  atual?: string;
+  refeicao: string;
+  aoEscolher: (p: RefeicaoPadrao) => void;
+}) {
+  const item = (p: RefeicaoPadrao) => (
+    <li key={p.id}>
+      <button
+        type="button"
+        onClick={() => aoEscolher(p)}
+        aria-pressed={atual === p.id}
+        className={`w-full rounded-folha px-3.5 py-2.5 text-left transition-colors ${atual === p.id ? "bg-folha-clara ring-2 ring-folha" : "bg-papel"}`}
+      >
+        <span className="block text-[16px] font-medium leading-snug">{p.titulo}</span>
+        <ResumoDoPadrao p={p} />
+      </button>
+    </li>
+  );
+  return (
+    <div className="mt-2">
+      {dela.length + gerais.length === 0 ? (
+        <p className="px-1 text-[14px] leading-snug text-grafite">Você ainda não cadastrou nenhuma para {refeicao.toLowerCase()}.</p>
+      ) : (
+        <ul className="space-y-1.5">
+          {dela.map(item)}
+          {gerais.length > 0 && dela.length > 0 && <li className="px-1 pt-1 text-[12.5px] uppercase tracking-wide text-fosco">Para qualquer refeição</li>}
+          {gerais.map(item)}
+        </ul>
+      )}
+      <div className="mt-2 flex items-center justify-between px-1 text-[14px]">
+        <LinkNovaRefeicao refeicao={refeicao} className="font-medium text-folha" />
+        <LinkNovaRefeicao className="text-grafite underline" />
+      </div>
+    </div>
   );
 }
 

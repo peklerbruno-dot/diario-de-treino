@@ -21,6 +21,18 @@ voltar a ele.
 tem três botões: **Segui**, **Troquei** (com "o que comeu no lugar", opcional)
 e **Pulei**. As substituições de cada item ficam a um toque ("3 trocas").
 
+**Minhas refeições.** O plano diz o que comer; estas são as que você de fato
+repete — "marmita de frango com batata-doce", "pão com ovo". Em Plano → *Minhas
+refeições*, cadastre cada uma: em qual refeição aparece (ou qualquer uma), o nome,
+o que tem, se está **dentro do plano**, e, se quiser, calorias e macros. Em Hoje,
+cada refeição ganha um botão *Minhas refeições*: um toque escolhe qual delas você
+comeu. Dentro do plano marca "segui"; fora marca "troquei"; o nome fica como "o
+que comi" e, com calorias cadastradas, a refeição entra na soma do dia junto com
+as fotos. Escolher outra troca; marcar "pulei" desfaz a escolha e tira as
+calorias. As mais escolhidas vêm primeiro. Ao marcar um "Troquei", dá para
+*Guardar nas minhas refeições* o que foi escrito, para da próxima vez ser um
+toque. Apagar uma refeição padrão não mexe no histórico (ele guarda o nome).
+
 **Avisos no iPhone.** Na hora de cada refeição chega uma notificação com o que
 comer — "Almoço · 12h30 — Arroz integral 4 col. · Feijão 1 concha · Frango
 120 g". Tocar nela abre o app direto naquela refeição. Dá para avisar alguns
