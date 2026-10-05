@@ -22,6 +22,7 @@ import { reduzirImagem } from "./reduzir";
 type RefeicaoCurta = { id: string; nome: string; horario: string };
 type Resultado = {
   id: string;
+  semCota: boolean;
   dia: string;
   analise: Analise | null;
   sugestao: "seguiu" | "trocou" | null;
@@ -81,7 +82,7 @@ export function BotaoDeFoto({ dia, refeicoes, sugerida }: { dia: string; refeico
       const r = await fetch("/api/foto", { method: "POST", body: dados });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(j.erro ?? "Não consegui salvar a foto.");
-      setResultado({ id: j.id, dia: j.dia ?? diaDaFoto, analise: j.analise, sugestao: j.sugestao, refeicao, previa: URL.createObjectURL(reduzida) });
+      setResultado({ id: j.id, semCota: Boolean(j.semCota), dia: j.dia ?? diaDaFoto, analise: j.analise, sugestao: j.sugestao, refeicao, previa: URL.createObjectURL(reduzida) });
       router.refresh();
     } catch (e) {
       setErro(e instanceof Error ? e.message : "Não consegui salvar a foto.");
@@ -180,7 +181,9 @@ function ResultadoDaFoto({ dia, r, aoFechar }: { dia: string; r: Resultado; aoFe
         <AnaliseDetalhada a={a} />
       ) : (
         <p className="mt-3 text-[15px] text-grafite">
-          A foto foi salva, mas não deu para analisar agora (a leitura automática pode estar desligada ou sem cota).
+          {r.semCota
+            ? "A foto foi salva. A cota gratuita do Gemini acabou por agora — mais tarde, toque na foto e em “Analisar agora”."
+            : "A foto foi salva, mas não deu para analisar agora. Mais tarde, toque na foto e em “Analisar agora”."}
         </p>
       )}
       {r.refeicao && (
@@ -259,7 +262,7 @@ export function Miniaturas({ fotos }: { fotos: FotoDoDia[] }) {
         <Folha aoFechar={() => setAberta(null)} titulo={`${aberta.nome || "Foto"} · ${horaFalada(aberta.hora)}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={`/api/foto/${aberta.id}`} alt="Foto do prato" className="max-h-[300px] w-full rounded-folha object-cover" />
-          {aberta.analise ? <AnaliseDetalhada a={aberta.analise} /> : <p className="mt-3 text-grafite">Foto sem análise.</p>}
+          {aberta.analise ? <AnaliseDetalhada a={aberta.analise} /> : <AnalisarDeNovo id={aberta.id} aoAnalisar={(a) => setAberta({ ...aberta, analise: a })} />}
           <Botao
             tipo="perigo"
             className="mt-4 w-full"
@@ -298,6 +301,37 @@ export function Folha({ titulo, aoFechar, children }: { titulo: string; aoFechar
         </div>
         {children}
       </div>
+    </div>
+  );
+}
+
+/** Para a foto que ficou sem análise (cota esgotada na hora): pede de novo. */
+function AnalisarDeNovo({ id, aoAnalisar }: { id: string; aoAnalisar: (a: Analise) => void }) {
+  const router = useRouter();
+  const [analisando, setAnalisando] = useState(false);
+  const [erro, setErro] = useState("");
+  const analisar = async () => {
+    setErro("");
+    setAnalisando(true);
+    try {
+      const r = await fetch(`/api/foto/${id}`, { method: "POST" });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.erro ?? "Não consegui analisar agora.");
+      aoAnalisar(j.analise);
+      router.refresh();
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Não consegui analisar agora.");
+    } finally {
+      setAnalisando(false);
+    }
+  };
+  return (
+    <div className="mt-3">
+      <p className="text-[15px] text-grafite">Esta foto ainda não foi analisada.</p>
+      <Botao tipo="primario" className="mt-2 w-full" disabled={analisando} onClick={analisar}>
+        {analisando ? "Analisando…" : "Analisar agora"}
+      </Botao>
+      {erro && <p className="mt-2 text-[14px] text-pulou">{erro}</p>}
     </div>
   );
 }
