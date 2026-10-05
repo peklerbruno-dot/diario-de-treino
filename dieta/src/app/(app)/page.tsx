@@ -1,5 +1,5 @@
 import { refeicoesDoDia } from "@/lib/agenda";
-import { ajustes, historico, planoAtivo, situacaoDoDia } from "@/lib/consultas";
+import { ajustes, planoAtivo, seguidasPorDia, situacaoDoDia } from "@/lib/consultas";
 import { agoraNoFuso, diaDaSemana } from "@/lib/datas";
 import { chavePublica } from "@/lib/push";
 import { diasSeguidos } from "@/lib/sequencia";
@@ -7,7 +7,7 @@ import { TelaHoje } from "./hoje";
 
 export default async function Hoje() {
   const agora = agoraNoFuso();
-  const [plano, a, dia, dias] = await Promise.all([planoAtivo(), ajustes(), situacaoDoDia(agora.dia), historico(agora.dia, 60)]);
+  const [plano, a, dia, dias] = await Promise.all([planoAtivo(), ajustes(), situacaoDoDia(agora.dia), seguidasPorDia(agora.dia, 60)]);
   const refeicoes = plano ? (refeicoesDoDia(plano.refeicoes, agora.diaDaSemana) as typeof plano.refeicoes) : [];
   const sequencia = plano ? diasSeguidos(dias, (d) => refeicoesDoDia(plano.refeicoes, diaDaSemana(d)).length) : 0;
 

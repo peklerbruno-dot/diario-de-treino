@@ -141,6 +141,21 @@ export async function historicoEntre(desde: string, ate: string): Promise<DiaDoH
   return dias;
 }
 
+/**
+ * Quantas refeições foram marcadas "segui" em cada um dos últimos `n` dias,
+ * do mais novo para o mais velho — só o que a sequência da tela Hoje precisa.
+ * Uma contagem no banco, em vez de 60 dias de registros e fotos com análise.
+ */
+export async function seguidasPorDia(ate: string, n: number): Promise<{ dia: string; seguiu: number }[]> {
+  const desde = somarDias(ate, -(n - 1));
+  const g = await bd.registro.groupBy({ by: ["dia"], where: { dia: { gte: desde, lte: ate }, estado: "seguiu" }, _count: { _all: true } });
+  const porDia = new Map(g.map((x) => [x.dia, x._count._all]));
+  return Array.from({ length: n }, (_, i) => {
+    const dia = somarDias(ate, -i);
+    return { dia, seguiu: porDia.get(dia) ?? 0 };
+  });
+}
+
 /** Um dia só, com o peso anotado nele. */
 export async function umDia(dia: string) {
   const [[d], medida] = await Promise.all([historicoEntre(dia, dia), bd.medida.findFirst({ where: { dia }, orderBy: { criadoEm: "desc" } })]);
