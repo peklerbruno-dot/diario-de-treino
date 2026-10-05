@@ -26,6 +26,19 @@ export function TelaDoAtalho() {
         <i>“E aí Siri, Lançar gasto”</i> e falar o valor, sem tirar o celular do bolso.
       </p>
 
+      <Link
+        href="/apple-pay"
+        className="mt-4 flex items-center justify-between gap-3 rounded-folha bg-cartao px-4 py-3 shadow-baixa"
+      >
+        <span>
+          <span className="block text-[16px] font-semibold">Quer lançar sozinho pelo Apple Pay?</span>
+          <span className="block text-[13.5px] text-grafite">Um passo a passo curto, só para isso.</span>
+        </span>
+        <span aria-hidden className="text-[20px] text-fosco">
+          ›
+        </span>
+      </Link>
+
       <div className="mt-4">
         <Aviso tom="atencao">
           <b>O que o app não faz sozinho.</b> O iPhone não deixa nenhum aplicativo ler os seus
@@ -479,14 +492,14 @@ export function TelaDoAtalho() {
  * O endereço é montado a partir de onde o app está sendo servido, e não escrito
  * à mão: continua certo se um dia o endereço do site mudar.
  */
-function useEndereco(): string {
+export function useEndereco(): string {
   const [endereco, setEndereco] = useState("");
   useEffect(() => setEndereco(`${window.location.origin}/api/lancar?valor=`), []);
   return endereco;
 }
 
 /** Um pedaço de texto que precisa ser copiado sem erro de digitação. */
-function ParaCopiar({ texto }: { texto: string }) {
+export function ParaCopiar({ texto }: { texto: string }) {
   const [copiado, setCopiado] = useState(false);
 
   async function copiar() {
@@ -513,7 +526,7 @@ function ParaCopiar({ texto }: { texto: string }) {
 }
 
 /** Uma palavra que precisa ser digitada exatamente assim. */
-function Palavra({ children }: { children: React.ReactNode }) {
+export function Palavra({ children }: { children: React.ReactNode }) {
   return (
     <code className="rounded-[6px] bg-papel px-1.5 py-[1px] text-[13.5px] text-tinta">
       {children}
@@ -521,7 +534,7 @@ function Palavra({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Passo({ n, children }: { n: number; children: React.ReactNode }) {
+export function Passo({ n, children }: { n: number; children: React.ReactNode }) {
   return (
     <li className="flex gap-3 rounded-folha bg-cartao px-4 py-3 shadow-baixa">
       <span className="tabular mt-[1px] flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-heroi text-[12px] font-bold text-heroi-tinta">
