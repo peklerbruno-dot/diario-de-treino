@@ -77,6 +77,9 @@ model Registro {
   /// "12:55" — quando marcou, se marcou no próprio dia. É o que mostra se o
   /// almoço do plano às 12h30 está acontecendo às 14h. Vazio = marcou depois.
   hora       String   @default("")
+  /// A refeição padrão escolhida, quando foi por ela que se marcou. Vazio =
+  /// marcou direto (segui/troquei/pulei).
+  padraoId   String   @default("")
   criadoEm   DateTime @default(now())
 
   @@unique([dia, refeicaoId])
@@ -144,9 +147,41 @@ model Foto {
   correcao   String   @default("")
   /// O que a leitura devolveu (ver src/lib/analise.ts). Nulo = sem leitura.
   analise    Json?
+  /// Preenchido quando esta anotação nasceu de uma refeição padrão (e não de
+  /// uma foto ou de um texto digitado): é o que permite trocá-la ou apagá-la
+  /// junto com a marcação, sem deixar caloria órfã no dia.
+  padraoId   String   @default("")
   criadoEm   DateTime @default(now())
 
   @@index([dia])
+}
+
+/// Uma refeição que você repete — "marmita de frango com batata-doce" — para
+/// escolher num toque em vez de escrever de novo toda vez.
+///
+/// Fica ligada ao NOME da refeição ("Almoço"), e não ao id: quando chega o
+/// plano novo as refeições do plano ganham ids novos, e as suas refeições
+/// padrão continuariam apontando para o plano de antes.
+model RefeicaoPadrao {
+  id          String   @id
+  /// O nome da refeição em que aparece ("Almoço"). Vazio = qualquer refeição.
+  refeicao    String   @default("")
+  titulo      String
+  /// O que tem nela, em texto livre.
+  itens       String   @default("")
+  /// Estimativas, todas opcionais. Com calorias, a refeição entra na soma do dia.
+  calorias    Int?
+  proteinas   Int?
+  carboidratos Int?
+  gorduras    Int?
+  /// Está dentro do que a nutricionista pediu? Sim = marca "segui"; não =
+  /// marca "troquei" com o título no lugar do "o que comi".
+  seguePlano  Boolean  @default(true)
+  /// Quantas vezes foi escolhida: as mais usadas vêm primeiro.
+  vezes       Int      @default(0)
+  criadoEm    DateTime @default(now())
+
+  @@index([refeicao])
 }
 
 /// Um lembrete seu, além da água e das refeições: remédio, creatina, vitamina…
@@ -206,18 +241,4 @@ model FotoCorpo {
   criadoEm DateTime @default(now())
 
   @@index([dia])
-}
-
-/// Uma refeição padrão sua, para escolher com um toque: "Ovos mexidos com pão
-/// integral" no café, "Marmita de frango com arroz" no almoço. Fica presa ao
-/// NOME da refeição, e não ao id: sobrevive à troca de plano.
-model Padrao {
-  id       String   @id
-  /// "Café da manhã" — o nome da refeição do plano.
-  refeicao String
-  texto    String
-  ordem    Int      @default(0)
-  criadoEm DateTime @default(now())
-
-  @@index([refeicao])
 }

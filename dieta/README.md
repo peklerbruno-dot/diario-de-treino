@@ -36,10 +36,17 @@ Registrada, a refeição vira um resumo (o que comeu, os emojis, a foto), e um
 toque reabre a ficha. **＋ Outra coisa** é para o que se come fora das
 refeições do plano.
 
-**Refeições padrão**: em Plano, cada refeição tem "Minhas refeições padrão" —
-"Omelete com peito de peru", "Marmita de frango" — para escolher com um toque
-na ficha. Também dá para criar na própria ficha, marcando "salvar como
-refeição padrão".
+**Minhas refeições.** O plano diz o que comer; estas são as que você de fato
+repete — "marmita de frango com batata-doce", "pão com ovo". Em Plano → *Minhas
+refeições*, cadastre cada uma: em qual refeição aparece (ou qualquer uma), o nome,
+o que tem, se está **dentro do plano**, e, se quiser, calorias e macros. Na
+ficha, elas aparecem com ⭐: um toque escolhe qual você comeu — dentro do plano
+vira "segui", fora vira "troquei", o nome fica como "o que comi" e, com calorias
+cadastradas, a refeição entra na soma do dia junto com as fotos. Escolher outra
+troca; "pulei" ou mudar o texto desfaz a escolha e tira as calorias. As mais
+escolhidas vêm primeiro. O que você escrever na ficha também pode ir para lá
+("Guardar nas minhas refeições"). Apagar uma não mexe no histórico (ele guarda
+o nome).
 
 **Avisos no iPhone.** Na hora de cada refeição chega uma notificação com o que
 comer — "Almoço · 12h30 — Arroz integral 4 col. · Feijão 1 concha · Frango

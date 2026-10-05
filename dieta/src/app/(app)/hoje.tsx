@@ -14,6 +14,7 @@ import { ritmoDaAgua } from "@/lib/agenda";
 import { resumir, type Conteudo } from "@/lib/conteudo";
 import { milhar, somarDia } from "@/lib/analise";
 import type { Atalhos, FotoDoDia, Marca, RefeicaoCompleta } from "@/lib/consultas";
+import { paraEstaRefeicao, type RefeicaoPadrao } from "@/lib/refeicoes-padrao";
 import { ehFome, ehHumor, FOMES, HUMORES } from "@/lib/padroes";
 import { type Agora, diaPorExtenso, horaFalada, paraMinutos, valeNoDia } from "@/lib/datas";
 
@@ -29,6 +30,8 @@ type Props = {
   ajustes: Ajustes;
   chavePublica: string;
   atalhos: Record<string, Atalhos>;
+  /** As minhas refeições (as padrão), de todas as refeições; cada cartão pega as suas. */
+  padroes: RefeicaoPadrao[];
 };
 
 /** O app do Diário de treino, deste mesmo repositório. */
@@ -113,6 +116,7 @@ export function TelaHoje(p: Props) {
             proxima={proxima?.id === r.id}
             fotos={p.fotos.filter((f) => f.refeicaoId === r.id)}
             atalhos={p.atalhos[r.nome]}
+            padroes={p.padroes}
             passou={(paraMinutos(r.horario) ?? 0) < p.agora.minutos}
           />
         ))}
@@ -249,6 +253,7 @@ function CartaoRefeicao({
   proxima,
   fotos,
   atalhos,
+  padroes: todos,
   passou,
 }: {
   dia: string;
@@ -259,12 +264,15 @@ function CartaoRefeicao({
   passou: boolean;
   fotos: FotoDoDia[];
   atalhos?: Atalhos;
+  padroes: RefeicaoPadrao[];
 }) {
   const [aberta, setAberta] = useState(proxima);
   const [ficha, setFicha] = useState<Estado | null>(null);
+  const minhas = paraEstaRefeicao(todos, r.nome);
+  const padroes = [...minhas.dela, ...minhas.gerais];
 
   const abrirFicha = ficha && (
-    <FichaDaRefeicao dia={dia} hoje={dia} refeicao={r} marca={marca} estadoInicial={ficha} atalhos={atalhos} fotos={fotos} aoFechar={() => setFicha(null)} />
+    <FichaDaRefeicao dia={dia} hoje={dia} refeicao={r} marca={marca} estadoInicial={ficha} atalhos={atalhos} padroes={padroes} fotos={fotos} aoFechar={() => setFicha(null)} />
   );
 
   if (marca) {
@@ -314,8 +322,8 @@ function CartaoRefeicao({
         <>
           <OQueComer conteudo={r.conteudo} />
           {r.nota && <p className="mt-2 rounded-folha bg-papel px-3 py-2 text-[14px] leading-snug text-grafite">{r.nota}</p>}
-          {(atalhos?.padroes.length ?? 0) > 0 && (
-            <p className="mt-2 text-[13.5px] text-fosco">⭐ {atalhos!.padroes.map((p) => p.texto).join(" · ")}</p>
+          {minhas.dela.length > 0 && (
+            <p className="mt-2 text-[13.5px] text-fosco">⭐ Minhas: {minhas.dela.slice(0, 3).map((p) => p.titulo).join(" · ")}</p>
           )}
         </>
       )}

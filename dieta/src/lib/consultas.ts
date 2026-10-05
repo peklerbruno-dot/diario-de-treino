@@ -4,6 +4,7 @@ import { normalizarAnalise, somarDia, type Analise } from "./analise";
 import type { RefeicaoDoPlano } from "./agenda";
 import { bd } from "./bd";
 import { escreverTexto, normalizarConteudo } from "./conteudo";
+import type { RefeicaoPadrao } from "./refeicoes-padrao";
 import { normalizarPlanejamento } from "./semana";
 import { paraMinutos, somarDias } from "./datas";
 
@@ -48,11 +49,28 @@ export async function planoAtivo(): Promise<PlanoCompleto | null> {
   };
 }
 
+/** As refeições padrão cadastradas, para as telas que as listam ou escolhem. */
+export async function refeicoesPadrao(): Promise<RefeicaoPadrao[]> {
+  const lista = await bd.refeicaoPadrao.findMany({ orderBy: [{ vezes: "desc" }, { titulo: "asc" }] });
+  return lista.map((p) => ({
+    id: p.id,
+    refeicao: p.refeicao,
+    titulo: p.titulo,
+    itens: p.itens,
+    calorias: p.calorias,
+    proteinas: p.proteinas,
+    carboidratos: p.carboidratos,
+    gorduras: p.gorduras,
+    seguePlano: p.seguePlano,
+    vezes: p.vezes,
+  }));
+}
+
 export async function ajustes(): Promise<Ajustes> {
   return lerAjustes(await bd.ajuste.findMany());
 }
 
-export type Marca = { estado: "seguiu" | "trocou" | "pulou"; nota: string; humor: string; fome: string; obs: string };
+export type Marca = { estado: "seguiu" | "trocou" | "pulou"; nota: string; humor: string; fome: string; obs: string; padraoId: string };
 
 export type FotoDoDia = {
   id: string;
@@ -92,7 +110,9 @@ export async function situacaoDoDia(dia: string) {
     fotosEntre(dia, dia),
   ]);
   const marcas: Record<string, Marca> = {};
-  for (const r of registros) marcas[r.refeicaoId] = { estado: r.estado as Marca["estado"], nota: r.nota, humor: r.humor, fome: r.fome, obs: r.obs };
+  for (const r of registros) {
+    marcas[r.refeicaoId] = { estado: r.estado as Marca["estado"], nota: r.nota, humor: r.humor, fome: r.fome, obs: r.obs, padraoId: r.padraoId };
+  }
   return { marcas, agua: agua._sum.ml ?? 0, fotos };
 }
 
@@ -195,29 +215,27 @@ export async function fotosDoCorpo(): Promise<FotoDoCorpo[]> {
   return bd.fotoCorpo.findMany({ orderBy: [{ dia: "asc" }, { criadoEm: "asc" }], select: { id: true, dia: true, nota: true } });
 }
 
-export type Atalhos = { padroes: { id: string; texto: string }[]; recentes: string[] };
+export type Atalhos = { recentes: string[] };
 
 /**
- * O que oferecer, a um toque, no "o que comi" de cada refeição (pelo nome):
- * as refeições padrão que você cadastrou e o que comeu nela nas últimas duas
- * semanas (o "repetir de ontem"), sem repetir o que já é padrão.
+ * O que comeu em cada refeição (pelo nome) nas últimas duas semanas — o
+ * "repetir de ontem" da ficha —, sem repetir texto nem o que já é uma das suas
+ * refeições padrão (essas aparecem à parte).
  */
 export async function atalhosPorRefeicao(hoje: string): Promise<Record<string, Atalhos>> {
-  const [padroes, recentes] = await Promise.all([
-    bd.padrao.findMany({ orderBy: [{ ordem: "asc" }, { criadoEm: "asc" }] }),
+  const [recentes, padroes] = await Promise.all([
     bd.registro.findMany({
       where: { dia: { gte: somarDias(hoje, -14), lt: hoje }, estado: { in: ["seguiu", "trocou"] }, nota: { not: "" } },
       orderBy: [{ dia: "desc" }],
       select: { nome: true, nota: true },
     }),
+    bd.refeicaoPadrao.findMany({ select: { titulo: true } }),
   ]);
+  const mesmo = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
   const mapa: Record<string, Atalhos> = {};
-  const de = (nome: string) => (mapa[nome] ??= { padroes: [], recentes: [] });
-  for (const p of padroes) de(p.refeicao).padroes.push({ id: p.id, texto: p.texto });
   for (const r of recentes) {
-    const a = de(r.nome);
-    const igual = (t: string) => t.trim().toLowerCase() === r.nota.trim().toLowerCase();
-    if (a.recentes.length < 3 && !a.recentes.some(igual) && !a.padroes.some((p) => igual(p.texto))) a.recentes.push(r.nota);
+    const a = (mapa[r.nome] ??= { recentes: [] });
+    if (a.recentes.length < 3 && !a.recentes.some((t) => mesmo(t, r.nota)) && !padroes.some((p) => mesmo(p.titulo, r.nota))) a.recentes.push(r.nota);
   }
   return mapa;
 }

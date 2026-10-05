@@ -2,11 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { salvarFicha, salvarPadrao } from "@/app/acoes";
+import { salvarFicha } from "@/app/acoes";
 import type { Opcao } from "@/lib/conteudo";
 import type { Atalhos, FotoDoDia, Marca, RefeicaoCompleta } from "@/lib/consultas";
 import { horaFalada } from "@/lib/datas";
+import { milhar } from "@/lib/analise";
 import { FOMES, HUMORES, MOTIVOS, type Fome, type Humor } from "@/lib/padroes";
+import type { RefeicaoPadrao } from "@/lib/refeicoes-padrao";
+import { LinkNovaRefeicao } from "./minhas-refeicoes";
 import { Folha, Miniaturas } from "./foto-do-prato";
 import { Botao, campo } from "./pecas";
 import { reduzirImagem } from "./reduzir";
@@ -16,8 +19,10 @@ import { reduzirImagem } from "./reduzir";
  *
  *  1. Como foi — Segui, Troquei ou Pulei (já vem com o botão que abriu a ficha).
  *  2. O que comi — em "Segui", a opção do plano já vem escrita; em "Troquei",
- *     um campo livre. Nos dois, as suas refeições padrão e o que comeu nos
- *     últimos dias ficam a um toque. Em "Pulei", o motivo.
+ *     um campo livre. Nos dois, as minhas refeições (as padrão, ⭐) e o que
+ *     comeu nos últimos dias (↺) ficam a um toque — escolher uma padrão já
+ *     acerta o Segui/Troquei e traz as calorias cadastradas. Em "Pulei", o
+ *     motivo.
  *  3. Foto — opcional; com foto, o Gemini estima as calorias.
  *  4. Fome antes e como ficou depois — um emoji cada.
  *  5. Observação.
@@ -51,11 +56,13 @@ type Props = {
   marca?: Marca;
   estadoInicial: Estado;
   atalhos?: Atalhos;
+  /** As minhas refeições que cabem nesta: as dela primeiro, depois as gerais. */
+  padroes: RefeicaoPadrao[];
   fotos: FotoDoDia[];
   aoFechar: () => void;
 };
 
-export function FichaDaRefeicao({ dia, hoje, refeicao: r, marca, estadoInicial, atalhos, fotos, aoFechar }: Props) {
+export function FichaDaRefeicao({ dia, hoje, refeicao: r, marca, estadoInicial, atalhos, padroes, fotos, aoFechar }: Props) {
   const router = useRouter();
   const camera = useRef<HTMLInputElement>(null);
   const galeria = useRef<HTMLInputElement>(null);
@@ -71,13 +78,13 @@ export function FichaDaRefeicao({ dia, hoje, refeicao: r, marca, estadoInicial, 
   const [humor, setHumor] = useState<string>(marca?.humor ?? "");
   const [obs, setObs] = useState(marca?.obs ?? "");
   const [novas, setNovas] = useState<{ arquivo: File; previa: string }[]>([]);
+  const [padraoId, setPadraoId] = useState(marca?.padraoId ?? "");
   const [comoPadrao, setComoPadrao] = useState(false);
   const [salvando, setSalvando] = useState("");
   const [erro, setErro] = useState("");
 
-  const padroes = atalhos?.padroes ?? [];
   const recentes = atalhos?.recentes ?? [];
-  const jaEhPadrao = padroes.some((p) => p.texto.trim().toLowerCase() === nota.trim().toLowerCase());
+  const jaEhPadrao = padroes.some((p) => p.titulo.trim().toLowerCase() === nota.trim().toLowerCase());
 
   const mudarEstado = (e: Estado) => {
     setEstado(e);
@@ -89,7 +96,20 @@ export function FichaDaRefeicao({ dia, hoje, refeicao: r, marca, estadoInicial, 
 
   const escolher = (texto: string) => {
     setNota(texto);
+    setPadraoId("");
     setAutomatica(true);
+  };
+
+  /** Uma das minhas refeições: o nome vira o "o que comi", e o estado segue ela. */
+  const escolherPadrao = (p: RefeicaoPadrao) => {
+    if (padraoId === p.id) {
+      setPadraoId("");
+      return;
+    }
+    setPadraoId(p.id);
+    setNota(p.titulo);
+    setAutomatica(true);
+    setEstado(p.seguePlano ? "seguiu" : "trocou");
   };
 
   const adicionarFotos = (lista: FileList | null) => {
@@ -104,8 +124,8 @@ export function FichaDaRefeicao({ dia, hoje, refeicao: r, marca, estadoInicial, 
     setErro("");
     setSalvando("Salvando…");
     try {
-      await salvarFicha({ dia, refeicaoId: r.id, estado, nota, fome, humor, obs });
-      if (comoPadrao && nota.trim() && estado !== "pulou") await salvarPadrao(r.nome, nota);
+      const resposta = await salvarFicha({ dia, refeicaoId: r.id, estado, nota, fome, humor, obs, padraoId, guardar: comoPadrao, comFoto: novas.length > 0 || fotos.some((x) => x.temImagem) });
+      if (resposta.erro) throw new Error(resposta.erro);
       for (let i = 0; i < novas.length; i++) {
         setSalvando(novas.length > 1 ? `Analisando a foto ${i + 1} de ${novas.length}…` : "Analisando a foto…");
         const dados = new FormData();
@@ -179,8 +199,9 @@ export function FichaDaRefeicao({ dia, hoje, refeicao: r, marca, estadoInicial, 
                     );
                   })}
                 {padroes.map((p) => (
-                  <button key={p.id} type="button" className={chip(nota === p.texto)} onClick={() => escolher(p.texto)}>
-                    ⭐ {p.texto}
+                  <button key={p.id} type="button" className={chip(padraoId === p.id)} onClick={() => escolherPadrao(p)} aria-pressed={padraoId === p.id}>
+                    ⭐ {p.titulo}
+                    {p.calorias !== null && <span className="ml-1 text-[12.5px] opacity-75">≈{milhar(p.calorias)}</span>}
                   </button>
                 ))}
                 {recentes.map((t) => (
@@ -197,15 +218,18 @@ export function FichaDaRefeicao({ dia, hoje, refeicao: r, marca, estadoInicial, 
               onChange={(e) => {
                 setNota(e.target.value);
                 setAutomatica(false);
+                // Mudou o texto: deixa de ser aquela refeição padrão (e as calorias dela).
+                setPadraoId("");
               }}
               placeholder={estado === "seguiu" ? "Ex.: Opção 1, sem o pão" : "Ex.: 2 hambúrgueres de frango com queijo"}
             />
             {nota.trim() && !jaEhPadrao && (
               <label className="mt-1.5 flex items-center gap-2 text-[14px] text-grafite">
                 <input type="checkbox" checked={comoPadrao} onChange={(e) => setComoPadrao(e.target.checked)} className="h-4 w-4 accent-[var(--folha)]" />
-                Salvar como refeição padrão de {r.nome.toLowerCase()}
+                Guardar nas minhas refeições
               </label>
             )}
+            <LinkNovaRefeicao refeicao={r.nome} className="mt-1.5 inline-block text-[13.5px] text-folha" />
           </section>
         )}
 

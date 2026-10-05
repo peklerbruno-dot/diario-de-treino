@@ -17,22 +17,13 @@ import { escreverTexto } from "@/lib/conteudo";
 import type { PlanoCompleto, RefeicaoCompleta } from "@/lib/consultas";
 import { SEMANA_CURTA, horaFalada } from "@/lib/datas";
 import { OQueComer } from "../hoje";
-import { PadroesDaRefeicao } from "@/componentes/padroes-da-refeicao";
 
 type Anterior = { id: string; nome: string; criadoEm: string; refeicoes: number };
 
 const dataCurta = (iso: string) => new Date(iso).toLocaleDateString("pt-BR", { day: "numeric", month: "short", year: "numeric" });
 const diasPorExtenso = (dias: number[]) => (dias.length === 0 ? "" : dias.map((d) => SEMANA_CURTA[d]).join(", "));
 
-export function TelaPlano({
-  plano,
-  anteriores,
-  padroes,
-}: {
-  plano: PlanoCompleto | null;
-  anteriores: Anterior[];
-  padroes: Record<string, { id: string; texto: string }[]>;
-}) {
+export function TelaPlano({ plano, anteriores }: { plano: PlanoCompleto | null; anteriores: Anterior[] }) {
   const [, iniciar] = useTransition();
   const [editando, setEditando] = useState<string | "nova" | null>(null);
 
@@ -47,6 +38,16 @@ export function TelaPlano({
       >
         Plano
       </Titulo>
+
+      <Link href="/refeicoes" className="mb-4 flex items-center justify-between gap-3 rounded-cartao bg-cartao p-4 shadow-cartao">
+        <span>
+          <span className="block text-[17px] font-semibold">Minhas refeições</span>
+          <span className="block text-[14px] leading-snug text-grafite">As que você repete: cadastre uma vez e escolha num toque em Hoje.</span>
+        </span>
+        <span aria-hidden className="text-[20px] text-fosco">
+          ›
+        </span>
+      </Link>
 
       {!plano && (
         <Cartao>
@@ -89,7 +90,6 @@ export function TelaPlano({
                   </div>
                   <OQueComer conteudo={r.conteudo} />
                   {r.nota && <p className="mt-2 rounded-folha bg-papel px-3 py-2 text-[14px] text-grafite">{r.nota}</p>}
-                  <PadroesDaRefeicao refeicao={r.nome} lista={padroes[r.nome] ?? []} />
                   <Botao className="mt-3 w-full" onClick={() => setEditando(r.id)}>
                     Editar
                   </Botao>

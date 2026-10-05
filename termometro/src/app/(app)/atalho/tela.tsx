@@ -28,10 +28,13 @@ export function TelaDoAtalho() {
 
       <div className="mt-4">
         <Aviso tom="atencao">
-          <b>O que isto não é.</b> O iPhone não deixa nenhum app ler os seus pagamentos por Apple
-          Pay, nem as notificações do banco, nem o Pix que caiu. Essa porta é fechada pela Apple,
-          igual para todo aplicativo de finanças — inclusive os grandes. O atalho não adivinha o
-          valor: ele encurta a distância entre gastar e anotar.
+          <b>O que o app não faz sozinho.</b> O iPhone não deixa nenhum aplicativo ler os seus
+          pagamentos, as notificações do banco ou o Pix que caiu: essa porta é fechada pela Apple,
+          igual para todo app de finanças. Mas o app <b>Atalhos</b>, que é da própria Apple, pode
+          rodar um atalho logo depois de cada pagamento por Apple Pay — com o valor e o
+          estabelecimento na mão. É por essa porta que dá para o app perguntar a categoria na hora:
+          veja <b>Depois do Apple Pay</b>, mais abaixo. O atalho não adivinha o que você comprou: ele
+          encurta a distância entre gastar e anotar.
         </Aviso>
       </div>
 
@@ -194,6 +197,77 @@ export function TelaDoAtalho() {
             </span>
           </Passo>
         </ol>
+      </section>
+
+      <section className="mt-6">
+        <Subtitulo className="mb-2">Depois do Apple Pay</Subtitulo>
+        <p className="mb-3 text-[14px] leading-relaxed text-fosco">
+          Você paga, e o iPhone já abre a pergunta: <i>“Qual foi o gasto?”</i>. Um toque na categoria
+          e o valor que você acabou de pagar entra no Diário — sem digitar número nenhum. Usa o
+          atalho de cima como base, com a mesma chamada ao app. Pede o iOS 17 ou mais novo.
+        </p>
+
+        <ol className="space-y-2.5">
+          <Passo n={1}>
+            No app <b>Atalhos</b>, abra a aba <b>Automação</b>, toque no <b>+</b> e escolha{" "}
+            <b>Carteira</b> (em alguns iPhones aparece como <b>Transação</b>). Marque os cartões que
+            você usa no Apple Pay — ou deixe todos — e escolha{" "}
+            <b>Executar imediatamente</b>. Toque em <b>Seguinte</b> e depois em{" "}
+            <b>Criar nova automação vazia</b>.
+          </Passo>
+
+          <Passo n={2}>
+            Busque por <b>Lista</b> e escreva nela as suas categorias, uma por item:{" "}
+            <Palavra>Mercado</Palavra>, <Palavra>Comida</Palavra>, <Palavra>Transporte</Palavra>,{" "}
+            <Palavra>Lazer</Palavra>… Não precisa acertar o nome exato; o app acha a mais parecida.
+            Depois busque por <b>Escolher da lista</b>. Ela aparece sozinha escolhendo os itens da
+            lista de cima.
+          </Passo>
+
+          <Passo n={3}>
+            Busque por <b>Obter conteúdo da URL</b>. No endereço, cole o mesmo de antes:
+            <ParaCopiar texto={endereco} />
+            <span className="mt-2 block">
+              Depois do <Palavra>=</Palavra>, toque na barrinha de sugestões e escolha{" "}
+              <b>Entrada do atalho</b>. Toque na etiqueta azul que nasceu e escolha a propriedade{" "}
+              <b>Valor</b> (em inglês, <i>Amount</i>): é o valor do pagamento.
+            </span>
+            <span className="mt-2 block">
+              Em seguida escreva <Palavra>&amp;categoria=</Palavra> e escolha a variável{" "}
+              <b>Item escolhido</b>. Por fim, <Palavra>&amp;nota=</Palavra> e a propriedade{" "}
+              <b>Estabelecimento</b> (<i>Merchant</i>) da <b>Entrada do atalho</b> — assim o nome da
+              loja fica anotado no lançamento.
+            </span>
+          </Passo>
+
+          <Passo n={4}>
+            Ainda em <b>Obter conteúdo da URL</b>, toque em <b>Mostrar mais</b>:{" "}
+            <b>Método POST</b> e um cabeçalho com a chave <Palavra>x-codigo</Palavra> e, no texto ao
+            lado, o seu código de acesso. É exatamente o que você fez no atalho de cima.
+          </Passo>
+
+          <Passo n={5}>
+            Acrescente <b>Obter valor do dicionário</b> (chave <Palavra>recado</Palavra>) e{" "}
+            <b>Mostrar notificação</b> com esse valor, como nos passos 5 e 6 de cima. Toque em{" "}
+            <b>OK</b> para guardar a automação.
+          </Passo>
+        </ol>
+
+        <div className="mt-3">
+          <Aviso>
+            <b>Teste com uma compra pequena</b> — não tem como testar no botão ▶, porque o valor só
+            existe quando o pagamento acontece de verdade. Depois de pagar, o iPhone mostra a lista de
+            categorias (se estiver bloqueado, toque na notificação que aparece).
+            <span className="mt-2 block">
+              <b>Três cuidados.</b> Primeiro: os bancos brasileiros nem sempre mandam o valor para o
+              iPhone nessa automação. Se o valor vier vazio, o app responde <i>“Faltou o valor”</i> e
+              não lança nada — nada se perde nem se duplica, mas aí esse cartão não serve para isto, e
+              o botão <b>Gastei</b> continua valendo. Segundo: a Apple tem relatos de essa automação
+              demorar ou falhar às vezes; trate-a como um ajudante, não como garantia. Terceiro: só
+              pagamento por <b>Apple Pay</b> dispara; Pix e cartão de plástico não.
+            </span>
+          </Aviso>
+        </div>
       </section>
 
       <section className="mt-6">
