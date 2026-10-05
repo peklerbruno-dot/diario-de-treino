@@ -1,3 +1,0 @@
--- AlterTable
-ALTER TABLE "Registro" ADD COLUMN     "fome" TEXT NOT NULL DEFAULT '',
-ADD COLUMN     "obs" TEXT NOT NULL DEFAULT '';
