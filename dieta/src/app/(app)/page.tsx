@@ -1,5 +1,5 @@
 import { refeicoesDoDia } from "@/lib/agenda";
-import { ajustes, historico, planoAtivo, refeicoesPadrao, situacaoDoDia } from "@/lib/consultas";
+import { ajustes, atalhosPorRefeicao, planoAtivo, refeicoesPadrao, seguidasPorDia, situacaoDoDia } from "@/lib/consultas";
 import { agoraNoFuso, diaDaSemana } from "@/lib/datas";
 import { chavePublica } from "@/lib/push";
 import { diasSeguidos } from "@/lib/sequencia";
@@ -7,11 +7,12 @@ import { TelaHoje } from "./hoje";
 
 export default async function Hoje() {
   const agora = agoraNoFuso();
-  const [plano, a, dia, dias, padroes] = await Promise.all([
+  const [plano, a, dia, dias, atalhos, padroes] = await Promise.all([
     planoAtivo(),
     ajustes(),
     situacaoDoDia(agora.dia),
-    historico(agora.dia, 60),
+    seguidasPorDia(agora.dia, 60),
+    atalhosPorRefeicao(agora.dia),
     refeicoesPadrao(),
   ]);
   const refeicoes = plano ? (refeicoesDoDia(plano.refeicoes, agora.diaDaSemana) as typeof plano.refeicoes) : [];
@@ -23,13 +24,14 @@ export default async function Hoje() {
       temPlano={Boolean(plano)}
       orientacoes={plano?.orientacoes ?? ""}
       refeicoes={refeicoes}
-      padroes={padroes}
       marcas={dia.marcas}
       agua={dia.agua}
       fotos={dia.fotos}
       sequencia={sequencia}
       ajustes={a}
       chavePublica={chavePublica()}
+      atalhos={atalhos}
+      padroes={padroes}
     />
   );
 }

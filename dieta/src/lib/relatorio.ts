@@ -15,7 +15,7 @@ export type DiaDoRelatorio = {
   agua: number;
   calorias: number;
   fotos: number;
-  registros: { nome: string; horario: string; estado: string; nota: string; humor?: string }[];
+  registros: { nome: string; horario: string; estado: string; nota: string; humor?: string; fome?: string; obs?: string }[];
 };
 
 const pct = (parte: number, todo: number) => (todo ? `${Math.round((parte / todo) * 100)}%` : "—");
@@ -69,8 +69,18 @@ export function textoParaNutricionista(dias: DiaDoRelatorio[], metaDeAgua: numbe
   for (const d of comAlgo) for (const r of d.registros) if (r.humor === "mal") mal.set(r.nome, (mal.get(r.nome) ?? 0) + 1);
   if (mal.size) {
     const lista = [...mal].sort((a, b) => b[1] - a[1]).map(([nome, n]) => `${nome} (${n}×)`);
-    linhas.push(`Com fome demais ou ansiedade: ${lista.join(", ")}`);
+    linhas.push(`Saí pesado, ansioso ou com fome: ${lista.join(", ")}`);
   }
+
+  const fome = new Map<string, number>();
+  for (const d of comAlgo) for (const r of d.registros) if (r.fome === "muita") fome.set(r.nome, (fome.get(r.nome) ?? 0) + 1);
+  if (fome.size) {
+    const lista = [...fome].sort((a, b) => b[1] - a[1]).map(([nome, n]) => `${nome} (${n}×)`);
+    linhas.push(`Cheguei com muita fome: ${lista.join(", ")}`);
+  }
+
+  const obs = ordem.flatMap((d) => d.registros.filter((r) => r.obs).map((r) => `• ${diaCurto(d.dia)}, ${r.nome}: ${r.obs}`));
+  if (obs.length) linhas.push("", "Observações:", ...obs.slice(-12));
   return linhas.join("\n");
 }
 

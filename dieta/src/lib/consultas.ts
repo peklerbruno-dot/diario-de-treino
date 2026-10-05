@@ -70,7 +70,7 @@ export async function ajustes(): Promise<Ajustes> {
   return lerAjustes(await bd.ajuste.findMany());
 }
 
-export type Marca = { estado: "seguiu" | "trocou" | "pulou"; nota: string; humor?: string; padraoId?: string };
+export type Marca = { estado: "seguiu" | "trocou" | "pulou"; nota: string; humor: string; fome: string; obs: string; padraoId: string };
 
 export type FotoDoDia = {
   id: string;
@@ -111,7 +111,7 @@ export async function situacaoDoDia(dia: string) {
   ]);
   const marcas: Record<string, Marca> = {};
   for (const r of registros) {
-    marcas[r.refeicaoId] = { estado: r.estado as Marca["estado"], nota: r.nota, humor: r.humor, padraoId: r.padraoId };
+    marcas[r.refeicaoId] = { estado: r.estado as Marca["estado"], nota: r.nota, humor: r.humor, fome: r.fome, obs: r.obs, padraoId: r.padraoId };
   }
   return { marcas, agua: agua._sum.ml ?? 0, fotos };
 }
@@ -125,7 +125,7 @@ export type DiaDoHistorico = {
   /** Soma das estimativas das fotos do dia. */
   calorias: number;
   fotos: FotoDoDia[];
-  registros: { refeicaoId: string; nome: string; horario: string; estado: string; nota: string; humor: string; hora: string }[];
+  registros: { refeicaoId: string; nome: string; horario: string; estado: string; nota: string; humor: string; hora: string; fome: string; obs: string }[];
 };
 
 /** Os últimos `n` dias, do mais novo para o mais velho, terminando em `ate`. */
@@ -155,10 +155,25 @@ export async function historicoEntre(desde: string, ate: string): Promise<DiaDoH
       agua: agua.find((a) => a.dia === dia)?._sum.ml ?? 0,
       calorias: somarDia(fotosDoDia.map((f) => f.analise)).calorias,
       fotos: fotosDoDia,
-      registros: doDia.map((r) => ({ refeicaoId: r.refeicaoId, nome: r.nome, horario: r.horario, estado: r.estado, nota: r.nota, humor: r.humor, hora: r.hora })),
+      registros: doDia.map((r) => ({ refeicaoId: r.refeicaoId, nome: r.nome, horario: r.horario, estado: r.estado, nota: r.nota, humor: r.humor, hora: r.hora, fome: r.fome, obs: r.obs })),
     });
   }
   return dias;
+}
+
+/**
+ * Quantas refeições foram marcadas "segui" em cada um dos últimos `n` dias,
+ * do mais novo para o mais velho — só o que a sequência da tela Hoje precisa.
+ * Uma contagem no banco, em vez de 60 dias de registros e fotos com análise.
+ */
+export async function seguidasPorDia(ate: string, n: number): Promise<{ dia: string; seguiu: number }[]> {
+  const desde = somarDias(ate, -(n - 1));
+  const g = await bd.registro.groupBy({ by: ["dia"], where: { dia: { gte: desde, lte: ate }, estado: "seguiu" }, _count: { _all: true } });
+  const porDia = new Map(g.map((x) => [x.dia, x._count._all]));
+  return Array.from({ length: n }, (_, i) => {
+    const dia = somarDias(ate, -i);
+    return { dia, seguiu: porDia.get(dia) ?? 0 };
+  });
 }
 
 /** Um dia só, com o peso anotado nele. */
@@ -198,6 +213,31 @@ export type FotoDoCorpo = { id: string; dia: string; nota: string };
 
 export async function fotosDoCorpo(): Promise<FotoDoCorpo[]> {
   return bd.fotoCorpo.findMany({ orderBy: [{ dia: "asc" }, { criadoEm: "asc" }], select: { id: true, dia: true, nota: true } });
+}
+
+export type Atalhos = { recentes: string[] };
+
+/**
+ * O que comeu em cada refeição (pelo nome) nas últimas duas semanas — o
+ * "repetir de ontem" da ficha —, sem repetir texto nem o que já é uma das suas
+ * refeições padrão (essas aparecem à parte).
+ */
+export async function atalhosPorRefeicao(hoje: string): Promise<Record<string, Atalhos>> {
+  const [recentes, padroes] = await Promise.all([
+    bd.registro.findMany({
+      where: { dia: { gte: somarDias(hoje, -14), lt: hoje }, estado: { in: ["seguiu", "trocou"] }, nota: { not: "" } },
+      orderBy: [{ dia: "desc" }],
+      select: { nome: true, nota: true },
+    }),
+    bd.refeicaoPadrao.findMany({ select: { titulo: true } }),
+  ]);
+  const mesmo = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+  const mapa: Record<string, Atalhos> = {};
+  for (const r of recentes) {
+    const a = (mapa[r.nome] ??= { recentes: [] });
+    if (a.recentes.length < 3 && !a.recentes.some((t) => mesmo(t, r.nota)) && !padroes.some((p) => mesmo(p.titulo, r.nota))) a.recentes.push(r.nota);
+  }
+  return mapa;
 }
 
 export async function lembretes() {

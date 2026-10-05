@@ -9,7 +9,7 @@ import { lerTexto } from "@/lib/conteudo";
 import { normalizarPlanejamento } from "@/lib/semana";
 import { normalizarAnalise, type Analise } from "@/lib/analise";
 import { agoraNoFuso, hoje, normalizarHora, paraHora } from "@/lib/datas";
-import { ehHumor } from "@/lib/padroes";
+import { ehFome, ehHumor } from "@/lib/padroes";
 import { analiseDoPadrao, lerPadrao, type PadraoParaSalvar } from "@/lib/refeicoes-padrao";
 import { novoId } from "@/lib/ids";
 
@@ -147,6 +147,98 @@ export async function usarRefeicaoPadrao(dia: string, refeicaoId: string, padrao
       : []),
     // Escolher a mesma duas vezes seguidas não conta como duas.
     ...(anterior?.padraoId === p.id ? [] : [bd.refeicaoPadrao.update({ where: { id: p.id }, data: { vezes: { increment: 1 } } })]),
+  ]);
+  atualizarTudo();
+  return {};
+}
+
+export type FichaDaRefeicao = {
+  dia: string;
+  refeicaoId: string;
+  estado: "seguiu" | "trocou" | "pulou";
+  /** O que comeu, ou o motivo de ter pulado. */
+  nota: string;
+  fome: string;
+  humor: string;
+  obs: string;
+  /** A refeição padrão escolhida na ficha, ou vazio. */
+  padraoId: string;
+  /** Guardar o que foi escrito nas minhas refeições (as padrão). */
+  guardar: boolean;
+  /** Tem foto do prato (nova ou de antes)? Aí as calorias vêm dela, e não da padrão — senão contariam duas vezes. */
+  comFoto: boolean;
+};
+
+/**
+ * Salva a ficha inteira de uma refeição: como foi, o que comeu, a fome antes,
+ * como ficou e a observação.
+ *
+ * Com uma refeição padrão escolhida, faz o mesmo que `usarRefeicaoPadrao`: as
+ * calorias cadastradas dela entram no dia (uma anotação ligada a ela, que sai
+ * se a escolha mudar) e ela sobe na lista das mais usadas. A hora entra só na
+ * primeira vez, e só se for no próprio dia.
+ */
+export async function salvarFicha(f: FichaDaRefeicao): Promise<{ erro?: string }> {
+  await exigirSessao();
+  if (!ehDia(f.dia) || !["seguiu", "trocou", "pulou"].includes(f.estado)) return { erro: "Ficha inválida." };
+  const [r, p, anterior] = await Promise.all([
+    bd.refeicao.findUnique({ where: { id: f.refeicaoId } }),
+    f.padraoId && f.estado !== "pulou" ? bd.refeicaoPadrao.findUnique({ where: { id: f.padraoId } }) : null,
+    bd.registro.findUnique({ where: { dia_refeicaoId: { dia: f.dia, refeicaoId: f.refeicaoId } }, select: { padraoId: true } }),
+  ]);
+  if (!r) return { erro: "Esta refeição não está mais no plano." };
+
+  const hora = horaDaMarcacao(f.dia);
+  const dados = {
+    estado: f.estado,
+    nota: f.nota.trim().slice(0, 300),
+    fome: ehFome(f.fome) ? f.fome : "",
+    humor: ehHumor(f.humor) ? f.humor : "",
+    obs: f.obs.trim().slice(0, 500),
+    nome: r.nome,
+    horario: r.horario,
+    padraoId: p?.id ?? "",
+  };
+  const analise = p && !f.comFoto ? analiseDoPadrao(p) : null;
+  const titulo = dados.nota.replace(/\s+/g, " ").trim();
+  const guardar =
+    f.guardar && !p && f.estado !== "pulou" && titulo
+      ? !(await bd.refeicaoPadrao.findFirst({
+          where: { titulo: { equals: titulo.slice(0, 80), mode: "insensitive" }, refeicao: { in: [r.nome, ""] } },
+          select: { id: true },
+        }))
+      : false;
+
+  await bd.$transaction([
+    // A anotação de uma escolha anterior sai; a nova (se houver) entra no lugar.
+    bd.foto.deleteMany({ where: { dia: f.dia, refeicaoId: f.refeicaoId, padraoId: { not: "" } } }),
+    bd.registro.upsert({
+      where: { dia_refeicaoId: { dia: f.dia, refeicaoId: f.refeicaoId } },
+      create: { id: novoId(), dia: f.dia, refeicaoId: f.refeicaoId, hora, ...dados },
+      update: dados,
+    }),
+    ...(p && analise
+      ? [
+          bd.foto.create({
+            data: {
+              id: novoId(),
+              dia: f.dia,
+              hora: hora || r.horario,
+              refeicaoId: r.id,
+              nome: r.nome,
+              tipo: "",
+              texto: [p.titulo, p.itens].filter(Boolean).join(": "),
+              analise,
+              padraoId: p.id,
+            },
+          }),
+        ]
+      : []),
+    // Escolher a mesma de novo (editando a ficha) não conta como mais uma vez.
+    ...(p && anterior?.padraoId !== p.id ? [bd.refeicaoPadrao.update({ where: { id: p.id }, data: { vezes: { increment: 1 } } })] : []),
+    ...(guardar
+      ? [bd.refeicaoPadrao.create({ data: { id: novoId(), refeicao: r.nome, titulo: titulo.slice(0, 80), itens: "", seguePlano: f.estado === "seguiu" } })]
+      : []),
   ]);
   atualizarTudo();
   return {};

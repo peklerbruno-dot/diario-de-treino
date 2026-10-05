@@ -52,7 +52,7 @@ const horaAgora = () => {
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 };
 
-export function BotaoDeFoto({ dia, refeicoes, sugerida }: { dia: string; refeicoes: RefeicaoCurta[]; sugerida?: string }) {
+export function BotaoDeFoto({ dia, refeicoes, sugerida, rotulo = "📷 O que comi" }: { dia: string; refeicoes: RefeicaoCurta[]; sugerida?: string; rotulo?: string }) {
   const router = useRouter();
   const camera = useRef<HTMLInputElement>(null);
   const galeria = useRef<HTMLInputElement>(null);
@@ -118,8 +118,8 @@ export function BotaoDeFoto({ dia, refeicoes, sugerida }: { dia: string; refeico
     <div>
       <input ref={camera} type="file" accept="image/*" capture="environment" className="hidden" onChange={aoEscolher} />
       <input ref={galeria} type="file" accept="image/*" className="hidden" onChange={aoEscolher} />
-      <Botao tipo="primario" className="w-full whitespace-nowrap" disabled={enviando} onClick={() => setEscolhendo(true)}>
-        {enviando ? "Analisando…" : "📷 O que comi"}
+      <Botao className="w-full whitespace-nowrap !bg-cartao shadow-cartao" disabled={enviando} onClick={() => setEscolhendo(true)}>
+        {enviando ? "Analisando…" : rotulo}
       </Botao>
       {erro && <p className="mt-2 text-[14px] text-pulou">{erro}</p>}
 

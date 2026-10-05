@@ -6,7 +6,7 @@ import { diaDaSemana, horaFalada, paraHora, paraMinutos, SEMANA, somarDias } fro
  * é o dia difícil"). Tudo conta pura, sem banco, para dar para testar.
  */
 
-export type RegistroParaPadrao = { nome: string; horario: string; estado: string; nota: string; humor: string; hora: string };
+export type RegistroParaPadrao = { nome: string; horario: string; estado: string; nota: string; humor: string; hora: string; fome?: string };
 
 export type DiaParaPadrao = {
   dia: string;
@@ -178,10 +178,11 @@ export function padroes(dias: DiaParaPadrao[], limite = 5): Padrao[] {
   }
 
   // A refeição mais pulada.
-  const porRefeicao = new Map<string, { total: number; pulou: number; trocou: number; mal: number }>();
+  const porRefeicao = new Map<string, { total: number; pulou: number; trocou: number; mal: number; fome: number }>();
   for (const d of marcados) {
     for (const r of d.registros) {
-      const c = porRefeicao.get(r.nome) ?? { total: 0, pulou: 0, trocou: 0, mal: 0 };
+      const c = porRefeicao.get(r.nome) ?? { total: 0, pulou: 0, trocou: 0, mal: 0, fome: 0 };
+      if (r.fome === "muita") c.fome++;
       c.total++;
       if (r.estado === "pulou") c.pulou++;
       if (r.estado === "trocou") c.trocou++;
@@ -196,7 +197,10 @@ export function padroes(dias: DiaParaPadrao[], limite = 5): Padrao[] {
       achados.push({ peso: 1.5 + c.trocou / c.total, p: { icone: "🔁", texto: `${nome}: trocado em ${c.trocou} de ${c.total} dias — vale conversar com a nutricionista sobre ele.` } });
     }
     if (c.mal >= 2) {
-      achados.push({ peso: 1.5 + c.mal / c.total, p: { icone: "😣", texto: `${nome}: ${c.mal} vezes com fome demais ou ansiedade.` } });
+      achados.push({ peso: 1.5 + c.mal / c.total, p: { icone: "😣", texto: `${nome}: ${c.mal} vezes saindo pesado, ansioso ou ainda com fome.` } });
+    }
+    if (c.fome >= 3 && c.fome / c.total >= 0.4) {
+      achados.push({ peso: 1.6 + c.fome / c.total, p: { icone: "🤤", texto: `${nome}: chega com muita fome em ${c.fome} de ${c.total} dias — talvez falte um lanche antes.` } });
     }
   }
 
@@ -260,10 +264,23 @@ export function padroes(dias: DiaParaPadrao[], limite = 5): Padrao[] {
 // Humor
 // ---------------------------------------------------------------------------
 
+/** Como ficou depois de comer. */
 export const HUMORES = {
-  bem: { emoji: "😌", rotulo: "Tranquilo" },
-  ok: { emoji: "😐", rotulo: "Normal" },
-  mal: { emoji: "😣", rotulo: "Fome/ansiedade" },
+  bem: { emoji: "😌", rotulo: "Satisfeito" },
+  ok: { emoji: "🙂", rotulo: "Ok" },
+  mal: { emoji: "😣", rotulo: "Pesado/ansioso" },
 } as const;
 export type Humor = keyof typeof HUMORES;
 export const ehHumor = (s: string): s is Humor => s in HUMORES;
+
+/** A fome antes de comer. */
+export const FOMES = {
+  muita: { emoji: "🤤", rotulo: "Muita fome" },
+  normal: { emoji: "🙂", rotulo: "Fome normal" },
+  pouca: { emoji: "😶", rotulo: "Pouca fome" },
+} as const;
+export type Fome = keyof typeof FOMES;
+export const ehFome = (s: string): s is Fome => s in FOMES;
+
+/** Os motivos de pular, a um toque. */
+export const MOTIVOS = ["Sem tempo", "Sem fome", "Esqueci", "Não tinha comida"];
