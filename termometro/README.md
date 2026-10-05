@@ -439,6 +439,27 @@ para sempre só naquele celular. Na abertura, o app ainda refaz a fila a partir
 dos próprios dados (tudo que mudou depois da última sincronização), de modo que
 nem uma gravação perdida deixa algo para trás.
 
+## Abrir rápido
+
+Abrir o app não pode esperar pelo servidor, que no plano gratuito dorme quando
+ninguém usa e leva alguns segundos para acordar (o banco também). Três coisas
+cuidam disso:
+
+- **Abrir a tela do dono não consulta o banco.** A sessão dele se resolve só
+  pela assinatura do cookie; para os convidados, a mesma consulta que confere
+  que a conta existe já traz o nome (uma ida ao banco, e não duas).
+- **O service worker espera o servidor por no máximo 1,5 s.** Passou disso, abre
+  a cópia da última visita, e a resposta nova, quando chega, renova a cópia e o
+  app se atualiza sozinho (ver "versão" mais acima). Com o servidor acordado, a
+  resposta chega antes e nada muda. Testado com um servidor artificialmente
+  lento: 5 s de atraso viram ~1,6 s até a tela abrir.
+- **A tela Hoje mostra um esqueleto** até os dados do aparelho entrarem, em vez
+  de piscar "R$ 0" e a grade genérica de valores.
+
+A cópia guardada é de uma pessoa só: a tela de entrada apaga as páginas
+guardadas (os arquivos do app ficam), para quem entrar depois nunca receber a
+cópia da conta anterior.
+
 ## Amigos com conta própria
 
 O app tem um dono (o BP) e pode ter convidados. Cada pessoa tem a própria conta,

@@ -21,7 +21,7 @@
 // ficou guardado de antes. Foi preciso quando uma etiqueta do `<head>` mudou e
 // a página velha continuou sendo servida do cache — a correção existia no
 // servidor e não chegava no aparelho.
-const CACHE = "termometro-v5";
+const CACHE = "termometro-v6";
 
 // Só resposta BOA entra no cache. Sem este filtro, um 500 do servidor ou o
 // redirecionamento para /entrar (sessão vencida) eram guardados POR CIMA da
@@ -51,6 +51,44 @@ self.addEventListener("activate", (evento) => {
   );
 });
 
+// Quanto esperar pelo servidor antes de abrir a cópia guardada. O servidor
+// gratuito dorme quando ninguém usa e leva alguns segundos para acordar; com
+// uma cópia da última visita na mão, esperar tudo isso diante de uma tela
+// branca é pior do que abrir já e deixar o app se atualizar sozinho. Com o
+// servidor acordado a resposta chega bem antes disto e nada muda.
+const ESPERA_PELO_SERVIDOR_MS = 1500;
+
+async function abrirPagina(evento, pedido, url) {
+  const daRede = fetch(pedido).then((resposta) => {
+    if (guardavel(resposta)) {
+      const copia = resposta.clone();
+      evento.waitUntil(caches.open(CACHE).then((cache) => cache.put(pedido, copia)));
+    }
+    return resposta;
+  });
+  // A busca segue valendo depois que a cópia é servida: é ela que renova o
+  // cache para a próxima abertura.
+  evento.waitUntil(daRede.catch(() => undefined));
+
+  const guardado = await caches.match(pedido);
+  if (guardado) {
+    const esgotou = new Promise((resolver) =>
+      setTimeout(() => resolver(guardado), ESPERA_PELO_SERVIDOR_MS),
+    );
+    return Promise.race([daRede.catch(() => guardado), esgotou]);
+  }
+
+  try {
+    return await daRede;
+  } catch {
+    // Rota nunca visitada, sem internet. Servir a tela Hoje AQUI deixava a URL
+    // dizendo /totais com o conteúdo de Hoje — mentira dupla. O
+    // redirecionamento leva para "/" de verdade, que o cache tem.
+    if (url.pathname !== "/") return Response.redirect("/", 302);
+    return Response.error();
+  }
+}
+
 self.addEventListener("fetch", (evento) => {
   const pedido = evento.request;
   if (pedido.method !== "GET") return;
@@ -77,24 +115,6 @@ self.addEventListener("fetch", (evento) => {
   }
 
   if (pedido.mode === "navigate") {
-    evento.respondWith(
-      fetch(pedido)
-        .then((resposta) => {
-          if (guardavel(resposta)) {
-            const copia = resposta.clone();
-            caches.open(CACHE).then((cache) => cache.put(pedido, copia));
-          }
-          return resposta;
-        })
-        .catch(async () => {
-          const guardado = await caches.match(pedido);
-          if (guardado) return guardado;
-          // Rota nunca visitada, sem internet. Servir a tela Hoje AQUI deixava
-          // a URL dizendo /totais com o conteúdo de Hoje — mentira dupla. O
-          // redirecionamento leva para "/" de verdade, que o cache tem.
-          if (url.pathname !== "/") return Response.redirect("/", 302);
-          return Response.error();
-        }),
-    );
+    evento.respondWith(abrirPagina(evento, pedido, url));
   }
 });

@@ -27,7 +27,12 @@ export const DONO = "dono";
 export interface Sessao {
   usuarioId: string;
   ehDono: boolean;
+  /** Como a pessoa se chama. O dono é "BP" sem ir ao banco. */
+  nome: string;
 }
+
+/** O dono não tem o que perguntar ao banco: abrir o app dele não o acorda. */
+const NOME_DO_DONO = "BP";
 
 function segredo(): string {
   const s = process.env.AUTH_SECRET;
@@ -147,12 +152,17 @@ export async function sessao(): Promise<Sessao | null> {
   }
   if (!(Number(expira) > Date.now())) return null;
 
-  if (usuarioId !== DONO) {
-    // Removido pelo dono? Então a sessão morreu junto, agora.
-    const existe = await bd.usuario.findUnique({ where: { id: usuarioId }, select: { id: true } });
-    if (!existe) return null;
-  }
-  return { usuarioId, ehDono: usuarioId === DONO };
+  // Para o dono a sessão se resolve só com a assinatura do cookie — nenhuma
+  // ida ao banco. Importa porque o banco gratuito dorme depois de uns minutos
+  // parado e leva segundos para acordar, e abrir o app não deveria esperar
+  // por isso.
+  if (usuarioId === DONO) return { usuarioId, ehDono: true, nome: NOME_DO_DONO };
+
+  // Removido pelo dono? Então a sessão morreu junto, agora. A mesma consulta
+  // já traz o nome, que o layout mostra: uma ida ao banco, e não duas.
+  const pessoa = await bd.usuario.findUnique({ where: { id: usuarioId }, select: { nome: true } });
+  if (!pessoa) return null;
+  return { usuarioId, ehDono: false, nome: pessoa.nome };
 }
 
 export async function temSessao(): Promise<boolean> {

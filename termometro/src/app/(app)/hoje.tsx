@@ -47,8 +47,14 @@ export function TelaDeHoje() {
   const [lancando, setLancando] = useState<Tipo | null>(null);
 
   const anoCalculado = useAnoCalculado(ano);
+  const { carregado } = useEstado();
   const doMes = anoCalculado.meses[mes - 1];
   const doDia = doMes.dias[dia - 1];
+
+  // Antes de os dados do aparelho entrarem, o saldo seria R$ 0 e a grade seria
+  // a genérica — dois instantes de informação errada. O esqueleto ocupa o
+  // mesmo espaço e some quando os números de verdade chegam.
+  if (!carregado) return <EsqueletoDeHoje />;
 
   return (
     <div>
@@ -346,4 +352,29 @@ function precisaDoComeco(estado: Estado, ano: number): boolean {
   if (!estado.carregado || !estado.ultimaSincronizacao) return false;
   if (lancamentosVivos(estado).length > 0) return false;
   return saldoInicialExplicito(estado, ano) === null && saldoInicialExplicito(estado, ano - 1) === null;
+}
+
+function EsqueletoDeHoje() {
+  const bloco = "animate-pulse rounded-folha bg-regua";
+  return (
+    <div aria-busy="true" aria-label="Carregando">
+      <div className="mb-4 lg:hidden">
+        <Marca />
+      </div>
+      <div className={`${bloco} h-3.5 w-20`} />
+      <div className={`${bloco} mt-3 h-8 w-56`} />
+      <div className="mt-4 h-[172px] animate-pulse rounded-cartao bg-heroi" />
+      <div className="mt-3 flex gap-2">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className={`${bloco} h-[46px] flex-1`} />
+        ))}
+      </div>
+      <div className={`${bloco} mt-7 h-5 w-24`} />
+      <div className="mt-3 grid grid-cols-4 gap-2">
+        {Array.from({ length: 12 }, (_, i) => (
+          <div key={i} className={`${bloco} h-[50px]`} />
+        ))}
+      </div>
+    </div>
+  );
 }
