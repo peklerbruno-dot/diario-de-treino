@@ -167,12 +167,6 @@ o seu próprio deploy na Vercel (pasta escolhida em *Root Directory*).
   Veja [`cej/README.md`](cej/README.md) e, para publicar,
   [`cej/docs/COLOCAR-NO-AR.md`](cej/docs/COLOCAR-NO-AR.md) e
   [`cej/docs/BOLETIM.md`](cej/docs/BOLETIM.md).
-- `assistente/` — um assistente pessoal no WhatsApp, com o Gemini por trás e
-  custo zero: conversa, guarda memórias, manda lembretes na hora marcada,
-  cuida de listas, pesquisa na internet e lê fotos e PDFs. Só responde ao seu
-  número.
-  Veja [`assistente/README.md`](assistente/README.md) e, para publicar,
-  [`assistente/docs/COLOCAR-NO-AR.md`](assistente/docs/COLOCAR-NO-AR.md).
 - `viagem/` — o app da viagem em grupo (México 2026): lugares que chegam de
   um reel, carrossel ou print do Instagram lidos pelo Gemini, com pastas, mapa
   e “como chegar” pelo Google Maps; roteiro dia a dia; e divisão de contas no
