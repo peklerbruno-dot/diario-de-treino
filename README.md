@@ -157,16 +157,6 @@ o seu próprio deploy na Vercel (pasta escolhida em *Root Directory*).
   o computador mostrarem sempre a mesma coisa.
   Veja [`termometro/README.md`](termometro/README.md) e, para publicar,
   [`termometro/docs/COLOCAR-NO-AR.md`](termometro/docs/COLOCAR-NO-AR.md).
-- `cej/` — o sistema da equipe do Centro de Estudos Judaicos da USP. De um lado,
-  o que o Centro faz: atividades, reuniões com pauta e ata, encaminhamentos com
-  dono e prazo, calendário que se assina no Google Agenda, relatório do ano. Do
-  outro, para quem ele faz: base de contatos com segmentação, inscrição pública
-  em eventos, lista de presença, certificados e boletim por e-mail. É o primeiro
-  app deste repositório com uma conta por pessoa e com telas que gente de fora
-  abre sem senha.
-  Veja [`cej/README.md`](cej/README.md) e, para publicar,
-  [`cej/docs/COLOCAR-NO-AR.md`](cej/docs/COLOCAR-NO-AR.md) e
-  [`cej/docs/BOLETIM.md`](cej/docs/BOLETIM.md).
 - `assistente/` — um assistente pessoal no WhatsApp, com o Gemini por trás e
   custo zero: conversa, guarda memórias, manda lembretes na hora marcada,
   cuida de listas, pesquisa na internet e lê fotos e PDFs. Só responde ao seu
