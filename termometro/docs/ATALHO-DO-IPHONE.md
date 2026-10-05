@@ -14,10 +14,13 @@ falar.
 > copiar em cada palavra que precisa ser digitada sem erro. Abrir por lá é mais
 > prático: você monta o atalho no mesmo aparelho em que está lendo.
 
-> **O que isto não é.** O iPhone não deixa nenhum app ler os seus pagamentos por
-> Apple Pay, nem as notificações do banco, nem o Pix que caiu. Isso é uma porta
-> fechada pela Apple, igual para todo aplicativo de finanças. O atalho não
-> adivinha o valor — ele só encurta a distância entre você gastar e você anotar.
+> **O que o app não faz sozinho.** O iPhone não deixa nenhum aplicativo ler os
+> seus pagamentos, as notificações do banco ou o Pix que caiu. Isso é uma porta
+> fechada pela Apple, igual para todo app de finanças. Mas o app **Atalhos**, que
+> é da própria Apple, pode rodar um atalho logo depois de cada pagamento por
+> **Apple Pay**, com o valor e o estabelecimento: está no app, em **Atalho do
+> iPhone → Depois do Apple Pay** (pede o iOS 17 ou mais novo). O atalho não
+> adivinha o que foi comprado — ele encurta a distância entre gastar e anotar.
 
 ---
 

@@ -376,10 +376,18 @@ precisa ser digitada sem erro — um guia num arquivo do repositório é o mesmo
 nenhum guia para quem nunca vai abrir o GitHub. A mesma coisa em texto está em
 [`docs/ATALHO-DO-IPHONE.md`](docs/ATALHO-DO-IPHONE.md).
 
-O que essa porta **não** faz, e nenhum app de finanças faz no iPhone: ler os
-seus pagamentos por Apple Pay, as notificações do banco ou o Pix que caiu. A
-Apple não expõe isso a app nenhum. O atalho não adivinha o valor — ele encurta a
-distância entre gastar e anotar.
+O que um **app** não faz no iPhone, e nenhum app de finanças faz: ler os seus
+pagamentos por Apple Pay, as notificações do banco ou o Pix que caiu. A Apple
+não expõe isso a app nenhum. O app **Atalhos**, que é da própria Apple, faz uma
+parte: a automação "Carteira / Transação" (iOS 17+) roda um atalho logo depois de
+cada pagamento por Apple Pay, entregando o valor e o estabelecimento. A tela do
+atalho tem o passo a passo "Depois do Apple Pay": o iPhone pergunta a categoria
+(uma lista de um toque) e chama esta mesma porta com `valor`, `categoria` e
+`nota` (o nome da loja). Duas ressalvas, ditas na tela: os bancos brasileiros nem
+sempre mandam o valor (vazio → "Faltou o valor", nada é lançado), e a Apple tem
+relatos de a automação falhar de vez em quando. Pix e cartão de plástico não
+disparam. O atalho não adivinha o que foi comprado — ele encurta a distância
+entre gastar e anotar.
 
 Três decisões que essa porta carrega:
 
