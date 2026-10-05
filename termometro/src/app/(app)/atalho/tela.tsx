@@ -224,9 +224,9 @@ export function TelaDoAtalho() {
           <Passo n={1}>
             No app <b>Atalhos</b>, abra a aba <b>Automação</b>, toque no <b>+</b> e escolha{" "}
             <b>Carteira</b> (em alguns iPhones aparece como <b>Transação</b>). Marque os cartões que
-            você usa no Apple Pay — ou deixe todos — e escolha{" "}
-            <b>Executar imediatamente</b>. Toque em <b>Seguinte</b> e depois em{" "}
-            <b>Criar nova automação vazia</b>.
+            você usa no Apple Pay — ou deixe todos. Toque em <b>Seguinte</b> e depois em{" "}
+            <b>Criar nova automação vazia</b>. A opção <b>Executar imediatamente</b> fica no fim da
+            tela (ou na tela de resumo, depois de <b>Seguinte</b>): role até achar.
           </Passo>
 
           <Passo n={2}>

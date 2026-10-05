@@ -35,8 +35,7 @@ export function TelaDoApplePay() {
         <Passo n={2}>
           Abra o app <b>Atalhos</b> do iPhone. Na aba <b>Automação</b>, toque no <b>+</b> e escolha{" "}
           <b>Carteira</b> (em alguns iPhones se chama <b>Transação</b>). Marque o cartão que você usa
-          no Apple Pay e ligue <b>Executar imediatamente</b>. Toque em <b>Seguinte</b> e em{" "}
-          <b>Criar nova automação vazia</b>.
+          no Apple Pay. Toque em <b>Seguinte</b> e em <b>Criar nova automação vazia</b>.
         </Passo>
 
         <Passo n={3}>
@@ -63,7 +62,15 @@ export function TelaDoApplePay() {
         </Passo>
 
         <Passo n={5}>
-          Toque em <b>OK</b>. Pronto: a automação já está valendo.
+          Falta escolher como ela roda. Procure, <b>rolando a tela até o fim</b>, as opções{" "}
+          <b>Executar imediatamente</b> e <b>Executar após confirmação</b> (ou <i>Perguntar antes de
+          executar</i>), e marque <b>Executar imediatamente</b>. Ela fica ou na tela onde você
+          escolhe as ações, ou na tela de resumo que aparece depois de tocar em{" "}
+          <b>Seguinte</b>, conforme a versão do iOS. Toque em <b>OK</b>.
+          <span className="mt-1.5 block text-[13.5px] text-fosco">
+            Só achou “perguntar antes”? Funciona também: depois de pagar, o iPhone mostra uma
+            notificação, e você toca nela para lançar.
+          </span>
         </Passo>
       </ol>
 
@@ -80,7 +87,7 @@ export function TelaDoApplePay() {
           </span>
           <span className="mt-1.5 block">
             • <b>Nada aparece</b> — a automação não rodou. Em <b>Atalhos → Automação</b>, confira
-            se ela está ligada e com <b>Executar imediatamente</b>.
+            se ela está ligada.
           </span>
         </Aviso>
       </section>
