@@ -10,6 +10,7 @@ import { normalizarPlanejamento } from "@/lib/semana";
 import { normalizarAnalise, type Analise } from "@/lib/analise";
 import { agoraNoFuso, hoje, normalizarHora, paraHora } from "@/lib/datas";
 import { ehHumor } from "@/lib/padroes";
+import { analiseDoPadrao, lerPadrao, type PadraoParaSalvar } from "@/lib/refeicoes-padrao";
 import { novoId } from "@/lib/ids";
 
 /**
@@ -36,27 +37,119 @@ const atualizarTudo = () => revalidatePath("/", "layout");
 // O dia
 // ---------------------------------------------------------------------------
 
-/** Marca uma refeição do dia. Estado vazio desmarca. */
-export async function marcarRefeicao(dia: string, refeicaoId: string, estado: "" | "seguiu" | "trocou" | "pulou", nota = "") {
+/** A hora da marcação, só quando é no próprio dia: marcar o almoço de ontem hoje cedo não diz nada sobre a hora em que se almoçou. */
+function horaDaMarcacao(dia: string) {
+  const agora = agoraNoFuso();
+  return agora.dia === dia ? paraHora(agora.minutos) : "";
+}
+
+/** Tira do dia a anotação que uma refeição padrão tinha deixado (as calorias dela), se havia. */
+const esquecerAnotacaoDoPadrao = (dia: string, refeicaoId: string) =>
+  bd.foto.deleteMany({ where: { dia, refeicaoId, padraoId: { not: "" } } });
+
+/**
+ * Marca uma refeição do dia. Estado vazio desmarca.
+ *
+ * `guardar` vale só para "troquei" com o que foi comido escrito: além de marcar,
+ * guarda aquilo nas refeições padrão (fora do plano), para da próxima vez ser um
+ * toque. Se já existe uma com o mesmo nome, não duplica. Vai na mesma chamada
+ * da marcação para não depender de uma segunda viagem ao servidor.
+ */
+export async function marcarRefeicao(
+  dia: string,
+  refeicaoId: string,
+  estado: "" | "seguiu" | "trocou" | "pulou",
+  nota = "",
+  guardar = false,
+) {
   await exigirSessao();
   if (!ehDia(dia)) return;
+  // Marcar de outro jeito desfaz a escolha de uma refeição padrão: sem isto as
+  // calorias dela ficariam no dia depois de "pulei".
+  await esquecerAnotacaoDoPadrao(dia, refeicaoId);
   if (!estado) {
     await bd.registro.deleteMany({ where: { dia, refeicaoId } });
   } else {
     const r = await bd.refeicao.findUnique({ where: { id: refeicaoId } });
     if (!r) return;
-    const dados = { estado, nota: estado === "trocou" ? nota.trim().slice(0, 300) : "", nome: r.nome, horario: r.horario };
-    // A hora só vale quando a marcação é no próprio dia: marcar o almoço de
-    // ontem hoje cedo não diz nada sobre a hora em que se almoçou.
-    const agora = agoraNoFuso();
-    const hora = agora.dia === dia ? paraHora(agora.minutos) : "";
+    const dados = { estado, nota: estado === "trocou" ? nota.trim().slice(0, 300) : "", nome: r.nome, horario: r.horario, padraoId: "" };
     await bd.registro.upsert({
+      where: { dia_refeicaoId: { dia, refeicaoId } },
+      create: { id: novoId(), dia, refeicaoId, hora: horaDaMarcacao(dia), ...dados },
+      update: dados,
+    });
+    const titulo = dados.nota.replace(/\s+/g, " ").trim();
+    if (guardar && estado === "trocou" && titulo) {
+      const jaTem = await bd.refeicaoPadrao.findFirst({
+        where: { titulo: { equals: titulo, mode: "insensitive" }, refeicao: { in: [r.nome, ""] } },
+        select: { id: true },
+      });
+      if (!jaTem) {
+        await bd.refeicaoPadrao.create({
+          data: { id: novoId(), refeicao: r.nome, titulo: titulo.slice(0, 80), itens: "", seguePlano: false },
+        });
+      }
+    }
+  }
+  atualizarTudo();
+}
+
+/**
+ * Marca uma refeição do dia pela refeição padrão que foi comida: dentro do
+ * plano vira "segui", fora vira "troquei", e o nome dela fica como "o que comi".
+ * Com calorias cadastradas, ela entra também na soma do dia.
+ */
+export async function usarRefeicaoPadrao(dia: string, refeicaoId: string, padraoId: string): Promise<{ erro?: string }> {
+  await exigirSessao();
+  if (!ehDia(dia)) return { erro: "Dia inválido." };
+  const [r, p] = await Promise.all([
+    bd.refeicao.findUnique({ where: { id: refeicaoId } }),
+    bd.refeicaoPadrao.findUnique({ where: { id: padraoId } }),
+  ]);
+  if (!r) return { erro: "Esta refeição não está mais no plano." };
+  if (!p) return { erro: "Esta refeição padrão foi apagada." };
+
+  const anterior = await bd.registro.findUnique({ where: { dia_refeicaoId: { dia, refeicaoId } }, select: { padraoId: true } });
+  const hora = horaDaMarcacao(dia);
+  const dados = {
+    estado: p.seguePlano ? "seguiu" : "trocou",
+    nota: p.titulo.slice(0, 300),
+    nome: r.nome,
+    horario: r.horario,
+    padraoId: p.id,
+  };
+  const analise = analiseDoPadrao(p);
+
+  await bd.$transaction([
+    // A anotação da escolha anterior sai; a nova entra no lugar dela.
+    bd.foto.deleteMany({ where: { dia, refeicaoId, padraoId: { not: "" } } }),
+    bd.registro.upsert({
       where: { dia_refeicaoId: { dia, refeicaoId } },
       create: { id: novoId(), dia, refeicaoId, hora, ...dados },
       update: dados,
-    });
-  }
+    }),
+    ...(analise
+      ? [
+          bd.foto.create({
+            data: {
+              id: novoId(),
+              dia,
+              hora: hora || r.horario,
+              refeicaoId,
+              nome: r.nome,
+              tipo: "",
+              texto: [p.titulo, p.itens].filter(Boolean).join(": "),
+              analise,
+              padraoId: p.id,
+            },
+          }),
+        ]
+      : []),
+    // Escolher a mesma duas vezes seguidas não conta como duas.
+    ...(anterior?.padraoId === p.id ? [] : [bd.refeicaoPadrao.update({ where: { id: p.id }, data: { vezes: { increment: 1 } } })]),
+  ]);
   atualizarTudo();
+  return {};
 }
 
 /** Como estava na refeição: "bem", "ok" ou "mal". Tocar de novo apaga. */
@@ -357,5 +450,36 @@ export async function adicionarCompra(semanaId: string, item: string) {
 export async function apagarFotoDoCorpo(id: string) {
   await exigirSessao();
   await bd.fotoCorpo.deleteMany({ where: { id } });
+  atualizarTudo();
+}
+
+// ---------------------------------------------------------------------------
+// Minhas refeições (as padrão)
+// ---------------------------------------------------------------------------
+
+/** Cria (id nulo) ou altera uma refeição padrão. */
+export async function salvarRefeicaoPadrao(id: string | null, bruto: PadraoParaSalvar): Promise<{ erro?: string; id?: string }> {
+  await exigirSessao();
+  const lido = lerPadrao(bruto);
+  if (!lido.ok) return { erro: lido.erro };
+  if (id) {
+    const existe = await bd.refeicaoPadrao.updateMany({ where: { id }, data: lido.dados });
+    if (existe.count === 0) return { erro: "Esta refeição padrão não existe mais." };
+    atualizarTudo();
+    return { id };
+  }
+  const novo = novoId();
+  await bd.refeicaoPadrao.create({ data: { id: novo, ...lido.dados } });
+  atualizarTudo();
+  return { id: novo };
+}
+
+/**
+ * Apaga uma refeição padrão. O que já foi marcado com ela fica como está: o
+ * histórico guarda o nome, e não o endereço.
+ */
+export async function apagarRefeicaoPadrao(id: string) {
+  await exigirSessao();
+  await bd.refeicaoPadrao.deleteMany({ where: { id } });
   atualizarTudo();
 }

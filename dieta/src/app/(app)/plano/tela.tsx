@@ -39,6 +39,16 @@ export function TelaPlano({ plano, anteriores }: { plano: PlanoCompleto | null; 
         Plano
       </Titulo>
 
+      <Link href="/refeicoes" className="mb-4 flex items-center justify-between gap-3 rounded-cartao bg-cartao p-4 shadow-cartao">
+        <span>
+          <span className="block text-[17px] font-semibold">Minhas refeições</span>
+          <span className="block text-[14px] leading-snug text-grafite">As que você repete: cadastre uma vez e escolha num toque em Hoje.</span>
+        </span>
+        <span aria-hidden className="text-[20px] text-fosco">
+          ›
+        </span>
+      </Link>
+
       {!plano && (
         <Cartao>
           <p className="text-[18px] font-semibold">Nenhum plano ainda</p>
