@@ -75,6 +75,7 @@ const GUARDADAS_POR_MAIS = [
   "/fixos",
   "/ajustes",
   "/atalho",
+  "/apple-pay",
   "/importar",
   "/classificar",
 ];

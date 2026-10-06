@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { camposDoEndereco, hojeNoFuso, lerPedidoDoAtalho, recadoDoAtalho } from "./atalho";
+import { camposDoEndereco, hojeNoFuso, lerPedidoDoAtalho, recadoDoAtalho, valorNoTexto } from "./atalho";
 import type { Lancamento } from "./tipos";
 
 let n = 0;
@@ -128,6 +128,59 @@ describe("o que o atalho manda errado", () => {
   it("ignora data mal escrita e usa hoje", () => {
     const r = ler({ valor: "10", data: "15/09/2026" });
     expect(r.ok && r.lancamentos[0].data).toBe("2026-09-15");
+  });
+});
+
+describe("o valor dentro de uma frase (a notificação do banco)", () => {
+  it("tira o valor da frase do Nubank", () => {
+    expect(valorNoTexto("Recebemos sua transferência de R$ 1,00.")).toEqual({ ok: true, valor: "1,00" });
+  });
+
+  it("entende milhar, sem espaço depois do cifrão e valor sem centavos", () => {
+    expect(valorNoTexto("Pix de R$1.234,56 recebido")).toEqual({ ok: true, valor: "1234,56" });
+    expect(valorNoTexto("você recebeu R$ 50")).toEqual({ ok: true, valor: "50" });
+    expect(valorNoTexto("R$ 2.000 na conta")).toEqual({ ok: true, valor: "2000" });
+  });
+
+  it("o mesmo valor duas vezes conta como um", () => {
+    expect(valorNoTexto("R$ 50,00 enviados. Total: R$ 50,00")).toEqual({ ok: true, valor: "50,00" });
+  });
+
+  it("com dois valores diferentes, não escolhe", () => {
+    const r = valorNoTexto("Pix de R$ 50,00. Seu saldo: R$ 1.200,00");
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.erro).toContain("mais de um valor");
+  });
+
+  it("sem valor em reais, diz que não achou", () => {
+    expect(valorNoTexto("Transferência recebida")).toEqual({ ok: false, erro: "Não achei um valor em reais no texto." });
+  });
+
+  it("lança como entrada o que vem em `texto`, com o tipo dito", () => {
+    const r = lerPedidoDoAtalho(
+      { texto: "Recebemos sua transferência de R$ 1,00.", tipo: "entrada", nota: "Pix" },
+      opcoes,
+    );
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.lancamentos[0]).toMatchObject({ tipo: "ENTRADA", valorCents: 100, nota: "Pix" });
+  });
+
+  it("`valor` vence `texto`, quando os dois vêm", () => {
+    const r = lerPedidoDoAtalho({ valor: "7", texto: "R$ 99,00" }, opcoes);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.lancamentos[0].valorCents).toBe(700);
+  });
+
+  it("frase sem valor devolve o erro dela, e não 'faltou o valor'", () => {
+    const r = lerPedidoDoAtalho({ texto: "Transferência recebida" }, opcoes);
+    expect(r).toEqual({ ok: false, erro: "Não achei um valor em reais no texto." });
+  });
+
+  it("o endereço também carrega o texto", () => {
+    expect(camposDoEndereco("https://x.app/api/lancar?texto=R%24%201%2C00&tipo=entrada")).toEqual({
+      texto: "R$ 1,00",
+      tipo: "entrada",
+    });
   });
 });
 

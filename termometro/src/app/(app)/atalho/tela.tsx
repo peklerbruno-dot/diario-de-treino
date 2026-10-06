@@ -26,6 +26,19 @@ export function TelaDoAtalho() {
         <i>“E aí Siri, Lançar gasto”</i> e falar o valor, sem tirar o celular do bolso.
       </p>
 
+      <Link
+        href="/apple-pay"
+        className="mt-4 flex items-center justify-between gap-3 rounded-folha bg-cartao px-4 py-3 shadow-baixa"
+      >
+        <span>
+          <span className="block text-[16px] font-semibold">Quer lançar sozinho pelo Apple Pay?</span>
+          <span className="block text-[13.5px] text-grafite">Um passo a passo curto, só para isso.</span>
+        </span>
+        <span aria-hidden className="text-[20px] text-fosco">
+          ›
+        </span>
+      </Link>
+
       <div className="mt-4">
         <Aviso tom="atencao">
           <b>O que o app não faz sozinho.</b> O iPhone não deixa nenhum aplicativo ler os seus
@@ -211,9 +224,9 @@ export function TelaDoAtalho() {
           <Passo n={1}>
             No app <b>Atalhos</b>, abra a aba <b>Automação</b>, toque no <b>+</b> e escolha{" "}
             <b>Carteira</b> (em alguns iPhones aparece como <b>Transação</b>). Marque os cartões que
-            você usa no Apple Pay — ou deixe todos — e escolha{" "}
-            <b>Executar imediatamente</b>. Toque em <b>Seguinte</b> e depois em{" "}
-            <b>Criar nova automação vazia</b>.
+            você usa no Apple Pay — ou deixe todos. Toque em <b>Seguinte</b> e depois em{" "}
+            <b>Criar nova automação vazia</b>. A opção <b>Executar imediatamente</b> fica no fim da
+            tela (ou na tela de resumo, depois de <b>Seguinte</b>): role até achar.
           </Passo>
 
           <Passo n={2}>
@@ -266,6 +279,57 @@ export function TelaDoAtalho() {
               demorar ou falhar às vezes; trate-a como um ajudante, não como garantia. Terceiro: só
               pagamento por <b>Apple Pay</b> dispara; Pix e cartão de plástico não.
             </span>
+          </Aviso>
+        </div>
+      </section>
+
+      <section className="mt-6">
+        <Subtitulo className="mb-2">Quando entrar um Pix</Subtitulo>
+        <p className="mb-3 text-[14px] leading-relaxed text-fosco">
+          Pix não passa pela Carteira, então o gatilho do Apple Pay não vê. Mas o banco manda uma
+          notificação, e no iOS 27 o Atalhos pode rodar um atalho quando ela chega. Ele manda a
+          frase da notificação para o app, e o app tira o valor dela. Depende de o iOS entregar o
+          texto da notificação ao atalho — só o teste mostra.
+        </p>
+
+        <ol className="space-y-2.5">
+          <Passo n={1}>
+            Crie um atalho <b>novo</b> (não misture com o do Apple Pay). Na barra <b>Buscar</b>, toque
+            no chip <b>Automação</b> e escolha o gatilho de <b>Notificação</b>: <i>“Quando eu receber
+            uma notificação do app …”</i>. Escolha o app do seu banco.
+          </Passo>
+
+          <Passo n={2}>
+            Toque em <b>Adicionar Filtro</b> e escolha <b>Título</b> (ou <b>Mensagem</b>, conforme onde
+            o banco escreve a palavra), <b>contém</b>, e a palavra que só o Pix recebido tem. No
+            Nubank, o título é <Palavra>Transferência recebida</Palavra>. Assim ele ignora as outras
+            notificações do app. Deixe <b>Automação</b> ligado.
+          </Passo>
+
+          <Passo n={3}>
+            Acrescente <b>URL</b> e escreva:
+            <ParaCopiar texto={endereco.replace("valor=", "tipo=entrada&nota=Pix&texto=")} />
+            <span className="mt-2 block">
+              Depois do último <Palavra>=</Palavra>, toque em <b>Selecionar variável</b> e escolha{" "}
+              <b>Entrada do atalho</b>; na etiqueta, a propriedade <b>Mensagem</b> (o corpo da
+              notificação — no Nubank, <i>“Recebemos sua transferência de R$ 1,00.”</i>).
+            </span>
+          </Passo>
+
+          <Passo n={4}>
+            Acrescente <b>Obter Conteúdo do URL</b>, troque o método para <Palavra>POST</Palavra> e
+            adicione o cabeçalho <Palavra>x-codigo</Palavra> com o seu código de acesso — igual ao
+            atalho do Apple Pay. Por fim, <b>Mostrar notificação</b> com <b>Conteúdos do URL</b>.
+          </Passo>
+        </ol>
+
+        <div className="mt-3">
+          <Aviso>
+            <b>Cuidados.</b> Uma transferência <b>entre as suas próprias contas</b> também gera “transferência
+            recebida” e entra como entrada; apague em <b>Hoje</b> quando for o caso. Se a frase tiver
+            dois valores diferentes (o do Pix e o saldo, por exemplo), o app não lança e avisa, em vez de
+            chutar. E o texto da notificação vai para o app: o nome de quem mandou só fica gravado se você
+            o escrever na nota.
           </Aviso>
         </div>
       </section>
@@ -479,14 +543,14 @@ export function TelaDoAtalho() {
  * O endereço é montado a partir de onde o app está sendo servido, e não escrito
  * à mão: continua certo se um dia o endereço do site mudar.
  */
-function useEndereco(): string {
+export function useEndereco(): string {
   const [endereco, setEndereco] = useState("");
   useEffect(() => setEndereco(`${window.location.origin}/api/lancar?valor=`), []);
   return endereco;
 }
 
 /** Um pedaço de texto que precisa ser copiado sem erro de digitação. */
-function ParaCopiar({ texto }: { texto: string }) {
+export function ParaCopiar({ texto }: { texto: string }) {
   const [copiado, setCopiado] = useState(false);
 
   async function copiar() {
@@ -513,7 +577,7 @@ function ParaCopiar({ texto }: { texto: string }) {
 }
 
 /** Uma palavra que precisa ser digitada exatamente assim. */
-function Palavra({ children }: { children: React.ReactNode }) {
+export function Palavra({ children }: { children: React.ReactNode }) {
   return (
     <code className="rounded-[6px] bg-papel px-1.5 py-[1px] text-[13.5px] text-tinta">
       {children}
@@ -521,7 +585,7 @@ function Palavra({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Passo({ n, children }: { n: number; children: React.ReactNode }) {
+export function Passo({ n, children }: { n: number; children: React.ReactNode }) {
   return (
     <li className="flex gap-3 rounded-folha bg-cartao px-4 py-3 shadow-baixa">
       <span className="tabular mt-[1px] flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-heroi text-[12px] font-bold text-heroi-tinta">

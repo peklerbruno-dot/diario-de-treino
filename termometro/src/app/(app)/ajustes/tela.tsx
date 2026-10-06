@@ -211,6 +211,12 @@ export function TelaDeAjustes() {
         >
           Como montar o atalho
         </Link>
+        <Link
+          href="/apple-pay"
+          className="mt-2 inline-flex min-h-[46px] items-center rounded-folha bg-cartao px-4 text-[16px] shadow-baixa"
+        >
+          Lançar sozinho pelo Apple Pay
+        </Link>
       </section>
 
       {estado.usuario && (ehDono ? <PessoasDoApp /> : <MeuAcesso />)}
