@@ -284,6 +284,57 @@ export function TelaDoAtalho() {
       </section>
 
       <section className="mt-6">
+        <Subtitulo className="mb-2">Quando entrar um Pix</Subtitulo>
+        <p className="mb-3 text-[14px] leading-relaxed text-fosco">
+          Pix não passa pela Carteira, então o gatilho do Apple Pay não vê. Mas o banco manda uma
+          notificação, e no iOS 27 o Atalhos pode rodar um atalho quando ela chega. Ele manda a
+          frase da notificação para o app, e o app tira o valor dela. Depende de o iOS entregar o
+          texto da notificação ao atalho — só o teste mostra.
+        </p>
+
+        <ol className="space-y-2.5">
+          <Passo n={1}>
+            Crie um atalho <b>novo</b> (não misture com o do Apple Pay). Na barra <b>Buscar</b>, toque
+            no chip <b>Automação</b> e escolha o gatilho de <b>Notificação</b>: <i>“Quando eu receber
+            uma notificação do app …”</i>. Escolha o app do seu banco.
+          </Passo>
+
+          <Passo n={2}>
+            Toque em <b>Adicionar Filtro</b> e escolha <b>Título</b> (ou <b>Mensagem</b>, conforme onde
+            o banco escreve a palavra), <b>contém</b>, e a palavra que só o Pix recebido tem. No
+            Nubank, o título é <Palavra>Transferência recebida</Palavra>. Assim ele ignora as outras
+            notificações do app. Deixe <b>Automação</b> ligado.
+          </Passo>
+
+          <Passo n={3}>
+            Acrescente <b>URL</b> e escreva:
+            <ParaCopiar texto={endereco.replace("valor=", "tipo=entrada&nota=Pix&texto=")} />
+            <span className="mt-2 block">
+              Depois do último <Palavra>=</Palavra>, toque em <b>Selecionar variável</b> e escolha{" "}
+              <b>Entrada do atalho</b>; na etiqueta, a propriedade <b>Mensagem</b> (o corpo da
+              notificação — no Nubank, <i>“Recebemos sua transferência de R$ 1,00.”</i>).
+            </span>
+          </Passo>
+
+          <Passo n={4}>
+            Acrescente <b>Obter Conteúdo do URL</b>, troque o método para <Palavra>POST</Palavra> e
+            adicione o cabeçalho <Palavra>x-codigo</Palavra> com o seu código de acesso — igual ao
+            atalho do Apple Pay. Por fim, <b>Mostrar notificação</b> com <b>Conteúdos do URL</b>.
+          </Passo>
+        </ol>
+
+        <div className="mt-3">
+          <Aviso>
+            <b>Cuidados.</b> Uma transferência <b>entre as suas próprias contas</b> também gera “transferência
+            recebida” e entra como entrada; apague em <b>Hoje</b> quando for o caso. Se a frase tiver
+            dois valores diferentes (o do Pix e o saldo, por exemplo), o app não lança e avisa, em vez de
+            chutar. E o texto da notificação vai para o app: o nome de quem mandou só fica gravado se você
+            o escrever na nota.
+          </Aviso>
+        </div>
+      </section>
+
+      <section className="mt-6">
         <Subtitulo className="mb-2">Falando com a Siri</Subtitulo>
         <p className="mb-3 text-[14.5px] leading-relaxed text-grafite">
           Não precisa configurar nada a mais: todo atalho já vira comando de voz sozinho, com o

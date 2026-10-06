@@ -41,6 +41,8 @@ export function hojeNoFuso(fuso: string = FUSO_PADRAO, agora: Date = new Date())
 
 export interface PedidoDoAtalho {
   valor?: unknown;
+  /** Uma frase com o valor dentro, como a notificação do banco. Só vale sem `valor`. */
+  texto?: unknown;
   categoria?: unknown;
   tipo?: unknown;
   data?: unknown;
@@ -79,6 +81,7 @@ export function camposDoEndereco(url: string): Record<string, string> {
 
 const ACEITOS_NO_ENDERECO = [
   "valor",
+  "texto",
   "categoria",
   "tipo",
   "data",
@@ -87,6 +90,31 @@ const ACEITOS_NO_ENDERECO = [
   "investimento",
   "apartamento",
 ] as const;
+
+/**
+ * O valor dentro de uma frase em português, como a notificação do banco:
+ * "Recebemos sua transferência de R$ 1,00." → "1,00".
+ *
+ * Só vale quando a frase tem **um** valor em reais. Com dois ("Pix de R$ 50,00,
+ * saldo R$ 1.200,00") o app não escolhe: lançar o número errado é pior do que
+ * não lançar, e a notificação do atalho diz o que aconteceu. Valor repetido
+ * (o mesmo número duas vezes) conta como um só.
+ */
+export function valorNoTexto(texto: string): { ok: true; valor: string } | { ok: false; erro: string } {
+  const achados = new Set<string>();
+  for (const m of texto.matchAll(/R\$\s*(\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d{1,2}))?/gi)) {
+    const inteiro = m[1].replace(/\./g, "");
+    achados.add(m[2] ? `${inteiro},${m[2]}` : inteiro);
+  }
+  if (achados.size === 0) return { ok: false, erro: "Não achei um valor em reais no texto." };
+  if (achados.size > 1) {
+    return {
+      ok: false,
+      erro: `Achei mais de um valor no texto (${[...achados].join(" e ")}) e não sei qual lançar.`,
+    };
+  }
+  return { ok: true, valor: [...achados][0] };
+}
 
 export type LeituraDoPedido =
   | {
@@ -126,7 +154,17 @@ export function lerPedidoDoAtalho(
     categorias?: readonly Categoria[];
   } = {},
 ): LeituraDoPedido {
-  const texto = comoTexto(corpo.valor);
+  let texto = comoTexto(corpo.valor);
+  if (texto === null || texto.trim() === "") {
+    // Sem valor, mas com uma frase que o tenha dentro (a notificação do banco):
+    // o app tira o número dela, em vez de exigir que o atalho o separe.
+    const frase = comoTexto(corpo.texto);
+    if (frase !== null && frase.trim() !== "") {
+      const achado = valorNoTexto(frase);
+      if (!achado.ok) return achado;
+      texto = achado.valor;
+    }
+  }
   if (texto === null || texto.trim() === "") {
     return { ok: false, erro: "Faltou o valor." };
   }

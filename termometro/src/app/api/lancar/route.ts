@@ -114,6 +114,8 @@ export function GET() {
       'O mesmo vale em corpo JSON: {"valor":"38,50"}. ' +
       'Opcionais: "tipo" (entrada, saída ou diário), "categoria" (o nome, como se fala), ' +
       '"data" (AAAA-MM-DD) e "nota". ' +
+      'Em vez de "valor", dá para mandar "texto": uma frase com o valor dentro, como a ' +
+      'notificação do banco — o app tira o número dela. ' +
       "O código só é lido do cabeçalho ou do corpo, nunca do endereço.",
   });
 }
