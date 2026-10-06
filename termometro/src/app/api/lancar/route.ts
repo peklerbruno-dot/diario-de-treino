@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { usuarioDoPedido } from "@/lib/auth";
 import { bd } from "@/lib/bd";
 import { camposDoEndereco, hojeNoFuso, lerPedidoDoAtalho, recadoDoAtalho } from "@/lib/atalho";
+import { categoriaDaLoja } from "@/lib/categoria-da-loja";
 import { CHAVE_DAS_CATEGORIAS, lerCategorias, nomeDaCategoria } from "@/lib/categorias";
 import { saldoNoServidor } from "@/lib/saldo-no-servidor";
 
@@ -67,6 +68,24 @@ export async function POST(pedido: Request) {
 
   const { lancamentos } = leitura;
 
+  // Sem categoria dita, vale a que a loja já teve: o Apple Pay manda o nome do
+  // lugar como nota, e quem já classificou "Uber" uma vez não classifica de novo.
+  // Categoria dita (ou "não achei") nunca é trocada por palpite.
+  let aprendida = false;
+  if (!leitura.categoriaNaoAchada && !lancamentos[0].categoria && lancamentos[0].nota) {
+    const historico = await bd.lancamento.findMany({
+      where: { usuarioId, apagadoEm: null, categoria: { not: null }, nota: { not: null } },
+      select: { nota: true, categoria: true, tipo: true },
+      orderBy: { atualizadoEm: "desc" },
+      take: 1500,
+    });
+    const id = categoriaDaLoja(lancamentos[0].nota, lancamentos[0].tipo, historico, categorias);
+    if (id) {
+      for (const l of lancamentos) l.categoria = id;
+      aprendida = true;
+    }
+  }
+
   await bd.lancamento.createMany({
     data: lancamentos.map((l) => ({
       id: l.id,
@@ -98,6 +117,7 @@ export async function POST(pedido: Request) {
         : undefined,
       naoAchada: leitura.categoriaNaoAchada,
     }),
+    categoriaAprendida: aprendida,
     quantos: lancamentos.length,
     data,
     tipo: lancamentos[0].tipo,
@@ -113,7 +133,7 @@ export function GET() {
       'POST em /api/lancar?valor=38,50&categoria=mercado com o cabeçalho "x-codigo". ' +
       'O mesmo vale em corpo JSON: {"valor":"38,50"}. ' +
       'Opcionais: "tipo" (entrada, saída ou diário), "categoria" (o nome, como se fala), ' +
-      '"data" (AAAA-MM-DD) e "nota". ' +
+      '"data" (AAAA-MM-DD) e "nota". Sem "categoria", a nota (o nome da loja) busca a categoria que ela já teve. ' +
       'Em vez de "valor", dá para mandar "texto": uma frase com o valor dentro, como a ' +
       'notificação do banco — o app tira o número dela. ' +
       "O código só é lido do cabeçalho ou do corpo, nunca do endereço.",

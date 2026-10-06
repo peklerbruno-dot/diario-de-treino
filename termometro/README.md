@@ -387,7 +387,10 @@ atalho tem o passo a passo "Depois do Apple Pay": o iPhone pergunta a categoria
 sempre mandam o valor (vazio → "Faltou o valor", nada é lançado), e a Apple tem
 relatos de a automação falhar de vez em quando. Pix e cartão de plástico não
 disparam. O atalho não adivinha o que foi comprado — ele encurta a distância
-entre gastar e anotar.
+entre gastar e anotar. Quem já classificou uma loja uma vez não classifica de novo:
+sem `categoria` no pedido, a porta procura nos lançamentos da própria pessoa a
+categoria que aquela `nota` já teve (mesmo tipo; o mais repetido ganha, no empate o
+mais recente), então a próxima compra ali já nasce categorizada.
 
 Três decisões que essa porta carrega:
 

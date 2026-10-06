@@ -47,7 +47,8 @@ export function TelaDoApplePay() {
           </span>
           <span className="mt-2 block">
             Depois escreva <Palavra>&amp;nota=</Palavra> e escolha <b>Entrada do atalho</b> de novo;
-            toque na etiqueta e escolha <b>Estabelecimento</b>.
+            toque na etiqueta e escolha o nome da loja (<b>Comerciante</b> ou <b>Estabelecimento</b>,
+            conforme o iPhone). É ele que faz o app aprender a categoria.
           </span>
           <span className="mt-2 block">
             Toque em <b>Mostrar mais</b>. Em <b>Método</b>, troque para <Palavra>POST</Palavra>. Em{" "}
@@ -90,6 +91,19 @@ export function TelaDoApplePay() {
             se ela está ligada.
           </span>
         </Aviso>
+      </section>
+
+      <section className="mt-6">
+        <h2 className="text-[17px] font-semibold">A categoria vem sozinha</h2>
+        <p className="mt-1.5 text-[14.5px] leading-relaxed text-fosco">
+          Compra de uma loja nova entra sem categoria. Abra{" "}
+          <Link href="/classificar" className="text-saldo underline">
+            Classificar
+          </Link>{" "}
+          e escolha uma vez o que ela é (Uber → Transporte). Da próxima vez que você pagar ali, o
+          lançamento já nasce com a categoria, e a notificação diz qual foi. Se mudar de ideia, o
+          app segue a sua decisão mais recente.
+        </p>
       </section>
 
       <p className="mt-5 text-[14px] leading-relaxed text-fosco">
