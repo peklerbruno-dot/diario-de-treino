@@ -1,0 +1,95 @@
+// A Central guarda pouco: as contas conectadas, o que a triagem concluiu de
+// cada conversa e o que você ensinou a ela. O texto dos e-mails não fica aqui —
+// mora no Gmail e é lido de lá na hora em que a tela precisa.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+/// Uma conta Google conectada: Pessoal, CIP, USP…
+model Conta {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  /// O nome curto que aparece nas etiquetas ("CIP", "USP", "Pessoal").
+  rotulo          String
+  /// Cifrado com o AUTH_SECRET (ver src/lib/cofre.ts).
+  refreshToken    String
+  accessToken     String?
+  accessExpiraEm  DateTime?
+  /// Como você escreve, aprendido dos seus e-mails enviados.
+  estilo          String?
+  /// Preenchido quando o Google recusou o acesso e é preciso reconectar.
+  erro            String?
+  ultimaSincronia DateTime?
+  criadoEm        DateTime  @default(now())
+  conversas       Conversa[]
+}
+
+/// Uma conversa (thread) do Gmail e o que a triagem concluiu dela.
+model Conversa {
+  id                 String    @id @default(cuid())
+  contaId            String
+  conta              Conta     @relation(fields: [contaId], references: [id], onDelete: Cascade)
+  threadId           String
+  assunto            String
+  remetente          String
+  remetenteEmail     String
+  trecho             String
+  ultimaData         DateTime
+  /// A última mensagem é sua? Então, se houver algo, é a vez do outro.
+  ultimaDeMim        Boolean   @default(false)
+  /// Id da última mensagem já classificada. Mudou, classifica de novo.
+  ultimaMensagemId   String
+  classificadaMsgId  String?
+  categoria          String    @default("informativo")
+  /// 1 = urgente, 2 = normal, 3 = pode esperar.
+  prioridade         Int       @default(2)
+  resumo             String    @default("")
+  proximaAcao        String    @default("")
+  prazo              DateTime?
+  /// Você corrigiu a categoria à mão: a triagem não a troca mais.
+  corrigida          Boolean   @default(false)
+  /// Marcada como resolvida aqui na Central. Volta se chegar mensagem nova.
+  resolvida          Boolean   @default(false)
+  /// Está na caixa de entrada do Gmail. Arquivou lá, some daqui — menos as
+  /// que esperam resposta dos outros, que vêm dos enviados.
+  naCaixa            Boolean   @default(true)
+  atualizadoEm       DateTime  @updatedAt
+  rascunhos          Rascunho[]
+
+  @@unique([contaId, threadId])
+  @@index([categoria, resolvida])
+}
+
+model Rascunho {
+  id           String   @id @default(cuid())
+  conversaId   String
+  conversa     Conversa @relation(fields: [conversaId], references: [id], onDelete: Cascade)
+  contexto     String   @default("")
+  texto        String
+  gmailDraftId String?
+  criadoEm     DateTime @default(now())
+}
+
+/// Uma regra escrita por você ("tudo da Nancy é prioridade").
+model Instrucao {
+  id       String   @id @default(cuid())
+  texto    String
+  criadoEm DateTime @default(now())
+}
+
+/// Cada correção de categoria vira exemplo para as próximas triagens.
+model Correcao {
+  id             String   @id @default(cuid())
+  remetenteEmail String
+  assunto        String
+  de             String
+  para           String
+  criadoEm       DateTime @default(now())
+}
