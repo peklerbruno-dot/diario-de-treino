@@ -15,7 +15,7 @@
     "vercel-build": "node scripts/build-vercel.mjs"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.131.0",
+    "@google/genai": "2.24.0",
     "@prisma/client": "6.19.3",
     "next": "15.5.25",
     "react": "19.2.0",

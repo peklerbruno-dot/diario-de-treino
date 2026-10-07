@@ -5,7 +5,8 @@ chata é a do Google (passo 3): ela existe porque a Central vai ler o seu e-mail
 e o Google exige que você mesmo registre quem pode fazer isso.
 
 Você vai precisar de: **Vercel** (que você já usa), uma conta no **Google Cloud**
-(é a mesma conta do Gmail pessoal) e uma chave da **API do Claude**.
+(é a mesma conta do Gmail pessoal) e uma chave do **Gemini**. Tudo no plano
+gratuito: o custo é zero.
 
 ---
 
@@ -82,13 +83,15 @@ Use a conta do Gmail **pessoal** (é ela que vai "ser dona" do registro).
 
 4. **Criar**. Aparecem o **ID do cliente** e a **chave secreta**. Copie os dois.
 
-## Passo 4 — A chave do Claude
+## Passo 4 — A chave do Gemini (grátis)
 
-1. Abra https://console.anthropic.com → **API Keys** → **Create Key** → copie.
-2. Em **Billing**, coloque créditos. Uma estimativa para o seu volume (umas 50
-   conversas novas por dia somando as três caixas): de US$ 20 a 30 por mês. Para
-   gastar uns 50% menos, cadastre também `CLAUDE_MODELO` = `claude-sonnet-5-5`
-   (a triagem fica um pouco menos fina).
+1. Abra https://aistudio.google.com com a conta do Gmail pessoal.
+2. **Get API key** → **Create API key** → escolha o projeto `Central` do passo 3
+   → copie a chave. Não precisa de cartão.
+
+No plano gratuito, o Google pode usar o que passa pelo Gemini para melhorar os
+produtos dele (o README explica). Se um dia quiser fechar isso, é só ativar o
+faturamento no AI Studio; o uso de uma pessoa sai por centavos.
 
 ## Passo 5 — Juntar tudo
 
@@ -99,7 +102,7 @@ Use a conta do Gmail **pessoal** (é ela que vai "ser dona" do registro).
    |---|---|
    | `GOOGLE_CLIENT_ID` | o ID do cliente (passo 3c) |
    | `GOOGLE_CLIENT_SECRET` | a chave secreta (passo 3c) |
-   | `ANTHROPIC_API_KEY` | a chave do Claude (passo 4) |
+   | `GEMINI_API_KEY` | a chave do Gemini (passo 4) |
    | `APP_URL` | o endereço do passo 2, sem barra no fim (`https://central-xyz.vercel.app`) |
 
 2. **Deployments** → nos três pontinhos do último → **Redeploy**.

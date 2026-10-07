@@ -27,7 +27,7 @@ export default async function Ajustes({ searchParams }: { searchParams: Busca })
       {(!googleConfigurado() || !iaConfigurada()) && (
         <p className="mt-4 rounded-xl border border-alerta px-4 py-3 text-sm text-alerta">
           Falta configurar na Vercel:{" "}
-          {[!googleConfigurado() && "GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET", !iaConfigurada() && "ANTHROPIC_API_KEY"]
+          {[!googleConfigurado() && "GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET", !iaConfigurada() && "GEMINI_API_KEY"]
             .filter(Boolean)
             .join(" e ")}
           . Veja docs/COLOCAR-NO-AR.md.

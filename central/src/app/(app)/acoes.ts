@@ -41,7 +41,7 @@ export async function gerarRascunho(
 ): Promise<Resultado<{ texto: string }>> {
   await exigirSessao();
   try {
-    if (!iaConfigurada()) throw new Error("Falta ANTHROPIC_API_KEY na Vercel.");
+    if (!iaConfigurada()) throw new Error("Falta GEMINI_API_KEY na Vercel.");
     const c = await conversaComConta(conversaId);
     const [thread, contas, regras] = await Promise.all([
       lerThread(c.conta, c.threadId, "full"),
@@ -208,7 +208,7 @@ export async function removerConta(id: string): Promise<void> {
 export async function aprenderEstilo(contaId: string): Promise<Resultado<{ estilo: string }>> {
   await exigirSessao();
   try {
-    if (!iaConfigurada()) throw new Error("Falta ANTHROPIC_API_KEY na Vercel.");
+    if (!iaConfigurada()) throw new Error("Falta GEMINI_API_KEY na Vercel.");
     const conta = await bd.conta.findUniqueOrThrow({ where: { id: contaId } });
     const enviadas = await listarEnviadas(conta, 25);
     const amostra = enviadas

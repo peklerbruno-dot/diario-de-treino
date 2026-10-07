@@ -173,7 +173,7 @@ o seu próprio deploy na Vercel (pasta escolhida em *Root Directory*).
   Veja [`viagem/README.md`](viagem/README.md) e, para publicar,
   [`viagem/docs/COLOCAR-NO-AR.md`](viagem/docs/COLOCAR-NO-AR.md).
 - `central/` — as três caixas de e-mail (pessoal, CIP e USP) num lugar só,
-  triadas pelo Claude: o que precisa de resposta, o que pede ação, o que espera
+  triadas pelo Gemini (plano gratuito): o que precisa de resposta, o que pede ação, o que espera
   os outros, prazos e a agenda do dia. Rascunha respostas no seu estilo, a partir
   do que você conta, e grava no Gmail como rascunho — nunca envia sozinha. Salva
   anexos no Drive e põe prazos na Agenda.

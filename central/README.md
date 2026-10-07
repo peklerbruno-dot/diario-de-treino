@@ -8,7 +8,7 @@ Quem quer só colocar no ar: [`docs/COLOCAR-NO-AR.md`](docs/COLOCAR-NO-AR.md).
 ## O que ela faz
 
 **Triagem.** A cada atualização a Central lê o que chegou nas três contas e o
-Claude classifica cada conversa:
+Gemini classifica cada conversa:
 
 | | |
 |---|---|
@@ -64,9 +64,28 @@ O acesso às contas (o "refresh token" do Google) fica cifrado com o
 `AUTH_SECRET`. Quem lesse o banco sozinho não leria e-mail nenhum. No Drive, a
 Central só enxerga os arquivos que ela mesma criou.
 
-O conteúdo dos e-mails vai para a API do Claude para ser triado e respondido.
-Pela política da Anthropic, o que passa pela API não é usado para treinar
-modelos.
+## Custo zero, e o que vem junto
+
+| Peça | Plano gratuito |
+|---|---|
+| Gemini (triagem e rascunhos) | cota diária gratuita do Google AI Studio, sem cartão |
+| Gmail, Agenda e Drive (APIs) | gratuitas |
+| Vercel | plano Hobby (inclui a atualização automática diária) |
+| Banco (Postgres da Vercel/Neon) | plano gratuito |
+
+Duas coisas vêm junto com o "grátis":
+
+1. **O Google pode ler.** No plano gratuito do Gemini, o que passa por ele pode
+   ser usado para melhorar os produtos do Google e revisado por pessoas (os
+   termos dizem que desligam os dados da sua conta antes). Isso inclui o texto
+   dos e-mails que vão para a triagem, que têm dados de colegas do CIP e da USP.
+   Para fechar essa porta sem trocar nada no código: ativar o faturamento no AI
+   Studio (o uso de uma pessoa sai por centavos, e no plano pago o Google não usa
+   os dados).
+2. **Há limite por minuto e por dia.** Uma rodada gasta uns oito pedidos, e a
+   cota diária do modelo padrão passa de duzentos: sobra. Se estourar, a Central
+   avisa e a cota renova de madrugada. Os limites atuais da sua chave aparecem
+   em https://aistudio.google.com/rate-limit.
 
 ## Como funciona por dentro
 
@@ -74,7 +93,7 @@ modelos.
   das últimas duas semanas (caixa de entrada) e três semanas (enviados, para o
   "aguardando"). Só o que tem mensagem nova vai para a triagem, em lotes de 8.
   Uma conversa parada não é classificada de novo.
-- `src/lib/ia.ts`: as três chamadas ao Claude (triagem com saída estruturada,
+- `src/lib/ia.ts`: as três chamadas ao Gemini (triagem com saída estruturada,
   rascunho e estilo). Os e-mails entram como dado, entre marcações, e as
   instruções dizem que nada ali dentro manda em nada.
 - `src/lib/google.ts`: OAuth e as chamadas REST ao Gmail, Agenda e Drive, sem a
