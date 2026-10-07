@@ -1,5 +1,5 @@
 {
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':(exclude)termometro' ':(exclude)viagem' ':(exclude)cej' ':(exclude)site' ':(exclude)assistente'",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':(exclude)termometro' ':(exclude)viagem' ':(exclude)cej' ':(exclude)site' ':(exclude)central'",
   "headers": [
     {
       "source": "/sw.js",

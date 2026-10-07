@@ -172,6 +172,13 @@ o seu próprio deploy na Vercel (pasta escolhida em *Root Directory*).
   simplificar dívidas). Uma conta por pessoa, convite por link.
   Veja [`viagem/README.md`](viagem/README.md) e, para publicar,
   [`viagem/docs/COLOCAR-NO-AR.md`](viagem/docs/COLOCAR-NO-AR.md).
+- `central/` — as três caixas de e-mail (pessoal, CIP e USP) num lugar só,
+  triadas pelo Gemini (plano gratuito): o que precisa de resposta, o que pede ação, o que espera
+  os outros, prazos e a agenda do dia. Rascunha respostas no seu estilo, a partir
+  do que você conta, e grava no Gmail como rascunho — nunca envia sozinha. Salva
+  anexos no Drive e põe prazos na Agenda.
+  Veja [`central/README.md`](central/README.md) e, para publicar,
+  [`central/docs/COLOCAR-NO-AR.md`](central/docs/COLOCAR-NO-AR.md).
 - A **Dieta** (o plano da nutricionista no celular) mudou para um repositório
   próprio, [peklerbruno-dot/dieta](https://github.com/peklerbruno-dot/dieta):
   cada envio dela agora publica um projeto só na Vercel, e não os oito.
