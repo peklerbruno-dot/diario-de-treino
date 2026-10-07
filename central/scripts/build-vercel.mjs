@@ -18,16 +18,20 @@ import { execSync } from "node:child_process";
 const rodar = (comando, ambiente) =>
   execSync(`npx --no-install ${comando}`, { stdio: "inherit", env: ambiente ?? process.env });
 
+/**
+ * A conexão do app. Conforme o jeito de ligar o banco na Vercel, as variáveis
+ * vêm com nomes diferentes (DATABASE_URL, POSTGRES_PRISMA_URL, POSTGRES_URL):
+ * aceita qualquer uma. O mesmo vale em src/lib/bd.ts, na hora de rodar.
+ */
+const conexao =
+  process.env.DATABASE_URL || process.env.POSTGRES_PRISMA_URL || process.env.POSTGRES_URL || "";
+
 /** O ambiente da migração: igual ao do app, menos a conexão, que vai sem intermediário. */
 function ambienteDaMigracao() {
-  const semIntermediario = process.env.DATABASE_URL_UNPOOLED;
+  const semIntermediario = process.env.DATABASE_URL_UNPOOLED || process.env.POSTGRES_URL_NON_POOLING;
   if (!semIntermediario) {
-    console.log(
-      "[build] Sem DATABASE_URL_UNPOOLED — migrando pela conexão normal.\n" +
-        "[build] Num banco comum isso é o esperado. No Neon, confira se o snippet\n" +
-        "[build] inteiro foi colado nas variáveis de ambiente.",
-    );
-    return process.env;
+    console.log("[build] Sem conexão direta (DATABASE_URL_UNPOOLED) — migrando pela conexão normal.");
+    return { ...process.env, DATABASE_URL: conexao };
   }
   return { ...process.env, DATABASE_URL: semIntermediario };
 }
@@ -57,6 +61,15 @@ function migrarComPaciencia() {
       esperar(ESPERA_SEGUNDOS);
     }
   }
+}
+
+if (process.env.VERCEL_ENV === "production" && !conexao) {
+  console.error(
+    "[build] Nenhum banco ligado a este projeto: falta DATABASE_URL.\n" +
+      "[build] Na Vercel: projeto → Storage → Connect Database → escolha o banco,\n" +
+      "[build] com o prefixo DATABASE. Depois, Redeploy.",
+  );
+  process.exit(1);
 }
 
 if (process.env.VERCEL_ENV === "production") {
