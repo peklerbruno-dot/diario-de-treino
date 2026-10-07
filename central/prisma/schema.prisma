@@ -8,8 +8,10 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL_UNPOOLED")
+  // Só a conexão do dia a dia. A conexão direta, que a migração exige no Neon,
+  // é escolhida pelo scripts/build-vercel.mjs, sem ser obrigatória aqui: um
+  // directUrl no schema derrubava o build de quem não tinha essa variável.
+  url      = env("DATABASE_URL")
 }
 
 /// Uma conta Google conectada: Pessoal, CIP, USP…
