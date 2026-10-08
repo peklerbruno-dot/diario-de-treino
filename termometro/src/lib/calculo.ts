@@ -38,6 +38,12 @@ export interface DiaCalculado {
    * contam: o real substitui a previsão, não se soma a ela.
    */
   diarioSubstituido: boolean;
+  /**
+   * Os R$ 60 previstos deste dia não entram na conta: ou o gasto real os
+   * substituiu, ou o dia é hoje ou já passou e ninguém lançou nada. A previsão
+   * do diário só vale para os dias que ainda não chegaram.
+   */
+  diarioPrevistoFora: boolean;
 }
 
 export interface TotaisDoMes {
@@ -104,15 +110,19 @@ const vivo = (l: Lancamento) => !l.apagadoEm;
  * Só o DIARIO tem essa regra. Salário e fatura previstos ficam até a pessoa (ou
  * a notificação) os confirmar, e quem os confirma é `previstoParaConfirmar`.
  */
-export function previstosSubstituidos(lancamentos: readonly Lancamento[]): Set<string> {
+export function previstosSubstituidos(
+  lancamentos: readonly Lancamento[],
+  /** Com a data de hoje, os previstos de hoje e de antes também ficam de fora. */
+  hoje?: string,
+): Set<string> {
   const comGastoReal = new Set<string>();
   for (const l of lancamentos) {
     if (vivo(l) && l.tipo === "DIARIO" && !l.previsto) comGastoReal.add(l.data);
   }
   const ids = new Set<string>();
-  if (comGastoReal.size === 0) return ids;
   for (const l of lancamentos) {
-    if (vivo(l) && l.tipo === "DIARIO" && l.previsto && comGastoReal.has(l.data)) ids.add(l.id);
+    if (!vivo(l) || l.tipo !== "DIARIO" || !l.previsto) continue;
+    if (comGastoReal.has(l.data) || (hoje !== undefined && l.data <= hoje)) ids.add(l.id);
   }
   return ids;
 }
@@ -122,6 +132,12 @@ export function calcularAno(opcoes: {
   ano: number;
   lancamentos: Lancamento[];
   ajustes: Pick<Ajustes, "saldoInicialCents" | "rateioAptoPercent">;
+  /**
+   * Que dia é hoje. Com ele, a estimativa do diário (os R$ 60) só conta para os
+   * dias que ainda não chegaram: hoje e os passados valem o que foi lançado.
+   * Sem ele, toda estimativa conta, como na planilha.
+   */
+  hoje?: string;
 }): AnoCalculado {
   const { ano, ajustes } = opcoes;
 
@@ -162,10 +178,14 @@ export function calcularAno(opcoes: {
       let d = 0;
       let previstoNoDia = false;
       const diarioSubstituido = doDia.some((l) => l.tipo === "DIARIO" && !l.previsto);
+      // A estimativa de um dia que já chegou (hoje, ontem) não gasta nada: só o
+      // que foi lançado conta. Do dia seguinte em diante ela é a melhor
+      // previsão que existe e volta a valer.
+      const diarioPrevistoFora =
+        diarioSubstituido || (opcoes.hoje !== undefined && data <= opcoes.hoje);
 
       for (const l of doDia) {
-        // O previsto do diário que um gasto real já substituiu não conta nada.
-        if (l.previsto && l.tipo === "DIARIO" && diarioSubstituido) continue;
+        if (l.previsto && l.tipo === "DIARIO" && diarioPrevistoFora) continue;
         if (l.previsto) previstoNoDia = true;
         if (l.tipo === "ENTRADA") {
           e += l.valorCents;
@@ -200,6 +220,7 @@ export function calcularAno(opcoes: {
         temPrevisto: previstoNoDia,
         temLancamento: doDia.length > 0,
         diarioSubstituido,
+        diarioPrevistoFora,
       });
     }
 
@@ -285,8 +306,10 @@ export function calcularAnoEncadeado(opcoes: {
   /** Os saldos de abertura digitados à mão, por ano. */
   saldosIniciais: Record<number, number>;
   rateioAptoPercent: number;
+  /** Que dia é hoje: ver `calcularAno`. */
+  hoje?: string;
 }): AnoCalculado {
-  const { ano, lancamentos, saldosIniciais, rateioAptoPercent } = opcoes;
+  const { ano, lancamentos, saldosIniciais, rateioAptoPercent, hoje } = opcoes;
 
   const saudavel = (a: number) => Number.isFinite(a) && a >= 2000 && a <= 2100;
   const candidatos = [
@@ -299,6 +322,7 @@ export function calcularAnoEncadeado(opcoes: {
     ano: primeiro,
     lancamentos,
     ajustes: { saldoInicialCents: saldosIniciais[primeiro] ?? 0, rateioAptoPercent },
+    hoje,
   });
 
   for (let a = primeiro + 1; a <= ano; a++) {
@@ -309,6 +333,7 @@ export function calcularAnoEncadeado(opcoes: {
         saldoInicialCents: saldosIniciais[a] ?? calculado.saldoFinalCents,
         rateioAptoPercent,
       },
+      hoje,
     });
   }
 
@@ -457,10 +482,10 @@ export function sobraPorDia(ano: AnoCalculado, hoje: string): SobraPorDia | null
   // em diante). Contá-lo aqui seria descontar duas vezes: uma na previsão,
   // outra no "dá por dia" que ela mesma vai substituir. A pergunta é "sem
   // nenhum gasto do dia a dia, quanto sobra?" — então o previsto volta.
-  // O previsto que um gasto real já substituiu não está no fechamento, então
-  // também não volta aqui.
+  // Só volta o que estava no fechamento: o previsto que ficou de fora (um gasto
+  // real o substituiu, ou o dia é hoje) não foi descontado, então não se soma.
   const diarioPrevistoRestante = doMes.dias
-    .filter((d) => d.data >= hoje && !d.diarioSubstituido)
+    .filter((d) => d.data >= hoje && !d.diarioPrevistoFora)
     .flatMap((d) => d.lancamentos)
     .filter((l) => l.tipo === "DIARIO" && l.previsto)
     .reduce((t, l) => t + l.valorCents, 0);
@@ -490,8 +515,17 @@ export function sobraPorDia(ano: AnoCalculado, hoje: string): SobraPorDia | null
 export function previstosVencidos(lancamentos: readonly Lancamento[], hoje: string): Lancamento[] {
   // Um previsto do diário já substituído por gasto real não tem o que conferir.
   const substituidos = previstosSubstituidos(lancamentos);
+  // A estimativa do diário de hoje ainda está em andamento: o dia não acabou, e
+  // perguntar "aconteceu mesmo?" às seis da manhã não faz sentido. Só os dias
+  // que já passaram pedem conferência.
   return lancamentos
-    .filter((l) => vivo(l) && l.previsto && l.data <= hoje && !substituidos.has(l.id))
+    .filter(
+      (l) =>
+        vivo(l) &&
+        l.previsto &&
+        (l.tipo === "DIARIO" ? l.data < hoje : l.data <= hoje) &&
+        !substituidos.has(l.id),
+    )
     .sort((a, b) => a.data.localeCompare(b.data));
 }
 

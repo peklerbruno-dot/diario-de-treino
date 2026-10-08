@@ -64,8 +64,10 @@ export function FolhaDoDia({ dia, aoFechar }: { dia: DiaCalculado; aoFechar: () 
                   {[
                     l.nota ? NOME_DO_TIPO[l.tipo] : null,
                     l.previsto
-                      ? dia.diarioSubstituido && l.tipo === "DIARIO"
-                        ? "substituído pelo gasto real"
+                      ? dia.diarioPrevistoFora && l.tipo === "DIARIO"
+                        ? dia.diarioSubstituido
+                          ? "substituído pelo gasto real"
+                          : "estimativa, não conta até você lançar"
                         : "previsto"
                       : null,
                     l.rendaPropria ? "dinheiro seu" : null,

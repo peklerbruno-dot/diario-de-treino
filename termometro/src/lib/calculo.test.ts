@@ -602,3 +602,54 @@ describe("o gasto real substitui o previsto do diário", () => {
     expect(previstosSubstituidos(lista).size).toBe(0);
   });
 });
+
+describe("a estimativa do diário só conta dos dias que vêm", () => {
+  const prev = (data: string) => ({
+    id: `p-${data}`,
+    data,
+    tipo: "DIARIO" as const,
+    valorCents: 6000,
+    previsto: true,
+    fixoId: "f",
+  });
+  const ajustes = { saldoInicialCents: 100_000, rateioAptoPercent: 40 };
+  const lancamentos = [prev("2026-10-07"), prev("2026-10-08"), prev("2026-10-09")] as never[];
+
+  it("hoje (e antes) valem o que foi lançado; amanhã em diante, a estimativa", () => {
+    const ano = calcularAno({ ano: 2026, lancamentos, ajustes, hoje: "2026-10-08" });
+    const dias = ano.meses[9].dias;
+    expect(dias[6].diarioCents).toBe(0); // ontem, sem lançamento
+    expect(dias[7].diarioCents).toBe(0); // hoje, sem lançamento
+    expect(dias[8].diarioCents).toBe(6000); // amanhã, a estimativa
+    expect(dias[7].diarioPrevistoFora).toBe(true);
+    expect(dias[8].diarioPrevistoFora).toBe(false);
+  });
+
+  it("o saldo de agora não desconta os R$ 60 de hoje", () => {
+    const ano = calcularAno({ ano: 2026, lancamentos, ajustes, hoje: "2026-10-08" });
+    expect(ano.meses[9].dias[7].saldoCents).toBe(100_000);
+    expect(ano.meses[9].dias[8].saldoCents).toBe(100_000 - 6000);
+  });
+
+  it("sem informar o dia, tudo conta, como antes", () => {
+    const ano = calcularAno({ ano: 2026, lancamentos, ajustes });
+    expect(ano.meses[9].dias[7].diarioCents).toBe(6000);
+  });
+
+  it("gasto real hoje vale o real, e só ele", () => {
+    const real = { id: "r", data: "2026-10-08", tipo: "DIARIO", valorCents: 2500, previsto: false } as never;
+    const ano = calcularAno({ ano: 2026, lancamentos: [...lancamentos, real], ajustes, hoje: "2026-10-08" });
+    expect(ano.meses[9].dias[7].diarioCents).toBe(2500);
+  });
+
+  it("a sobra por dia não soma de volta o que não foi descontado", () => {
+    const ano = calcularAno({ ano: 2026, lancamentos, ajustes, hoje: "2026-10-08" });
+    const sobra = sobraPorDia(ano, "2026-10-08");
+    // Só o previsto de amanhã estava no fechamento, e só ele volta.
+    expect(sobra?.fechamentoCents).toBe(ano.meses[9].totais.saldoFechamentoCents + 6000);
+  });
+
+  it("a conferência não cobra o dia de hoje, só os que passaram", () => {
+    expect(previstosVencidos(lancamentos, "2026-10-08").map((l) => l.data)).toEqual(["2026-10-07"]);
+  });
+});
