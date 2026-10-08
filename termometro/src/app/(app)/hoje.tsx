@@ -130,9 +130,21 @@ export function TelaDeHoje() {
                     <span className={l.previsto ? "text-grafite" : ""}>
                       {l.nota || NOME_DO_TIPO[l.tipo]}
                     </span>
-                    {l.previsto && <Selo tom="quieto">previsto</Selo>}
+                    {l.previsto && (
+                      <Selo tom="quieto">
+                        {doDia.diarioSubstituido && l.tipo === "DIARIO" ? "substituído" : "previsto"}
+                      </Selo>
+                    )}
                   </span>
-                  <Dinheiro cents={l.valorCents} papel={corDe(l.tipo)} />
+                  <Dinheiro
+                    cents={l.valorCents}
+                    papel={corDe(l.tipo)}
+                    className={
+                      l.previsto && doDia.diarioSubstituido && l.tipo === "DIARIO"
+                        ? "line-through opacity-60"
+                        : undefined
+                    }
+                  />
                 </div>
               ))}
             </Cartao>

@@ -392,6 +392,22 @@ sem `categoria` no pedido, a porta procura nos lançamentos da própria pessoa a
 categoria que aquela `nota` já teve (mesmo tipo; o mais repetido ganha, no empate o
 mais recente), então a próxima compra ali já nasce categorizada.
 
+A notificação do Nubank (`texto=`) também serve de gatilho para crédito, débito e
+NuPay: "R$ 53,58 no débito com NuPay APROVADO em KeetaBR." dá o valor e a loja
+(`nota`). Dois cuidados de contabilidade que a porta e o app compartilham:
+
+- **Previsto confirmado, não duplicado.** Uma entrada ou saída nova que bate com um
+  previsto de fixo (mesmo tipo, até 7 dias de diferença, valor até 25% de diferença)
+  confirma o previsto com o valor e o dia reais, em vez de somar-se a ele. Vale no
+  app (`loja.salvarLancamento`) e na porta (`/api/lancar`); a lógica é
+  `lib/conciliar.ts`.
+- **O gasto real substitui o previsto do diário.** Num dia com gasto de verdade, os
+  R$ 60 previstos não contam (`previstosSubstituidos`, em `lib/calculo.ts`); nos dias
+  sem gasto, a estimativa continua no saldo.
+
+Todo erro da porta volta também em `recado`, que é o que a notificação do atalho
+mostra.
+
 Três decisões que essa porta carrega:
 
 - **O código vai no cabeçalho, nunca no endereço.** Endereço fica gravado em

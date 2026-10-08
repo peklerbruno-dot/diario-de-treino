@@ -116,6 +116,21 @@ export function valorNoTexto(texto: string): { ok: true; valor: string } | { ok:
   return { ok: true, valor: [...achados][0] };
 }
 
+/**
+ * O nome da loja dentro da notificação do banco:
+ * "R$ 53,58 no débito com NuPay APROVADO em KeetaBR." → "KeetaBR".
+ *
+ * É o que deixa a categoria automática funcionar sem o Apple Pay: a loja vira
+ * a nota, e a nota lembra a categoria. Sem "APROVADO em", devolve nulo — um
+ * texto que o app não reconhece não ganha uma loja inventada.
+ */
+export function lojaNoTexto(texto: string): string | null {
+  const m = /aprovad[oa]\s+em\s+([^\n]+)/i.exec(texto);
+  if (!m) return null;
+  const loja = m[1].trim().replace(/[.\s]+$/, "").trim();
+  return loja ? loja.slice(0, 120) : null;
+}
+
 export type LeituraDoPedido =
   | {
       ok: true;
@@ -195,7 +210,9 @@ export function lerPedidoDoAtalho(
 
   const agora = opcoes.agora ?? new Date().toISOString();
   const novoId = opcoes.novoId ?? (() => crypto.randomUUID());
-  const nota = comoTexto(corpo.nota)?.trim() || null;
+  // Sem nota dita, a loja da notificação do banco vira a nota.
+  const nota =
+    comoTexto(corpo.nota)?.trim() || lojaNoTexto(comoTexto(corpo.texto) ?? "") || null;
 
   // Categoria que não casou não derruba o lançamento: o valor entra, e a
   // notificação avisa. Perder o gasto porque a Siri ouviu "farmássia" seria

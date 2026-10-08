@@ -106,6 +106,44 @@ export function TelaDoApplePay() {
         </p>
       </section>
 
+      <section className="mt-6">
+        <h2 className="text-[17px] font-semibold">Crédito, débito e NuPay (pela notificação)</h2>
+        <p className="mt-1.5 text-[14.5px] leading-relaxed text-fosco">
+          O Apple Pay só avisa o que passa pelo Wallet. Compra no crédito sem o celular, débito e
+          NuPay chegam pela <b>notificação do Nubank</b>, que traz o valor e a loja:{" "}
+          <i>“R$ 53,58 no débito com NuPay APROVADO em KeetaBR.”</i> O app lê o valor e a loja do
+          texto.
+        </p>
+        <ol className="mt-3 space-y-3">
+          <Passo n={1}>
+            Em <b>Atalhos → Automação → +</b>, escolha <b>Notificação</b>. Em <b>App</b>, marque o{" "}
+            <b>Nubank</b>. Em <b>Adicionar Filtro</b>, escolha <b>Mensagem contém</b> e escreva{" "}
+            <Palavra>APROVAD</Palavra>. Marque <b>Executar imediatamente</b>.
+          </Passo>
+          <Passo n={2}>
+            Ação <b>Obter conteúdo da URL</b>: endereço copiado acima, mas no fim, no lugar de{" "}
+            <Palavra>valor=</Palavra>, escreva <Palavra>texto=</Palavra> e escolha a variável{" "}
+            <b>Notificação</b>. Método <Palavra>POST</Palavra>, e o cabeçalho{" "}
+            <Palavra>x-codigo</Palavra> com o seu código.
+          </Passo>
+          <Passo n={3}>
+            Depois, <b>Obter valor do dicionário</b> (chave <Palavra>recado</Palavra>) e{" "}
+            <b>Mostrar notificação</b> com esse valor.
+          </Passo>
+        </ol>
+        <Aviso>
+          <b>Já tem o atalho do Apple Pay para o cartão do Nubank?</b> Desligue-o: a notificação do
+          Nubank também avisa as compras pelo Apple Pay, e os dois juntos lançariam a mesma compra
+          duas vezes. Mantenha o do Apple Pay só para cartões de outros bancos.
+        </Aviso>
+        <p className="mt-3 text-[14px] leading-relaxed text-fosco">
+          <b className="text-grafite">Salário que cai e já estava previsto</b> não duplica mais: o
+          app confirma o previsto com o valor e o dia reais. E um gasto real num dia{" "}
+          <b className="text-grafite">substitui</b> a previsão do diário daquele dia (os R$ 60), em
+          vez de somar a ela.
+        </p>
+      </section>
+
       <p className="mt-5 text-[14px] leading-relaxed text-fosco">
         Funcionou e você quer escolher a categoria na hora? Está no{" "}
         <Link href="/atalho" className="text-saldo underline">
