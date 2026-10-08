@@ -31,7 +31,7 @@ export function TelaDosTotais() {
   const categorias = categoriasDe(estado);
   const vivos = lancamentosVivos(estado);
   const lancamentos = doPeriodo(vivos, ano, mes);
-  const totais = totaisPorCategoria(lancamentos, categorias, tipo);
+  const totais = totaisPorCategoria(lancamentos, categorias, tipo, hoje());
 
   // O período anterior, para o número ter com o que se comparar: "Mercado
   // R$ 950" não diz nada sozinho; "mês passado 720" diz tudo. Só o número, em
@@ -41,6 +41,7 @@ export function TelaDosTotais() {
     doPeriodo(vivos, anterior.ano, anterior.mes),
     categorias,
     tipo,
+    hoje(),
   );
   const anteriorDe = new Map(totaisAnteriores.categorias.map((c) => [c.id, c.centavos]));
   const rotuloAnterior = mes === null ? String(ano - 1) : "mês passado";

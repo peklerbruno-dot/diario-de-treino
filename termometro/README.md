@@ -401,9 +401,11 @@ NuPay: "R$ 53,58 no débito com NuPay APROVADO em KeetaBR." dá o valor e a loja
   confirma o previsto com o valor e o dia reais, em vez de somar-se a ele. Vale no
   app (`loja.salvarLancamento`) e na porta (`/api/lancar`); a lógica é
   `lib/conciliar.ts`.
-- **O gasto real substitui o previsto do diário.** Num dia com gasto de verdade, os
-  R$ 60 previstos não contam (`previstosSubstituidos`, em `lib/calculo.ts`); nos dias
-  sem gasto, a estimativa continua no saldo.
+- **A estimativa do diário (os R$ 60) só conta dos dias que vêm.** Hoje e os dias
+  passados valem só o que foi lançado, e um gasto real num dia substitui a estimativa
+  dele (`previstosSubstituidos`, em `lib/calculo.ts`). Assim o "Saldo agora" não
+  desconta, à meia-noite, um gasto que ainda não aconteceu; amanhã em diante a
+  estimativa continua no saldo e na projeção do mês.
 
 Todo erro da porta volta também em `recado`, que é o que a notificação do atalho
 mostra.

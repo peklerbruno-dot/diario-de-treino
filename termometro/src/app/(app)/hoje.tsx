@@ -132,7 +132,11 @@ export function TelaDeHoje() {
                     </span>
                     {l.previsto && (
                       <Selo tom="quieto">
-                        {doDia.diarioSubstituido && l.tipo === "DIARIO" ? "substituído" : "previsto"}
+                        {doDia.diarioPrevistoFora && l.tipo === "DIARIO"
+                          ? doDia.diarioSubstituido
+                            ? "substituído"
+                            : "estimativa"
+                          : "previsto"}
                       </Selo>
                     )}
                   </span>
@@ -140,8 +144,10 @@ export function TelaDeHoje() {
                     cents={l.valorCents}
                     papel={corDe(l.tipo)}
                     className={
-                      l.previsto && doDia.diarioSubstituido && l.tipo === "DIARIO"
-                        ? "line-through opacity-60"
+                      l.previsto && doDia.diarioPrevistoFora && l.tipo === "DIARIO"
+                        ? doDia.diarioSubstituido
+                          ? "line-through opacity-60"
+                          : "opacity-60"
                         : undefined
                     }
                   />

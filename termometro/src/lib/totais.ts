@@ -43,12 +43,14 @@ export function totaisPorCategoria(
   lancamentos: readonly Lancamento[],
   categorias: readonly Categoria[],
   tipo: Tipo,
+  /** Com a data de hoje, a estimativa do diário de hoje e de antes não entra. */
+  hoje?: string,
 ): TotaisPorCategoria {
   const soma = new Map<string, { centavos: number; quantos: number }>();
   let total = 0;
   // O previsto do diário que um gasto real já substituiu não entra: seria o
   // mesmo dia contado duas vezes.
-  const substituidos = tipo === "DIARIO" ? previstosSubstituidos(lancamentos) : null;
+  const substituidos = tipo === "DIARIO" ? previstosSubstituidos(lancamentos, hoje) : null;
 
   for (const l of lancamentos) {
     if (l.tipo !== tipo || l.apagadoEm) continue;

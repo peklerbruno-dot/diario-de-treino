@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { calcularAnoEncadeado, type AnoCalculado } from "@/lib/calculo";
+import { hoje as diaDeHoje } from "@/lib/datas";
 import {
   lancamentosVivos,
   loja,
@@ -55,6 +56,9 @@ export function useIniciarLoja(usuario: QuemUsa) {
  */
 export function useAnoCalculado(ano: number): AnoCalculado {
   const estado = useEstado();
+  // A estimativa do diário só conta dos dias que vêm em diante, então a conta
+  // depende de que dia é hoje — e vira à meia-noite.
+  const hoje = diaDeHoje();
 
   return useMemo(
     () =>
@@ -63,7 +67,8 @@ export function useAnoCalculado(ano: number): AnoCalculado {
         lancamentos: lancamentosVivos(estado),
         saldosIniciais: saldosIniciaisDigitados(estado),
         rateioAptoPercent: rateioApto(estado),
+        hoje,
       }),
-    [estado, ano],
+    [estado, ano, hoje],
   );
 }

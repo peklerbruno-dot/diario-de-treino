@@ -1,5 +1,6 @@
 import { bd } from "./bd";
 import { calcularAnoEncadeado, sobraPorDia, type AnoCalculado, type SobraPorDia } from "./calculo";
+import { hojeNoFuso } from "./atalho";
 import { partesDaData } from "./datas";
 
 /**
@@ -56,6 +57,9 @@ export async function saldoNoServidor(
         : usuarioId === "dono"
           ? 40
           : 0,
+    // A estimativa do diário só conta dos dias que vêm: o saldo que a
+    // notificação diz é o de agora, com o que foi lançado até aqui.
+    hoje: hojeNoFuso(),
   });
 
   return {
