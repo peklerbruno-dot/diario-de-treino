@@ -1,3 +1,4 @@
+import { previstosSubstituidos } from "./calculo";
 import { nomeDaCategoria, type Categoria } from "./categorias";
 import type { Lancamento, Tipo } from "./tipos";
 
@@ -45,9 +46,13 @@ export function totaisPorCategoria(
 ): TotaisPorCategoria {
   const soma = new Map<string, { centavos: number; quantos: number }>();
   let total = 0;
+  // O previsto do diário que um gasto real já substituiu não entra: seria o
+  // mesmo dia contado duas vezes.
+  const substituidos = tipo === "DIARIO" ? previstosSubstituidos(lancamentos) : null;
 
   for (const l of lancamentos) {
     if (l.tipo !== tipo || l.apagadoEm) continue;
+    if (substituidos?.has(l.id)) continue;
     const chave = l.categoria || SEM;
     const atual = soma.get(chave) ?? { centavos: 0, quantos: 0 };
     atual.centavos += l.valorCents;

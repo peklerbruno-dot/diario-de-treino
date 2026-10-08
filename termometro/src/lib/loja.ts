@@ -15,6 +15,7 @@ import {
 } from "./categorias";
 import { hoje as dataDeHoje } from "./datas";
 import { aoReal, comCifrao } from "./dinheiro";
+import { previstoParaConfirmar } from "./conciliar";
 import type { Ajustes, Fixo, Lancamento, Tipo } from "./tipos";
 import { AJUSTES_PADRAO } from "./tipos";
 
@@ -226,6 +227,28 @@ export class Loja {
   }
 
   salvarLancamento(dados: Omit<Lancamento, "id" | "criadoEm" | "atualizadoEm"> & { id?: string }) {
+    // Uma entrada ou saída nova que é a confirmação de um previsto (o salário
+    // que caiu, a fatura que foi paga) confirma o previsto em vez de somar-se a
+    // ele — senão o mesmo salário contaria duas vezes. Só para lançamento novo,
+    // e nunca para o diário, que tem regra própria (o real substitui o dia).
+    if (!dados.id && !dados.previsto && dados.tipo !== "DIARIO") {
+      const achado = previstoParaConfirmar(
+        { tipo: dados.tipo, data: dados.data, valorCents: aoReal(dados.valorCents) },
+        Object.values(this.estado.lancamentos),
+      );
+      if (achado) {
+        dados = {
+          ...dados,
+          id: achado.id,
+          nota: dados.nota || achado.nota,
+          categoria: dados.categoria ?? achado.categoria ?? null,
+          rendaPropria: !!(dados.rendaPropria || achado.rendaPropria),
+          investimento: !!(dados.investimento || achado.investimento),
+          apartamento: !!(dados.apartamento || achado.apartamento),
+          fixoId: achado.fixoId ?? null,
+        };
+      }
+    }
     const id = dados.id ?? novoId();
     const anterior = this.estado.lancamentos[id];
     const l: Lancamento = {

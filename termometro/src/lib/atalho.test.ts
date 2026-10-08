@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { camposDoEndereco, hojeNoFuso, lerPedidoDoAtalho, recadoDoAtalho, valorNoTexto } from "./atalho";
+import {
+  camposDoEndereco,
+  hojeNoFuso,
+  lerPedidoDoAtalho,
+  lojaNoTexto,
+  recadoDoAtalho,
+  valorNoTexto,
+} from "./atalho";
 import type { Lancamento } from "./tipos";
 
 let n = 0;
@@ -368,5 +375,46 @@ describe("o teto vale para o que é dito", () => {
   it("digitado com dígitos repetidos também", () => {
     const pedido = lerPedidoDoAtalho({ valor: "38003800" }, opcoes);
     expect(pedido.ok).toBe(false);
+  });
+});
+
+describe("a loja dentro da notificação do banco", () => {
+  it("tira a loja de uma compra NuPay", () => {
+    expect(lojaNoTexto("R$ 53,58 no débito com NuPay APROVADO em KeetaBR.")).toBe("KeetaBR");
+  });
+
+  it("funciona com o título junto, em outra linha", () => {
+    expect(
+      lojaNoTexto("Pagamento com NuPay\nR$ 53,58 no débito com NuPay APROVADO em KeetaBR.\n"),
+    ).toBe("KeetaBR");
+  });
+
+  it("compra no crédito aprovada", () => {
+    expect(lojaNoTexto("Compra de R$ 25,90 APROVADA em PADARIA SAO JOAO.")).toBe("PADARIA SAO JOAO");
+  });
+
+  it("sem a frase, não inventa loja", () => {
+    expect(lojaNoTexto("Recebemos sua transferência de R$ 1,00.")).toBeNull();
+  });
+
+  it("o pedido usa a loja como nota e o valor da frase", () => {
+    const r = lerPedidoDoAtalho(
+      { texto: "R$ 53,58 no débito com NuPay APROVADO em KeetaBR." },
+      { hoje: "2026-10-08", novoId: () => "x", agora: "2026-10-08T12:00:00Z" },
+    );
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.lancamentos[0].nota).toBe("KeetaBR");
+      expect(r.lancamentos[0].tipo).toBe("DIARIO");
+      expect(r.lancamentos[0].valorCents).toBe(5400);
+    }
+  });
+
+  it("nota dita vence a da notificação", () => {
+    const r = lerPedidoDoAtalho(
+      { texto: "R$ 10 APROVADO em LOJA.", nota: "Pix" },
+      { hoje: "2026-10-08" },
+    );
+    expect(r.ok && r.lancamentos[0].nota).toBe("Pix");
   });
 });

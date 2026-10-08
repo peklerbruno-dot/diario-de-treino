@@ -30,9 +30,14 @@ export interface DiaCalculado {
   /** Saldo ao fim deste dia. */
   saldoCents: number;
   lancamentos: Lancamento[];
-  /** Tem pelo menos um lançamento ainda não confirmado. */
+  /** Tem pelo menos um lançamento ainda não confirmado (e que ainda conta). */
   temPrevisto: boolean;
   temLancamento: boolean;
+  /**
+   * Houve gasto de verdade no dia, então os R$ 60 previstos do diário não
+   * contam: o real substitui a previsão, não se soma a ela.
+   */
+  diarioSubstituido: boolean;
 }
 
 export interface TotaisDoMes {
@@ -87,6 +92,31 @@ export interface AnoCalculado {
 
 const vivo = (l: Lancamento) => !l.apagadoEm;
 
+/**
+ * Os previstos do diário que o gasto de verdade já substituiu.
+ *
+ * O fixo "gasto do dia" escreve, para cada dia que vem, uma estimativa (R$ 60).
+ * Quando o dia ganha um gasto real — o botão do Gastei, a notificação do
+ * banco — a estimativa deixa de valer: contar as duas coisas gastaria o mesmo
+ * dia duas vezes. Substituir (e não abater) é a regra de propósito: ela é
+ * simples de explicar, e o real passa a ser o único número do dia.
+ *
+ * Só o DIARIO tem essa regra. Salário e fatura previstos ficam até a pessoa (ou
+ * a notificação) os confirmar, e quem os confirma é `previstoParaConfirmar`.
+ */
+export function previstosSubstituidos(lancamentos: readonly Lancamento[]): Set<string> {
+  const comGastoReal = new Set<string>();
+  for (const l of lancamentos) {
+    if (vivo(l) && l.tipo === "DIARIO" && !l.previsto) comGastoReal.add(l.data);
+  }
+  const ids = new Set<string>();
+  if (comGastoReal.size === 0) return ids;
+  for (const l of lancamentos) {
+    if (vivo(l) && l.tipo === "DIARIO" && l.previsto && comGastoReal.has(l.data)) ids.add(l.id);
+  }
+  return ids;
+}
+
 /** O ano inteiro, mês a mês, com o saldo encadeado de janeiro a dezembro. */
 export function calcularAno(opcoes: {
   ano: number;
@@ -131,8 +161,11 @@ export function calcularAno(opcoes: {
       let s = 0;
       let d = 0;
       let previstoNoDia = false;
+      const diarioSubstituido = doDia.some((l) => l.tipo === "DIARIO" && !l.previsto);
 
       for (const l of doDia) {
+        // O previsto do diário que um gasto real já substituiu não conta nada.
+        if (l.previsto && l.tipo === "DIARIO" && diarioSubstituido) continue;
         if (l.previsto) previstoNoDia = true;
         if (l.tipo === "ENTRADA") {
           e += l.valorCents;
@@ -166,6 +199,7 @@ export function calcularAno(opcoes: {
         lancamentos: doDia,
         temPrevisto: previstoNoDia,
         temLancamento: doDia.length > 0,
+        diarioSubstituido,
       });
     }
 
@@ -423,8 +457,10 @@ export function sobraPorDia(ano: AnoCalculado, hoje: string): SobraPorDia | null
   // em diante). Contá-lo aqui seria descontar duas vezes: uma na previsão,
   // outra no "dá por dia" que ela mesma vai substituir. A pergunta é "sem
   // nenhum gasto do dia a dia, quanto sobra?" — então o previsto volta.
+  // O previsto que um gasto real já substituiu não está no fechamento, então
+  // também não volta aqui.
   const diarioPrevistoRestante = doMes.dias
-    .filter((d) => d.data >= hoje)
+    .filter((d) => d.data >= hoje && !d.diarioSubstituido)
     .flatMap((d) => d.lancamentos)
     .filter((l) => l.tipo === "DIARIO" && l.previsto)
     .reduce((t, l) => t + l.valorCents, 0);
@@ -452,8 +488,10 @@ export function sobraPorDia(ano: AnoCalculado, hoje: string): SobraPorDia | null
  * errado há mais tempo.
  */
 export function previstosVencidos(lancamentos: readonly Lancamento[], hoje: string): Lancamento[] {
+  // Um previsto do diário já substituído por gasto real não tem o que conferir.
+  const substituidos = previstosSubstituidos(lancamentos);
   return lancamentos
-    .filter((l) => vivo(l) && l.previsto && l.data <= hoje)
+    .filter((l) => vivo(l) && l.previsto && l.data <= hoje && !substituidos.has(l.id))
     .sort((a, b) => a.data.localeCompare(b.data));
 }
 

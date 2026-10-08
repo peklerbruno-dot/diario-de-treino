@@ -3,6 +3,7 @@ import { usuarioDoPedido } from "@/lib/auth";
 import { bd } from "@/lib/bd";
 import { camposDoEndereco, hojeNoFuso, lerPedidoDoAtalho, recadoDoAtalho } from "@/lib/atalho";
 import { categoriaDaLoja } from "@/lib/categoria-da-loja";
+import { confirmadoCom, janelaDeBusca, previstoParaConfirmar } from "@/lib/conciliar";
 import { CHAVE_DAS_CATEGORIAS, lerCategorias, nomeDaCategoria } from "@/lib/categorias";
 import { saldoNoServidor } from "@/lib/saldo-no-servidor";
 
@@ -28,8 +29,15 @@ import { saldoNoServidor } from "@/lib/saldo-no-servidor";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const naoAutorizado = () =>
-  NextResponse.json({ erro: "Código de acesso inválido." }, { status: 401 });
+/**
+ * Todo erro volta também em `recado`: é o campo que a notificação do atalho
+ * mostra. Sem isso, quando algo falhava a notificação aparecia em branco, e a
+ * pessoa via que deu errado sem saber por quê.
+ */
+const recusa = (erro: string, status: number) =>
+  NextResponse.json({ erro, recado: erro }, { status });
+
+const naoAutorizado = () => recusa("Código de acesso inválido.", 401);
 
 export async function POST(pedido: Request) {
   const doCabecalho = pedido.headers.get("x-codigo");
@@ -43,7 +51,7 @@ export async function POST(pedido: Request) {
     try {
       corpo = { ...corpo, ...(JSON.parse(texto) as Record<string, unknown>) };
     } catch {
-      return NextResponse.json({ erro: "O corpo do pedido não é JSON." }, { status: 400 });
+      return recusa("O corpo do pedido não é JSON.", 400);
     }
   }
 
@@ -64,7 +72,7 @@ export async function POST(pedido: Request) {
   const categorias = lerCategorias(guardadas?.valor);
 
   const leitura = lerPedidoDoAtalho(corpo, { hoje: hojeNoFuso(), categorias });
-  if (!leitura.ok) return NextResponse.json({ erro: leitura.erro }, { status: 400 });
+  if (!leitura.ok) return recusa(leitura.erro, 400);
 
   const { lancamentos } = leitura;
 
@@ -86,37 +94,88 @@ export async function POST(pedido: Request) {
     }
   }
 
-  await bd.lancamento.createMany({
-    data: lancamentos.map((l) => ({
-      id: l.id,
-      usuarioId,
-      data: l.data,
-      tipo: l.tipo,
-      valorCents: l.valorCents,
-      nota: l.nota ?? null,
-      categoria: l.categoria ?? null,
-      previsto: false,
-      rendaPropria: !!l.rendaPropria,
-      investimento: !!l.investimento,
-      apartamento: !!l.apartamento,
-      fixoId: null,
-      criadoEm: new Date(l.criadoEm!),
-      atualizadoEm: new Date(l.atualizadoEm!),
-    })),
-  });
+  // O salário que caiu de verdade é o salário que já estava previsto: em vez de
+  // somar um valor novo ao previsto, o previsto é confirmado com o valor e o
+  // dia reais. Só com um lançamento só — "195+15" são gastos, não um salário.
+  let confirmado: string | null = null;
+  if (lancamentos.length === 1 && lancamentos[0].tipo !== "DIARIO") {
+    const alvo = lancamentos[0];
+    const janela = janelaDeBusca(alvo.data);
+    const candidatos = await bd.lancamento.findMany({
+      where: {
+        usuarioId,
+        apagadoEm: null,
+        previsto: true,
+        fixoId: { not: null },
+        tipo: alvo.tipo,
+        data: { gte: janela.de, lte: janela.ate },
+      },
+    });
+    const achado = previstoParaConfirmar(
+      alvo,
+      candidatos.map((c) => ({
+        id: c.id,
+        data: c.data,
+        tipo: c.tipo,
+        valorCents: c.valorCents,
+        nota: c.nota,
+        previsto: c.previsto,
+        fixoId: c.fixoId,
+      })),
+    );
+    if (achado) {
+      await bd.lancamento.update({
+        where: { id: achado.id },
+        data: { data: alvo.data, valorCents: alvo.valorCents, previsto: false, atualizadoEm: new Date() },
+      });
+      confirmado = achado.nota?.trim() || "o previsto";
+      // O que fica no recado e no saldo é o previsto já confirmado.
+      lancamentos[0] = confirmadoCom(
+        { ...achado, categoria: achado.categoria ?? null },
+        alvo,
+        new Date().toISOString(),
+      );
+    }
+  }
+
+  if (!confirmado) {
+    await bd.lancamento.createMany({
+      data: lancamentos.map((l) => ({
+        id: l.id,
+        usuarioId,
+        data: l.data,
+        tipo: l.tipo,
+        valorCents: l.valorCents,
+        nota: l.nota ?? null,
+        categoria: l.categoria ?? null,
+        previsto: false,
+        rendaPropria: !!l.rendaPropria,
+        investimento: !!l.investimento,
+        apartamento: !!l.apartamento,
+        fixoId: null,
+        criadoEm: new Date(l.criadoEm!),
+        atualizadoEm: new Date(l.atualizadoEm!),
+      })),
+    });
+  }
 
   const data = lancamentos[0].data;
 
   const { saldoDoDiaCents: saldoDoDia } = await saldoNoServidor(data, usuarioId);
 
+  const recado = recadoDoAtalho(lancamentos, saldoDoDia, {
+    nome: lancamentos[0].categoria
+      ? nomeDaCategoria(categorias, lancamentos[0].categoria)
+      : undefined,
+    naoAchada: leitura.categoriaNaoAchada,
+  });
+
   return NextResponse.json({
     ok: true,
-    recado: recadoDoAtalho(lancamentos, saldoDoDia, {
-      nome: lancamentos[0].categoria
-        ? nomeDaCategoria(categorias, lancamentos[0].categoria)
-        : undefined,
-      naoAchada: leitura.categoriaNaoAchada,
-    }),
+    recado: confirmado
+      ? recado.replace(" Saldo de hoje", ` Confirmei “${confirmado}”, que já estava previsto. Saldo de hoje`)
+      : recado,
+    confirmouPrevisto: confirmado !== null,
     categoriaAprendida: aprendida,
     quantos: lancamentos.length,
     data,

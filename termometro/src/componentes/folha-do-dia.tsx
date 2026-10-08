@@ -51,7 +51,7 @@ export function FolhaDoDia({ dia, aoFechar }: { dia: DiaCalculado; aoFechar: () 
                     </span>
                   </button>
 
-                  {l.previsto && (
+                  {l.previsto && !(dia.diarioSubstituido && l.tipo === "DIARIO") && (
                     <Botao
                       onClick={() => loja.confirmarLancamento(l.id)}
                       className="shrink-0 !px-3 !text-[15px]"
@@ -63,7 +63,11 @@ export function FolhaDoDia({ dia, aoFechar }: { dia: DiaCalculado; aoFechar: () 
                 <p className="mt-0.5 text-[13px] text-fosco">
                   {[
                     l.nota ? NOME_DO_TIPO[l.tipo] : null,
-                    l.previsto ? "previsto" : null,
+                    l.previsto
+                      ? dia.diarioSubstituido && l.tipo === "DIARIO"
+                        ? "substituído pelo gasto real"
+                        : "previsto"
+                      : null,
                     l.rendaPropria ? "dinheiro seu" : null,
                     l.investimento ? "investimento" : null,
                     l.apartamento ? "apartamento" : null,

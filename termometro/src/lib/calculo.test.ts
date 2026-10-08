@@ -6,7 +6,7 @@ import {
   previstosVencidos,
   primeiroDiaNoVermelho,
   sobraPorDia,
-  somaDosFixosNoMes,
+  somaDosFixosNoMes, previstosSubstituidos,
 } from "./calculo";
 import type { Fixo, Lancamento, Tipo } from "./tipos";
 
@@ -541,5 +541,64 @@ describe("a soma dos fixos num mês", () => {
     );
     expect(soma.entraCents).toBe(210000);
     expect(soma.saiCents).toBe(90000 + 6000 * 30);
+  });
+});
+
+describe("o gasto real substitui o previsto do diário", () => {
+  const dia = (id: string, tipo: "DIARIO" | "ENTRADA", valorCents: number, previsto: boolean, data = "2026-10-06") => ({
+    id,
+    data,
+    tipo,
+    valorCents,
+    previsto,
+    fixoId: previsto ? "f" : null,
+  });
+
+  it("sem gasto real, os R$ 60 contam", () => {
+    const ano = calcularAno({
+      ano: 2026,
+      lancamentos: [dia("p", "DIARIO", 6000, true)],
+      ajustes: { saldoInicialCents: 100_000, rateioAptoPercent: 40 },
+    });
+    expect(ano.meses[9].dias[5].diarioCents).toBe(6000);
+    expect(ano.meses[9].dias[5].diarioSubstituido).toBe(false);
+  });
+
+  it("com gasto real no dia, só o real conta", () => {
+    const ano = calcularAno({
+      ano: 2026,
+      lancamentos: [dia("p", "DIARIO", 6000, true), dia("r", "DIARIO", 5358, false)],
+      ajustes: { saldoInicialCents: 100_000, rateioAptoPercent: 40 },
+    });
+    const d = ano.meses[9].dias[5];
+    expect(d.diarioCents).toBe(5358);
+    expect(d.diarioSubstituido).toBe(true);
+    expect(d.temPrevisto).toBe(false);
+    expect(ano.meses[9].totais.diarioCents).toBe(5358);
+  });
+
+  it("o real de um dia não mexe no previsto de outro", () => {
+    const ano = calcularAno({
+      ano: 2026,
+      lancamentos: [
+        dia("p1", "DIARIO", 6000, true, "2026-10-06"),
+        dia("p2", "DIARIO", 6000, true, "2026-10-07"),
+        dia("r", "DIARIO", 1000, false, "2026-10-06"),
+      ],
+      ajustes: { saldoInicialCents: 0, rateioAptoPercent: 40 },
+    });
+    expect(ano.meses[9].dias[5].diarioCents).toBe(1000);
+    expect(ano.meses[9].dias[6].diarioCents).toBe(6000);
+  });
+
+  it("previstosSubstituidos e previstosVencidos concordam", () => {
+    const lista = [dia("p", "DIARIO", 6000, true), dia("r", "DIARIO", 1000, false)] as never[];
+    expect([...previstosSubstituidos(lista)]).toEqual(["p"]);
+    expect(previstosVencidos(lista, "2026-10-08")).toEqual([]);
+  });
+
+  it("entrada prevista não é substituída por gasto", () => {
+    const lista = [dia("e", "ENTRADA", 500_000, true), dia("r", "DIARIO", 1000, false)] as never[];
+    expect(previstosSubstituidos(lista).size).toBe(0);
   });
 });
