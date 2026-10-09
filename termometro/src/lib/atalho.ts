@@ -156,8 +156,15 @@ export function classificarNotificacao(
   texto: string,
 ): { ok: true; tipo: Tipo; nota: string | null } | { ok: false; erro: string } {
   const loja = lojaNoTexto(texto);
+  // O título do Nubank também diz o que é: "Compra no débito aprovada".
+  const tituloDeCompra =
+    /compra\s+(no|na)\s+(d[ée]bito|cr[ée]dito|fun[cç][aã]o)|compra\s+(aprovada|realizada)/i.test(
+      texto,
+    );
   const compra =
-    loja !== null || /R\$\s*[\d.,]+\s+no\s+d[ée]bito|R\$\s*[\d.,]+\s+no\s+cr[ée]dito/i.test(texto);
+    tituloDeCompra ||
+    loja !== null ||
+    /R\$\s*[\d.,]+\s+no\s+d[ée]bito|R\$\s*[\d.,]+\s+no\s+cr[ée]dito/i.test(texto);
   if (compra) return { ok: true, tipo: "DIARIO", nota: loja };
 
   if (
@@ -167,9 +174,14 @@ export function classificarNotificacao(
   ) {
     return { ok: true, tipo: "ENTRADA", nota: "Pix" };
   }
+  // O começo do texto vai junto, para quem recebe o aviso (e para quem o
+  // conserta) ver exatamente o que o atalho mandou.
+  const visto = texto.replace(/\s+/g, " ").trim().slice(0, 160);
   return {
     ok: false,
-    erro: "Não reconheci esta notificação como compra nem como Pix recebido, então não lancei nada.",
+    erro:
+      "Não reconheci esta notificação como compra nem como Pix recebido, então não lancei nada." +
+      ` Texto recebido: “${visto}”`,
   };
 }
 

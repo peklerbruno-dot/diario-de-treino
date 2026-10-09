@@ -486,3 +486,19 @@ describe("o app decide o que a notificação do banco é", () => {
     expect(r.ok && r.lancamentos[0].tipo).toBe("ENTRADA");
   });
 });
+
+describe("quando a notificação não é reconhecida", () => {
+  it("o aviso mostra o texto que chegou", () => {
+    const r = lerPedidoDoAtalho({ texto: "Oferta: ganhe R$ 20 hoje" }, { hoje: "2026-10-09" });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.erro).toContain("Oferta: ganhe R$ 20 hoje");
+  });
+
+  it("reconhece o título de compra mesmo sem a frase da loja", () => {
+    const r = lerPedidoDoAtalho(
+      { texto: "Compra no débito aprovada R$ 45,80" },
+      { hoje: "2026-10-09" },
+    );
+    expect(r.ok && r.lancamentos[0].tipo).toBe("DIARIO");
+  });
+});
