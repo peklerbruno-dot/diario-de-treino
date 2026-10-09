@@ -393,8 +393,12 @@ categoria que aquela `nota` já teve (mesmo tipo; o mais repetido ganha, no empa
 mais recente), então a próxima compra ali já nasce categorizada.
 
 A notificação do Nubank (`texto=`) também serve de gatilho para crédito, débito e
-NuPay: "R$ 53,58 no débito com NuPay APROVADO em KeetaBR." dá o valor e a loja
-(`nota`). Dois cuidados de contabilidade que a porta e o app compartilham:
+NuPay: "Compra de R$ 17,00 em ACADEMIA CEMI" e "R$ 53,58 no débito com NuPay APROVADO
+em KeetaBR." dão o valor e a loja (`nota`). Sem `tipo`, o app classifica a notificação
+(`classificarNotificacao`): compra vira gasto do dia, "Recebemos sua transferência"
+vira entrada, e o resto não é lançado — por isso o filtro do atalho pode ser só
+"Mensagem contém R$". O mesmo valor lançado por notificação no mesmo dia, nos últimos
+3 minutos, não se repete. Dois cuidados de contabilidade que a porta e o app compartilham:
 
 - **Previsto confirmado, não duplicado.** Uma entrada ou saída nova que bate com um
   previsto de fixo (mesmo tipo, até 7 dias de diferença, valor até 25% de diferença)
