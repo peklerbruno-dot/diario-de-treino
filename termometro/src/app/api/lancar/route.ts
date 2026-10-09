@@ -94,6 +94,41 @@ export async function POST(pedido: Request) {
     }
   }
 
+  // Duas automações podem ouvir a mesma notificação (a do Pix recebido e a das
+  // compras), e o mesmo aviso pode chegar duas vezes. Se o mesmo valor, no mesmo
+  // dia, acabou de ser lançado a partir de uma notificação, não repete. Só vale
+  // para lançamento vindo de notificação (`texto`): quem digita dois cafés de R$ 8
+  // seguidos quer dois lançamentos.
+  const veioDaNotificacao =
+    String(corpo.valor ?? "").trim() === "" && String(corpo.texto ?? "").trim() !== "";
+  if (veioDaNotificacao && lancamentos.length === 1) {
+    const alvo = lancamentos[0];
+    const corte = new Date(Date.now() - 3 * 60 * 1000);
+    const repetido = await bd.lancamento.findFirst({
+      where: {
+        usuarioId,
+        apagadoEm: null,
+        previsto: false,
+        tipo: alvo.tipo,
+        valorCents: alvo.valorCents,
+        data: alvo.data,
+        OR: [{ criadoEm: { gte: corte } }, { atualizadoEm: { gte: corte } }],
+        // Entrada confirmada leva a nota do previsto ("Salário"); só o gasto compara a loja.
+        ...(alvo.tipo === "DIARIO" && alvo.nota
+          ? { nota: { equals: alvo.nota, mode: "insensitive" as const } }
+          : {}),
+      },
+      select: { id: true },
+    });
+    if (repetido) {
+      return NextResponse.json({
+        ok: true,
+        recado: "Esse lançamento acabou de entrar, então não repeti.",
+        duplicado: true,
+      });
+    }
+  }
+
   // O salário que caiu de verdade é o salário que já estava previsto: em vez de
   // somar um valor novo ao previsto, o previsto é confirmado com o valor e o
   // dia reais. Só com um lançamento só — "195+15" são gastos, não um salário.
@@ -194,7 +229,8 @@ export function GET() {
       'Opcionais: "tipo" (entrada, saída ou diário), "categoria" (o nome, como se fala), ' +
       '"data" (AAAA-MM-DD) e "nota". Sem "categoria", a nota (o nome da loja) busca a categoria que ela já teve. ' +
       'Em vez de "valor", dá para mandar "texto": uma frase com o valor dentro, como a ' +
-      'notificação do banco — o app tira o número dela. ' +
+      'notificação do banco — o app tira o número dela e, sem "tipo", decide se é compra (débito, ' +
+      'crédito, NuPay) ou Pix recebido; outra coisa não é lançada. ' +
       "O código só é lido do cabeçalho ou do corpo, nunca do endereço.",
   });
 }

@@ -111,14 +111,16 @@ export function TelaDoApplePay() {
         <p className="mt-1.5 text-[14.5px] leading-relaxed text-fosco">
           O Apple Pay só avisa o que passa pelo Wallet. Compra no crédito sem o celular, débito e
           NuPay chegam pela <b>notificação do Nubank</b>, que traz o valor e a loja:{" "}
+          <i>“Compra de R$ 17,00 em ACADEMIA CEMI”</i> ou{" "}
           <i>“R$ 53,58 no débito com NuPay APROVADO em KeetaBR.”</i> O app lê o valor e a loja do
-          texto.
+          texto e decide sozinho o que é: compra vira gasto, “Recebemos sua transferência” vira
+          entrada, e o resto (promoção, fatura) não é lançado.
         </p>
         <ol className="mt-3 space-y-3">
           <Passo n={1}>
             Em <b>Atalhos → Automação → +</b>, escolha <b>Notificação</b>. Em <b>App</b>, marque o{" "}
             <b>Nubank</b>. Em <b>Adicionar Filtro</b>, escolha <b>Mensagem contém</b> e escreva{" "}
-            <Palavra>APROVAD</Palavra>. Marque <b>Executar imediatamente</b>.
+            <Palavra>R$</Palavra>. Marque <b>Executar imediatamente</b>.
           </Passo>
           <Passo n={2}>
             Ação <b>Obter conteúdo da URL</b>: endereço copiado acima, mas no fim, no lugar de{" "}

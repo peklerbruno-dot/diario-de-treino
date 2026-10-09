@@ -100,7 +100,9 @@ const ACEITOS_NO_ENDERECO = [
  * não lançar, e a notificação do atalho diz o que aconteceu. Valor repetido
  * (o mesmo número duas vezes) conta como um só.
  */
-export function valorNoTexto(texto: string): { ok: true; valor: string } | { ok: false; erro: string } {
+export function valorNoTexto(
+  texto: string,
+): { ok: true; valor: string } | { ok: false; erro: string } {
   const achados = new Set<string>();
   for (const m of texto.matchAll(/R\$\s*(\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d{1,2}))?/gi)) {
     const inteiro = m[1].replace(/\./g, "");
@@ -125,10 +127,50 @@ export function valorNoTexto(texto: string): { ok: true; valor: string } | { ok:
  * texto que o app não reconhece não ganha uma loja inventada.
  */
 export function lojaNoTexto(texto: string): string | null {
-  const m = /aprovad[oa]\s+em\s+([^\n]+)/i.exec(texto);
+  // "…APROVADO em KeetaBR." (NuPay) e "Compra de R$ 17,00 em ACADEMIA CEMI"
+  // (débito e crédito): a loja é o resto da linha depois do "em".
+  const m =
+    /aprovad[oa]\s+em\s+([^\n]+)/i.exec(texto) ??
+    /compra\s+de\s+R\$\s*[\d.,]+\s+em\s+([^\n]+)/i.exec(texto);
   if (!m) return null;
-  const loja = m[1].trim().replace(/[.\s]+$/, "").trim();
+  const loja = m[1]
+    .trim()
+    .replace(/[.\s]+$/, "")
+    .trim();
   return loja ? loja.slice(0, 120) : null;
+}
+
+/**
+ * O que a notificação do banco quer dizer, quando o pedido não diz o tipo.
+ *
+ * Com uma automação só para o Nubank, o app é quem decide: compra (débito,
+ * crédito, NuPay) é gasto do dia; "Recebemos sua transferência" é entrada. O
+ * resto — promoção, aviso de fatura, "ganhe R$ 20" — não vira lançamento: um
+ * número solto numa propaganda não é gasto, e lançar errado é pior do que
+ * não lançar.
+ *
+ * Só vale sem `tipo`: quem manda `tipo` (o atalho do Pix recebido) disse o que
+ * é, e continua valendo.
+ */
+export function classificarNotificacao(
+  texto: string,
+): { ok: true; tipo: Tipo; nota: string | null } | { ok: false; erro: string } {
+  const loja = lojaNoTexto(texto);
+  const compra =
+    loja !== null || /R\$\s*[\d.,]+\s+no\s+d[ée]bito|R\$\s*[\d.,]+\s+no\s+cr[ée]dito/i.test(texto);
+  if (compra) return { ok: true, tipo: "DIARIO", nota: loja };
+
+  if (
+    /recebemos\s+sua\s+transfer|voc[êe]\s+recebeu|transfer[êe]ncia\s+recebida|pix\s+recebido/i.test(
+      texto,
+    )
+  ) {
+    return { ok: true, tipo: "ENTRADA", nota: "Pix" };
+  }
+  return {
+    ok: false,
+    erro: "Não reconheci esta notificação como compra nem como Pix recebido, então não lancei nada.",
+  };
 }
 
 export type LeituraDoPedido =
@@ -170,11 +212,18 @@ export function lerPedidoDoAtalho(
   } = {},
 ): LeituraDoPedido {
   let texto = comoTexto(corpo.valor);
+  let automatico: { tipo: Tipo; nota: string | null } | null = null;
   if (texto === null || texto.trim() === "") {
     // Sem valor, mas com uma frase que o tenha dentro (a notificação do banco):
     // o app tira o número dela, em vez de exigir que o atalho o separe.
     const frase = comoTexto(corpo.texto);
     if (frase !== null && frase.trim() !== "") {
+      // Sem `tipo`, é o app quem diz o que a notificação é.
+      if (!comoTexto(corpo.tipo)?.trim()) {
+        const classe = classificarNotificacao(frase);
+        if (!classe.ok) return classe;
+        automatico = classe;
+      }
       const achado = valorNoTexto(frase);
       if (!achado.ok) return achado;
       texto = achado.valor;
@@ -195,7 +244,7 @@ export function lerPedidoDoAtalho(
   }
 
   const pedido = comoTexto(corpo.tipo)?.trim().toLowerCase();
-  const tipo: Tipo = pedido ? (TIPOS_ACEITOS[pedido] ?? "DIARIO") : "DIARIO";
+  const tipo: Tipo = pedido ? (TIPOS_ACEITOS[pedido] ?? "DIARIO") : (automatico?.tipo ?? "DIARIO");
   if (pedido && !TIPOS_ACEITOS[pedido]) {
     return { ok: false, erro: `Não conheço o tipo "${pedido}". Use entrada, saída ou diário.` };
   }
@@ -212,7 +261,10 @@ export function lerPedidoDoAtalho(
   const novoId = opcoes.novoId ?? (() => crypto.randomUUID());
   // Sem nota dita, a loja da notificação do banco vira a nota.
   const nota =
-    comoTexto(corpo.nota)?.trim() || lojaNoTexto(comoTexto(corpo.texto) ?? "") || null;
+    comoTexto(corpo.nota)?.trim() ||
+    lojaNoTexto(comoTexto(corpo.texto) ?? "") ||
+    automatico?.nota ||
+    null;
 
   // Categoria que não casou não derruba o lançamento: o valor entra, e a
   // notificação avisa. Perder o gasto porque a Siri ouviu "farmássia" seria

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   camposDoEndereco,
+  classificarNotificacao,
   hojeNoFuso,
   lerPedidoDoAtalho,
   lojaNoTexto,
@@ -140,7 +141,10 @@ describe("o que o atalho manda errado", () => {
 
 describe("o valor dentro de uma frase (a notificação do banco)", () => {
   it("tira o valor da frase do Nubank", () => {
-    expect(valorNoTexto("Recebemos sua transferência de R$ 1,00.")).toEqual({ ok: true, valor: "1,00" });
+    expect(valorNoTexto("Recebemos sua transferência de R$ 1,00.")).toEqual({
+      ok: true,
+      valor: "1,00",
+    });
   });
 
   it("entende milhar, sem espaço depois do cifrão e valor sem centavos", () => {
@@ -150,7 +154,10 @@ describe("o valor dentro de uma frase (a notificação do banco)", () => {
   });
 
   it("o mesmo valor duas vezes conta como um", () => {
-    expect(valorNoTexto("R$ 50,00 enviados. Total: R$ 50,00")).toEqual({ ok: true, valor: "50,00" });
+    expect(valorNoTexto("R$ 50,00 enviados. Total: R$ 50,00")).toEqual({
+      ok: true,
+      valor: "50,00",
+    });
   });
 
   it("com dois valores diferentes, não escolhe", () => {
@@ -160,7 +167,10 @@ describe("o valor dentro de uma frase (a notificação do banco)", () => {
   });
 
   it("sem valor em reais, diz que não achou", () => {
-    expect(valorNoTexto("Transferência recebida")).toEqual({ ok: false, erro: "Não achei um valor em reais no texto." });
+    expect(valorNoTexto("Transferência recebida")).toEqual({
+      ok: false,
+      erro: "Não achei um valor em reais no texto.",
+    });
   });
 
   it("lança como entrada o que vem em `texto`, com o tipo dito", () => {
@@ -169,7 +179,8 @@ describe("o valor dentro de uma frase (a notificação do banco)", () => {
       opcoes,
     );
     expect(r.ok).toBe(true);
-    if (r.ok) expect(r.lancamentos[0]).toMatchObject({ tipo: "ENTRADA", valorCents: 100, nota: "Pix" });
+    if (r.ok)
+      expect(r.lancamentos[0]).toMatchObject({ tipo: "ENTRADA", valorCents: 100, nota: "Pix" });
   });
 
   it("`valor` vence `texto`, quando os dois vêm", () => {
@@ -390,7 +401,9 @@ describe("a loja dentro da notificação do banco", () => {
   });
 
   it("compra no crédito aprovada", () => {
-    expect(lojaNoTexto("Compra de R$ 25,90 APROVADA em PADARIA SAO JOAO.")).toBe("PADARIA SAO JOAO");
+    expect(lojaNoTexto("Compra de R$ 25,90 APROVADA em PADARIA SAO JOAO.")).toBe(
+      "PADARIA SAO JOAO",
+    );
   });
 
   it("sem a frase, não inventa loja", () => {
@@ -416,5 +429,60 @@ describe("a loja dentro da notificação do banco", () => {
       { hoje: "2026-10-08" },
     );
     expect(r.ok && r.lancamentos[0].nota).toBe("Pix");
+  });
+});
+
+describe("o app decide o que a notificação do banco é", () => {
+  const hoje = { hoje: "2026-10-09", agora: "2026-10-09T12:00:00Z", novoId: () => "x" };
+
+  it("compra no débito: gasto do dia, com a loja", () => {
+    const r = lerPedidoDoAtalho({ texto: "Compra de R$ 17,00 em ACADEMIA CEMI" }, hoje);
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.lancamentos[0]).toMatchObject({
+        tipo: "DIARIO",
+        valorCents: 1700,
+        nota: "ACADEMIA CEMI",
+      });
+    }
+  });
+
+  it("o título junto da mensagem não atrapalha", () => {
+    const r = lerPedidoDoAtalho(
+      { texto: "Compra no débito aprovada\nCompra de R$ 17,00 em ACADEMIA CEMI" },
+      hoje,
+    );
+    expect(r.ok && r.lancamentos[0].nota).toBe("ACADEMIA CEMI");
+  });
+
+  it("NuPay no débito", () => {
+    const r = lerPedidoDoAtalho(
+      { texto: "R$ 53,58 no débito com NuPay APROVADO em KeetaBR." },
+      hoje,
+    );
+    expect(r.ok && r.lancamentos[0].nota).toBe("KeetaBR");
+  });
+
+  it("Pix recebido sem tipo vira entrada", () => {
+    const r = lerPedidoDoAtalho({ texto: "Recebemos sua transferência de R$ 10,00." }, hoje);
+    expect(r.ok && r.lancamentos[0]).toMatchObject({
+      tipo: "ENTRADA",
+      nota: "Pix",
+      valorCents: 1000,
+    });
+  });
+
+  it("promoção com R$ não vira lançamento", () => {
+    const r = lerPedidoDoAtalho({ texto: "Ganhe R$ 20 na sua primeira compra no app" }, hoje);
+    expect(r.ok).toBe(false);
+    expect(classificarNotificacao("Seu limite subiu para R$ 5.000").ok).toBe(false);
+  });
+
+  it("com tipo dito, vale o que foi dito (o atalho do Pix)", () => {
+    const r = lerPedidoDoAtalho(
+      { texto: "Recebemos sua transferência de R$ 10,00.", tipo: "entrada", nota: "Pix" },
+      hoje,
+    );
+    expect(r.ok && r.lancamentos[0].tipo).toBe("ENTRADA");
   });
 });
