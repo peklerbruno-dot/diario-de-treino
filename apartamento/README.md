@@ -27,6 +27,8 @@ está embutido no próprio arquivo.
 | Abrir e usar | botão azul **Abrir portas / Estender / Abrir baú…** no painel do móvel |
 | Distâncias | cotas pretas no piso ao redor do móvel selecionado; clique e digite a distância |
 | Cantos | lateral **Cantos**: home office, jantar, TV, dormir… com área e lista de móveis |
+| Foto realista | botão **📷 Foto realista**: renderização por traçado de raios da vista atual (melhor caminhando); **Salvar foto** baixa o PNG |
+| Pintura | painel da parede: **Pintura** muda a cor de cada parede |
 | Caminhar | botão **🚶 Caminhar** (ou `C`): arraste para olhar, toque no piso para andar, W/A/S/D |
 | Luz do sol | seção **Luz do sol**: data, hora (4h–20h) e ▶ **Passar o dia**; a bússola no canto mostra o norte |
 | Imagem | botão **PNG** (com as áreas, a data e a hora do sol) |
@@ -34,6 +36,37 @@ está embutido no próprio arquivo.
 
 Aviso de colisão: o móvel fica marcado em vermelho e o conflito aparece no canto da tela.
 Cadeiras podem entrar embaixo de mesas sem aviso; tapetes e box não geram aviso.
+
+## Planta final (BePê)
+
+A aba **Planta final** é a planta do estudo preliminar, medida na imagem (2,55 px/cm) e decorada
+com o moodboard das referências:
+
+- **Paleta:** freijó (`#a8784f`), azul-acinzentado (`#5d6c84`), terracota (`#8f4325`),
+  mostarda (`#b8892c`), vinho (`#5e1a2a`), creme e grafite.
+- **Materiais:** granilite nos tampos, azulejo 10×10 com rejunte azul-marinho na cozinha e no
+  banheiro, veludo no sofá, tweed no banco, xadrez vichy na cama, cabeceira canelada, linho e
+  voil nas cortinas, palhinha nas cadeiras, papel de arroz no pendente.
+- **Peças das referências:** estante divisória vazada com TV giratória (botão "Girar a TV"),
+  sofá retrátil de veludo terracota, arandela articulada preta, pendente de papel de arroz,
+  moldura ondulada com fotos, mesa carretel vinho, costela-de-adão, tapeçaria sobre a cama.
+
+O que é interpretação da planta (fácil de trocar no painel do móvel):
+o bloco entre a bancada de trabalho e a península virou **banco de jantar** (a mesa encosta nele);
+a península tem 90 cm de altura; a cama ficou com 128 × 188 (na planta mede ~120 × 186).
+O banheiro tem 2,64 m² contando o shaft; a área livre, sem o shaft, é 2,37 m².
+
+## Realismo
+
+- **Na tela:** materiais físicos (veludo com brilho, madeira com veio, metais que refletem),
+  sol calculado por data e hora, sombras suaves e **oclusão ambiente** (as sombras de contato
+  nos cantos e sob os móveis). No celular a oclusão começa desligada.
+- **📷 Foto realista:** simula o caminho da luz (traçado de raios, com `three-gpu-pathtracer`):
+  a luz rebate nas paredes, atravessa as cortinas, reflete no piso e nos metais. A imagem
+  começa granulada e limpa sozinha: 1 a 3 minutos num computador ou celular recente.
+  Mexer na câmera recomeça. Há controles de exposição e de hora do dia.
+  Dentro do apartamento (🚶 Caminhar) a foto tem teto e a luz entra só pelas janelas; na órbita
+  é uma maquete sem teto.
 
 ## Apartamento decorado
 

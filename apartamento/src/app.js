@@ -308,8 +308,8 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = T.PCFSoftShadowMap;
 renderer.outputColorSpace = T.SRGBColorSpace;
-renderer.toneMapping = T.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
+renderer.toneMapping = T.NeutralToneMapping; // cores fiéis às referências
+renderer.toneMappingExposure = 1;
 palco.prepend(renderer.domElement);
 
 const cena = new T.Scene();
@@ -380,6 +380,29 @@ function redimensionar() {
 }
 new ResizeObserver(redimensionar).observe(palco);
 
+// Pós-processamento: oclusão ambiente (GTAO) — as sombras de contato nos
+// cantos, atrás dos móveis e sob o sofá, que dão peso de foto à cena.
+// Só na vista 3D; no celular começa desligada (pesa no processador).
+const qualidade = Object.assign({ ao: !matchMedia('(pointer: coarse)').matches },
+  (() => { try { return JSON.parse(localStorage.getItem('simulador-apto:qualidade')) || {}; } catch { return {}; } })());
+const composer = new T.EffectComposer(renderer);
+const passoCena = new T.RenderPass(cena, camPersp);
+const passoAO = new T.GTAOPass(cena, camPersp, 1, 1);
+passoAO.updateGtaoMaterial({ radius: 32, distanceExponent: 1.4, thickness: 18, scale: 1.15, samples: 16, distanceFallOff: 1 });
+passoAO.blendIntensity = 0.9;
+composer.addPass(passoCena);
+composer.addPass(passoAO);
+composer.addPass(new T.OutputPass());
+function ajustarComposer() {
+  composer.setPixelRatio(renderer.getPixelRatio());
+  composer.setSize(palco.clientWidth, Math.max(1, palco.clientHeight));
+}
+new ResizeObserver(ajustarComposer).observe(palco);
+function desenharQuadro() {
+  if (qualidade.ao && !vista.topo) composer.render();
+  else renderer.render(cena, camAtiva());
+}
+
 // Texturas feitas no próprio navegador (sem arquivos externos).
 // FUTURO (texturas): trocar estas funções por imagens carregadas.
 function texturaCanvas(tamCm, px, desenhar) {
@@ -448,7 +471,7 @@ function texturaCimento() {
 }
 
 const MAT = {
-  parede: new T.MeshStandardMaterial({ color: '#f4f2ee', roughness: 0.93 }),
+  parede: new T.MeshStandardMaterial({ color: '#efe9df', roughness: 0.93 }),
   paredeSel: new T.MeshStandardMaterial({ color: '#cfe0fb', roughness: 0.9, emissive: '#2f80ed', emissiveIntensity: 0.12 }),
   topo: new T.MeshStandardMaterial({ color: '#3f4349', roughness: 0.85 }),
   topoSel: new T.MeshStandardMaterial({ color: '#2f80ed', roughness: 0.6 }),
@@ -473,6 +496,14 @@ const MAT = {
     cimento: new T.MeshStandardMaterial({ map: texturaCimento(), roughness: 0.7 }),
   },
 };
+
+// Pintura: cada parede pode ter sua cor (painel da parede).
+const cacheParede = new Map();
+function matParede(cor) {
+  if (!cor) return MAT.parede;
+  if (!cacheParede.has(cor)) cacheParede.set(cor, new T.MeshStandardMaterial({ color: cor, roughness: 0.93 }));
+  return cacheParede.get(cor);
+}
 
 // =====================================================================
 // 4b. SOL POR DATA E HORA
@@ -538,7 +569,7 @@ function aplicarSol() {
   sol.color.copy(SOL_BAIXO).lerp(SOL_ALTO, suave(3, 35, elev));
   hemi.intensity = 0.25 + 0.9 * dia;
   cena.environmentIntensity = 0.1 + 0.35 * dia;
-  cena.background.copy(CEU_NOITE).lerp(CEU_DIA, dia);
+  if (cena.background?.isColor) cena.background.copy(CEU_NOITE).lerp(CEU_DIA, dia);
   // luminárias: acendem quando escurece
   const noite = 1 - suave(-4, 10, elev);
   for (const l of luzesMoveis) l.intensity = l.userData.base * noite;
@@ -557,6 +588,174 @@ function posicionarBussola() {
   const letra = bussola.querySelector('b');
   letra.style.left = `${20 + Math.sin(ang) * 27}px`;
   letra.style.top = `${20 - Math.cos(ang) * 27}px`;
+}
+
+// =====================================================================
+// 4c. FOTO REALISTA (traçado de raios)
+// =====================================================================
+// Em vez de desenhar em tempo real, simula o caminho da luz: rebate nas
+// paredes, passa pelas janelas e cortinas, reflete no piso e nos metais.
+// A imagem começa granulada e limpa a cada passada (amostra). Mexer na
+// câmera recomeça. Usa a câmera atual: na órbita é uma maquete sem teto;
+// caminhando, é a foto de dentro do apartamento, com teto.
+const foto = { ativa: false, pt: null, meta: 300, ceu: null, cam: new T.Matrix4(), ultimaUI: 0 };
+const ehToque = matchMedia('(pointer: coarse)').matches;
+
+function texturaCeu() {
+  // céu simples em equiretangular: horizonte claro, zênite azul, chão escuro
+  const w = 256, h = 128, d = new Float32Array(w * h * 4);
+  for (let j = 0; j < h; j++) {
+    const alt = (j / (h - 1)) * 2 - 1; // -1 = para baixo, 1 = para cima
+    let c;
+    if (alt >= 0) { const t = Math.pow(alt, 0.45); c = [1.05 - 0.5 * t, 1.07 - 0.32 * t, 1.1 - 0.08 * t]; }
+    else c = [0.46, 0.44, 0.4];
+    for (let i = 0; i < w; i++) d.set([...c, 1], (j * w + i) * 4);
+  }
+  const t = new T.DataTexture(d, w, h, T.RGBAFormat, T.FloatType);
+  t.mapping = T.EquirectangularReflectionMapping;
+  t.magFilter = t.minFilter = T.LinearFilter;
+  t.needsUpdate = true;
+  return t;
+}
+
+function luzDaFoto() {
+  const { elev } = aplicarSol();
+  const dia = suave(-2, 6, elev);
+  cena.environmentIntensity = 0.04 + 1.15 * dia;
+  cena.backgroundIntensity = cena.environmentIntensity;
+}
+
+// Cópia da cena só com o que aparece na foto: um material por objeto
+// (o traçado de raios embaralha objetos com vários materiais), sem
+// marcações, linhas e camadas de seleção.
+function montarCenaFoto() {
+  const c = new T.Scene();
+  c.environment = foto.ceu;
+  c.background = foto.ceu;
+  c.environmentIntensity = cena.environmentIntensity;
+  c.backgroundIntensity = cena.backgroundIntensity;
+  const visivel = (o) => { for (let x = o; x; x = x.parent) if (!x.visible) return false; return true; };
+  cena.updateMatrixWorld(true);
+  cena.traverse((o) => {
+    if (!visivel(o)) return;
+    if (o.isMesh) {
+      const mats = Array.isArray(o.material) ? o.material : [o.material];
+      if (mats.some((m) => m.isMeshBasicMaterial)) return;
+      let geo = o.geometry;
+      if (Array.isArray(o.material)) { geo = geo.clone(); geo.clearGroups(); foto.descartar.push(geo); }
+      const m = new T.Mesh(geo, mats[0]);
+      m.matrixAutoUpdate = false;
+      m.matrix.copy(o.matrixWorld);
+      m.matrixWorld.copy(o.matrixWorld);
+      c.add(m);
+    } else if (o.isPointLight && o.intensity > 0.01) {
+      const l = new T.PointLight(o.color, o.intensity, o.distance, o.decay);
+      l.position.setFromMatrixPosition(o.matrixWorld);
+      c.add(l);
+    }
+  });
+  if (sol.visible && sol.intensity > 0.01) {
+    const s2 = new T.DirectionalLight(sol.color, sol.intensity);
+    s2.position.copy(sol.position);
+    s2.target.position.copy(sol.target.position);
+    c.add(s2, s2.target);
+  }
+  c.updateMatrixWorld(true);
+  return c;
+}
+
+function abrirFoto() {
+  if (vista.topo) alternarVista();
+  if (sel) selecionar(null);
+  foto.antes = { env: cena.environment, bg: cena.background, envI: cena.environmentIntensity };
+  foto.ceu ??= texturaCeu();
+  cena.environment = foto.ceu;
+  cena.background = foto.ceu;
+  hemi.visible = false;              // o céu faz esse papel no traçado de raios
+  grpSel.visible = grpZonas.visible = false;
+  luzDaFoto();
+  if (!foto.pt) {
+    foto.pt = new T.WebGLPathTracer(renderer);
+    Object.assign(foto.pt, { minSamples: 0, renderDelay: 0, fadeDuration: 0, bounces: 6, filterGlossyFactor: 0.5 });
+    foto.pt.tiles.set(ehToque ? 3 : 2, ehToque ? 3 : 2);
+  }
+  foto.pt.renderScale = ehToque ? 0.5 : 1;
+  // interior pede mais exposição que a maquete vista de fora
+  const exp = vista.caminhar ? 1.8 : 1.1;
+  renderer.toneMappingExposure = exp;
+  $('#fotoExposicao').value = String(exp);
+  foto.ativa = true;
+  document.body.classList.add('modo-foto');
+  $('#painelFoto').hidden = false;
+  $('#fotoHora').value = String(luz.hora);
+  $('#fotoHoraTxt').textContent = horaTxt(luz.hora);
+  $('#fotoStatus').textContent = 'Preparando a cena…';
+  // deixa o aviso aparecer antes do trabalho pesado (montar a cena para os raios)
+  setTimeout(() => {
+    if (!foto.ativa) return;
+    camAtiva().updateMatrixWorld();
+    foto.descartar = [];
+    foto.cena = montarCenaFoto();
+    foto.pt.setScene(foto.cena, camPersp);
+    foto.cam.copy(camPersp.matrixWorld);
+    foto.t0 = performance.now();
+  }, 60);
+}
+
+function quadroFoto() {
+  if (!vista.caminhar) ctlPersp.update();
+  if (!foto.t0) return;
+  camPersp.updateMatrixWorld();
+  if (!camPersp.matrixWorld.equals(foto.cam)) { // câmera mexeu: recomeça
+    foto.cam.copy(camPersp.matrixWorld);
+    foto.pt.updateCamera();
+    foto.t0 = performance.now();
+  }
+  const n = foto.pt.samples;
+  if (n < foto.meta) foto.pt.renderSample();
+  const agora = performance.now();
+  if (agora - foto.ultimaUI > 250) {
+    foto.ultimaUI = agora;
+    const pronto = Math.min(1, n / foto.meta);
+    $('#fotoBarra').style.width = `${pronto * 100}%`;
+    $('#fotoStatus').textContent = n >= foto.meta
+      ? `Pronta · ${foto.meta} passadas`
+      : `${Math.floor(n)} de ${foto.meta} passadas · ${Math.round((agora - foto.t0) / 1000)} s`;
+  }
+}
+
+function recomecarFoto() {
+  if (!foto.ativa || !foto.t0) return;
+  luzDaFoto();
+  // o sol e as luminárias mudam com a hora: refaz a cópia da cena
+  for (const g of foto.descartar) g.dispose();
+  foto.descartar = [];
+  foto.cena = montarCenaFoto();
+  foto.pt.setScene(foto.cena, camPersp);
+  foto.t0 = performance.now();
+}
+
+function fecharFoto() {
+  foto.ativa = false;
+  foto.t0 = 0;
+  for (const g of foto.descartar || []) g.dispose();
+  foto.descartar = [];
+  foto.cena = null;
+  document.body.classList.remove('modo-foto');
+  $('#painelFoto').hidden = true;
+  cena.environment = foto.antes.env;
+  cena.background = foto.antes.bg;
+  hemi.visible = true;
+  grpSel.visible = grpZonas.visible = true;
+  renderer.toneMappingExposure = 1;
+  aplicarSol();
+  ctlPersp.enabled = !vista.caminhar && !vista.topo;
+}
+
+function salvarFoto() {
+  if (!foto.t0) return;
+  foto.pt.renderSample(); // desenha agora para ler o canvas no mesmo instante
+  renderer.domElement.toBlob((b) => baixar(b, `apartamento-${slug(cen().nome)}-foto-${horaTxt(luz.hora).replace(':', 'h')}.png`));
 }
 
 // =====================================================================
@@ -631,7 +830,7 @@ function construirParede(w, pl, H, Hc) {
   const g = grupoParede(w);
   const selec = sel?.tipo === 'parede' && sel.id === w.id;
   const info = { tipo: 'parede', id: w.id };
-  const lado = selec ? MAT.paredeSel : MAT.parede;
+  const lado = selec ? MAT.paredeSel : matParede(w.cor);
   const L = comprimento(w), e = w.esp;
   const peca = (u0, u1, y0, y1) => {
     y1 = Math.min(y1, Hc);
@@ -849,6 +1048,44 @@ const GERADORES = {
       const x = col * w + (lin % 2) * w / 2; g.beginPath(); g.moveTo(x, lin * h); g.lineTo(x, lin * h + h); g.stroke();
     }
   }),
+  // ---- texturas das referências (BePê)
+  granilite: () => texturaDetalhe(40, 512, (g, px, r) => {
+    g.fillStyle = '#f1efea'; g.fillRect(0, 0, px, px);
+    const tons = ['#8d8a85', '#2f2f31', '#b9b4aa', '#d7d2c8', '#6f6b66', '#c9b9a0'];
+    for (let k = 0; k < 2600; k++) {
+      g.fillStyle = tons[Math.floor(r() * tons.length)];
+      const s = 1 + r() * (r() > 0.9 ? 6 : 2.5);
+      g.beginPath(); g.ellipse(r() * px, r() * px, s, s * (0.5 + r() * 0.6), r() * 3, 0, 7); g.fill();
+    }
+  }),
+  azulejo_grade: () => texturaDetalhe(30, 512, (g, px) => {
+    const n = 3, s = px / n; // 3 × 3 peças de 10 cm
+    g.fillStyle = '#26324a'; g.fillRect(0, 0, px, px);
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { g.fillStyle = (i + j) % 2 ? '#f7f6f2' : '#f4f3ef'; g.fillRect(i * s + 3, j * s + 3, s - 6, s - 6); }
+  }),
+  xadrez: () => texturaDetalhe(4, 128, (g, px) => { // gingham (vichy)
+    g.fillStyle = '#f2f2f2'; g.fillRect(0, 0, px, px);
+    g.fillStyle = 'rgba(40,40,40,.55)'; g.fillRect(0, 0, px / 2, px); g.fillRect(0, 0, px, px / 2);
+  }),
+  xadrez_terracota: () => texturaDetalhe(16, 128, (g, px) => {
+    g.fillStyle = '#efe4d2'; g.fillRect(0, 0, px, px);
+    g.fillStyle = '#8f3f22'; g.fillRect(0, 0, px / 2, px / 2); g.fillRect(px / 2, px / 2, px / 2, px / 2);
+  }),
+  canelado: () => texturaDetalhe(6, 128, (g, px) => { // estofado com gomos verticais
+    const grad = g.createLinearGradient(0, 0, px, 0);
+    grad.addColorStop(0, '#9a9a9a'); grad.addColorStop(0.5, '#f0f0f0'); grad.addColorStop(1, '#9a9a9a');
+    g.fillStyle = grad; g.fillRect(0, 0, px, px);
+  }),
+  tweed: () => texturaDetalhe(5, 128, (g, px, r) => {
+    for (let y = 0; y < px; y += 2) for (let x = 0; x < px; x += 2) {
+      const t = r(); g.fillStyle = t > 0.7 ? '#e9e4da' : t > 0.35 ? '#5b6b85' : '#2c3448'; g.fillRect(x, y, 2, 2);
+    }
+  }),
+  papel: () => texturaDetalhe(12, 128, (g, px) => {
+    g.fillStyle = '#f2f2f2'; g.fillRect(0, 0, px, px);
+    g.strokeStyle = 'rgba(120,120,120,.35)'; g.lineWidth = 3;
+    for (let y = 8; y < px; y += 21) { g.beginPath(); g.moveTo(0, y); g.lineTo(px, y); g.stroke(); }
+  }),
 };
 const TEX = {};
 const tex = (nome) => (TEX[nome] ??= GERADORES[nome]());
@@ -876,10 +1113,19 @@ const ACAB = {
   azulejo:  { roughness: 0.22, tex: 'azulejo' },
   planta:   { roughness: 0.55, lados: 2 },
   luz:      { roughness: 0.6, luz: true, lados: 2 },
+  granilite: { roughness: 0.28, tex: 'granilite' },
+  azulejo_grade: { roughness: 0.18, tex: 'azulejo_grade' },
+  xadrez:   { roughness: 0.92, tex: 'xadrez', bump: 0.15 },
+  xadrez_terracota: { roughness: 0.92, tex: 'xadrez_terracota', bump: 0.15 },
+  canelado: { roughness: 0.92, tex: 'canelado', bump: 3 },
+  tweed:    { roughness: 0.95, tex: 'tweed', bump: 0.8 },
+  papel:    { roughness: 0.85, tex: 'papel', luz: true, lados: 2 },
 };
 const NOMES_ACAB = {
   linho: 'Linho', tecido: 'Tecido liso', veludo: 'Veludo', boucle: 'Bouclê', couro: 'Couro', blackout: 'Blackout',
   voil: 'Voil (translúcido)', madeira: 'Madeira', laca: 'Laca', palha: 'Palhinha', marmore: 'Mármore', pedra: 'Granito', metal: 'Metal',
+  granilite: 'Granilite', azulejo_grade: 'Azulejo 10×10', xadrez: 'Xadrez vichy', xadrez_terracota: 'Xadrez terracota',
+  canelado: 'Canelado', tweed: 'Tweed', azulejo: 'Azulejo metrô',
 };
 const cacheMat = new Map();
 const matsLuz = new Set();
@@ -1206,6 +1452,7 @@ function girosPortas() {
 function bloqueiaGiro(pg, giro) {
   for (let ri = 1; ri <= 5; ri++) for (let ti = 0; ti <= 6; ti++) {
     const r = (giro.R * ri) / 5.2, t = (Math.PI / 2) * (0.04 + (ti / 6) * 0.92);
+    if (r * Math.sin(t) < 5) continue; // folha praticamente fechada, no plano da parede
     const x = giro.c[0] + giro.du[0] * r * Math.cos(t) + giro.dv[0] * r * Math.sin(t);
     const z = giro.c[1] + giro.du[1] * r * Math.cos(t) + giro.dv[1] * r * Math.sin(t);
     if (x > pg.x0 + 0.5 && x < pg.x1 - 0.5 && z > pg.z0 + 0.5 && z < pg.z1 - 0.5) return true;
@@ -1235,7 +1482,7 @@ function verificarColisoes() {
     // área de uso: o que estiver no chão (até 1 m de altura) atrapalha
     zonasUso(A.m).forEach((z, k) => {
       const quem = [
-        ...itens.filter((B) => B !== A && !ignoraPar(A.def, B.def) && B.pg.y0 < 100 && sobrepoe(z, B.pg)).map((B) => B.m.nome),
+        ...itens.filter((B) => B !== A && !ignoraPar(A.def, B.def) && B.pg.y0 < 60 && sobrepoe(z, B.pg)).map((B) => B.m.nome),
         ...paredes.filter(({ cx }) => sobrepoe(z, cx)).map(({ w }) => `parede ${w.nome}`),
       ];
       if (!quem.length) return;
@@ -1246,7 +1493,7 @@ function verificarColisoes() {
   }
   for (const giro of girosPortas()) {
     for (const B of itens) {
-      if (B.pg.y0 >= 100 || !bloqueiaGiro(B.pg, giro)) continue;
+      if (B.pg.y0 >= 60 || !bloqueiaGiro(B.pg, giro)) continue;
       portasBloq.add(giro.ab.id);
       marcar(B.m.id, `no caminho da ${giro.nome}`);
       lista.push({ ids: [B.m.id], txt: `${B.m.nome} bloqueia a ${giro.nome}`, tipo: 'porta' });
@@ -1300,7 +1547,7 @@ const linhaUso = new T.LineDashedMaterial({ color: '#1e8449', dashSize: 6, gapSi
 const linhaCota = new T.LineBasicMaterial({ color: '#1d2530' });
 
 // O que aparece sobre a planta (painel "Mostrar").
-const camadas = Object.assign({ uso: false, cantos: true, cotas: true },
+const camadas = Object.assign({ uso: false, cantos: false, cotas: true },
   (() => { try { return JSON.parse(localStorage.getItem('simulador-apto:camadas')) || {}; } catch { return {}; } })());
 const guardarCamadas = () => { try { localStorage.setItem('simulador-apto:camadas', JSON.stringify(camadas)); } catch { /* ok */ } };
 
@@ -1321,7 +1568,7 @@ function desenharSelecao() {
     const obj = objMovel.get(m.id);
     if (obj) grpSel.add(new T.Box3Helper(new T.Box3().setFromObject(obj), linha.color));
   };
-  for (const id of colisoes.porMovel.keys()) { const m = movel(id); if (m) marca(m, matCol, linhaCol); }
+  if (!vista.caminhar) for (const id of colisoes.porMovel.keys()) { const m = movel(id); if (m) marca(m, matCol, linhaCol); }
   const selM = sel?.tipo === 'movel' ? movel(sel.id) : null;
   if (selM) marca(selM, matSel, linhaSel);
   if (vista.caminhar) return;
@@ -1513,6 +1760,13 @@ let arr = null; // gesto em andamento
 
 function aoPressionar(e) {
   toques.set(e.pointerId, true);
+  if (foto.ativa) {
+    if (vista.caminhar && toques.size === 1) {
+      arr = { id: e.pointerId, x: e.clientX, y: e.clientY, alvo: null, movido: false, olhar: true, yaw0: andar.yaw, pitch0: andar.pitch };
+      renderer.domElement.setPointerCapture(e.pointerId);
+    }
+    return;
+  }
   if (toques.size > 1) { if (arr?.arrastavel) cancelarArraste(); arr = null; return; }
   if (e.pointerType === 'mouse' && e.button !== 0) return;
   const alvo = alvoEm(e);
@@ -1598,7 +1852,7 @@ function aoSoltar(e) {
     dica('');
     return;
   }
-  if (g.olhar && g.movido) return;
+  if (g.olhar && (g.movido || foto.ativa)) return;
   if (g.movido) return; // foi órbita/arraste de câmera
   const a = g.alvo;
   if (vista.caminhar && (!a || a.tipo === 'ambiente' || a.tipo === 'zona')) {
@@ -1674,6 +1928,7 @@ function empurrar(dx, dz) {
 document.addEventListener('keydown', (e) => {
   if (e.target.closest('input, textarea, select, dialog')) return;
   const ctrl = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
+  if (foto.ativa) { if (k === 'escape') fecharFoto(); return; }
   if (ctrl && k === 'z' && !e.shiftKey) { e.preventDefault(); desfazer(); }
   else if (ctrl && (k === 'y' || (k === 'z' && e.shiftKey))) { e.preventDefault(); refazer(); }
   else if (ctrl && k === 'd') { e.preventDefault(); duplicarSelecionado(); }
@@ -2097,6 +2352,10 @@ function painelParede(p, cab) {
     cab(w.nome, `Parede ${hz ? 'horizontal' : 'vertical'} · ${w.esp} cm`),
     w.demolida ? el('div', { class: 'status alerta' }, 'Parede derrubada (simulação)') : null,
     secao('Nome', campoTexto('Nome', w.nome, (v) => alterar(() => { parede(w.id).nome = v; }))),
+    secao('Pintura',
+      el('div', { class: 'grade2' },
+        campoCor('Cor', w.cor || '#efe9df', (v, fim) => { parede(w.id).cor = v; if (fim) atualizarTudo(); else construirPlanta(); })),
+      w.cor ? botao('Voltar ao branco', () => alterar(() => { delete parede(w.id).cor; }), { class: 'link' }) : null),
     secao('Posição e tamanho',
       el('div', { class: 'grade2' },
         campoNum(`Eixo (${eixo})`, c, reposicionar, { min: -1000, max: 3000 }),
@@ -2244,7 +2503,17 @@ $('#bRefazer').onclick = refazer;
 $('#bVista').onclick = alternarVista;
 $('#bCorte').onclick = () => { vista.corte = !vista.corte; construirPlanta(); atualizarBotoes(); };
 $('#bEnquadrar').onclick = () => { if (vista.caminhar) alternarCaminhada(); enquadrar(); };
-$('#bCaminhar').onclick = alternarCaminhada;
+$('#bCaminhar').onclick = () => { if (!foto.ativa) alternarCaminhada(); };
+$('#bFoto').onclick = () => (foto.ativa ? fecharFoto() : abrirFoto());
+$('#fotoFechar').onclick = fecharFoto;
+$('#fotoSalvar').onclick = salvarFoto;
+$('#fotoExposicao').addEventListener('input', (e) => { renderer.toneMappingExposure = +e.target.value; });
+$('#fotoHora').addEventListener('input', (e) => {
+  luz.hora = +e.target.value;
+  $('#fotoHoraTxt').textContent = horaTxt(luz.hora);
+  try { localStorage.setItem(CHAVE_LUZ, JSON.stringify(luz)); } catch { /* ok */ }
+  recomecarFoto();
+});
 $('#bPNG').onclick = exportarPNG;
 $('#bLateral').onclick = () => document.body.classList.toggle('lateral-aberta');
 $('#buscaCatalogo').addEventListener('input', (e) => { filtroCatalogo = e.target.value; renderCatalogo(); });
@@ -2326,8 +2595,9 @@ async function importarJSON(arquivo) {
 }
 
 function exportarPNG() {
+  if (foto.ativa) { salvarFoto(); return; }
   grpSel.visible = false;
-  renderer.render(cena, camAtiva());
+  if (!foto.ativa) desenharQuadro(); // na foto realista, o canvas já tem a imagem
   const src = renderer.domElement;
   const c = document.createElement('canvas');
   c.width = src.width; c.height = src.height;
@@ -2470,8 +2740,9 @@ enquadrar();
 })();
 
 renderer.setAnimationLoop(() => {
+  if (foto.ativa) { quadroFoto(); return; }
   if (!vista.caminhar) ctlAtivo().update();
-  renderer.render(cena, camAtiva());
+  desenharQuadro();
   posicionarRotulos();
   posicionarBussola();
   posicionar(cotasTela);
@@ -2481,5 +2752,5 @@ renderer.setAnimationLoop(() => {
 // acesso pelo console, útil para testes e ajustes finos
 window.simulador = { get doc() { return doc; }, atualizarTudo, selecionar, esticar, areaUtil, areaConstruida, alternarVista, enquadrar, exportarPNG, CFG, camera: camAtiva,
   _grp: grpMoveis, olhar(px, py, pz, tx, ty, tz) { camPersp.position.set(px, py, pz); ctlPersp.target.set(tx, ty, tz); ctlPersp.update(); },
-  alternarAbertura: (id) => alternarAbertura(movel(id)), alternarCaminhada, camadas, alvo: (x, y) => alvoEm({ clientX: x, clientY: y }), get sel() { return sel; } };
+  alternarAbertura: (id) => alternarAbertura(movel(id)), alternarCaminhada, camadas, andar, aplicarCameraAndar, alvo: (x, y) => alvoEm({ clientX: x, clientY: y }), get sel() { return sel; } };
 })();
