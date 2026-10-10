@@ -1698,7 +1698,9 @@ function alternarCaminhada() {
     ctlPersp.enabled = false;
     camPersp.fov = 70; camPersp.updateProjectionMatrix();
     aplicarCameraAndar();
-    toast('Arraste para olhar em volta; toque no piso para andar até lá. W/A/S/D também andam.');
+    sel = null;
+    renderPainel();
+    toast('Os móveis ficam travados. Arraste para olhar em volta; toque para andar até lá. W/A/S/D também andam.');
   } else {
     camPersp.fov = 42; camPersp.updateProjectionMatrix();
     if (andar.orbita) { camPersp.position.copy(andar.orbita.pos); ctlPersp.target.copy(andar.orbita.alvo); }
@@ -1773,7 +1775,8 @@ function aoPressionar(e) {
   arr = { id: e.pointerId, x: e.clientX, y: e.clientY, alvo, movido: false };
   const jaSel = (tipo) => alvo?.tipo === tipo && sel?.tipo === tipo && sel.id === alvo.id;
   const paredeSel = jaSel('parede') && !parede(alvo.id)?.demolida;
-  if (alvo?.tipo === 'movel' || paredeSel || jaSel('zona')) {
+  // caminhando, nada se mexe: arrastar só olha em volta
+  if (!vista.caminhar && (alvo?.tipo === 'movel' || paredeSel || jaSel('zona'))) {
     const inicio = pontoNoPiso(e);
     if (!inicio) return;
     ctlAtivo().enabled = false;
@@ -1855,10 +1858,16 @@ function aoSoltar(e) {
   if (g.olhar && (g.movido || foto.ativa)) return;
   if (g.movido) return; // foi órbita/arraste de câmera
   const a = g.alvo;
-  if (vista.caminhar && (!a || a.tipo === 'ambiente' || a.tipo === 'zona')) {
-    const p = pontoNoPiso(e);
+  if (vista.caminhar) { // toque: anda até o ponto (ou até perto do móvel/parede tocado)
+    raioDe(e);
+    const hit = ray.intersectObjects([grpMoveis, grpPlanta], true).find((h) => h.object.userData.tipo);
+    let p = hit ? hit.point.clone() : pontoNoPiso(e);
+    if (p && hit && hit.point.y > 3) {
+      const dx = p.x - andar.x, dz = p.z - andar.z, d = Math.hypot(dx, dz);
+      const parar = Math.max(0, d - 55);
+      p = { x: andar.x + (dx / (d || 1)) * parar, z: andar.z + (dz / (d || 1)) * parar };
+    }
     if (p && dentro([p.x, p.z], doc.planta.contorno)) andarPara(p.x, p.z);
-    if (sel) selecionar(null);
     return;
   }
   if (!a) selecionar(null);
