@@ -681,7 +681,7 @@ function abrirFoto() {
   }
   foto.pt.renderScale = ehToque ? 0.5 : 1;
   // interior pede mais exposição que a maquete vista de fora
-  const exp = vista.caminhar ? 1.8 : 1.1;
+  const exp = vista.caminhar ? 2.6 : 1.1;
   renderer.toneMappingExposure = exp;
   $('#fotoExposicao').value = String(exp);
   foto.ativa = true;
