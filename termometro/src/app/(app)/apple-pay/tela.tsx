@@ -34,8 +34,8 @@ export function TelaDoApplePay() {
 
         <Passo n={2}>
           Abra o app <b>Atalhos</b> do iPhone. Na aba <b>Automação</b>, toque no <b>+</b> e escolha{" "}
-          <b>Carteira</b> (em alguns iPhones se chama <b>Transação</b>). Marque o cartão que você usa
-          no Apple Pay. Toque em <b>Seguinte</b> e em <b>Criar nova automação vazia</b>.
+          <b>Carteira</b> (em alguns iPhones se chama <b>Transação</b>). Marque o cartão que você
+          usa no Apple Pay. Toque em <b>Seguinte</b> e em <b>Criar nova automação vazia</b>.
         </Passo>
 
         <Passo n={3}>
@@ -47,8 +47,8 @@ export function TelaDoApplePay() {
           </span>
           <span className="mt-2 block">
             Depois escreva <Palavra>&amp;nota=</Palavra> e escolha <b>Entrada do atalho</b> de novo;
-            toque na etiqueta e escolha o nome da loja (<b>Comerciante</b> ou <b>Estabelecimento</b>,
-            conforme o iPhone). É ele que faz o app aprender a categoria.
+            toque na etiqueta e escolha o nome da loja (<b>Comerciante</b> ou <b>Estabelecimento</b>
+            , conforme o iPhone). É ele que faz o app aprender a categoria.
           </span>
           <span className="mt-2 block">
             Toque em <b>Mostrar mais</b>. Em <b>Método</b>, troque para <Palavra>POST</Palavra>. Em{" "}
@@ -64,9 +64,9 @@ export function TelaDoApplePay() {
 
         <Passo n={5}>
           Falta escolher como ela roda. Procure, <b>rolando a tela até o fim</b>, as opções{" "}
-          <b>Executar imediatamente</b> e <b>Executar após confirmação</b> (ou <i>Perguntar antes de
-          executar</i>), e marque <b>Executar imediatamente</b>. Ela fica ou na tela onde você
-          escolhe as ações, ou na tela de resumo que aparece depois de tocar em{" "}
+          <b>Executar imediatamente</b> e <b>Executar após confirmação</b> (ou{" "}
+          <i>Perguntar antes de executar</i>), e marque <b>Executar imediatamente</b>. Ela fica ou
+          na tela onde você escolhe as ações, ou na tela de resumo que aparece depois de tocar em{" "}
           <b>Seguinte</b>, conforme a versão do iOS. Toque em <b>OK</b>.
           <span className="mt-1.5 block text-[13.5px] text-fosco">
             Só achou “perguntar antes”? Funciona também: depois de pagar, o iPhone mostra uma
@@ -87,8 +87,8 @@ export function TelaDoApplePay() {
             lançado; para esse cartão, o botão <b>Gastei</b> continua sendo o caminho.
           </span>
           <span className="mt-1.5 block">
-            • <b>Nada aparece</b> — a automação não rodou. Em <b>Atalhos → Automação</b>, confira
-            se ela está ligada.
+            • <b>Nada aparece</b> — a automação não rodou. Em <b>Atalhos → Automação</b>, confira se
+            ela está ligada.
           </span>
         </Aviso>
       </section>
@@ -114,7 +114,12 @@ export function TelaDoApplePay() {
           <i>“Compra de R$ 17,00 em ACADEMIA CEMI”</i> ou{" "}
           <i>“R$ 53,58 no débito com NuPay APROVADO em KeetaBR.”</i> O app lê o valor e a loja do
           texto e decide sozinho o que é: compra vira gasto, “Recebemos sua transferência” vira
-          entrada, e o resto (promoção, fatura) não é lançado.
+          entrada, e o resto (promoção, fatura) não é lançado. Se a notificação disser “crédito”, a
+          compra vai para a{" "}
+          <Link href="/fatura" className="text-saldo underline">
+            fatura do cartão
+          </Link>{" "}
+          e não mexe no saldo de agora.
         </p>
         <ol className="mt-3 space-y-3">
           <Passo n={1}>

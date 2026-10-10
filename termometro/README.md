@@ -411,6 +411,15 @@ vira entrada, e o resto não é lançado — por isso o filtro do atalho pode se
   desconta, à meia-noite, um gasto que ainda não aconteceu; amanhã em diante a
   estimativa continua no saldo e na projeção do mês.
 
+- **Compra no crédito vai para a fatura, não para o saldo.** `Lancamento.credito`
+  (marcado em "No crédito", nos botões do Gastei, ou pela palavra "crédito" na
+  notificação do banco) tira a compra do "Saldo agora" e do gasto do dia. O app
+  agrupa as compras por fatura (`lib/fatura.ts`: dia de fechamento e vencimento em
+  Ajustes `cartao`; compra no dia do fechamento já é da fatura seguinte) e mantém
+  uma saída prevista `fatura-AAAA-MM` no vencimento, com o total, que aparece em "O
+  que vem" e entra na projeção do mês. Tela `/fatura`; "Paguei a fatura" escreve a
+  saída real, no dia do pagamento.
+
 Todo erro da porta volta também em `recado`, que é o que a notificação do atalho
 mostra.
 

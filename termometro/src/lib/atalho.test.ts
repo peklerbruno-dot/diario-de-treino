@@ -502,3 +502,40 @@ describe("quando a notificação não é reconhecida", () => {
     expect(r.ok && r.lancamentos[0].tipo).toBe("DIARIO");
   });
 });
+
+describe("compra no crédito pela notificação", () => {
+  const hoje = { hoje: "2026-10-09", agora: "2026-10-09T12:00:00Z", novoId: () => "x" };
+
+  it("a palavra crédito manda a compra para a fatura", () => {
+    const r = lerPedidoDoAtalho(
+      { texto: "Compra no crédito aprovada\nCompra de R$ 120,00 em LOJA X" },
+      hoje,
+    );
+    expect(r.ok && r.lancamentos[0]).toMatchObject({
+      tipo: "DIARIO",
+      credito: true,
+      nota: "LOJA X",
+    });
+  });
+
+  it("no débito não é crédito", () => {
+    const r = lerPedidoDoAtalho({ texto: "Compra de R$ 17,00 em ACADEMIA CEMI" }, hoje);
+    expect(r.ok && r.lancamentos[0].credito).toBe(false);
+  });
+
+  it("credito=1 no pedido também vale", () => {
+    const r = lerPedidoDoAtalho({ valor: "30", credito: "1" }, hoje);
+    expect(r.ok && r.lancamentos[0].credito).toBe(true);
+  });
+
+  it("o recado diz no crédito", () => {
+    const r = lerPedidoDoAtalho({ valor: "30", credito: "1" }, hoje);
+    if (!r.ok) throw new Error("esperava ok");
+    expect(recadoDoAtalho(r.lancamentos, 100_000)).toContain("no crédito");
+  });
+
+  it("entrada nunca é crédito", () => {
+    const r = lerPedidoDoAtalho({ valor: "30", tipo: "entrada", credito: "1" }, hoje);
+    expect(r.ok && r.lancamentos[0].credito).toBe(false);
+  });
+});

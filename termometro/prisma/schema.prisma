@@ -56,6 +56,10 @@ model Lancamento {
   /// Saída do apartamento, que é rateada com outra pessoa.
   apartamento Boolean @default(false)
 
+  /// Compra no cartão de crédito. O dinheiro só sai da conta no vencimento da
+  /// fatura, então ela não mexe no saldo de agora: entra na "Fatura aberta".
+  credito Boolean @default(false)
+
   /// Para onde o dinheiro foi: mercado, fatura, apartamento, salário.
   ///
   /// Texto, e não uma tabela de categorias com chave estrangeira. São umas

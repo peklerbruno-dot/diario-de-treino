@@ -16,6 +16,15 @@ import {
 import { hoje as dataDeHoje } from "./datas";
 import { aoReal, comCifrao } from "./dinheiro";
 import { previstoParaConfirmar } from "./conciliar";
+import {
+  APAGADA_PELO_APP,
+  CHAVE_DO_CARTAO,
+  NOTA_DA_FATURA,
+  idDaSaidaDaFatura,
+  lerCartao,
+  planoDaFatura,
+  type Fatura,
+} from "./fatura";
 import type { Ajustes, Fixo, Lancamento, Tipo } from "./tipos";
 import { AJUSTES_PADRAO } from "./tipos";
 
@@ -267,7 +276,65 @@ export class Loja {
     };
     this.publicar({ lancamentos: { ...this.estado.lancamentos, [id]: l } });
     this.marcarPendente(`l:${id}`);
+    // Compra no crédito nova, mudada ou que deixou de ser: a fatura acompanha.
+    if (l.credito || anterior?.credito) this.ajustarFatura();
     return l;
+  }
+
+  /**
+   * Mantém a saída prevista de cada fatura do cartão em dia com as compras no
+   * crédito. Roda quando uma compra no crédito muda, quando o cartão é
+   * cadastrado e quando a sincronização traz compras de outro aparelho.
+   */
+  ajustarFatura() {
+    const cartao = lerCartao(this.estado.ajustes[CHAVE_DO_CARTAO]?.valor);
+    if (!cartao) return;
+    const quando = agora();
+    const plano = planoDaFatura(Object.values(this.estado.lancamentos), cartao, quando);
+    if (plano.salvar.length === 0 && plano.apagar.length === 0) return;
+
+    const lancamentos = { ...this.estado.lancamentos };
+    const pendentes = new Set(this.estado.pendentes);
+    for (const l of plano.salvar) {
+      lancamentos[l.id] = l;
+      pendentes.add(`l:${l.id}`);
+    }
+    for (const id of plano.apagar) {
+      const atual = lancamentos[id];
+      if (!atual) continue;
+      lancamentos[id] = {
+        ...atual,
+        fixoId: APAGADA_PELO_APP,
+        apagadoEm: quando,
+        atualizadoEm: quando,
+      };
+      pendentes.add(`l:${id}`);
+    }
+    this.publicar({ lancamentos, pendentes: [...pendentes] });
+    this.agendarEnvio();
+  }
+
+  /**
+   * Pagar a fatura: a saída acontece hoje, com o total de agora. Escreve a
+   * saída direto (e não confirma a prevista), para não depender de a previsão
+   * estar em dia nem de ninguém a ter apagado antes.
+   */
+  pagarFatura(fatura: Fatura, dia: string) {
+    const id = idDaSaidaDaFatura(fatura.id);
+    this.salvarLancamento({
+      id,
+      data: dia,
+      tipo: "SAIDA",
+      valorCents: fatura.totalCents,
+      nota: NOTA_DA_FATURA,
+      categoria: "fatura",
+      previsto: false,
+      rendaPropria: false,
+      investimento: false,
+      apartamento: false,
+      credito: false,
+      fixoId: null,
+    });
   }
 
   /** Vários de uma vez (a importação, a previsão do ano inteiro). */
@@ -307,6 +374,7 @@ export class Loja {
     // Apagar é soft-delete, então desfazer é barato — e um toque errado em
     // Apagar deixa de custar o valor inteiro digitado de novo.
     this.abrirDesfazer({ tipo: "apagou", id, rotulo: atual.nota?.trim() || "lançamento" });
+    if (atual.credito) this.ajustarFatura();
   }
 
   /**
@@ -317,7 +385,7 @@ export class Loja {
   lancarRapido(
     valorCents: number,
     data: string,
-    extras: { categoria?: string | null; nota?: string | null } = {},
+    extras: { categoria?: string | null; nota?: string | null; credito?: boolean } = {},
   ) {
     const l = this.salvarLancamento({
       data,
@@ -329,12 +397,13 @@ export class Loja {
       rendaPropria: false,
       investimento: false,
       apartamento: false,
+      credito: !!extras.credito,
       fixoId: null,
     });
     this.abrirDesfazer({
       tipo: "lancou",
       id: l.id,
-      rotulo: `${comCifrao(l.valorCents)} no diário`,
+      rotulo: `${comCifrao(l.valorCents)} ${extras.credito ? "no crédito" : "no diário"}`,
     });
     return l;
   }
@@ -360,15 +429,19 @@ export class Loja {
     const morto: Lancamento = { ...l, apagadoEm: agora(), atualizadoEm: agora() };
     this.publicar({ lancamentos: { ...this.estado.lancamentos, [l.id]: morto } });
     this.marcarPendente(`l:${l.id}`);
+    if (l.credito) this.ajustarFatura();
   }
 
   /** Confirmar é dizer "aconteceu mesmo, e foi este valor". */
-  confirmarLancamento(id: string, valorCents?: number) {
+  confirmarLancamento(id: string, valorCents?: number, data?: string) {
     const atual = this.estado.lancamentos[id];
     if (!atual) return;
     this.salvarLancamento({
       ...atual,
       valorCents: valorCents ?? atual.valorCents,
+      // Pagar a fatura acontece no dia em que se paga, não no do vencimento: é
+      // nesse dia que o dinheiro sai da conta.
+      data: data ?? atual.data,
       previsto: false,
     });
   }
@@ -420,6 +493,8 @@ export class Loja {
     const ajustes = { ...this.estado.ajustes, [chave]: { valor, atualizadoEm: agora() } };
     this.publicar({ ajustes });
     this.marcarPendente(`a:${chave}`);
+    // Cadastrar (ou mudar) o cartão muda as faturas de todas as compras no crédito.
+    if (chave === CHAVE_DO_CARTAO) this.ajustarFatura();
   }
 
   /** Apaga tudo deste aparelho e do servidor. Só a tela de Ajustes chama. */
@@ -577,6 +652,9 @@ export class Loja {
         ultimaSincronizacao: agora(),
         recadoDeErro: null,
       });
+      // Compras no crédito feitas por outro aparelho (ou pela notificação do
+      // banco) chegam aqui: a fatura delas é escrita agora.
+      this.ajustarFatura();
     } catch (erro) {
       const semRede = typeof navigator !== "undefined" && navigator.onLine === false;
       this.publicar(

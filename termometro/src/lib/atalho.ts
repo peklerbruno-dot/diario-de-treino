@@ -50,6 +50,8 @@ export interface PedidoDoAtalho {
   rendaPropria?: unknown;
   investimento?: unknown;
   apartamento?: unknown;
+  /** Compra no cartão de crédito: vai para a fatura, e não mexe no saldo. */
+  credito?: unknown;
 }
 
 /**
@@ -89,6 +91,7 @@ const ACEITOS_NO_ENDERECO = [
   "rendaPropria",
   "investimento",
   "apartamento",
+  "credito",
 ] as const;
 
 /**
@@ -154,7 +157,7 @@ export function lojaNoTexto(texto: string): string | null {
  */
 export function classificarNotificacao(
   texto: string,
-): { ok: true; tipo: Tipo; nota: string | null } | { ok: false; erro: string } {
+): { ok: true; tipo: Tipo; nota: string | null; credito: boolean } | { ok: false; erro: string } {
   const loja = lojaNoTexto(texto);
   // O título do Nubank também diz o que é: "Compra no débito aprovada".
   const tituloDeCompra =
@@ -165,14 +168,16 @@ export function classificarNotificacao(
     tituloDeCompra ||
     loja !== null ||
     /R\$\s*[\d.,]+\s+no\s+d[ée]bito|R\$\s*[\d.,]+\s+no\s+cr[ée]dito/i.test(texto);
-  if (compra) return { ok: true, tipo: "DIARIO", nota: loja };
+  // A palavra "crédito" na notificação (o título diz "Compra no crédito
+  // aprovada", ou o corpo "no crédito com NuPay") manda a compra para a fatura.
+  if (compra) return { ok: true, tipo: "DIARIO", nota: loja, credito: /cr[ée]dito/i.test(texto) };
 
   if (
     /recebemos\s+sua\s+transfer|voc[êe]\s+recebeu|transfer[êe]ncia\s+recebida|pix\s+recebido/i.test(
       texto,
     )
   ) {
-    return { ok: true, tipo: "ENTRADA", nota: "Pix" };
+    return { ok: true, tipo: "ENTRADA", nota: "Pix", credito: false };
   }
   // O começo do texto vai junto, para quem recebe o aviso (e para quem o
   // conserta) ver exatamente o que o atalho mandou.
@@ -224,7 +229,7 @@ export function lerPedidoDoAtalho(
   } = {},
 ): LeituraDoPedido {
   let texto = comoTexto(corpo.valor);
-  let automatico: { tipo: Tipo; nota: string | null } | null = null;
+  let automatico: { tipo: Tipo; nota: string | null; credito: boolean } | null = null;
   if (texto === null || texto.trim() === "") {
     // Sem valor, mas com uma frase que o tenha dentro (a notificação do banco):
     // o app tira o número dela, em vez de exigir que o atalho o separe.
@@ -294,6 +299,7 @@ export function lerPedidoDoAtalho(
       categoria: achada?.id ?? null,
       nota,
       previsto: false,
+      credito: tipo === "DIARIO" && (comoBooleano(corpo.credito) || !!automatico?.credito),
       rendaPropria: tipo === "ENTRADA" && comoBooleano(corpo.rendaPropria),
       investimento: tipo === "SAIDA" && comoBooleano(corpo.investimento),
       apartamento: tipo === "SAIDA" && comoBooleano(corpo.apartamento),
@@ -404,7 +410,9 @@ export function recadoDoAtalho(
 ): string {
   const total = lancamentos.reduce((soma, l) => soma + l.valorCents, 0);
   const quantos = lancamentos.length > 1 ? `${lancamentos.length} lançamentos, ` : "";
-  const como = COMO_SE_DIZ[lancamentos[0]?.tipo ?? "DIARIO"];
+  const como = lancamentos[0]?.credito
+    ? "no crédito"
+    : COMO_SE_DIZ[lancamentos[0]?.tipo ?? "DIARIO"];
 
   // A categoria é dita de volta de propósito: é assim que um "farmácia" ouvido
   // como "farmássia" aparece na hora, em vez de virar um total errado que só se

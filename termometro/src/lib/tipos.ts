@@ -27,6 +27,8 @@ export interface Lancamento {
   rendaPropria?: boolean;
   investimento?: boolean;
   apartamento?: boolean;
+  /** Compra no cartão de crédito: sai da conta só no vencimento da fatura. */
+  credito?: boolean;
   fixoId?: string | null;
   criadoEm?: string;
   atualizadoEm?: string;

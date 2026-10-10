@@ -6,7 +6,8 @@ import {
   previstosVencidos,
   primeiroDiaNoVermelho,
   sobraPorDia,
-  somaDosFixosNoMes, previstosSubstituidos,
+  somaDosFixosNoMes,
+  previstosSubstituidos,
 } from "./calculo";
 import type { Fixo, Lancamento, Tipo } from "./tipos";
 
@@ -545,7 +546,13 @@ describe("a soma dos fixos num mês", () => {
 });
 
 describe("o gasto real substitui o previsto do diário", () => {
-  const dia = (id: string, tipo: "DIARIO" | "ENTRADA", valorCents: number, previsto: boolean, data = "2026-10-06") => ({
+  const dia = (
+    id: string,
+    tipo: "DIARIO" | "ENTRADA",
+    valorCents: number,
+    previsto: boolean,
+    data = "2026-10-06",
+  ) => ({
     id,
     data,
     tipo,
@@ -637,8 +644,19 @@ describe("a estimativa do diário só conta dos dias que vêm", () => {
   });
 
   it("gasto real hoje vale o real, e só ele", () => {
-    const real = { id: "r", data: "2026-10-08", tipo: "DIARIO", valorCents: 2500, previsto: false } as never;
-    const ano = calcularAno({ ano: 2026, lancamentos: [...lancamentos, real], ajustes, hoje: "2026-10-08" });
+    const real = {
+      id: "r",
+      data: "2026-10-08",
+      tipo: "DIARIO",
+      valorCents: 2500,
+      previsto: false,
+    } as never;
+    const ano = calcularAno({
+      ano: 2026,
+      lancamentos: [...lancamentos, real],
+      ajustes,
+      hoje: "2026-10-08",
+    });
     expect(ano.meses[9].dias[7].diarioCents).toBe(2500);
   });
 
@@ -651,5 +669,44 @@ describe("a estimativa do diário só conta dos dias que vêm", () => {
 
   it("a conferência não cobra o dia de hoje, só os que passaram", () => {
     expect(previstosVencidos(lancamentos, "2026-10-08").map((l) => l.data)).toEqual(["2026-10-07"]);
+  });
+});
+
+describe("compra no crédito não mexe no saldo", () => {
+  const ajustes = { saldoInicialCents: 100_000, rateioAptoPercent: 40 };
+  const credito = {
+    id: "c",
+    data: "2026-10-08",
+    tipo: "DIARIO",
+    valorCents: 4500,
+    credito: true,
+    previsto: false,
+  } as never;
+
+  it("fica fora do saldo e do gasto do dia, e aparece à parte", () => {
+    const ano = calcularAno({ ano: 2026, lancamentos: [credito], ajustes });
+    const d = ano.meses[9].dias[7];
+    expect(d.saldoCents).toBe(100_000);
+    expect(d.diarioCents).toBe(0);
+    expect(d.creditoCents).toBe(4500);
+    expect(ano.meses[9].totais.creditoCents).toBe(4500);
+  });
+
+  it("mesmo assim substitui a estimativa do diário do dia", () => {
+    const previsto = {
+      id: "p",
+      data: "2026-10-08",
+      tipo: "DIARIO",
+      valorCents: 6000,
+      previsto: true,
+      fixoId: "f",
+    } as never;
+    const ano = calcularAno({ ano: 2026, lancamentos: [credito, previsto], ajustes });
+    expect(ano.meses[9].dias[7].saldoCents).toBe(100_000);
+  });
+
+  it("o gasto de hoje na sobra por dia não conta o crédito", () => {
+    const ano = calcularAno({ ano: 2026, lancamentos: [credito], ajustes, hoje: "2026-10-08" });
+    expect(sobraPorDia(ano, "2026-10-08")?.gastoDeHojeCents).toBe(0);
   });
 });

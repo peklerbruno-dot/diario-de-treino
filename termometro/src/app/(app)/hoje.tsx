@@ -31,7 +31,9 @@ import {
   saldoInicialExplicito,
   type Estado,
 } from "@/lib/loja";
+import Link from "next/link";
 import { useEstado } from "@/componentes/usar-loja";
+import { CHAVE_DO_CARTAO, faturasDoCartao, lerCartao } from "@/lib/fatura";
 import { NOME_DO_TIPO, type Tipo } from "@/lib/tipos";
 
 /**
@@ -86,6 +88,7 @@ export function TelaDeHoje() {
           </Cartao>
 
           <AvisoDoVermelho ano={anoCalculado} agora={agora} />
+          <FaturaAberta agora={agora} />
 
           <div className="mt-3 flex gap-2">
             <Botao onClick={() => setLancando("ENTRADA")} className="flex-1 !text-[15px]">
@@ -218,6 +221,29 @@ function DaPorDia({ ano, agora }: { ano: AnoCalculado; agora: string }) {
       ) : null}
       .
     </p>
+  );
+}
+
+/**
+ * Uma linha, e só quando existe: quanto está na fatura do cartão e quando ela
+ * vence. A compra no crédito não mexe no "Saldo agora", então sem esta linha ela
+ * sumiria de vista até o dia de pagar.
+ */
+function FaturaAberta({ agora }: { agora: string }) {
+  const estado = useEstado();
+  const cartao = lerCartao(estado.ajustes[CHAVE_DO_CARTAO]?.valor);
+  if (!cartao) return null;
+  const abertas = faturasDoCartao(lancamentosVivos(estado), cartao, agora).filter(
+    (f) => f.estado !== "paga",
+  );
+  // A que mais pesa agora: a fechada que espera pagamento, senão a aberta.
+  const f = abertas.find((x) => x.estado === "fechada") ?? abertas[0];
+  if (!f) return null;
+  return (
+    <Link href="/fatura" className="mt-2 block text-[13px] leading-snug text-grafite underline">
+      Fatura do cartão: <b className="tabular">{comCifrao(f.totalCents)}</b>, vence em{" "}
+      {curta(f.vencimento)}
+    </Link>
   );
 }
 
