@@ -27,6 +27,8 @@ export interface DiaCalculado {
   entradaCents: number;
   saidaCents: number;
   diarioCents: number;
+  /** O que foi comprado no crédito: vai para a fatura, e não mexe no saldo. */
+  creditoCents: number;
   /** Saldo ao fim deste dia. */
   saldoCents: number;
   lancamentos: Lancamento[];
@@ -52,6 +54,8 @@ export interface TotaisDoMes {
   diarioCents: number;
   /** Saídas + Diário: tudo o que saiu. */
   saidaTotalCents: number;
+  /** Compras no crédito do mês: ficam fora de tudo acima, e vão para a fatura. */
+  creditoCents: number;
   /** Diário do mês dividido pelos dias do mês. */
   mediaDiariaCents: number;
   /** Só as entradas marcadas como dinheiro seu. */
@@ -161,6 +165,7 @@ export function calcularAno(opcoes: {
     let entradas = 0;
     let saidas = 0;
     let diario = 0;
+    let credito = 0;
     let entradaPropria = 0;
     let investido = 0;
     let apto = 0;
@@ -176,6 +181,7 @@ export function calcularAno(opcoes: {
       let e = 0;
       let s = 0;
       let d = 0;
+      let c = 0;
       let previstoNoDia = false;
       const diarioSubstituido = doDia.some((l) => l.tipo === "DIARIO" && !l.previsto);
       // A estimativa de um dia que já chegou (hoje, ontem) não gasta nada: só o
@@ -185,6 +191,12 @@ export function calcularAno(opcoes: {
         diarioSubstituido || (opcoes.hoje !== undefined && data <= opcoes.hoje);
 
       for (const l of doDia) {
+        // Compra no crédito: o dinheiro só sai no vencimento da fatura, que é
+        // uma saída própria. Aqui ela não toca o saldo nem o gasto do dia.
+        if (l.credito && l.tipo === "DIARIO" && !l.previsto) {
+          c += l.valorCents;
+          continue;
+        }
         if (l.previsto && l.tipo === "DIARIO" && diarioPrevistoFora) continue;
         if (l.previsto) previstoNoDia = true;
         if (l.tipo === "ENTRADA") {
@@ -203,6 +215,7 @@ export function calcularAno(opcoes: {
       entradas += e;
       saidas += s;
       diario += d;
+      credito += c;
       if (previstoNoDia) temPrevisto = true;
       if (saldo < saldoMinimo) {
         saldoMinimo = saldo;
@@ -215,6 +228,7 @@ export function calcularAno(opcoes: {
         entradaCents: e,
         saidaCents: s,
         diarioCents: d,
+        creditoCents: c,
         saldoCents: saldo,
         lancamentos: doDia,
         temPrevisto: previstoNoDia,
@@ -234,6 +248,7 @@ export function calcularAno(opcoes: {
         entradasCents: entradas,
         saidasCents: saidas,
         diarioCents: diario,
+        creditoCents: credito,
         saidaTotalCents: saidaTotal,
         mediaDiariaCents: Math.round(diario / quantosDias),
         entradaPropriaCents: entradaPropria,
@@ -492,7 +507,7 @@ export function sobraPorDia(ano: AnoCalculado, hoje: string): SobraPorDia | null
   const fechamentoCents = doMes.totais.saldoFechamentoCents + diarioPrevistoRestante;
 
   const gastoDeHojeCents = dia.lancamentos
-    .filter((l) => l.tipo === "DIARIO" && !l.previsto)
+    .filter((l) => l.tipo === "DIARIO" && !l.previsto && !l.credito)
     .reduce((t, l) => t + l.valorCents, 0);
 
   return {

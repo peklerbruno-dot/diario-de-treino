@@ -83,9 +83,7 @@ export function LancarPorValor({ data }: { data: string }) {
               ) : (
                 <span className="flex items-baseline gap-1">
                   <span className="text-[11px] text-fosco">R$</span>
-                  <span
-                    className={`tabular text-[17px] ${seu ? "font-bold" : "font-medium"}`}
-                  >
+                  <span className={`tabular text-[17px] ${seu ? "font-bold" : "font-medium"}`}>
                     {emReais(v)}
                   </span>
                 </span>
@@ -127,6 +125,22 @@ export function LancarPorValor({ data }: { data: string }) {
   );
 }
 
+const CHAVE_DO_CREDITO = "financas-bp:ultimo-credito";
+const lembrarCredito = (): boolean => {
+  try {
+    return window.localStorage.getItem(CHAVE_DO_CREDITO) === "1";
+  } catch {
+    return false;
+  }
+};
+const guardarCredito = (credito: boolean) => {
+  try {
+    window.localStorage.setItem(CHAVE_DO_CREDITO, credito ? "1" : "0");
+  } catch {
+    // Sem armazenamento, a escolha vale só para este lançamento.
+  }
+};
+
 /**
  * A confirmação de um valor: categoria num toque, observação se quiser.
  *
@@ -149,6 +163,9 @@ function ConfirmarValor({
 }) {
   const estado = useEstado();
   const [nota, setNota] = useState("");
+  // O jeito de pagar fica entre um lançamento e o seguinte: quem usa mais o
+  // crédito não precisa marcá-lo toda vez.
+  const [credito, setCredito] = useState(lembrarCredito);
   const jaLancou = useRef(false);
 
   const vivos = lancamentosVivos(estado);
@@ -163,12 +180,28 @@ function ConfirmarValor({
     // Um toque duplo na categoria é um lançamento, não dois.
     if (jaLancou.current) return;
     jaLancou.current = true;
-    loja.lancarRapido(valorCents, data, { categoria, nota });
+    guardarCredito(credito);
+    loja.lancarRapido(valorCents, data, { categoria, nota, credito });
     aoLancar();
   }
 
   return (
     <Folha titulo={`Gastei ${comCifrao(valorCents)}`} aoFechar={aoFechar}>
+      <div className="mb-3 flex gap-2" role="group" aria-label="Como pagou">
+        {([false, true] as const).map((c) => (
+          <button
+            key={String(c)}
+            type="button"
+            aria-pressed={credito === c}
+            onClick={() => setCredito(c)}
+            className={`min-h-[40px] flex-1 rounded-full text-[14.5px] shadow-baixa ${
+              credito === c ? "bg-heroi font-semibold text-heroi-tinta" : "bg-cartao text-tinta"
+            }`}
+          >
+            {c ? "No crédito" : "Débito / Pix"}
+          </button>
+        ))}
+      </div>
       <Sobrescrito>No quê? Um toque já lança</Sobrescrito>
       <div className="mt-2 flex flex-wrap gap-2">
         {categorias.map((c) => (

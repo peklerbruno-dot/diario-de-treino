@@ -187,6 +187,7 @@ export async function POST(pedido: Request) {
         rendaPropria: !!l.rendaPropria,
         investimento: !!l.investimento,
         apartamento: !!l.apartamento,
+        credito: !!l.credito,
         fixoId: null,
         criadoEm: new Date(l.criadoEm!),
         atualizadoEm: new Date(l.atualizadoEm!),
@@ -226,7 +227,7 @@ export function GET() {
     comoUsar:
       'POST em /api/lancar?valor=38,50&categoria=mercado com o cabeçalho "x-codigo". ' +
       'O mesmo vale em corpo JSON: {"valor":"38,50"}. ' +
-      'Opcionais: "tipo" (entrada, saída ou diário), "categoria" (o nome, como se fala), ' +
+      'Opcionais: "tipo" (entrada, saída ou diário), "credito" (1: compra no cartão de crédito, vai para a fatura), "categoria" (o nome, como se fala), ' +
       '"data" (AAAA-MM-DD) e "nota". Sem "categoria", a nota (o nome da loja) busca a categoria que ela já teve. ' +
       'Em vez de "valor", dá para mandar "texto": uma frase com o valor dentro, como a ' +
       'notificação do banco — o app tira o número dela e, sem "tipo", decide se é compra (débito, ' +

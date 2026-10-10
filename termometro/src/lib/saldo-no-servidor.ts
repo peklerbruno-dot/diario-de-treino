@@ -32,6 +32,7 @@ export async function saldoNoServidor(
         rendaPropria: true,
         investimento: true,
         apartamento: true,
+        credito: true,
         previsto: true,
       },
     }),

@@ -27,6 +27,12 @@ const DESTINOS = [
     descricao: "Os doze meses em números, e como o ano fecha.",
   },
   {
+    href: "/fatura",
+    Icone: IconeFixos,
+    titulo: "Fatura do cartão",
+    descricao: "O que você comprou no crédito e quanto vence.",
+  },
+  {
     href: "/fixos",
     Icone: IconeFixos,
     titulo: "Fixos",

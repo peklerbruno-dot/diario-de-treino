@@ -50,6 +50,7 @@ export function FolhaDeLancamento({
     rendaPropria: !!lancamento?.rendaPropria,
     investimento: !!lancamento?.investimento,
     apartamento: !!lancamento?.apartamento,
+    credito: !!lancamento?.credito,
   });
   const [erro, setErro] = useState<string | null>(null);
   // Editar um previsto NÃO o confirma: mexer na nota da fatura não é dizer que
@@ -107,6 +108,7 @@ export function FolhaDeLancamento({
       rendaPropria: tipo === "ENTRADA" && marcado.rendaPropria,
       investimento: tipo === "SAIDA" && marcado.investimento,
       apartamento: tipo === "SAIDA" && marcado.apartamento,
+      credito: tipo === "DIARIO" && marcado.credito,
       fixoId: lancamento?.fixoId ?? null,
     };
 
@@ -202,6 +204,22 @@ export function FolhaDeLancamento({
           <p className="!mt-1.5 text-[12.5px] text-fosco">{porExtenso(quando)}</p>
         )}
 
+        {tipo === "DIARIO" && (
+          <Marcacoes>
+            <Chip
+              ligado={marcado.credito}
+              aoTocar={() => setMarcado((m) => ({ ...m, credito: !m.credito }))}
+            >
+              No crédito
+            </Chip>
+            <span className="text-[12.5px] leading-snug text-fosco">
+              {marcado.credito
+                ? "Vai para a fatura do cartão e não mexe no saldo de agora."
+                : "Pago na hora (débito, Pix, dinheiro). Se foi no cartão de crédito, marque."}
+            </span>
+          </Marcacoes>
+        )}
+
         {tipo === "SAIDA" && !editando && (
           <Marcacoes>
             <label className="flex items-center gap-2 text-[14px] text-grafite">
@@ -286,6 +304,7 @@ export function FolhaDeLancamento({
                 rendaPropria: tipo === "ENTRADA" && marcado.rendaPropria,
                 investimento: tipo === "SAIDA" && marcado.investimento,
                 apartamento: tipo === "SAIDA" && marcado.apartamento,
+                credito: tipo === "DIARIO" && marcado.credito,
                 fixoId: null,
               });
               aoFechar();
