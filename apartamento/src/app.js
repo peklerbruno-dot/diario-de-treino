@@ -1500,6 +1500,7 @@ function verificarColisoes() {
     }
   }
   colisoes = { porMovel, lista, usoBloq, portasBloq };
+  conferir();
   renderAvisos();
 }
 
@@ -1545,6 +1546,9 @@ const linhaSel = new T.LineBasicMaterial({ color: CFG.corSel });
 const linhaCol = new T.LineBasicMaterial({ color: CFG.corColisao });
 const linhaUso = new T.LineDashedMaterial({ color: '#1e8449', dashSize: 6, gapSize: 4 });
 const linhaCota = new T.LineBasicMaterial({ color: '#1d2530' });
+const matUsoAtencao = new T.MeshBasicMaterial({ color: '#f2b84b', transparent: true, opacity: 0.28, depthWrite: false });
+const linhaAtencao = new T.LineDashedMaterial({ color: '#c48a12', dashSize: 6, gapSize: 4 });
+let statusZona = new Map();
 
 // O que aparece sobre a planta (painel "Mostrar").
 const camadas = Object.assign({ uso: false, cantos: false, cotas: true },
@@ -1568,17 +1572,19 @@ function desenharSelecao() {
     const obj = objMovel.get(m.id);
     if (obj) grpSel.add(new T.Box3Helper(new T.Box3().setFromObject(obj), linha.color));
   };
-  if (!vista.caminhar) for (const id of colisoes.porMovel.keys()) { const m = movel(id); if (m) marca(m, matCol, linhaCol); }
+  if (!vista.caminhar && modo === 'arrumar') for (const id of colisoes.porMovel.keys()) { const m = movel(id); if (m) marca(m, matCol, linhaCol); }
   const selM = sel?.tipo === 'movel' ? movel(sel.id) : null;
   if (selM) marca(selM, matSel, linhaSel);
-  if (vista.caminhar) return;
-  // áreas de uso: de todos (camada ligada) ou só do móvel selecionado
+  if (vista.caminhar || modo === 'visitar') return;
+  // áreas de uso: de todos (camada ligada ou modo Conferir) ou só do móvel selecionado
+  const todas = camadas.uso || modo === 'conferir';
   for (const m of cen().moveis) {
-    if (!camadas.uso && m !== selM) continue;
+    if (!todas && m !== selM) continue;
     zonasUso(m).forEach((z, k) => {
-      const bloq = colisoes.usoBloq.has(`${m.id}#${k}`);
-      grpSel.add(malhaPoligono(retPts(z), bloq ? matUsoBloq : matUso, 0.5));
-      grpSel.add(contornoTracejado(retPts(z), bloq ? linhaCol : linhaUso, 0.6));
+      const st = modo === 'conferir' ? statusZona.get(`${m.id}#${k}`) : (colisoes.usoBloq.has(`${m.id}#${k}`) ? 'problema' : 'ok');
+      const fundo = st === 'problema' ? matUsoBloq : st === 'atencao' ? matUsoAtencao : matUso;
+      grpSel.add(malhaPoligono(retPts(z), fundo, 0.5));
+      grpSel.add(contornoTracejado(retPts(z), st === 'problema' ? linhaCol : st === 'atencao' ? linhaAtencao : linhaUso, 0.6));
     });
   }
   // giro das portas: todas com a camada ligada; bloqueadas sempre
@@ -1602,7 +1608,7 @@ let cotasTela = [];
 function desenharCotas(m) {
   camadaCotas.textContent = '';
   cotasTela = [];
-  if (!m || !camadas.cotas || vista.caminhar) return;
+  if (!m || !(camadas.cotas || modo === 'conferir') || vista.caminhar) return;
   const y = (m.y || 0) + 1.5;
   for (const c of calcularCotas(m)) {
     const [x1, z1] = c.p1, [x2, z2] = c.p2;
@@ -1658,7 +1664,7 @@ function construirZonas() {
   limpar(grpZonas);
   rotulosZonas.forEach((r) => r.div.remove());
   rotulosZonas = [];
-  if (!camadas.cantos || vista.caminhar) return;
+  if (!camadas.cantos || vista.caminhar || modo === 'visitar') return;
   for (const z of cen().zonas || []) {
     const f = FUNCOES[z.funcao] || FUNCOES.outro, ativo = sel?.tipo === 'zona' && sel.id === z.id;
     const r = retZona(z);
@@ -1776,7 +1782,7 @@ function aoPressionar(e) {
   const jaSel = (tipo) => alvo?.tipo === tipo && sel?.tipo === tipo && sel.id === alvo.id;
   const paredeSel = jaSel('parede') && !parede(alvo.id)?.demolida;
   // caminhando, nada se mexe: arrastar só olha em volta
-  if (!vista.caminhar && (alvo?.tipo === 'movel' || paredeSel || jaSel('zona'))) {
+  if (modo === 'arrumar' && !vista.caminhar && (alvo?.tipo === 'movel' || paredeSel || jaSel('zona'))) {
     const inicio = pontoNoPiso(e);
     if (!inicio) return;
     ctlAtivo().enabled = false;
@@ -1858,6 +1864,7 @@ function aoSoltar(e) {
   if (g.olhar && (g.movido || foto.ativa)) return;
   if (g.movido) return; // foi órbita/arraste de câmera
   const a = g.alvo;
+  if (modo === 'visitar' && !vista.caminhar) return; // visitando: tocar não seleciona nada
   if (vista.caminhar) { // toque: anda até o ponto (ou até perto do móvel/parede tocado)
     raioDe(e);
     const hit = ray.intersectObjects([grpMoveis, grpPlanta], true).find((h) => h.object.userData.tipo);
@@ -1938,6 +1945,8 @@ document.addEventListener('keydown', (e) => {
   if (e.target.closest('input, textarea, select, dialog')) return;
   const ctrl = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
   if (foto.ativa) { if (k === 'escape') fecharFoto(); return; }
+  const edita = ['delete', 'backspace', 'r'].includes(k) || (ctrl && k === 'd') || (k.startsWith('arrow') && !vista.caminhar);
+  if (modo !== 'arrumar' && edita) return;
   if (ctrl && k === 'z' && !e.shiftKey) { e.preventDefault(); desfazer(); }
   else if (ctrl && (k === 'y' || (k === 'z' && e.shiftKey))) { e.preventDefault(); refazer(); }
   else if (ctrl && k === 'd') { e.preventDefault(); duplicarSelecionado(); }
@@ -2153,16 +2162,61 @@ function renderCatalogo() {
   const f = filtroCatalogo.toLowerCase();
   const cats = [...new Set(todos.map((c) => c.cat || 'Outros'))];
   for (const cat of cats) {
-    const itens = todos.filter((c) => (c.cat || 'Outros') === cat && (!f || c.nome.toLowerCase().includes(f)));
+    const itens = todos.filter((c) => (c.cat || 'Outros') === cat && (!f || c.nome.toLowerCase().includes(f) || cat.toLowerCase().includes(f)));
     if (!itens.length) continue;
     box.append(el('h4', {}, cat));
     for (const c of itens) {
-      box.append(el('button', { type: 'button', class: 'item-cat', onclick: () => adicionarMovel(c.tipo), title: 'Adicionar ao cenário' },
-        el('i', { style: `background:${c.cores?.principal || '#ccc'}` }),
-        el('span', {}, c.nome),
-        el('em', {}, `${c.dim.l}×${c.dim.p}`)));
+      const mini = el('span', { class: 'mini', 'data-tipo': c.tipo }, miniaturas.has(c.tipo) ? '' : '…');
+      if (miniaturas.has(c.tipo)) mini.style.backgroundImage = `url(${miniaturas.get(c.tipo)})`;
+      box.append(el('button', { type: 'button', class: 'cartao-cat', onclick: () => adicionarMovel(c.tipo), title: 'Adicionar ao cenário' },
+        mini, el('b', {}, c.nome), el('em', {}, `${c.dim.l} × ${c.dim.p} cm`)));
     }
   }
+  if (modo === 'arrumar') gerarMiniaturas();
+}
+
+// Miniaturas do catálogo: cada móvel é desenhado uma vez num renderizador
+// pequeno à parte e vira imagem. Feito aos poucos para não travar a tela.
+const miniaturas = new Map();
+let mini = null;
+function gerarMiniaturas() {
+  const falta = [...CATALOGO, ...doc.catalogoExtra].filter((c) => !miniaturas.has(c.tipo) && !c.modelo);
+  if (!falta.length || mini?.ocupado) return;
+  if (!mini) {
+    const r = new T.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+    r.setSize(160, 160, false);
+    r.outputColorSpace = T.SRGBColorSpace;
+    r.toneMapping = T.NeutralToneMapping;
+    const c = new T.Scene();
+    c.add(new T.HemisphereLight(0xffffff, 0xcfc4b4, 2.2));
+    const d = new T.DirectionalLight(0xffffff, 2.2); d.position.set(1, 2, 1.5); c.add(d);
+    mini = { r, c, cam: new T.PerspectiveCamera(30, 1, 1, 5000), ocupado: false };
+  }
+  mini.ocupado = true;
+  const passo = () => {
+    const def = falta.shift();
+    if (!def) { mini.ocupado = false; return; }
+    try {
+      const m = prepararMovel({ tipo: def.tipo, x: 0, z: 0, rot: 0 });
+      m.aberto = 0;
+      const g = construirMovel(m);
+      mini.c.add(g);
+      const b = new T.Box3().setFromObject(g), tam = b.getSize(new T.Vector3()), cen0 = b.getCenter(new T.Vector3());
+      const raio = Math.max(tam.x, tam.y, tam.z) * 0.62 + 4;
+      const dist = raio / Math.sin(rad(15));
+      mini.cam.position.copy(cen0).add(new T.Vector3(0.62, 0.55, 1).normalize().multiplyScalar(dist));
+      mini.cam.near = dist / 20; mini.cam.far = dist * 4; mini.cam.updateProjectionMatrix();
+      mini.cam.lookAt(cen0);
+      mini.r.render(mini.c, mini.cam);
+      const url = mini.r.domElement.toDataURL('image/png');
+      miniaturas.set(def.tipo, url);
+      mini.c.remove(g); limpar(g);
+      const alvo = document.querySelector(`#catalogo .mini[data-tipo="${def.tipo}"]`);
+      if (alvo) { alvo.style.backgroundImage = `url(${url})`; alvo.textContent = ''; }
+    } catch (err) { console.warn(err); miniaturas.set(def.tipo, ''); }
+    setTimeout(passo, 30);
+  };
+  setTimeout(passo, 60);
 }
 
 // ---- painel da seleção
@@ -2179,9 +2233,13 @@ function renderPainel() {
   else if (sel.tipo === 'zona') painelZona(p, cab);
 }
 
+const mais = (titulo, aberto, ...filhos) => el('details', { class: 'mais', open: aberto }, el('summary', {}, titulo), el('div', { class: 'conteudo' }, ...filhos));
+const botaoRapido = (icone, rotulo, acao, extra = {}) => el('button', { type: 'button', onclick: acao, title: rotulo, ...extra }, icone, el('small', {}, rotulo));
+
 function painelMovel(p, cab) {
   const m = movel(sel.id);
   if (!m) return;
+  if (modo === 'conferir') { painelConferirMovel(p, cab, m); return; }
   const def = defCatalogo(m.tipo) || { nome: m.tipo };
   const pg = pegada(m), vr = varianteDe(def, m);
   const col = colisoes.porMovel.get(m.id);
@@ -2193,12 +2251,21 @@ function painelMovel(p, cab) {
   anexar(p,
     cab(m.nome, vr ? `${def.nome} · ${vr.nome}` : def.nome),
     el('div', { class: 'status ' + (col ? 'alerta' : 'ok') }, col ? `⚠ ${[...new Set(col)].join('; ')}` : '✓ Cabe e dá para usar'),
+    el('div', { class: 'acoes-rapidas' },
+      botaoRapido('↻', 'Girar', () => girar(1)),
+      botaoRapido('⇋', 'Espelhar', () => alterar(() => { m.espelhado = !m.espelhado; })),
+      temMov(def, m) ? botaoRapido(aberto ? '■' : '▶', aberto ? acaoFechar : acaoAbrir, () => alternarAbertura(m)) : null,
+      botaoRapido('⧉', 'Duplicar', duplicarSelecionado),
+      botaoRapido('🗑', 'Remover', removerSelecionado, { class: 'perigo' })),
     def.variantes?.length > 1 ? secao('Formato',
       el('div', { class: 'opcoes' }, ...def.variantes.map((v) => botao(v.nome, () => trocarVariante(m, def, v), { class: v === vr ? 'ativo' : '' })))) : null,
-    temMov(def, m) ? secao('Funcionamento',
-      botao(aberto ? `■ ${acaoFechar}` : `▶ ${acaoAbrir}`, () => alternarAbertura(m), { class: 'acao' }),
-      el('p', { class: 'nota' }, aberto ? 'Aberto: as colisões consideram as partes para fora.' : 'Veja o móvel em uso; as colisões passam a considerar as partes abertas.')) : null,
-    secao('Medidas',
+    def.acabamentos ? secao('Material',
+      el('div', { class: 'opcoes' }, ...def.acabamentos.map((a) => botao(NOMES_ACAB[a] || a, () => alterar(() => { m.acab = a; }), { class: (m.acab || def.acabamentos[0]) === a ? 'ativo' : '' })))) : null,
+    mais('Cores', false,
+      el('div', { class: 'grade2' },
+        campoCor(rotCores[0], m.cores.principal, (v, fim) => { m.cores.principal = v; aplicarMudancaMovel(m, fim); }),
+        campoCor(rotCores[1], m.cores.secundaria || '#888888', (v, fim) => { m.cores.secundaria = v; aplicarMudancaMovel(m, fim); }))),
+    mais('Medidas', false,
       el('div', { class: 'grade3' },
         campoNum('Largura', m.l, (v) => alterar(() => { m.l = v; })),
         campoNum('Profund.', m.p, (v) => alterar(() => { m.p = v; })),
@@ -2206,31 +2273,18 @@ function painelMovel(p, cab) {
       el('div', { class: 'grade2', style: 'margin-top:8px' },
         campoNum('Altura do chão', m.y || 0, (v) => alterar(() => { m.y = v; }), { min: 0, max: 300 })),
       botao('Voltar às medidas do catálogo', () => alterar(() => Object.assign(m, vr?.dim || def.dim || {})), { class: 'link' })),
-    def.acabamentos ? secao('Material',
-      el('div', { class: 'opcoes' }, ...def.acabamentos.map((a) => botao(NOMES_ACAB[a] || a, () => alterar(() => { m.acab = a; }), { class: (m.acab || def.acabamentos[0]) === a ? 'ativo' : '' })))) : null,
-    secao('Cores',
+    mais('Distâncias e posição', false,
       el('div', { class: 'grade2' },
-        campoCor(rotCores[0], m.cores.principal, (v, fim) => { m.cores.principal = v; aplicarMudancaMovel(m, fim); }),
-        campoCor(rotCores[1], m.cores.secundaria || '#888888', (v, fim) => { m.cores.secundaria = v; aplicarMudancaMovel(m, fim); }))),
-    secao('Posição e distâncias',
-      el('div', { class: 'grade2' },
-        campoNum('X (canto)', pg.x0, (v) => alterar(() => { m.x = v + pg.w / 2; }), { min: -500, max: 3000, chave: 'x' }),
-        campoNum('Z (canto)', pg.z0, (v) => alterar(() => { m.z = v + pg.d / 2; }), { min: -500, max: 3000, chave: 'z' }),
         ...calcularCotas(m).map((c) => campoNum(NOME_DIR[c.eixo + c.s], c.dist, (v) => alterar(() => {
           const d = (c.dist - v) * c.s; if (c.eixo === 'x') m.x += d; else m.z += d;
-        }), { min: 0, max: 2000 }))),
-      el('div', { class: 'linha-botoes' },
-        botao('↺ 90°', () => girar(-1), { title: 'Girar anti-horário (Shift+R)' }),
-        botao('↻ 90°', () => girar(1), { title: 'Girar horário (R)' }),
-        botao('⇋ Espelhar', () => alterar(() => { m.espelhado = !m.espelhado; }), { title: 'Inverter lado (ex.: chaise)' }))),
-    zonas.length ? secao('Área de uso',
+        }), { min: 0, max: 2000 })),
+        campoNum('X (canto)', pg.x0, (v) => alterar(() => { m.x = v + pg.w / 2; }), { min: -500, max: 3000, chave: 'x' }),
+        campoNum('Z (canto)', pg.z0, (v) => alterar(() => { m.z = v + pg.d / 2; }), { min: -500, max: 3000, chave: 'z' })),
+      el('p', { class: 'nota' }, 'Digite a distância livre que você quer até a parede ou o móvel mais próximo.')),
+    zonas.length ? mais('Área de uso', false,
       ...zonas.map((z, k) => el('div', { class: 'linha-uso ' + (colisoes.usoBloq.has(`${m.id}#${k}`) ? 'alerta' : 'ok') },
-        el('span', {}, z.nome), el('b', {}, `${fmt(z.x1 - z.x0)} × ${fmt(z.z1 - z.z0)} cm`))),
-      el('p', { class: 'nota' }, 'O espaço para usar o móvel (verde no piso). Fica vermelho se algo estiver em cima.')) : null,
-    el('div', { class: 'linha-botoes fim' },
-      botao('Duplicar', duplicarSelecionado, { title: 'Ctrl+D' }),
-      botao('Remover', removerSelecionado, { class: 'perigo', title: 'Delete' })),
-    el('p', { class: 'nota' }, 'Arraste o móvel no piso (encaixe de 5 cm). Clique numa cota para digitar a distância.'),
+        el('span', {}, z.nome), el('b', {}, `${fmt(z.x1 - z.x0)} × ${fmt(z.z1 - z.z0)} cm`)))) : null,
+    el('p', { class: 'nota' }, 'Arraste o móvel no piso para mudar de lugar (encaixe de 5 cm).'),
   );
 }
 function trocarVariante(m, def, v) {
@@ -2470,10 +2524,11 @@ function toast(txt) {
 function atualizarBotoes() {
   $('#bDesfazer').disabled = !hist.voltar.length;
   $('#bRefazer').disabled = !hist.avancar.length;
-  $('#bVista').innerHTML = `<span class="texto">Vista </span>${vista.topo ? '3D' : 'de cima'}`;
+  $('#bVista').classList.toggle('ligado', vista.topo);
   $('#bCorte').classList.toggle('ligado', vista.corte);
   $('#bCaminhar').classList.toggle('ligado', vista.caminhar);
-  $('#bCaminhar').querySelector('.texto').textContent = vista.caminhar ? 'Sair' : 'Caminhar';
+  $('#bCaminhar').querySelector('.rot').textContent = vista.caminhar ? 'Sair' : 'Andar';
+  $('#bFoto').classList.toggle('ligado', foto.ativa);
   $('#bVista').disabled = vista.caminhar;
   $('#bCorte').disabled = vista.caminhar;
 }
@@ -2490,6 +2545,8 @@ function atualizarTudo() {
   renderAreas();
   renderCantos();
   renderMostrar();
+  renderRelatorio();
+  renderVistas();
   renderLuz();
   renderDemolicao();
   renderCatalogo();
@@ -2524,8 +2581,268 @@ $('#fotoHora').addEventListener('input', (e) => {
   recomecarFoto();
 });
 $('#bPNG').onclick = exportarPNG;
-$('#bLateral').onclick = () => document.body.classList.toggle('lateral-aberta');
+$('#bGaveta').onclick = () => document.body.classList.toggle('lateral-aberta');
 $('#buscaCatalogo').addEventListener('input', (e) => { filtroCatalogo = e.target.value; renderCatalogo(); });
+
+// =====================================================================
+// 9b. MODOS — Visitar · Arrumar · Conferir
+// =====================================================================
+// Visitar: passeio e fotos, nada se mexe. Arrumar: mover e trocar móveis.
+// Conferir: relatório automático dos espaços (sentar, levantar, passar,
+// abrir portas) com verde/amarelo/vermelho no piso.
+let modo = (() => { try { return localStorage.getItem('simulador-apto:modo') || 'visitar'; } catch { return 'visitar'; } })();
+if (!['visitar', 'arrumar', 'conferir'].includes(modo)) modo = 'visitar';
+let vistaAtual = null;
+
+function setModo(novo, manterSel = false) {
+  if (foto.ativa) fecharFoto();
+  modo = novo;
+  try { localStorage.setItem('simulador-apto:modo', modo); } catch { /* ok */ }
+  document.body.classList.remove('modo-visitar', 'modo-arrumar', 'modo-conferir', 'lateral-aberta');
+  document.body.classList.add(`modo-${modo}`);
+  for (const b of document.querySelectorAll('#modos button')) b.classList.toggle('ativo', b.dataset.modo === modo);
+  $('#solVisita').hidden = true;
+  if (!manterSel) sel = null;
+  if (modo === 'visitar') { sel = null; if (vista.topo) alternarVista(); }
+  if (modo !== 'visitar' && vista.caminhar) alternarCaminhada();
+  if (modo === 'conferir' && !vista.topo) alternarVista();
+  $('#bGaveta').textContent = modo === 'arrumar' ? '＋ Móveis' : '📋 Relatório';
+  vistaAtual = null;
+  atualizarTudo();
+}
+for (const b of document.querySelectorAll('#modos button')) b.onclick = () => setModo(b.dataset.modo);
+
+// ---- Visitar: atalhos dos cômodos
+const animarVista = { id: 0 };
+function irPara(v) {
+  vistaAtual = v.nome;
+  if (v.tipo === 'maquete') {
+    if (vista.caminhar) alternarCaminhada();
+    if (vista.topo) alternarVista();
+    enquadrar();
+  } else if (v.tipo === 'planta') {
+    if (vista.caminhar) alternarCaminhada();
+    if (!vista.topo) alternarVista();
+  } else {
+    if (vista.topo) alternarVista();
+    if (!vista.caminhar) alternarCaminhada();
+    const de = { x: andar.x, z: andar.z, yaw: andar.yaw, pitch: andar.pitch }, t0 = performance.now(), dur = 900;
+    let dy = v.yaw - de.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); // o menor giro
+    cancelAnimationFrame(animarVista.id);
+    const passo = (agora) => {
+      const t = Math.min(1, (agora - t0) / dur), k = t * t * (3 - 2 * t);
+      andar.x = de.x + (v.x - de.x) * k; andar.z = de.z + (v.z - de.z) * k;
+      andar.yaw = de.yaw + dy * k; andar.pitch = de.pitch + (v.pitch - de.pitch) * k;
+      aplicarCameraAndar();
+      if (t < 1) animarVista.id = requestAnimationFrame(passo);
+    };
+    animarVista.id = requestAnimationFrame(passo);
+  }
+  renderVistas();
+}
+function renderVistas() {
+  const box = $('#vistas');
+  box.textContent = '';
+  const lista = [...(typeof VISTAS_VISITA !== 'undefined' ? VISTAS_VISITA : []), { nome: 'Maquete', tipo: 'maquete' }, { nome: 'Planta', tipo: 'planta' }];
+  for (const v of lista) box.append(botao(v.nome, () => irPara(v), { class: vistaAtual === v.nome ? 'ativo' : '' }));
+  box.append(botao(`☀ ${horaTxt(luz.hora)}`, () => { $('#solVisita').hidden = !$('#solVisita').hidden; atualizarSolVisita(); }, { class: 'sol' }));
+}
+function atualizarSolVisita() {
+  $('#solVisitaHora').value = String(luz.hora);
+  const { elev, az } = posicaoSol(luz.data, luz.hora, doc.planta.local);
+  $('#solVisitaTxt').textContent = elev <= 0 ? `${horaTxt(luz.hora)} · noite` : `${horaTxt(luz.hora)} · sol a ${Math.round(elev)}°, do ${pontoCardeal(az)}`;
+}
+$('#solVisitaHora').addEventListener('input', (e) => {
+  luz.hora = +e.target.value;
+  try { localStorage.setItem(CHAVE_LUZ, JSON.stringify(luz)); } catch { /* ok */ }
+  aplicarSol(); atualizarSolVisita();
+  const b = document.querySelector('#vistas .sol'); if (b) b.textContent = `☀ ${horaTxt(luz.hora)}`;
+});
+$('#solVisitaFechar').onclick = () => { $('#solVisita').hidden = true; };
+let diaVisita = 0;
+$('#solVisitaDia').onclick = () => {
+  if (diaVisita) { clearInterval(diaVisita); diaVisita = 0; $('#solVisitaDia').textContent = '▶ Passar o dia'; return; }
+  const { nascer, por } = nascerPor(luz.data);
+  luz.hora = Math.floor((nascer ?? 6) * 4) / 4;
+  $('#solVisitaDia').textContent = '■ Parar';
+  diaVisita = setInterval(() => {
+    luz.hora += 0.25;
+    if (luz.hora > (por ?? 18) + 0.5) { clearInterval(diaVisita); diaVisita = 0; $('#solVisitaDia').textContent = '▶ Passar o dia'; }
+    $('#solVisitaHora').dispatchEvent(new Event('input'));
+    $('#solVisitaHora').value = String(luz.hora);
+  }, 160);
+};
+
+// ---- Conferir: relatório de espaços
+const NIVEL = { ok: 0, atencao: 1, problema: 2 };
+let relatorio = [];
+const classificar = (livre, ideal) => (livre >= ideal - 0.5 ? 'ok' : livre >= ideal * 0.7 ? 'atencao' : 'problema');
+
+function obstaculosPara(m, ignorar = true) {
+  const def = defCatalogo(m.tipo) || {};
+  const lista = doc.planta.paredes.filter((w) => !w.demolida).map((w) => ({ ...caixaParede(w), nome: `a parede ${w.nome.toLowerCase()}` }));
+  for (const o of cen().moveis) {
+    if (o.id === m.id) continue;
+    const d2 = defCatalogo(o.tipo) || {};
+    if (d2.colide === false || (ignorar && ignoraPar(def, d2))) continue;
+    const pg = pegada(o);
+    if (pg.y0 >= 60) continue;
+    lista.push({ ...pg, nome: o.nome.toLowerCase(), id: o.id });
+  }
+  return lista;
+}
+function livreNaDirecao(ret, eixo, sentido, obst, max = 300) {
+  const [a0, a1, b0, b1] = eixo === 'x' ? ['x0', 'x1', 'z0', 'z1'] : ['z0', 'z1', 'x0', 'x1'];
+  const borda = sentido > 0 ? ret[a1] : ret[a0];
+  let melhor = max, quem = null;
+  for (const o of obst) {
+    if (Math.min(o[b1], ret[b1]) - Math.max(o[b0], ret[b0]) <= 1) continue;
+    const d = sentido > 0 ? o[a0] - borda : borda - o[a1];
+    if (d > -0.5 && d < melhor) { melhor = Math.max(0, d); quem = o.nome; }
+  }
+  return { livre: melhor, quem };
+}
+function ambienteDoPonto(x, z) {
+  return doc.planta.ambientes.find((a) => dentro([x, z], a.pontos))?.nome || 'Outros';
+}
+
+function conferir() {
+  const itens = [], moveis = cen().moveis;
+  statusZona = new Map();
+  for (const m of moveis) {
+    const def = defCatalogo(m.tipo) || {};
+    if (def.colide === false) continue;
+    const pg = pegada(m), amb = ambienteDoPonto(m.x, m.z);
+    // 1. áreas de uso: espaço livre real × ideal
+    zonasUso(m).forEach((z, k) => {
+      let eixo, sentido, ideal;
+      if (z.x0 >= pg.x1 - 1) [eixo, sentido, ideal] = ['x', 1, z.x1 - z.x0];
+      else if (z.x1 <= pg.x0 + 1) [eixo, sentido, ideal] = ['x', -1, z.x1 - z.x0];
+      else if (z.z0 >= pg.z1 - 1) [eixo, sentido, ideal] = ['z', 1, z.z1 - z.z0];
+      else if (z.z1 <= pg.z0 + 1) [eixo, sentido, ideal] = ['z', -1, z.z1 - z.z0];
+      let st, detalhe;
+      if (eixo) {
+        const base = eixo === 'x' ? { ...pg, z0: z.z0, z1: z.z1 } : { ...pg, x0: z.x0, x1: z.x1 };
+        const { livre, quem } = livreNaDirecao(base, eixo, sentido, obstaculosPara(m), ideal * 2);
+        st = classificar(livre, ideal);
+        detalhe = `${fmt(Math.min(livre, ideal * 2))} cm livres${st === 'ok' ? '' : ` · ideal ${fmt(ideal)}`}${quem && st !== 'ok' ? ` · até ${quem}` : ''}`;
+      } else {
+        st = colisoes.usoBloq.has(`${m.id}#${k}`) ? 'problema' : 'ok';
+        detalhe = st === 'ok' ? 'livre' : 'há algo no caminho';
+      }
+      statusZona.set(`${m.id}#${k}`, st);
+      itens.push({ amb, st, ids: [m.id], titulo: `${m.nome}: ${z.nome.toLowerCase()}`, detalhe });
+    });
+    // 2. mesas de refeição: lugares e espaço por pessoa
+    if (m.tipo === 'mesa_jantar' || m.tipo === 'mesa_redonda') {
+      const lados = { N: [], S: [], L: [], O: [] }, ids = [m.id];
+      for (const c of moveis) {
+        const dc = defCatalogo(c.tipo) || {};
+        if (dc.grupo !== 'cadeira') continue;
+        const pc = pegada(c);
+        const dx = Math.max(pc.x0 - pg.x1, pg.x0 - pc.x1, 0), dz = Math.max(pc.z0 - pg.z1, pg.z0 - pc.z1, 0);
+        if (Math.max(dx, dz) > 20) continue;
+        const rx = (c.x - m.x) / pg.w, rz = (c.z - m.z) / pg.d;
+        const lado = Math.abs(rx) > Math.abs(rz) ? (rx > 0 ? 'L' : 'O') : (rz > 0 ? 'S' : 'N');
+        const horiz = lado === 'N' || lado === 'S';
+        let pessoas = 1;
+        if (c.tipo === 'banco') {
+          const sob = horiz ? Math.min(pc.x1, pg.x1) - Math.max(pc.x0, pg.x0) : Math.min(pc.z1, pg.z1) - Math.max(pc.z0, pg.z0);
+          pessoas = Math.max(1, Math.floor((sob + 5) / 45));
+        }
+        lados[lado].push({ c, pessoas });
+        ids.push(c.id);
+      }
+      let total = 0, menor = Infinity, cadeiras = 0;
+      const partes = [];
+      for (const [lado, lista] of Object.entries(lados)) {
+        const n = lista.reduce((t, x) => t + x.pessoas, 0);
+        if (!n) continue;
+        const comp = lado === 'N' || lado === 'S' ? pg.w : pg.d;
+        const cada = (m.tipo === 'mesa_redonda' ? comp * 0.9 : comp) / n;
+        total += n; menor = Math.min(menor, cada);
+        const banco = lista.find((x) => x.c.tipo === 'banco');
+        if (banco) partes.push(`banco ${banco.pessoas} (${fmt(cada)} cm cada)`);
+        cadeiras += lista.filter((x) => x.c.tipo !== 'banco').length;
+      }
+      if (cadeiras) partes.push(`${cadeiras} cadeira${cadeiras > 1 ? 's' : ''}`);
+      if (m.tipo === 'mesa_redonda' && total) menor = (Math.PI * Math.min(m.l, m.p)) / total; // redonda: perímetro dividido
+      const st = !total ? 'atencao' : menor >= 55 ? 'ok' : menor >= 45 ? 'atencao' : 'problema';
+      itens.push({ amb, st, ids, titulo: `Mesa ${fmt(m.l)}×${fmt(m.p)}${m.tipo === 'mesa_redonda' ? ' redonda' : ''}: ${total} lugar${total === 1 ? '' : 'es'}`,
+        detalhe: total ? `${partes.join(' + ')} · ${fmt(menor)} cm por pessoa${st === 'ok' ? ', confortável' : ' (ideal 60)'}` : 'sem cadeiras por perto' });
+    }
+    // 3. banco: dá para entrar pelas pontas?
+    if (m.tipo === 'banco') {
+      const eixo = m.rot % 180 === 0 ? 'x' : 'z', obst = obstaculosPara(m, false);
+      const a = livreNaDirecao(pg, eixo, -1, obst, 120), b = livreNaDirecao(pg, eixo, 1, obst, 120);
+      const pontas = Math.max(a.livre, b.livre);
+      // pela frente: trechos do banco que nenhuma mesa cobre, com espaço livre diante deles
+      const frente = { 0: ['z', 1], 90: ['x', -1], 180: ['z', -1], 270: ['x', 1] }[m.rot];
+      const [c0, c1] = eixo === 'x' ? ['x0', 'x1'] : ['z0', 'z1'];
+      const mesas = moveis.filter((o) => (defCatalogo(o.tipo) || {}).grupo === 'mesa' && o.tipo !== 'mesa_computador')
+        .map((o) => { // redonda: na borda do banco ela só ocupa o miolo (os cantos ficam livres)
+          const t = pegada(o);
+          if (o.tipo !== 'mesa_redonda') return t;
+          const k = (t[c1] - t[c0]) * 0.17;
+          return { ...t, [c0]: t[c0] + k, [c1]: t[c1] - k };
+        })
+        .filter((t) => sobrepoe({ ...t, [frente[0] + '0']: t[frente[0] + '0'] - 15, [frente[0] + '1']: t[frente[0] + '1'] + 15 }, pg));
+      let trechos = [[pg[c0], pg[c1]]];
+      for (const t of mesas) trechos = trechos.flatMap(([u, v]) => [[u, Math.min(v, t[c0])], [Math.max(u, t[c1]), v]]).filter(([u, v]) => v - u > 1);
+      let melhorFrente = 0;
+      for (const [u, v] of trechos) {
+        const faixa = { ...pg, [c0]: u, [c1]: v };
+        const semMesas = obstaculosPara(m, false).filter((o) => (defCatalogo(movel(o.id)?.tipo) || {}).grupo !== 'mesa' || movel(o.id)?.tipo === 'mesa_computador');
+        const { livre } = livreNaDirecao(faixa, frente[0], frente[1], semMesas, 120);
+        if (livre >= 50) melhorFrente = Math.max(melhorFrente, v - u);
+      }
+      let st, detalhe;
+      if (pontas >= 50) { st = 'ok'; detalhe = `entra pela ponta (${fmt(pontas)} cm livres)`; }
+      else if (melhorFrente >= 45) { st = 'ok'; detalhe = `entra pela frente, num trecho livre de ${fmt(melhorFrente)} cm`; }
+      else if (melhorFrente >= 28) { st = 'atencao'; detalhe = `entra pela frente só por um trecho de ${fmt(melhorFrente)} cm (as pontas estão fechadas)`; }
+      else { st = 'problema'; detalhe = `pontas com ${fmt(a.livre)} e ${fmt(b.livre)} cm e frente tomada · para sentar é preciso puxar a mesa`; }
+      itens.push({ amb, st, ids: [m.id], titulo: `${m.nome}: como sentar`, detalhe });
+    }
+  }
+  itens.sort((a, b) => NIVEL[b.st] - NIVEL[a.st]);
+  relatorio = itens;
+}
+
+function renderRelatorio() {
+  const box = $('#relatorio');
+  if (!box) return;
+  box.textContent = '';
+  const n = (st) => relatorio.filter((i) => i.st === st).length;
+  box.append(el('div', { class: 'resumo-rel' },
+    el('span', { class: 'ok' }, `✓ ${n('ok')} ok`), el('span', { class: 'atencao' }, `! ${n('atencao')} atenção`), el('span', { class: 'problema' }, `✕ ${n('problema')} problema`)));
+  const ambs = [...new Set([...doc.planta.ambientes.map((a) => a.nome), 'Outros'])];
+  const icone = { ok: '✓', atencao: '!', problema: '✕' };
+  for (const amb of ambs) {
+    const lista = relatorio.filter((i) => i.amb === amb);
+    if (!lista.length) continue;
+    box.append(el('div', { class: 'rel-amb' }, amb));
+    for (const it of lista) {
+      box.append(el('button', { type: 'button', class: `item-rel ${it.st}${sel?.tipo === 'movel' && it.ids.includes(sel.id) ? ' ativo' : ''}`,
+        onclick: () => { document.body.classList.remove('lateral-aberta'); selecionar({ tipo: 'movel', id: it.ids[0] }); } },
+      el('i', {}, icone[it.st]), el('b', {}, it.titulo), el('small', {}, it.detalhe)));
+    }
+  }
+  box.append(el('p', { class: 'nota' }, 'Referências: 60 cm de mesa por pessoa; 75 cm atrás da cadeira para levantar; 50–60 cm nas laterais da cama; 90 cm no corredor da cozinha.'));
+}
+
+function painelConferirMovel(p, cab, m) {
+  const itens = relatorio.filter((i) => i.ids.includes(m.id));
+  const NOME_DIR = { 'x1': 'à direita', 'x-1': 'à esquerda', 'z1': 'abaixo', 'z-1': 'acima' };
+  const icone = { ok: '✓', atencao: '!', problema: '✕' };
+  anexar(p,
+    cab(m.nome, `${fmt(m.l)} × ${fmt(m.p)} × ${fmt(m.a)} cm`),
+    itens.length ? secao('Uso', ...itens.map((it) => el('div', { class: `item-rel ${it.st}` }, el('i', {}, icone[it.st]), el('b', {}, it.titulo), el('small', {}, it.detalhe))))
+      : el('p', { class: 'nota' }, 'Este móvel não tem regra de uso para conferir.'),
+    secao('Distâncias livres', el('div', { class: 'lista-moveis' },
+      ...calcularCotas(m).map((c) => el('div', { class: 'linha-uso ok' }, el('span', {}, NOME_DIR[c.eixo + c.s]), el('b', {}, `${fmt(c.dist)} cm`))))),
+    el('div', { class: 'linha-botoes fim' }, botao('✏️ Arrumar este móvel', () => { const id = m.id; setModo('arrumar', true); selecionar({ tipo: 'movel', id }); }, { class: 'acao' })),
+  );
+}
 
 // =====================================================================
 // 10. ARQUIVOS — salvar no navegador, JSON, PNG e modelos .glb
@@ -2735,6 +3052,10 @@ function carregarDoc() {
 doc = carregarDoc();
 if (PLANTA_ORIGINAL.aviso) { $('#avisoPlanta').textContent = PLANTA_ORIGINAL.aviso; $('#avisoPlanta').hidden = false; }
 redimensionar();
+document.body.classList.add(`modo-${modo}`);
+for (const b of document.querySelectorAll('#modos button')) b.classList.toggle('ativo', b.dataset.modo === modo);
+$('#bGaveta').textContent = modo === 'arrumar' ? '＋ Móveis' : '📋 Relatório';
+if (modo === 'conferir') { vista.topo = true; ctlPersp.enabled = false; ctlTopo.enabled = true; }
 atualizarTudo();
 enquadrar();
 

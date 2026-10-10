@@ -519,6 +519,7 @@ const CATALOGO = [
   },
   {
     tipo: 'mesa_computador', nome: 'Mesa de trabalho', cat: 'Mesas e cadeiras', grupo: 'mesa',
+    uso: [frente(75, 'Sentar e levantar')],
     dim: { l: 140, p: 70, a: 75 }, cores: { principal: '#efe9df', secundaria: '#2b2b2b' }, rotulosCores: ['Tampo', 'Estrutura'],
     luz: { x: 'L/2-22', y: 'A+38', z: '-P/2+20', intensidade: 70 },
     variantes: ['escrivaninha', 'gaveteiro', 'cavalete', 'notebook'].map((id) => {
@@ -599,7 +600,7 @@ const CATALOGO = [
     dim: { l: 224, p: 60, a: 90 }, cores: { principal: '#f2f0ec', secundaria: '#2f3033' }, rotulosCores: ['Armários', 'Tampo'],
     acabamentos: ['laca', 'madeira'], acabTampo: true,
     acao: ['Abrir armários', 'Fechar armários'],
-    uso: [frente(70, 'Trabalhar na bancada')],
+    uso: [frente(90, 'Corredor da cozinha')],
     partes: [
       { f: 'caixa', l: 'L', p: 'P-8', a: 10, z: -4, cor: '#2b2b2b' },
       { f: 'caixa', l: 'L', p: 2, a: 'A-14', y: 10, z: '-P/2+1', cor: '#e6e3dd' },

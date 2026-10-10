@@ -23,7 +23,7 @@
 // =====================================================================
 
 const PLANTA_ORIGINAL = {
-  revisao: 4,
+  revisao: 5,
   alturaParede: 260,
 
   // Local e orientação — usados para calcular o sol por data e hora.
@@ -223,8 +223,59 @@ const CENARIO_FINAL = {
   ],
 };
 
+// ---------------------------------------------------------------------
+// TRÊS OPÇÕES PARA O JANTAR — a planta final com só a mesa e as cadeiras
+// mudando, para comparar no modo Conferir.
+// ---------------------------------------------------------------------
+const ITENS_JANTAR = ['Mesa de jantar', 'Cadeira de jantar', 'Pendente de papel de arroz'];
+const semJantar = MOVEIS_FINAL.filter((m) => !ITENS_JANTAR.includes(m.nome));
+const cadeiraJantar = (x, z, rot) => ({ tipo: 'cadeira', nome: 'Cadeira de jantar', variante: 'curva', x, z, rot, l: 45, p: 50, a: 82, acab: 'palha',
+  cores: { principal: '#dcc79d', secundaria: FREIJO_ESCURO } });
+const pendenteJantar = (x, z) => ({ tipo: 'luminaria', nome: 'Pendente de papel de arroz', variante: 'papel', x, z, rot: 0, y: 160, l: 55, p: 55, a: 100,
+  cores: { principal: '#f6e7c8', secundaria: '#2b2b2b' } });
+
+const CENARIOS_JANTAR = [
+  {
+    id: 'jantar-1', nome: 'Jantar 1 · mesa 80 afastada',
+    moveis: [
+      ...semJantar,
+      { tipo: 'mesa_jantar', nome: 'Mesa de jantar', variante: 'retangular', x: 197, z: 87, rot: 0, l: 80, p: 80, a: 76,
+        cores: { principal: FREIJO, secundaria: '#2b2622' } },
+      cadeiraJantar(134.5, 87, 270), cadeiraJantar(197, 149.5, 180), pendenteJantar(197, 87),
+    ],
+    zonas: CENARIO_FINAL.zonas,
+  },
+  {
+    id: 'jantar-2', nome: 'Jantar 2 · sem cadeira oeste',
+    moveis: MOVEIS_FINAL.filter((m) => !(m.nome === 'Cadeira de jantar' && m.rot === 270)),
+    zonas: CENARIO_FINAL.zonas,
+  },
+  {
+    id: 'jantar-3', nome: 'Jantar 3 · mesa redonda 80',
+    moveis: [
+      ...semJantar,
+      { tipo: 'mesa_redonda', nome: 'Mesa de jantar', variante: 'pe_central', x: 197, z: 88, rot: 0, l: 80, p: 80, a: 76,
+        cores: { principal: FREIJO, secundaria: '#2b2622' }, acab: 'madeira' },
+      // as duas cadeiras lado a lado no lado sul: o canto do banco fica livre para entrar
+      cadeiraJantar(174, 144, 180), cadeiraJantar(220, 144, 180), pendenteJantar(197, 88),
+    ],
+    zonas: CENARIO_FINAL.zonas,
+  },
+];
+
+// Atalhos do modo Visitar: onde ficar e para onde olhar em cada cômodo
+// (yaw: 0 = olhando para cima na planta; π/2 = para a esquerda).
+const VISTAS_VISITA = [
+  { nome: 'Sala', x: 335, z: 330, yaw: 1.3, pitch: -0.16 },
+  { nome: 'Jantar e office', x: 250, z: 205, yaw: 0.85, pitch: -0.22 },
+  { nome: 'Cozinha', x: 300, z: 330, yaw: -0.25, pitch: -0.2 },
+  { nome: 'Quarto', x: 225, z: 680, yaw: 0.45, pitch: -0.2 },
+  { nome: 'Banheiro', x: 330, z: 470, yaw: -2.5, pitch: -0.35 },
+];
+
 const CENARIOS_ORIGINAIS = [
   CENARIO_FINAL,
+  ...CENARIOS_JANTAR,
   {
     id: 'office-janela',
     nome: 'Office na janela',

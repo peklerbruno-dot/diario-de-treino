@@ -4,6 +4,38 @@ Simulador 3D editável do apartamento, para testar disposições de móveis.
 **Abra `simulador.html` com duplo clique.** Funciona sem internet e sem servidor: o three.js
 está embutido no próprio arquivo.
 
+## Três modos
+
+A barra de baixo troca o modo de uso:
+
+- **👀 Visitar** (padrão): só a casa, sem painéis. Atalhos dos cômodos (Sala, Jantar e office,
+  Cozinha, Quarto, Banheiro) levam a câmera até lá na altura dos olhos; **Maquete** e **Planta**
+  voltam para a visão geral; o chip **☀** abre a hora do sol. Nada se mexe sem querer.
+- **✏️ Arrumar:** catálogo com miniaturas, arrastar, girar e editar móveis, paredes e cenários.
+  O painel do móvel mostra primeiro as ações rápidas (Girar, Espelhar, Abrir, Duplicar, Remover),
+  o formato e o material; cores, medidas, distâncias e área de uso ficam em gavetas.
+- **📏 Conferir:** vista de cima com as áreas de uso pintadas (verde = ok, amarelo = apertado,
+  vermelho = não cabe) e um relatório automático: espaço livre na frente de cada móvel,
+  lugares em cada mesa (45 cm por pessoa no mínimo), se dá para entrar no banco e o giro das
+  portas. Clicar num item do relatório seleciona o móvel; **Arrumar este móvel** leva ao modo
+  de edição.
+
+As ferramentas da tela (Andar, Planta, Cortar, Foto, Inteiro) ficam na coluna à direita.
+
+## Opções de jantar
+
+Três abas comparam o canto de refeição da planta final (o resto é igual):
+
+| Aba | Mesa | Lugares | Relatório |
+| --- | --- | --- | --- |
+| Planta final | quadrada 88 × 88 | 4 a 44 cm cada (apertado) | banco sem entrada; cadeira oeste a 26 cm da do escritório |
+| Jantar 1 | quadrada 80 × 80, afastada do banco | 3 confortáveis | banco sem entrada; cadeiras com 27 e 35 cm de passagem |
+| Jantar 2 | 88 × 88 sem a cadeira oeste | 3 | banco entra pela frente num trecho de 30 cm (apertado) |
+| **Jantar 3** | **redonda Ø 80, pé central, 2 cadeiras ao sul** | **3 com folga** | **sem problemas**: banco entra por um trecho de 45 cm |
+
+A mesa redonda de pé central é a que melhor resolve: não tem quinas no caminho do banco e
+libera a passagem entre o jantar e a cadeira do escritório.
+
 ## Como usar
 
 | Ação | Como |

@@ -207,6 +207,102 @@ dialog button[value="ok"] { background: var(--azul); color: #fff; border-color: 
   .acoes .texto { display: none; }
   #ajuda { display: none; }
 }
+
+/* =====================================================================
+   MODOS (Visitar · Arrumar · Conferir)
+   ===================================================================== */
+:root { --modos: 62px; }
+#app { grid-template: "barra barra" var(--barra) "lateral palco" 1fr "modos modos" var(--modos) / var(--lateral) 1fr; }
+body.modo-visitar #app { grid-template-columns: 0 1fr; }
+#barra { grid-area: barra; } #lateral { grid-area: lateral; } #palco { grid-area: palco; } #modos { grid-area: modos; }
+body.modo-visitar #lateral { display: none; }
+body:not(.modo-visitar) .so-visitar, body:not(.modo-arrumar) .so-arrumar, body:not(.modo-conferir) .so-conferir { display: none !important; }
+body.modo-visitar #rotulos, body.modo-visitar #avisos, body.modo-visitar #cotas { display: none !important; }
+body.modo-conferir #avisos { display: none !important; }
+#painel { bottom: var(--modos) !important; }
+
+#modos { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--painel); border-top: 1px solid var(--linha); z-index: 40; }
+#modos button { border: 0; border-radius: 0; background: none; display: grid; grid-template-columns: auto auto; justify-content: center; align-items: center;
+  column-gap: 8px; padding: 6px; color: var(--suave); }
+#modos button span { grid-row: span 2; font-size: 22px; }
+#modos button b { font-size: 14px; text-align: left; }
+#modos button small { font-size: 11px; text-align: left; }
+#modos button.ativo { color: var(--texto); background: var(--azul-claro); box-shadow: inset 0 3px 0 var(--azul); }
+
+#ferramentas { position: absolute; right: 12px; top: 12px; display: grid; gap: 6px; z-index: 11; }
+#ferramentas button { width: 58px; height: 52px; display: grid; place-items: center; align-content: center; gap: 1px; padding: 4px; border-radius: 12px;
+  background: rgba(255,255,255,.94); box-shadow: 0 2px 10px rgba(20,30,40,.1); }
+#ferramentas button span { font-size: 18px; line-height: 1; }
+#ferramentas .rot { font-size: 10px; color: var(--suave); }
+#ferramentas button.ligado { background: var(--azul); border-color: var(--azul); }
+#ferramentas button.ligado span, #ferramentas button.ligado .rot { color: #fff; }
+body.com-painel #ferramentas { right: calc(var(--painel-w) + 12px); }
+
+#vistas { position: absolute; left: 12px; right: 84px; bottom: 12px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; z-index: 11; padding: 2px; }
+#vistas button { white-space: nowrap; border-radius: 999px; padding: 9px 14px; background: rgba(255,255,255,.94); box-shadow: 0 2px 10px rgba(20,30,40,.1); font-weight: 500; }
+#vistas button.ativo { background: var(--texto); color: #fff; border-color: var(--texto); }
+#vistas button.sol { margin-left: auto; }
+#solVisita { position: absolute; left: 12px; bottom: 64px; width: min(360px, calc(100% - 24px)); background: rgba(255,255,255,.96); border-radius: 14px;
+  padding: 12px 14px; box-shadow: 0 10px 30px rgba(0,0,0,.15); z-index: 12; }
+#solVisita input { width: 100%; accent-color: #e0a030; }
+
+#bGaveta { display: none; }
+
+/* catálogo com miniaturas */
+#catalogo { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+#catalogo h4 { grid-column: 1 / -1; margin: 10px 0 0; }
+.cartao-cat { display: grid; grid-template-rows: auto auto; gap: 2px; padding: 6px; border-radius: 10px; text-align: left; background: #fff; }
+.cartao-cat:hover { border-color: var(--azul) !important; }
+.cartao-cat .mini { aspect-ratio: 1; border-radius: 8px; background: #f2f0ec center / cover no-repeat; display: grid; place-items: center; color: var(--suave); font-size: 11px; }
+.cartao-cat b { font-size: 12px; font-weight: 600; line-height: 1.2; }
+.cartao-cat em { font-style: normal; font-size: 11px; color: var(--suave); }
+
+/* painel do móvel compacto */
+.acoes-rapidas { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 4px 0 10px; }
+.acoes-rapidas button { display: grid; place-items: center; gap: 2px; padding: 8px 2px; font-size: 18px; border-radius: 10px; }
+.acoes-rapidas button small { font-size: 10px; color: var(--suave); }
+.acoes-rapidas button.perigo small { color: var(--vermelho); }
+details.mais { border-top: 1px solid var(--linha); }
+details.mais > summary { cursor: pointer; padding: 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--suave); font-weight: 600; list-style: none; }
+details.mais > summary::after { content: ' ▸'; }
+details.mais[open] > summary::after { content: ' ▾'; }
+details.mais > .conteudo { padding-bottom: 10px; }
+
+/* relatório de conferência */
+.resumo-rel { display: flex; gap: 6px; margin-bottom: 10px; }
+.resumo-rel span { flex: 1; text-align: center; border-radius: 8px; padding: 6px 4px; font-size: 12px; }
+.resumo-rel .ok, .item-rel.ok i { background: #e3f4ea; color: var(--verde); }
+.resumo-rel .atencao, .item-rel.atencao i { background: #fdf3dc; color: #a46a00; }
+.resumo-rel .problema, .item-rel.problema i { background: #fdecea; color: var(--vermelho); }
+.rel-amb { font-size: 12px; font-weight: 600; margin: 12px 0 4px; color: var(--suave); }
+.item-rel { display: grid; grid-template-columns: 22px 1fr; gap: 2px 8px; width: 100%; text-align: left; border: 0; padding: 7px 6px; border-radius: 8px; }
+.item-rel i { grid-row: span 2; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 12px; font-weight: 700; }
+.item-rel b { font-size: 13px; font-weight: 600; }
+.item-rel small { font-size: 12px; color: var(--suave); }
+.item-rel.ativo { background: var(--azul-claro) !important; }
+
+@media (max-width: 860px) {
+  :root { --barra: 52px; --modos: 58px; }
+  #app, body.modo-visitar #app { grid-template: "barra" var(--barra) "palco" 1fr "modos" var(--modos) / 1fr; }
+  #barra { flex-wrap: nowrap; }
+  #abas { order: 0; flex-basis: auto; }
+  #modos button small { display: none; }
+  #modos button { grid-template-columns: auto; justify-items: center; row-gap: 0; }
+  #modos button span { grid-row: auto; font-size: 20px; }
+  #modos button b { font-size: 12px; }
+  #lateral { top: var(--barra) !important; bottom: var(--modos) !important; }
+  body.modo-visitar #lateral { display: none; }
+  #painel { bottom: var(--modos) !important; max-height: 52vh; }
+  #ferramentas { top: 8px; right: 8px; }
+  #ferramentas button { width: 50px; height: 46px; }
+  body.com-painel #ferramentas { right: 8px; }
+  body.com-painel #vistas, body.com-painel #bGaveta { display: none !important; }
+  #vistas { right: 8px; left: 8px; bottom: 8px; }
+  body:not(.modo-visitar) #bGaveta { display: block; position: absolute; left: 8px; bottom: 8px; z-index: 11; border-radius: 999px; padding: 10px 16px;
+    background: var(--texto); color: #fff; border-color: var(--texto); font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,.2); }
+  #avisos { bottom: 60px; }
+  #bLateral { display: none !important; }
+}
 </style>
 </head>
 <body>
@@ -215,18 +311,12 @@ dialog button[value="ok"] { background: var(--azul); color: #fff; border-color: 
      ===================================================================== -->
 <div id="app">
   <header id="barra">
-    <button id="bLateral" title="Áreas e catálogo">☰</button>
     <div class="marca">Apartamento 3D</div>
     <nav id="abas" aria-label="Cenários"></nav>
     <div class="acoes">
-      <button id="bDesfazer" title="Desfazer (Ctrl+Z)">↶</button>
-      <button id="bRefazer" title="Refazer (Ctrl+Shift+Z)">↷</button>
-      <button id="bVista" title="Alternar vista (T)">Vista de cima</button>
-      <button id="bCorte" title="Baixar as paredes para ver o interior"><span class="texto">Cortar paredes</span><span aria-hidden="true"> ✂</span></button>
-      <button id="bCaminhar" title="Caminhar pelo apartamento na altura dos olhos (C)"><span aria-hidden="true">🚶 </span><span class="texto">Caminhar</span></button>
-      <button id="bFoto" title="Foto realista: luz calculada por traçado de raios"><span aria-hidden="true">📷 </span><span class="texto">Foto realista</span></button>
-      <button id="bEnquadrar" title="Enquadrar o apartamento">⤢</button>
-      <button id="bPNG" title="Exportar a vista como imagem">PNG</button>
+      <button id="bDesfazer" class="so-arrumar" title="Desfazer (Ctrl+Z)">↶</button>
+      <button id="bRefazer" class="so-arrumar" title="Refazer (Ctrl+Shift+Z)">↷</button>
+      <button id="bPNG" title="Salvar a vista como imagem">PNG</button>
       <details class="menu">
         <summary>Arquivo ▾</summary>
         <div>
@@ -244,20 +334,28 @@ dialog button[value="ok"] { background: var(--azul); color: #fff; border-color: 
 
   <aside id="lateral">
     <div id="avisoPlanta" hidden></div>
-    <h2>Áreas</h2>
-    <div id="areas"></div>
-    <h2>Cantos</h2>
-    <div id="cantos"></div>
-    <h2>Mostrar</h2>
-    <div id="mostrar"></div>
-    <h2>Luz do sol</h2>
-    <div id="luz"></div>
-    <h2>Demolição</h2>
-    <div id="demolicao"></div>
-    <h2>Adicionar móvel</h2>
-    <input id="buscaCatalogo" type="search" placeholder="Buscar no catálogo">
-    <div id="catalogo"></div>
-    <button id="bGLB2" style="width:100%;margin-top:10px">Importar modelo .glb…</button>
+    <!-- Arrumar -->
+    <section class="lat so-arrumar">
+      <h2>Adicionar móvel</h2>
+      <input id="buscaCatalogo" type="search" placeholder="Buscar: sofá, mesa, planta…">
+      <div id="catalogo"></div>
+      <button id="bGLB2" style="width:100%;margin-top:10px">Importar modelo .glb…</button>
+      <h2>Cantos</h2>
+      <div id="cantos"></div>
+      <h2>Mostrar</h2>
+      <div id="mostrar"></div>
+      <h2>Demolição</h2>
+      <div id="demolicao"></div>
+    </section>
+    <!-- Conferir -->
+    <section class="lat so-conferir">
+      <h2>Conferir espaços</h2>
+      <div id="relatorio"></div>
+      <h2>Áreas</h2>
+      <div id="areas"></div>
+      <h2>Luz do sol</h2>
+      <div id="luz"></div>
+    </section>
     <div id="salvo"></div>
   </aside>
 
@@ -267,20 +365,47 @@ dialog button[value="ok"] { background: var(--azul); color: #fff; border-color: 
     <div id="bussola" title="Norte"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="18" fill="rgba(255,255,255,.88)" stroke="#d5dae0"/><path d="M20 5 L26 21 L20 18 L14 21 Z" fill="#d0453b"/><path d="M20 35 L14 19 L20 22 L26 19 Z" fill="#9aa3ad"/></svg><b>N</b></div>
     <div id="dica" hidden></div>
     <div id="avisos" hidden></div>
+
+    <!-- ferramentas da vista (todas os modos) -->
+    <div id="ferramentas">
+      <button id="bCaminhar" title="Andar por dentro, na altura dos olhos (C)"><span aria-hidden="true">🚶</span><span class="rot">Andar</span></button>
+      <button id="bVista" title="Planta vista de cima (T)"><span aria-hidden="true">▦</span><span class="rot">Planta</span></button>
+      <button id="bCorte" title="Baixar as paredes para ver o interior"><span aria-hidden="true">✂</span><span class="rot">Cortar</span></button>
+      <button id="bFoto" title="Foto realista: luz calculada por traçado de raios"><span aria-hidden="true">📷</span><span class="rot">Foto</span></button>
+      <button id="bEnquadrar" title="Ver o apartamento inteiro"><span aria-hidden="true">⤢</span><span class="rot">Inteiro</span></button>
+    </div>
+
+    <!-- Visitar: atalhos de cômodos e hora do sol -->
+    <div id="vistas" class="so-visitar"></div>
+    <div id="solVisita" class="so-visitar" hidden>
+      <div class="foto-topo"><b>☀ Luz do dia</b><span id="solVisitaTxt"></span></div>
+      <input id="solVisitaHora" type="range" min="5" max="20" step="0.25">
+      <div class="linha-botoes"><button id="solVisitaDia">▶ Passar o dia</button><button id="solVisitaFechar">Fechar</button></div>
+    </div>
+
+    <!-- Arrumar/Conferir no celular: abre a gaveta lateral -->
+    <button id="bGaveta"></button>
+
     <div id="painelFoto" hidden>
       <div class="foto-topo"><b>📷 Foto realista</b><span id="fotoStatus"></span></div>
       <div class="foto-barra"><i id="fotoBarra"></i></div>
       <div class="foto-controles">
-        <label>Exposição <input id="fotoExposicao" type="range" min="0.4" max="2.5" step="0.05" value="1"></label>
+        <label>Exposição <input id="fotoExposicao" type="range" min="0.4" max="3.5" step="0.05" value="1"></label>
         <label>Hora <b id="fotoHoraTxt"></b> <input id="fotoHora" type="range" min="5" max="20" step="0.25"></label>
       </div>
       <div class="linha-botoes"><button id="fotoSalvar" class="acao-sec">Salvar foto</button><button id="fotoFechar">Fechar</button></div>
-      <p class="nota">Gire a câmera (ou caminhe) e a foto recomeça. Fica limpa em 1 a 3 minutos.</p>
+      <p class="nota">Mexa a câmera e a foto recomeça. Fica limpa em 1 a 3 minutos.</p>
     </div>
-    <div id="ajuda">Clique: selecionar · arraste: mover · R: girar · Del: remover · botão direito: deslocar a vista</div>
+    <div id="ajuda" class="so-arrumar">Toque: selecionar · arraste: mover · R: girar · Del: remover</div>
   </main>
 
   <aside id="painel"></aside>
+
+  <nav id="modos" aria-label="Modo">
+    <button data-modo="visitar"><span aria-hidden="true">👁</span><b>Visitar</b><small>passear e fotografar</small></button>
+    <button data-modo="arrumar"><span aria-hidden="true">🛋</span><b>Arrumar</b><small>mover e trocar móveis</small></button>
+    <button data-modo="conferir"><span aria-hidden="true">📏</span><b>Conferir</b><small>espaços e medidas</small></button>
+  </nav>
 </div>
 
 <div id="toast" role="status"></div>
