@@ -38,10 +38,10 @@ As ferramentas da tela (Andar, Planta, Cortar, Foto, Inteiro) ficam na coluna à
 
 ## A casa em uso
 
-- **▶ Usar (simulação de uso):** uma coisa de cada vez abre e fecha, da entrada até o banheiro:
+- **▶ Usar (simulação de uso):** tudo abre e fecha ao mesmo tempo, em laço, como um gif:
   as três portas, guarda-roupa, criado-mudo, armários da cozinha, geladeira, armário aéreo,
   península, TV giratória, sofá retrátil, cortinas, cadeiras sendo puxadas e o fogão aceso.
-  A barra mostra o que está se mexendo; dá para pausar e girar a câmera enquanto isso.
+  Dá para pausar e girar a câmera (ou andar por dentro) enquanto isso.
 - **🎬 Filme (um dia no apartamento):** uma pessoa acorda às 7h, abre a cortina e o
   guarda-roupa, vai ao banheiro, abre a geladeira, acende o fogão, gira a TV para a mesa,
   toma café, trabalha no escritório, sai, volta à noite, vê TV no sofá estendido e vai dormir.

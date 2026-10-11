@@ -3036,7 +3036,7 @@ function painelConferirMovel(p, cab, m) {
 // =====================================================================
 // Só mexe no 3D (nada vai para o layout salvo). Ao terminar, a cena é
 // reconstruída a partir do documento e tudo volta ao lugar.
-//  - Simulação de uso: um por um, cada coisa da casa abre e fecha — portas,
+//  - Simulação de uso: tudo abre e fecha junto, em laço — portas,
 //    armários, geladeira, gavetas, TV giratória, sofá, cadeiras sendo
 //    puxadas, fogão aceso.
 //  - Filme: uma pessoa vive um dia no apartamento, andando por caminhos
@@ -3140,9 +3140,9 @@ function pararCinema() {
 }
 
 // ---------------------------------------------------------------------
-// 1. SIMULAÇÃO DE USO: cada coisa abre e fecha, uma depois da outra
+// 1. SIMULAÇÃO DE USO: tudo abre e fecha junto, em laço
 // ---------------------------------------------------------------------
-const uso = { lista: [], passo: 1.25, dur: 2.4 };
+const uso = { lista: [] };
 
 function centroPorta(ab) {
   const w = parede(ab.parede), u = ab.pos + ab.largura / 2, lado = ab.lado === -1 ? -1 : 1;
@@ -3157,7 +3157,7 @@ function acoesDeUso() {
     if (ab.tipo !== 'porta' || !portasGiro.has(ab.id)) continue;
     const [x, z] = centroPorta(ab);
     const ext = parede(ab.parede)?.id.startsWith('ext');
-    lista.push({ tipo: 'porta', ab, x, z, r: ext ? -1 : rank(x, z) - 0.5, nome: ext ? 'Porta de entrada' : `Porta ${ab.id === 'porta-banho' ? 'do banheiro' : ab.id === 'porta-quarto' ? 'do quarto' : ''}`.trim(), acao: 'Fechar e abrir' });
+    lista.push({ tipo: 'porta', ab, x, z, r: ext ? -1 : rank(x, z) - 0.5, nome: ext ? 'Porta de entrada' : `Porta ${ab.id === 'porta-banho' ? 'do banheiro' : ab.id === 'porta-quarto' ? 'do quarto' : ''}`.trim(), acao: 'Abrir' });
   }
   for (const m of cen().moveis) {
     const def = defCatalogo(m.tipo) || {};
@@ -3171,11 +3171,8 @@ function acoesDeUso() {
   return lista.sort((a, b) => a.r - b.r || a.z - b.z || a.x - b.x);
 }
 
-// 0 → 1 → 0 dentro da janela da ação (sobe, segura, desce)
-const sobeDesce = (u) => (u <= 0 || u >= 1 ? 0 : u < 0.32 ? ease(u / 0.32) : u < 0.62 ? 1 : 1 - ease((u - 0.62) / 0.38));
-
 function aplicarAcao(a, k) {
-  if (a.tipo === 'porta') porta(a.ab.id, 1 - k);
+  if (a.tipo === 'porta') porta(a.ab.id, k); // portas: fechadas → abertas
   else if (a.tipo === 'cadeira') puxarCadeira(a.m, 32 * k);
   else if (a.tipo === 'fogo') fogo(a.m, k, cinema.t);
   else { const b = a.m.aberto || 0; abrirMovel(a.m, b + (b > 0.5 ? -b : 1 - b) * k); }
@@ -3189,21 +3186,17 @@ function iniciarUso() {
   atualizarBotoes();
 }
 
+// Tudo ao mesmo tempo, em laço (como um gif): abre, fica aberto, fecha, fica fechado.
+const CICLO_USO = [['Abrindo tudo', 1.3], ['Tudo aberto', 1.2], ['Fechando tudo', 1.3], ['Tudo fechado', 0.9]];
 function tickUso() {
-  const { lista, passo, dur } = uso, total = (lista.length - 1) * passo + dur + 1.2;
-  const t = cinema.t % total;
-  let atual = null;
-  lista.forEach((a, i) => {
-    const u = (t - i * passo) / dur, k = sobeDesce(u);
-    aplicarAcao(a, k);
-    if (u > 0 && u < 1 && (!atual || i * passo > atual.i * passo)) atual = { a, i };
-  });
-  const txt = atual ? `${atual.a.nome} · ${atual.a.acao}` : 'Recomeçando…';
-  if (txt !== cinema.legenda) {
-    cinema.legenda = txt;
-    $('#usoTxt').textContent = txt;
-    $('#usoPasso').textContent = atual ? `${atual.i + 1} de ${lista.length}` : '';
-  }
+  const total = CICLO_USO.reduce((t, [, d]) => t + d, 0);
+  let t = cinema.t % total, fase = 0;
+  while (t > CICLO_USO[fase][1]) { t -= CICLO_USO[fase][1]; fase++; }
+  const u = t / CICLO_USO[fase][1];
+  const k = [ease(u), 1, 1 - ease(u), 0][fase];
+  for (const a of uso.lista) aplicarAcao(a, k);
+  const txt = `${CICLO_USO[fase][0]} · ${uso.lista.length} itens`;
+  if (txt !== cinema.legenda) { cinema.legenda = txt; $('#usoTxt').textContent = txt; }
 }
 
 // ---------------------------------------------------------------------
