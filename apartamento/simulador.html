@@ -10565,10 +10565,15 @@ function editarPlanta(fn) {
 // 4. CENA 3D
 // =====================================================================
 const palco = $('#palco');
-const renderer = new T.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+// Celular/tablet: menos pixels, sombra menor e menos luzes (memória e bateria).
+const LEVE = matchMedia('(pointer: coarse)').matches;
+const renderer = new T.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, LEVE ? 1.5 : 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = T.PCFSoftShadowMap;
+// a sombra só é refeita quando algo muda (e não a cada quadro)
+renderer.shadowMap.autoUpdate = false;
+const sujarSombra = () => { renderer.shadowMap.needsUpdate = true; };
 renderer.outputColorSpace = T.SRGBColorSpace;
 renderer.toneMapping = T.NeutralToneMapping; // cores fiéis às referências
 renderer.toneMappingExposure = 1;
@@ -10585,7 +10590,7 @@ const hemi = new T.HemisphereLight(0xffffff, 0xd8cbb8, 1.1);
 cena.add(hemi);
 const sol = new T.DirectionalLight(0xfff1dc, 2.4);
 sol.castShadow = true;
-sol.shadow.mapSize.set(4096, 4096);
+sol.shadow.mapSize.set(LEVE ? 2048 : 4096, LEVE ? 2048 : 4096);
 Object.assign(sol.shadow.camera, { left: -650, right: 650, top: 650, bottom: -650, near: 10, far: 3000 });
 sol.shadow.bias = -0.0004;
 sol.shadow.normalBias = 0.6;
@@ -10647,21 +10652,27 @@ new ResizeObserver(redimensionar).observe(palco);
 // Só na vista 3D; no celular começa desligada (pesa no processador).
 const qualidade = Object.assign({ ao: !matchMedia('(pointer: coarse)').matches },
   (() => { try { return JSON.parse(localStorage.getItem('simulador-apto:qualidade')) || {}; } catch { return {}; } })());
-const composer = new T.EffectComposer(renderer);
-const passoCena = new T.RenderPass(cena, camPersp);
-const passoAO = new T.GTAOPass(cena, camPersp, 1, 1);
-passoAO.updateGtaoMaterial({ radius: 32, distanceExponent: 1.4, thickness: 18, scale: 1.15, samples: 16, distanceFallOff: 1 });
-passoAO.blendIntensity = 0.9;
-composer.addPass(passoCena);
-composer.addPass(passoAO);
-composer.addPass(new T.OutputPass());
+// criado só quando a oclusão está ligada: as imagens intermediárias ocupam
+// dezenas de MB, o que pesa no celular
+let composer = null;
+function criarComposer() {
+  composer = new T.EffectComposer(renderer);
+  composer.addPass(new T.RenderPass(cena, camPersp));
+  const ao = new T.GTAOPass(cena, camPersp, 1, 1);
+  ao.updateGtaoMaterial({ radius: 32, distanceExponent: 1.4, thickness: 18, scale: 1.15, samples: 16, distanceFallOff: 1 });
+  ao.blendIntensity = 0.9;
+  composer.addPass(ao);
+  composer.addPass(new T.OutputPass());
+  ajustarComposer();
+}
 function ajustarComposer() {
+  if (!composer) return;
   composer.setPixelRatio(renderer.getPixelRatio());
   composer.setSize(palco.clientWidth, Math.max(1, palco.clientHeight));
 }
 new ResizeObserver(ajustarComposer).observe(palco);
 function desenharQuadro() {
-  if (qualidade.ao && !vista.topo) composer.render();
+  if (qualidade.ao && !vista.topo) { if (!composer) criarComposer(); composer.render(); }
   else renderer.render(cena, camAtiva());
 }
 
@@ -10826,8 +10837,7 @@ function aplicarSol() {
   sol.target.position.set(cx, 0, cz);
   sol.position.set(cx + dx * Math.cos(e) * dist, Math.sin(e) * dist, cz + dz * Math.cos(e) * dist);
   const dia = suave(-2, 6, elev);                  // 0 à noite, 1 de dia
-  sol.intensity = 2.8 * suave(-0.5, 8, elev);
-  sol.visible = sol.intensity > 0.01;
+  sol.intensity = 2.8 * suave(-0.5, 8, elev); // à noite fica em 0 (sumir recompilaria tudo)
   sol.color.copy(SOL_BAIXO).lerp(SOL_ALTO, suave(3, 35, elev));
   hemi.intensity = 0.25 + 0.9 * dia;
   cena.environmentIntensity = 0.1 + 0.35 * dia;
@@ -10836,6 +10846,7 @@ function aplicarSol() {
   const noite = 1 - suave(-4, 10, elev);
   for (const l of luzesMoveis) l.intensity = l.userData.base * noite;
   for (const mt of matsLuz) mt.emissiveIntensity = 0.05 + 1.4 * noite;
+  sujarSombra();
   return { elev, az };
 }
 
@@ -11173,6 +11184,7 @@ function caixa(l, a, p, mat, x, y, z, info) {
 }
 
 function construirPlanta() {
+  sujarSombra();
   limpar(grpPlanta);
   portasGiro.clear();
   const pl = doc.planta;
@@ -11693,6 +11705,7 @@ function criarParte(pt, m, def, i) {
 }
 
 function aplicarAbertura(g, k) {
+  sujarSombra();
   for (const a of g.userData.anim || []) {
     a.g.rotation.set(0, 0, 0);
     if (a.ang) a.g.rotation[a.eixo] = a.ang * k;
@@ -11779,6 +11792,7 @@ function construirMovel(m) {
 }
 
 function construirMoveis() {
+  sujarSombra();
   limpar(grpMoveis);
   objMovel.clear();
   for (const m of cen().moveis) {
@@ -11789,7 +11803,7 @@ function construirMoveis() {
   aplicarVisibilidadeTopo();
   luzesMoveis = [];
   grpMoveis.traverse((o) => { if (o.isPointLight) luzesMoveis.push(o); });
-  luzesMoveis.slice(8).forEach((l) => { l.visible = false; }); // limite para o celular
+  luzesMoveis.slice(LEVE ? 3 : 8).forEach((l) => { l.visible = false; }); // cada luz pesa em todos os pixels
   aplicarSol();
   for (const f of EXTENSOES.aposMoveis) f(grpMoveis, cen());
 }
@@ -11797,6 +11811,7 @@ function construirMoveis() {
 // Na vista de cima (planta baixa), o que fica no alto — pendentes,
 // prateleiras, armários aéreos — some para mostrar o que está embaixo.
 function aplicarVisibilidadeTopo() {
+  sujarSombra();
   for (const m of cen().moveis) {
     const obj = objMovel.get(m.id);
     if (obj) obj.visible = !(vista.topo && (m.y || 0) >= 140);
@@ -12617,7 +12632,7 @@ function gerarMiniaturas() {
   mini.ocupado = true;
   const passo = () => {
     const def = falta.shift();
-    if (!def) { mini.ocupado = false; return; }
+    if (!def) { mini.r.dispose(); mini.r.forceContextLoss(); mini = null; return; }
     try {
       const m = prepararMovel({ tipo: def.tipo, x: 0, z: 0, rot: 0 });
       m.aberto = 0;
@@ -13592,9 +13607,11 @@ function montarMedidas() {
         ajustarPlano(plano, faixa(base, eixo, e0, e0 + s * cresce * Math.max(0.01, k)), y);
         const [x, z] = centro(Math.max(0.5, k));
         rot.pos.set(x, y + 2, z);
-        rot.el.textContent = `${verbo} ${fmt(Math.round(cresce * k))} cm`;
-        rot.el.style.opacity = k > 0.05 ? 1 : 0;
-        if (sobra) { sobra.linha.visible = k > 0.9; sobra.r2.el.style.opacity = k > 0.9 ? 1 : 0; }
+        const txt = `${verbo} ${fmt(Math.round(cresce * k))} cm`;
+        if (rot.txt !== txt) { rot.txt = txt; rot.el.textContent = txt; }
+        const op = k > 0.05 ? '1' : '0';
+        if (rot.el.style.opacity !== op) rot.el.style.opacity = op;
+        if (sobra) { sobra.linha.visible = k > 0.9; const o2 = k > 0.9 ? '1' : '0'; if (sobra.r2.el.style.opacity !== o2) sobra.r2.el.style.opacity = o2; }
       });
     }
   }
@@ -14428,6 +14445,7 @@ renderer.setAnimationLoop(() => {
   const agora = performance.now(), dt = (agora - ultimoQuadro) / 1000;
   ultimoQuadro = agora;
   if (foto.ativa) { quadroFoto(); return; }
+  if (cinema.modo || arr) sujarSombra(); // algo se mexendo: pessoa, portas, móvel arrastado
   if (cinema.modo) tickCinema(dt);
   if (cinema.modo === 'filme') { desenharQuadro(); return; }
   if (cinema.modo === 'uso' && medidas.ligadas) posicionar(medidasTela);
