@@ -42,6 +42,11 @@ As ferramentas da tela (Andar, Planta, Cortar, Foto, Inteiro) ficam na coluna à
   as três portas, guarda-roupa, criado-mudo, armários da cozinha, geladeira, armário aéreo,
   península, TV giratória, sofá retrátil, cortinas, cadeiras sendo puxadas e o fogão aceso.
   Dá para pausar e girar a câmera (ou andar por dentro) enquanto isso.
+  Com **📏 medidas** ligadas: a faixa laranja mostra quanto cada coisa avança ("abre 48 cm",
+  "puxa 32 cm", crescendo junto); com tudo aberto aparece quanto sobra até o próximo obstáculo
+  ("sobra 7 cm · estante") ou em que bate; o giro de cada porta; a entrada do banco; e o
+  espaço livre das áreas de uso (lados da cama, sentar e levantar…). Verde = folgado (60 cm
+  ou mais), amarelo = apertado, vermelho = não dá. Fica mais fácil de ler na vista **Planta**.
 - **🎬 Filme (um dia no apartamento):** uma pessoa acorda às 7h, abre a cortina e o
   guarda-roupa, vai ao banheiro, abre a geladeira, acende o fogão, gira a TV para a mesa,
   toma café, trabalha no escritório, sai, volta à noite, vê TV no sofá estendido e vai dormir.

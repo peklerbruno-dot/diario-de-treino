@@ -2750,6 +2750,7 @@ $('#bUso').onclick = () => { if (foto.ativa) return; cinema.modo === 'uso' ? par
 $('#bFilme').onclick = () => { if (foto.ativa) return; cinema.modo === 'filme' ? pararCinema() : iniciarFilme(); };
 $('#usoPausa').onclick = alternarPausaCinema;
 $('#usoFechar').onclick = pararCinema;
+$('#usoMedidas').onclick = alternarMedidas;
 $('#filmePausa').onclick = alternarPausaCinema;
 $('#filmeFechar').onclick = pararCinema;
 $('#filmeVel').onclick = () => {
@@ -2893,9 +2894,12 @@ function ambienteDoPonto(x, z) {
   return doc.planta.ambientes.find((a) => dentro([x, z], a.pontos))?.nome || 'Outros';
 }
 
+const livreZona = new Map();     // zona de uso → espaço livre medido
+const entradasBanco = new Map(); // banco → faixa por onde se entra
 function conferir() {
   const itens = [], moveis = cen().moveis;
   statusZona = new Map();
+  livreZona.clear(); entradasBanco.clear();
   for (const m of moveis) {
     const def = defCatalogo(m.tipo) || {};
     if (def.colide === false) continue;
@@ -2912,6 +2916,7 @@ function conferir() {
         const base = eixo === 'x' ? { ...pg, z0: z.z0, z1: z.z1 } : { ...pg, x0: z.x0, x1: z.x1 };
         const { livre, quem } = livreNaDirecao(base, eixo, sentido, obstaculosPara(m), ideal * 2);
         st = classificar(livre, ideal);
+        livreZona.set(`${m.id}#${k}`, { livre: Math.min(livre, ideal * 2), ideal, quem });
         detalhe = `${fmt(Math.min(livre, ideal * 2))} cm livres${st === 'ok' ? '' : ` · ideal ${fmt(ideal)}`}${quem && st !== 'ok' ? ` · até ${quem}` : ''}`;
       } else {
         st = colisoes.usoBloq.has(`${m.id}#${k}`) ? 'problema' : 'ok';
@@ -2976,12 +2981,12 @@ function conferir() {
         .filter((t) => sobrepoe({ ...t, [frente[0] + '0']: t[frente[0] + '0'] - 15, [frente[0] + '1']: t[frente[0] + '1'] + 15 }, pg));
       let trechos = [[pg[c0], pg[c1]]];
       for (const t of mesas) trechos = trechos.flatMap(([u, v]) => [[u, Math.min(v, t[c0])], [Math.max(u, t[c1]), v]]).filter(([u, v]) => v - u > 1);
-      let melhorFrente = 0;
+      let melhorFrente = 0, melhorFaixa = null;
       for (const [u, v] of trechos) {
         const faixa = { ...pg, [c0]: u, [c1]: v };
         const semMesas = obstaculosPara(m, false).filter((o) => (defCatalogo(movel(o.id)?.tipo) || {}).grupo !== 'mesa' || movel(o.id)?.tipo === 'mesa_computador');
         const { livre } = livreNaDirecao(faixa, frente[0], frente[1], semMesas, 120);
-        if (livre >= 50) melhorFrente = Math.max(melhorFrente, v - u);
+        if (livre >= 50 && v - u > melhorFrente) { melhorFrente = v - u; melhorFaixa = [u, v]; }
       }
       let st, detalhe;
       if (pontas >= 50) { st = 'ok'; detalhe = `entra pela ponta (${fmt(pontas)} cm livres)`; }
@@ -2989,6 +2994,7 @@ function conferir() {
       else if (melhorFrente >= 28) { st = 'atencao'; detalhe = `entra pela frente só por um trecho de ${fmt(melhorFrente)} cm (as pontas estão fechadas)`; }
       else { st = 'problema'; detalhe = `pontas com ${fmt(a.livre)} e ${fmt(b.livre)} cm e frente tomada · para sentar é preciso puxar a mesa`; }
       itens.push({ amb, st, ids: [m.id], titulo: `${m.nome}: como sentar`, detalhe });
+      entradasBanco.set(m.id, { pg, eixo, frente, faixa: melhorFaixa, largura: melhorFrente, pontas: [a.livre, b.livre], st });
     }
   }
   itens.sort((a, b) => NIVEL[b.st] - NIVEL[a.st]);
@@ -3125,6 +3131,7 @@ function pararCinema() {
   document.body.classList.remove('cinema', 'cinema-uso', 'cinema-filme');
   $('#usoBarra').hidden = true;
   $('#filme').hidden = true;
+  limparMedidas();
   if (pessoa.grupo.parent) cena.remove(pessoa.grupo);
   estadoPortas.clear();
   luz.hora = a.hora;
@@ -3182,6 +3189,8 @@ function iniciarUso() {
   iniciarCinema('uso');
   if (!vista.caminhar && !vista.corte) { vista.corte = true; construirPlanta(); } // paredes baixas: dá para ver tudo
   uso.lista = acoesDeUso();
+  montarMedidas();
+  $('#usoMedidas').classList.toggle('ligado', medidas.ligadas);
   $('#usoBarra').hidden = false;
   atualizarBotoes();
 }
@@ -3195,8 +3204,209 @@ function tickUso() {
   const u = t / CICLO_USO[fase][1];
   const k = [ease(u), 1, 1 - ease(u), 0][fase];
   for (const a of uso.lista) aplicarAcao(a, k);
+  if (medidas.ligadas) for (const f of animMedidas) f(k);
   const txt = `${CICLO_USO[fase][0]} · ${uso.lista.length} itens`;
   if (txt !== cinema.legenda) { cinema.legenda = txt; $('#usoTxt').textContent = txt; }
+}
+
+// ---- medidas da simulação: quanto cada coisa avança ao abrir (o número
+// cresce junto) e, com tudo aberto, quanto sobra até o obstáculo mais
+// próximo; o giro das portas; por onde se entra no banco; e o espaço livre
+// das áreas de uso (sentar, levantar, passar). Verde = folgado, amarelo =
+// apertado, vermelho = não dá.
+const grpMedidas = new T.Group();
+cena.add(grpMedidas);
+let medidasTela = [], animMedidas = [];
+const medidas = { ligadas: true };
+const COR_ST = { ok: '#27ae60', atencao: '#e0a020', problema: '#e5484d' };
+const matPlano = (cor, op) => new T.MeshBasicMaterial({ color: cor, transparent: true, opacity: op, depthWrite: false, side: T.DoubleSide });
+const MAT_MED = { abre: matPlano('#f2994a', 0.38), ok: matPlano(COR_ST.ok, 0.22), atencao: matPlano(COR_ST.atencao, 0.3), problema: matPlano(COR_ST.problema, 0.3) };
+const LIN_MED = Object.fromEntries(Object.entries({ abre: '#c0661c', ...COR_ST }).map(([k, c]) => [k, new T.LineBasicMaterial({ color: c })]));
+// para passar ou usar: 60 cm é folgado; de 35 a 60 dá, apertado; menos, não
+const stFolga = (d) => (d >= 60 ? 'ok' : d >= 35 ? 'atencao' : 'problema');
+
+function planoMedida(r, y, mat) {
+  const m = new T.Mesh(new T.PlaneGeometry(1, 1), mat);
+  m.rotation.x = -Math.PI / 2;
+  m.renderOrder = 2;
+  ajustarPlano(m, r, y);
+  grpMedidas.add(m);
+  return m;
+}
+function ajustarPlano(m, r, y) {
+  m.scale.set(Math.max(0.01, r.x1 - r.x0), Math.max(0.01, r.z1 - r.z0), 1);
+  m.position.set((r.x0 + r.x1) / 2, y, (r.z0 + r.z1) / 2);
+}
+function cotaMedida(p1, p2, y, st) {
+  const [x1, z1] = p1, [x2, z2] = p2, horiz = Math.abs(z2 - z1) < Math.abs(x2 - x1);
+  const t = horiz ? [0, 5] : [5, 0];
+  const pts = [[x1, z1], [x2, z2], [x1 - t[0], z1 - t[1]], [x1 + t[0], z1 + t[1]], [x2 - t[0], z2 - t[1]], [x2 + t[0], z2 + t[1]]]
+    .map(([x, z]) => new T.Vector3(x, y, z));
+  const l = new T.LineSegments(new T.BufferGeometry().setFromPoints(pts), LIN_MED[st]);
+  grpMedidas.add(l);
+  return l;
+}
+function rotuloMedida(txt, x, y, z, st) {
+  const d = el('div', { class: `medida ${st}` }, txt);
+  $('#medidasUso').append(d);
+  const r = { el: d, pos: new T.Vector3(x, y, z) };
+  medidasTela.push(r);
+  return r;
+}
+function limparMedidas() {
+  for (const o of [...grpMedidas.children]) { o.geometry?.dispose(); grpMedidas.remove(o); }
+  $('#medidasUso').textContent = '';
+  medidasTela = []; animMedidas = [];
+}
+
+const LADOS = [['x', -1], ['x', 1], ['z', -1], ['z', 1]];
+const bordaDe = (r, eixo, s) => r[`${eixo}${s > 0 ? 1 : 0}`];
+// faixa que cresce de "de" até "ate" no eixo, com a largura do outro eixo
+function faixa(r, eixo, de, ate) {
+  const [a, b] = [Math.min(de, ate), Math.max(de, ate)];
+  return eixo === 'x' ? { x0: a, x1: b, z0: r.z0, z1: r.z1 } : { x0: r.x0, x1: r.x1, z0: a, z1: b };
+}
+
+function montarMedidas() {
+  limparMedidas();
+  // 1. caixa de cada móvel com tudo aberto
+  const aberto = new Map();
+  for (const a of uso.lista) {
+    if (a.tipo !== 'abrir') continue;
+    const obj = objDe(a.m);
+    if (!obj) continue;
+    const b0 = a.m.aberto || 0;
+    aplicarAbertura(obj, b0 > 0.5 ? 0 : 1);
+    obj.updateMatrixWorld(true);
+    const bx = new T.Box3().setFromObject(obj);
+    aplicarAbertura(obj, b0);
+    const pg = pegada(a.m);
+    aberto.set(a.m.id, { ...pg, x0: Math.min(pg.x0, bx.min.x), x1: Math.max(pg.x1, bx.max.x), z0: Math.min(pg.z0, bx.min.z), z1: Math.max(pg.z1, bx.max.z) });
+  }
+  for (const a of uso.lista) {
+    if (a.tipo !== 'cadeira') continue;
+    const [fx, fz] = dirFrente(a.m.rot), pg = pegada(a.m);
+    aberto.set(a.m.id, { ...pg, x0: pg.x0 - Math.max(0, fx) * 32, x1: pg.x1 - Math.min(0, fx) * 32, z0: pg.z0 - Math.max(0, fz) * 32, z1: pg.z1 - Math.min(0, fz) * 32 });
+  }
+  const paredes = doc.planta.paredes.filter((w) => !w.demolida).map((w) => ({ ...caixaParede(w), nome: 'parede' }));
+  const obstaculos = (m, pg) => [
+    ...paredes,
+    ...cen().moveis.filter((o) => {
+      if (o.id === m.id) return false;
+      const d1 = defCatalogo(m.tipo) || {}, d2 = defCatalogo(o.tipo) || {};
+      if (d2.colide === false || ignoraPar(d1, d2) || usoAlternado(m, o)) return false;
+      const po = pegada(o);
+      return po.y0 < pg.y1 && po.y1 > pg.y0; // na mesma altura
+    }).map((o) => ({ ...(aberto.get(o.id) || pegada(o)), nome: o.nome.toLowerCase() })),
+  ];
+
+  // 2. o que abre: faixa laranja que cresce + "abre N cm"; com tudo aberto, "sobra N cm"
+  for (const a of uso.lista) {
+    if ((a.tipo !== 'abrir' && a.tipo !== 'cadeira') || ['cortina', 'persiana'].includes(a.m.tipo)) continue;
+    const pg = pegada(a.m), ab = aberto.get(a.m.id);
+    if (!ab) continue;
+    const y = pg.y0 + (pg.y0 > 1 ? 1 : 0.8);
+    // só a direção principal (para onde mais avança), para não poluir
+    const lados = LADOS.map(([eixo, s]) => [eixo, s, (bordaDe(ab, eixo, s) - bordaDe(pg, eixo, s)) * s]).sort((p, q) => q[2] - p[2]).slice(0, 1);
+    for (const [eixo, s, cresce] of lados) {
+      if (cresce < 10) continue;
+      const e0 = bordaDe(pg, eixo, s), lat = eixo === 'x' ? { z0: ab.z0, z1: ab.z1 } : { x0: ab.x0, x1: ab.x1 };
+      const base = { ...pg, ...lat };
+      const plano = planoMedida(faixa(base, eixo, e0, e0 + s * cresce), y, MAT_MED.abre);
+      const centro = (k) => { const r = faixa(base, eixo, e0, e0 + s * cresce * k); return [(r.x0 + r.x1) / 2, (r.z0 + r.z1) / 2]; };
+      const [cx, cz] = centro(1);
+      const rot = rotuloMedida('', cx, y + 2, cz, 'abre');
+      const verbo = a.tipo === 'cadeira' ? 'puxa' : 'abre';
+      // quanto sobra até o próximo obstáculo, com tudo aberto (ou em que bate)
+      const obst = obstaculos(a.m, pg), regiao = faixa(base, eixo, e0, e0 + s * cresce);
+      const bate = obst.filter((o) => o.nome !== 'parede' && sobrepoe({ ...regiao, x0: regiao.x0 + 5, x1: regiao.x1 - 5, z0: regiao.z0 + 5, z1: regiao.z1 - 5 }, o));
+      const { livre, quem } = livreNaDirecao({ ...ab, ...lat }, eixo, s, obst, 240);
+      let sobra = null;
+      if (bate.length) {
+        const [bx, bz] = centro(0.75);
+        const r2 = rotuloMedida(`bate: ${[...new Set(bate.map((o) => o.nome))].join(', ')}`, bx, y + 3, bz, 'problema');
+        r2.pos.z += eixo === 'x' ? 9 : 0; r2.pos.x += eixo === 'z' ? 9 : 0;
+        sobra = { linha: new T.Object3D(), r2 };
+      } else if (livre < 240) {
+        const st = stFolga(livre), e1 = bordaDe(ab, eixo, s), meio = eixo === 'x' ? (lat.z0 + lat.z1) / 2 : (lat.x0 + lat.x1) / 2;
+        const p1 = eixo === 'x' ? [e1, meio] : [meio, e1], p2 = eixo === 'x' ? [e1 + s * livre, meio] : [meio, e1 + s * livre];
+        const linha = cotaMedida(p1, p2, y + 0.5, st);
+        const r2 = rotuloMedida(`sobra ${fmt(livre)} cm${quem && livre < 60 ? ` · ${quem}` : ''}`, (p1[0] + p2[0]) / 2, y + 2, (p1[1] + p2[1]) / 2, st);
+        sobra = { linha, r2 };
+      }
+      animMedidas.push((k) => {
+        ajustarPlano(plano, faixa(base, eixo, e0, e0 + s * cresce * Math.max(0.01, k)), y);
+        const [x, z] = centro(Math.max(0.5, k));
+        rot.pos.set(x, y + 2, z);
+        rot.el.textContent = `${verbo} ${fmt(Math.round(cresce * k))} cm`;
+        rot.el.style.opacity = k > 0.05 ? 1 : 0;
+        if (sobra) { sobra.linha.visible = k > 0.9; sobra.r2.el.style.opacity = k > 0.9 ? 1 : 0; }
+      });
+    }
+  }
+
+  // 3. portas: o giro da folha (raio = largura) e se bate em algo
+  for (const g of girosPortas()) {
+    if (!uso.lista.some((a) => a.tipo === 'porta' && a.ab.id === g.ab.id)) continue;
+    const bate = cen().moveis.filter((m) => (defCatalogo(m.tipo) || {}).colide !== false && pegada(m).y0 < 60 && bloqueiaGiro(aberto.get(m.id) || pegada(m), g)).map((m) => m.nome.toLowerCase());
+    const st = bate.length ? 'problema' : 'ok', n = 24;
+    const pos = new Float32Array((n + 2) * 3), idx = [];
+    for (let i = 1; i <= n; i++) idx.push(0, i, i + 1);
+    const geo = new T.BufferGeometry();
+    geo.setAttribute('position', new T.BufferAttribute(pos, 3));
+    geo.setIndex(idx);
+    const setor = new T.Mesh(geo, MAT_MED[st === 'ok' ? 'abre' : 'problema']);
+    setor.renderOrder = 2;
+    grpMedidas.add(setor);
+    const ponto = (t, r) => [g.c[0] + g.du[0] * r * Math.cos(t) + g.dv[0] * r * Math.sin(t), g.c[1] + g.du[1] * r * Math.cos(t) + g.dv[1] * r * Math.sin(t)];
+    const [mx, mz] = ponto(Math.PI / 4, g.R * 0.62);
+    const rot = rotuloMedida(`porta ${fmt(g.R)} cm · ${bate.length ? `bate: ${bate.join(', ')}` : 'abre livre'}`, mx, 3, mz, st);
+    animMedidas.push((k) => {
+      pos.set([g.c[0], 0.9, g.c[1]], 0);
+      for (let i = 0; i <= n; i++) { const [x, z] = ponto((Math.PI / 2) * k * (i / n), g.R); pos.set([x, 0.9, z], (i + 1) * 3); }
+      geo.attributes.position.needsUpdate = true;
+      geo.computeBoundingSphere();
+      rot.el.style.opacity = k > 0.6 ? 1 : 0;
+    });
+  }
+
+  // 4. banco: por onde se entra (faixa na frente que nenhuma mesa cobre)
+  for (const [id, e] of entradasBanco) {
+    const m = movel(id);
+    if (!m) continue;
+    const [c0, c1] = e.eixo === 'x' ? ['x0', 'x1'] : ['z0', 'z1'];
+    const [fe, fs] = e.frente, y = 1;
+    if (e.faixa) {
+      const ed = bordaDe(e.pg, fe, fs);
+      const r = { ...faixa(e.pg, fe, ed, ed + fs * 50), [c0]: e.faixa[0], [c1]: e.faixa[1] };
+      planoMedida(r, y, MAT_MED[e.st]);
+      const meio = fe === 'z' ? [e.faixa, [ed + fs * 25, ed + fs * 25]] : [[ed + fs * 25, ed + fs * 25], e.faixa];
+      cotaMedida([meio[0][0], meio[1][0]], [meio[0][1], meio[1][1]], y + 0.5, e.st);
+      rotuloMedida(`entrada do banco ${fmt(e.largura)} cm`, (r.x0 + r.x1) / 2, y + 2, (r.z0 + r.z1) / 2, e.st);
+    } else {
+      rotuloMedida(`banco sem entrada · pontas ${fmt(e.pontas[0])} e ${fmt(e.pontas[1])} cm`, m.x, (m.a || 45) + 3, m.z, 'problema');
+    }
+  }
+
+  // 5. áreas de uso dos outros móveis (sentar, levantar, passar, lados da cama…)
+  const comAcao = new Set(uso.lista.filter((a) => a.m).map((a) => a.m.id));
+  for (const m of cen().moveis) {
+    if (comAcao.has(m.id)) continue;
+    zonasUso(m).forEach((z, k) => {
+      const lz = livreZona.get(`${m.id}#${k}`), st = statusZona.get(`${m.id}#${k}`) || 'ok';
+      planoMedida(z, 0.7, MAT_MED[st]);
+      if (lz) rotuloMedida(`${z.nome.toLowerCase()} ${fmt(lz.livre)} cm`, (z.x0 + z.x1) / 2, 2, (z.z0 + z.z1) / 2, st);
+    });
+  }
+  grpMedidas.visible = medidas.ligadas;
+  $('#medidasUso').hidden = !medidas.ligadas;
+}
+
+function alternarMedidas() {
+  medidas.ligadas = !medidas.ligadas;
+  grpMedidas.visible = medidas.ligadas;
+  $('#medidasUso').hidden = !medidas.ligadas;
+  $('#usoMedidas').classList.toggle('ligado', medidas.ligadas);
 }
 
 // ---------------------------------------------------------------------
@@ -3966,6 +4176,7 @@ renderer.setAnimationLoop(() => {
   if (foto.ativa) { quadroFoto(); return; }
   if (cinema.modo) tickCinema(dt);
   if (cinema.modo === 'filme') { desenharQuadro(); return; }
+  if (cinema.modo === 'uso' && medidas.ligadas) posicionar(medidasTela);
   if (!vista.caminhar) ctlAtivo().update();
   desenharQuadro();
   posicionarRotulos();
