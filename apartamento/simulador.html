@@ -182,8 +182,8 @@ body.cinema-filme #lateral { display: none; }
 }
 #medidasUso { position: absolute; inset: 0; pointer-events: none; z-index: 6; }
 body:not(.cinema-uso) #medidasUso { display: none; }
-.medida { position: absolute; left: 0; top: 0; font-size: 10.5px; font-weight: 600; line-height: 1.25; padding: 2px 6px; border-radius: 6px; white-space: nowrap;
-  color: #fff; font-variant-numeric: tabular-nums; box-shadow: 0 1px 4px rgba(0,0,0,.25); max-width: 230px; overflow: hidden; text-overflow: ellipsis; }
+.medida { position: absolute; left: 0; top: 0; font-size: 10.5px; font-weight: 600; line-height: 1.25; padding: 2px 6px; border-radius: 6px; width: max-content;
+  color: #fff; font-variant-numeric: tabular-nums; box-shadow: 0 1px 4px rgba(0,0,0,.25); max-width: 200px; }
 .medida.abre { background: #c0661c; }
 .medida.ok { background: #1e8449; }
 .medida.atencao { background: #b7791f; }
@@ -9109,6 +9109,13 @@ const folhas = (n, yBase, alt, raio, cor = 'principal') => ({
   y: `${yBase}+(i%4)*${alt}/4`, ry: '-i*137', rz: '18+(i%3)*12', cor, acab: 'planta',
 });
 
+// cuba de apoio e torneira (lavatório), deslocadas x cm para a direita
+const cubaTorneira = (x) => [
+  { f: 'torno', pts: [[0, 0], [9, 0], [16, 4], [19, 12], [18.4, 12.5], [15, 5], [0, 2]], y: 'A', x, cor: 'secundaria', acab: 'ceramica' },
+  { f: 'cil', raio: 1.3, a: 26, y: 'A', x, z: '-P/2+5', cor: '#d0d3d7', acab: 'metal' },
+  { f: 'cil', raio: 1, a: 12, eixo: 'z', y: 'A+25', x, z: '-P/2+10', cor: '#d0d3d7', acab: 'metal' },
+];
+
 const CATALOGO = [
   // ================================================================ QUARTO
   {
@@ -9715,14 +9722,26 @@ const CATALOGO = [
     dim: { l: 65, p: 42, a: 85 }, cores: { principal: '#c4a27a', secundaria: '#f7f7f5' }, rotulosCores: ['Gabinete', 'Cuba'],
     acao: ['Abrir portas', 'Fechar portas'],
     uso: [frente(55, 'Uso')],
-    partes: [
-      { f: 'caixa', l: 'L', p: 'P', a: 'A-18', y: 15, acab: 'madeira', r: 0.6 },
-      { f: 'caixa', n: 2, l: 'L/2-1.5', p: 1.8, a: 'A-22', y: 17, x: '(i*2-1)*L/4', z: 'P/2+0.9', acab: 'madeira',
-        mov: { gira: '(i*2-1)*100', eixo: 'y', px: '(i*2-1)*(L/2-0.8)', pz: 'P/2+0.9' } },
-      { f: 'caixa', l: 'L', p: 'P', a: 3, y: 'A-3', cor: '#ffffff', acab: 'granilite' },
-      { f: 'torno', pts: [[0, 0], [9, 0], [16, 4], [19, 12], [18.4, 12.5], [15, 5], [0, 2]], y: 'A', cor: 'secundaria', acab: 'ceramica' },
-      { f: 'cil', raio: 1.3, a: 26, y: 'A', z: '-P/2+5', cor: '#d0d3d7', acab: 'metal' },
-      { f: 'cil', raio: 1, a: 12, eixo: 'z', y: 'A+25', z: '-P/2+10', cor: '#d0d3d7', acab: 'metal' },
+    variantes: [
+      { id: 'inteiro', nome: 'Pedra inteira', partes: [
+        { f: 'caixa', l: 'L', p: 'P', a: 'A-18', y: 15, acab: 'madeira', r: 0.6 },
+        { f: 'caixa', n: 2, l: 'L/2-1.5', p: 1.8, a: 'A-22', y: 17, x: '(i*2-1)*L/4', z: 'P/2+0.9', acab: 'madeira',
+          mov: { gira: '(i*2-1)*100', eixo: 'y', px: '(i*2-1)*(L/2-0.8)', pz: 'P/2+0.9' } },
+        { f: 'caixa', l: 'L', p: 'P', a: 3, y: 'A-3', cor: '#ffffff', acab: 'granilite' },
+        ...cubaTorneira(0),
+      ] },
+      // canto da frente à esquerda recortado (28 × 9 cm na pedra e no gabinete):
+      // por ali passa a folha da porta do banheiro
+      { id: 'recorte', nome: 'Pedra com recorte para a porta', recorte: { x0: '-L/2', x1: '-L/2+28', z0: 'P/2-9', z1: 'P/2' }, partes: [
+        { f: 'caixa', l: 'L-28', p: 'P', a: 'A-18', y: 15, x: 14, acab: 'madeira', r: 0.6 },
+        { f: 'caixa', l: 28, p: 'P-9', a: 'A-18', y: 15, x: '-L/2+14', z: -4.5, acab: 'madeira', r: 0.6 },
+        { f: 'caixa', l: 27, p: 1.8, a: 'A-22', y: 17, x: '-L/2+14', z: 'P/2-9+0.9', acab: 'madeira' },
+        { f: 'caixa', n: 2, l: '(L-28)/2-1.5', p: 1.8, a: 'A-22', y: 17, x: 'i ? L/2-(L-28)/4 : -L/2+28+(L-28)/4', z: 'P/2+0.9', acab: 'madeira',
+          mov: { gira: '(i*2-1)*100', eixo: 'y', px: 'i ? L/2-0.8 : -L/2+28.8', pz: 'P/2+0.9' } },
+        { f: 'caixa', l: 'L-28', p: 'P', a: 3, y: 'A-3', x: 14, cor: '#ffffff', acab: 'granilite' },
+        { f: 'caixa', l: 28, p: 'P-9', a: 3, y: 'A-3', x: '-L/2+14', z: -4.5, cor: '#ffffff', acab: 'granilite' },
+        ...cubaTorneira(8),
+      ] },
     ],
   },
   {
@@ -10018,7 +10037,7 @@ const CATALOGO = [
 // =====================================================================
 
 const PLANTA_ORIGINAL = {
-  revisao: 6,
+  revisao: 7,
   alturaParede: 260,
 
   // Local e orientação — usados para calcular o sol por data e hora.
@@ -10081,7 +10100,7 @@ const PLANTA_ORIGINAL = {
 // ---------------------------------------------------------------------
 // Banheiro da planta final (o mesmo em todos os cenários)
 const BANHEIRO = [
-  { tipo: 'lavatorio', nome: 'Lavatório (gabinete 90)', x: 396.5, z: 505, rot: 90, l: 90, p: 43, a: 85,
+  { tipo: 'lavatorio', nome: 'Lavatório (gabinete 90)', variante: 'recorte', x: 396.5, z: 505, rot: 90, l: 90, p: 43, a: 85,
     cores: { principal: '#a8784f', secundaria: '#f7f7f5' } },
   { tipo: 'vaso',      nome: 'Vaso sanitário', x: 385.5, z: 576, rot: 90, l: 38, p: 65, a: 75 },
   { tipo: 'box_banho', nome: 'Box (vidro fixo)', variante: 'fixo', x: 349, z: 658, rot: 180, l: 78, p: 84, a: 200,
@@ -10093,7 +10112,7 @@ const BANHEIRO = [
 // (2,55 px/cm) e decorada com o moodboard: freijó, azul-acinzentado,
 // terracota, mostarda, vinho, granilite e azulejo 10×10 com rejunte escuro.
 // ---------------------------------------------------------------------
-const FREIJO = '#a8784f', FREIJO_ESCURO = '#7a5236', AZUL = '#5d6c84', TERRACOTA = '#8f4325';
+const FREIJO = '#a8784f', AZUL = '#5d6c84', TERRACOTA = '#8f4325';
 const CREME = '#ece3d1', MOSTARDA = '#b8892c', VINHO = '#5e1a2a', GRAFITE = '#2f3036';
 
 const MOVEIS_FINAL = [
@@ -10109,14 +10128,8 @@ const MOVEIS_FINAL = [
     cores: { principal: '#ffffff', secundaria: FREIJO } },
   { tipo: 'mesa_jantar', nome: 'Mesa de jantar', variante: 'retangular', x: 199.5, z: 79.5, rot: 0, l: 88, p: 88, a: 76,
     cores: { principal: FREIJO, secundaria: '#2b2622' } },
-  { tipo: 'cadeira', nome: 'Cadeira de jantar', variante: 'curva', x: 133.5, z: 93, rot: 270, l: 45, p: 50, a: 82, acab: 'palha',
-    cores: { principal: '#dcc79d', secundaria: FREIJO_ESCURO } },
-  { tipo: 'cadeira', nome: 'Cadeira de jantar', variante: 'curva', x: 206.5, z: 145, rot: 180, l: 45, p: 50, a: 82, acab: 'palha',
-    cores: { principal: '#dcc79d', secundaria: FREIJO_ESCURO } },
-  { tipo: 'luminaria', nome: 'Pendente de papel de arroz', variante: 'papel', x: 199.5, z: 79.5, rot: 0, y: 160, l: 55, p: 55, a: 100,
-    cores: { principal: '#f6e7c8', secundaria: '#2b2b2b' } },
   // ---- cozinha
-  { tipo: 'peninsula', nome: 'Península', x: 266.5, z: 76.5, rot: 270, l: 153, p: 45, a: 90, acab: 'madeira',
+  { tipo: 'peninsula', nome: 'Península', x: 260, z: 76.5, rot: 270, l: 153, p: 32, a: 90, acab: 'madeira',
     cores: { principal: FREIJO, secundaria: '#ffffff' } },
   { tipo: 'modulo_cozinha', nome: 'Módulo ao lado do shaft', x: 374, z: 23, rot: 90, l: 46, p: 28, a: 90, acab: 'madeira',
     cores: { principal: FREIJO, secundaria: '#ffffff' } },
@@ -10129,8 +10142,6 @@ const MOVEIS_FINAL = [
   // ---- estar
   { tipo: 'estante_giratoria', nome: 'Estante divisória com TV giratória', x: 109, z: 230, rot: 0, l: 218, p: 40, a: 220,
     cores: { principal: FREIJO, secundaria: '#1f1f21' } },
-  { tipo: 'planta', nome: 'Costela-de-adão', variante: 'costela', x: 34, z: 181, rot: 0, l: 48, p: 48, a: 130,
-    cores: { principal: '#4c7044', secundaria: '#b9ad99' } },
   { tipo: 'sofa', nome: 'Sofá retrátil de veludo', variante: 'retratil', x: 115.5, z: 405, rot: 180, l: 200, p: 90, a: 88, acab: 'veludo',
     cores: { principal: TERRACOTA, secundaria: '#3a2a20' } },
   { tipo: 'luminaria', nome: 'Arandela articulada', variante: 'arandela', x: 60, z: 443, rot: 180, y: 145, l: 110, p: 14, a: 60,
@@ -10173,7 +10184,7 @@ const MOVEIS_FINAL = [
 
 const CENARIO_FINAL = {
   id: 'planta-final',
-  nome: 'Planta final',
+  nome: 'Mesa quadrada 88',
   moveis: MOVEIS_FINAL,
   zonas: [
     { funcao: 'office',  x: 63,  z: 57.5, l: 126, p: 115 },
@@ -10194,37 +10205,15 @@ const CENARIO_FINAL = {
 // que nunca são usados ao mesmo tempo não contam como conflito de uso.
 const USO_ALTERNADO = [['Cadeira do escritório', 'Cadeira de jantar']];
 
-const ITENS_JANTAR = ['Mesa de jantar', 'Cadeira de jantar', 'Pendente de papel de arroz'];
-const semJantar = MOVEIS_FINAL.filter((m) => !ITENS_JANTAR.includes(m.nome));
-const cadeiraJantar = (x, z, rot) => ({ tipo: 'cadeira', nome: 'Cadeira de jantar', variante: 'curva', x, z, rot, l: 45, p: 50, a: 82, acab: 'palha',
-  cores: { principal: '#dcc79d', secundaria: FREIJO_ESCURO } });
-const pendenteJantar = (x, z) => ({ tipo: 'luminaria', nome: 'Pendente de papel de arroz', variante: 'papel', x, z, rot: 0, y: 160, l: 55, p: 55, a: 100,
-  cores: { principal: '#f6e7c8', secundaria: '#2b2b2b' } });
-
+// Duas opções de jantar, as duas só com o banco (sem cadeiras) e com a
+// península reduzida: a mesa quadrada da planta final e uma redonda.
 const CENARIOS_JANTAR = [
   {
-    id: 'jantar-1', nome: 'Jantar 1 · mesa 80 afastada',
+    id: 'mesa-redonda', nome: 'Mesa redonda 80',
     moveis: [
-      ...semJantar,
-      { tipo: 'mesa_jantar', nome: 'Mesa de jantar', variante: 'retangular', x: 197, z: 87, rot: 0, l: 80, p: 80, a: 76,
-        cores: { principal: FREIJO, secundaria: '#2b2622' } },
-      cadeiraJantar(134.5, 93, 270), cadeiraJantar(197, 149.5, 180), pendenteJantar(197, 87),
-    ],
-    zonas: CENARIO_FINAL.zonas,
-  },
-  {
-    id: 'jantar-2', nome: 'Jantar 2 · sem cadeira oeste',
-    moveis: MOVEIS_FINAL.filter((m) => !(m.nome === 'Cadeira de jantar' && m.rot === 270)),
-    zonas: CENARIO_FINAL.zonas,
-  },
-  {
-    id: 'jantar-3', nome: 'Jantar 3 · mesa redonda 80',
-    moveis: [
-      ...semJantar,
+      ...MOVEIS_FINAL.filter((m) => m.nome !== 'Mesa de jantar'),
       { tipo: 'mesa_redonda', nome: 'Mesa de jantar', variante: 'pe_central', x: 197, z: 88, rot: 0, l: 80, p: 80, a: 76,
         cores: { principal: FREIJO, secundaria: '#2b2622' }, acab: 'madeira' },
-      // as duas cadeiras lado a lado no lado sul: o canto do banco fica livre para entrar
-      cadeiraJantar(174, 144, 180), cadeiraJantar(220, 144, 180), pendenteJantar(197, 88),
     ],
     zonas: CENARIO_FINAL.zonas,
   },
@@ -11597,7 +11586,11 @@ const temMov = (def, m) => partesDe(def, m).some((p) => p.mov);
 function pegada(m) {
   const gira = m.rot % 180 !== 0;
   const w = gira ? m.p : m.l, d = gira ? m.l : m.p;
-  return { x0: m.x - w / 2, x1: m.x + w / 2, z0: m.z - d / 2, z1: m.z + d / 2, w, d, y0: m.y || 0, y1: (m.y || 0) + m.a };
+  const pg = { x0: m.x - w / 2, x1: m.x + w / 2, z0: m.z - d / 2, z1: m.z + d / 2, w, d, y0: m.y || 0, y1: (m.y || 0) + m.a };
+  // recorte (ex.: canto da pedra da pia por onde passa a porta): fica de fora
+  const rc = varianteDe(defCatalogo(m.tipo), m)?.recorte;
+  if (rc) pg.furos = [retanguloPlanta(m, ...['x0', 'x1', 'z0', 'z1'].map((k) => avaliar(rc[k], m.l, m.p, m.a)))];
+  return pg;
 }
 function encaixar(m) {
   const pg = pegada(m);
@@ -11884,6 +11877,7 @@ function bloqueiaGiro(pg, giro) {
     if (r * Math.sin(t) < 5) continue; // folha praticamente fechada, no plano da parede
     const x = giro.c[0] + giro.du[0] * r * Math.cos(t) + giro.dv[0] * r * Math.sin(t);
     const z = giro.c[1] + giro.du[1] * r * Math.cos(t) + giro.dv[1] * r * Math.sin(t);
+    if (pg.furos?.some((f) => x > f.x0 - 0.5 && x < f.x1 + 0.5 && z > f.z0 - 0.5 && z < f.z1 + 0.5)) continue;
     if (x > pg.x0 + 0.5 && x < pg.x1 - 0.5 && z > pg.z0 + 0.5 && z < pg.z1 - 0.5) return true;
   }
   return false;
@@ -13538,8 +13532,9 @@ function faixa(r, eixo, de, ate) {
 
 function montarMedidas() {
   limparMedidas();
-  // 1. caixa de cada móvel com tudo aberto
-  const aberto = new Map();
+  // 1. caixa de cada móvel com tudo aberto (e, para as checagens, cada folha
+  // ou gaveta separada: a caixa geral marcaria cantos vazios como ocupados)
+  const aberto = new Map(), partes = new Map();
   for (const a of uso.lista) {
     if (a.tipo !== 'abrir') continue;
     const obj = objDe(a.m);
@@ -13548,14 +13543,19 @@ function montarMedidas() {
     aplicarAbertura(obj, b0 > 0.5 ? 0 : 1);
     obj.updateMatrixWorld(true);
     const bx = new T.Box3().setFromObject(obj);
-    aplicarAbertura(obj, b0);
     const pg = pegada(a.m);
+    partes.set(a.m.id, [pg, ...obj.userData.anim.map((an) => {
+      const b = new T.Box3().setFromObject(an.g);
+      return { x0: b.min.x, x1: b.max.x, z0: b.min.z, z1: b.max.z, y0: b.min.y, y1: b.max.y };
+    })]);
+    aplicarAbertura(obj, b0);
     aberto.set(a.m.id, { ...pg, x0: Math.min(pg.x0, bx.min.x), x1: Math.max(pg.x1, bx.max.x), z0: Math.min(pg.z0, bx.min.z), z1: Math.max(pg.z1, bx.max.z) });
   }
   for (const a of uso.lista) {
     if (a.tipo !== 'cadeira') continue;
     const [fx, fz] = dirFrente(a.m.rot), pg = pegada(a.m);
     aberto.set(a.m.id, { ...pg, x0: pg.x0 - Math.max(0, fx) * 32, x1: pg.x1 - Math.min(0, fx) * 32, z0: pg.z0 - Math.max(0, fz) * 32, z1: pg.z1 - Math.min(0, fz) * 32 });
+    partes.set(a.m.id, [aberto.get(a.m.id)]);
   }
   const paredes = doc.planta.paredes.filter((w) => !w.demolida).map((w) => ({ ...caixaParede(w), nome: 'parede' }));
   const obstaculos = (m, pg) => [
@@ -13566,7 +13566,7 @@ function montarMedidas() {
       if (d2.colide === false || ignoraPar(d1, d2) || usoAlternado(m, o)) return false;
       const po = pegada(o);
       return po.y0 < pg.y1 && po.y1 > pg.y0; // na mesma altura
-    }).map((o) => ({ ...(aberto.get(o.id) || pegada(o)), nome: o.nome.toLowerCase() })),
+    }).flatMap((o) => (partes.get(o.id) || [pegada(o)]).map((r) => ({ ...r, nome: o.nome.toLowerCase() }))),
   ];
 
   // 2. o que abre: faixa laranja que cresce + "abre N cm"; com tudo aberto, "sobra N cm"
@@ -13619,19 +13619,23 @@ function montarMedidas() {
   // 3. portas: o giro da folha (raio = largura) e se bate em algo
   for (const g of girosPortas()) {
     if (!uso.lista.some((a) => a.tipo === 'porta' && a.ab.id === g.ab.id)) continue;
-    const bate = cen().moveis.filter((m) => (defCatalogo(m.tipo) || {}).colide !== false && pegada(m).y0 < 60 && bloqueiaGiro(aberto.get(m.id) || pegada(m), g)).map((m) => m.nome.toLowerCase());
-    const st = bate.length ? 'problema' : 'ok', n = 24;
+    // com os móveis fechados (o normal) e, à parte, se algum aberto atrapalha
+    const noChao = cen().moveis.filter((m) => (defCatalogo(m.tipo) || {}).colide !== false && pegada(m).y0 < 60);
+    const bate = noChao.filter((m) => bloqueiaGiro(pegada(m), g)).map((m) => m.nome.toLowerCase());
+    const seAberto = noChao.filter((m) => partes.has(m.id) && !bate.includes(m.nome.toLowerCase())
+      && partes.get(m.id).some((r) => (r.y0 ?? 0) < 60 && bloqueiaGiro(r, g))).map((m) => m.nome.toLowerCase());
+    const st = bate.length ? 'problema' : seAberto.length ? 'atencao' : 'ok', n = 24;
     const pos = new Float32Array((n + 2) * 3), idx = [];
     for (let i = 1; i <= n; i++) idx.push(0, i, i + 1);
     const geo = new T.BufferGeometry();
     geo.setAttribute('position', new T.BufferAttribute(pos, 3));
     geo.setIndex(idx);
-    const setor = new T.Mesh(geo, MAT_MED[st === 'ok' ? 'abre' : 'problema']);
+    const setor = new T.Mesh(geo, MAT_MED[st === 'ok' ? 'abre' : st]);
     setor.renderOrder = 2;
     grpMedidas.add(setor);
     const ponto = (t, r) => [g.c[0] + g.du[0] * r * Math.cos(t) + g.dv[0] * r * Math.sin(t), g.c[1] + g.du[1] * r * Math.cos(t) + g.dv[1] * r * Math.sin(t)];
     const [mx, mz] = ponto(Math.PI / 4, g.R * 0.62);
-    const rot = rotuloMedida(`porta ${fmt(g.R)} cm · ${bate.length ? `bate: ${bate.join(', ')}` : 'abre livre'}`, mx, 3, mz, st);
+    const rot = rotuloMedida(`porta ${fmt(g.R)} cm · ${bate.length ? `bate: ${bate.join(', ')}` : seAberto.length ? `abre livre (só bate se ${seAberto.join(', ')} estiver aberto)` : 'abre livre'}`, mx, 3, mz, st);
     animMedidas.push((k) => {
       pos.set([g.c[0], 0.9, g.c[1]], 0);
       for (let i = 0; i <= n; i++) { const [x, z] = ponto((Math.PI / 2) * k * (i / n), g.R); pos.set([x, 0.9, z], (i + 1) * 3); }
@@ -13919,6 +13923,111 @@ async function sentar(c, { puxar = 30, depois = 18 } = {}) {
   };
 }
 
+// anda em linha reta (lugares apertados, onde a grade de caminhos não passa)
+async function andarDireto(x, z) {
+  const [x0, z0] = pos2(), total = Math.hypot(x - x0, z - z0);
+  if (total < 2) return;
+  const fase0 = pessoa.fase;
+  pessoa.yawAlvo = Math.atan2(x - x0, z - z0);
+  await durante(total / (VEL_ANDAR * 0.7), (u) => {
+    pessoa.grupo.position.x = x0 + (x - x0) * u;
+    pessoa.grupo.position.z = z0 + (z - z0) * u;
+    pessoa.fase = fase0 + ((u * total) / 110) * Math.PI * 2;
+    pessoa.ps.andar = Math.min(1, (u * total) / 15, ((1 - u) * total) / 15 + 0.05);
+  });
+  pessoa.ps.andar = 0;
+}
+function moverMesa(mesa, [dx, dz]) {
+  const obj = objDe(mesa);
+  if (obj) { obj.position.x = mesa.x + dx; obj.position.z = mesa.z + dz; }
+}
+
+// Sentar no banco de jantar. Com uma faixa livre na frente (mesa redonda),
+// entra por ela e escorrega até o meio da mesa. Sem entrada (mesa quadrada
+// encostada), precisa puxar a mesa, dar a volta e sentar — como na vida real.
+async function sentarNoBanco(banco, mesa) {
+  const e = entradasBanco.get(banco.id), [fe, fs] = e.frente, eixo = e.eixo;
+  const borda = bordaDe(e.pg, fe, fs), pgM = pegada(mesa);
+  const pt = (ao, fora) => (eixo === 'x' ? [ao, borda + fs * fora] : [borda + fs * fora, ao]);
+  const longe = (bordaDe(pgM, fe, fs) - borda) * fs;           // borda de lá da mesa
+  const meioMesa = eixo === 'x' ? mesa.x : mesa.z;
+  const vf = fe === 'x' ? [fs, 0] : [0, fs];                      // para onde o banco olha
+  const assento = (ao) => pt(ao, -(eixo === 'x' ? e.pg.d : e.pg.w) / 2 + 6);
+  const sentarEm = async (ao) => {
+    olharPara(pos2()[0] + vf[0] * 100, pos2()[1] + vf[1] * 100);
+    await esperar(0.4);
+    const p0 = pos2(), a = assento(ao);
+    await durante(0.9, (u) => {
+      const k = ease(u);
+      pessoa.grupo.position.x = p0[0] + (a[0] - p0[0]) * k;
+      pessoa.grupo.position.z = p0[1] + (a[1] - p0[1]) * k;
+      pessoa.ps.sentar = ease((u - 0.2) / 0.8);
+    });
+  };
+  const levantarDe = async (ao) => {
+    const p0 = pos2(), a = pt(ao, 22);
+    await durante(0.8, (u) => {
+      const k = ease(u);
+      pessoa.ps.sentar = 1 - ease(u / 0.8);
+      pessoa.grupo.position.x = p0[0] + (a[0] - p0[0]) * k;
+      pessoa.grupo.position.z = p0[1] + (a[1] - p0[1]) * k;
+    });
+  };
+  const escorregar = async (de, ate) => {
+    const a0 = assento(de), a1 = assento(ate);
+    await animar(Math.min(1.6, Math.abs(ate - de) / 30 + 0.3), (k) => {
+      pessoa.grupo.position.x = a0[0] + (a1[0] - a0[0]) * k;
+      pessoa.grupo.position.z = a0[1] + (a1[1] - a0[1]) * k;
+    });
+  };
+  if (e.faixa) {
+    const ao = (e.faixa[0] + e.faixa[1]) / 2;
+    legenda(8, `Café: entrar no banco pela faixa livre (${fmt(e.largura)} cm)`);
+    await andarAte(...pt(ao, longe + 35));
+    await andarDireto(...pt(ao, 24));
+    await sentarEm(ao);
+    await escorregar(ao, meioMesa);
+    return async () => {
+      await escorregar(meioMesa, ao);
+      await levantarDe(ao);
+      await andarDireto(...pt(ao, longe + 35));
+    };
+  }
+  // sem entrada: puxa a mesa 40 cm, dá a volta pelo lado e senta
+  legenda(8, 'Café: banco sem entrada — puxar a mesa');
+  const lado = (eixo === 'x' ? pgM.x0 : pgM.z0) - 24;
+  const passo = (d) => [vf[0] * d, vf[1] * d];
+  await andarAte(...pt(meioMesa, longe + 32));
+  await virar(...pt(meioMesa, 0));
+  await mudarPose({ alcancar: 1 }, 0.3);
+  const p0 = pos2();
+  await animar(1, (k) => {
+    moverMesa(mesa, passo(40 * k));
+    pessoa.grupo.position.x = p0[0] + vf[0] * 40 * k;
+    pessoa.grupo.position.z = p0[1] + vf[1] * 40 * k;
+  });
+  await mudarPose({ alcancar: 0 }, 0.3);
+  await andarDireto(...pt(lado, longe + 72));
+  await andarDireto(...pt(lado, 22));
+  await andarDireto(...pt(meioMesa, 22));
+  await sentarEm(meioMesa);
+  await animar(0.8, (k) => moverMesa(mesa, passo(40 - 22 * k))); // aproxima a mesa
+  return async () => {
+    await animar(0.8, (k) => moverMesa(mesa, passo(18 + 22 * k)));
+    await levantarDe(meioMesa);
+    await andarDireto(...pt(lado, 22));
+    await andarDireto(...pt(lado, longe + 72));
+    await andarDireto(...pt(meioMesa, longe + 72));
+    await virar(...pt(meioMesa, 0));
+    const p1 = pos2();
+    await animar(1, (k) => {
+      moverMesa(mesa, passo(40 * (1 - k)));
+      pessoa.grupo.position.x = p1[0] - vf[0] * 40 * k;
+      pessoa.grupo.position.z = p1[1] - vf[1] * 40 * k;
+    });
+  };
+}
+
 // ---- filme: câmera, legendas e roteiro
 const CAPITULOS = ['Acordar', 'Banheiro', 'Café', 'Trabalho', 'Sair', 'Voltar', 'Noite', 'Dormir'];
 const filme = { ang: 0.7, alvo: new T.Vector3(), cam: new T.Vector3(), cap: 0, horaAlvo: 7, ultimaLuz: 0 };
@@ -13989,8 +14098,9 @@ async function roteiro() {
   const cadeiras = cen().moveis.filter((m) => m.tipo === 'cadeira' || m.tipo === 'cadeira_escritorio');
   const perto = (alvo) => alvo && cadeiras.slice().sort((a, b) => Math.hypot(a.x - alvo.x, a.z - alvo.z) - Math.hypot(b.x - alvo.x, b.z - alvo.z))[0];
   const cadEscr = achar((m) => m.nome === 'Cadeira do escritório') || perto(M.trabalho);
-  const cadJantar = cadeiras.filter((c) => c !== cadEscr && M.mesa && Math.hypot(c.x - M.mesa.x, c.z - M.mesa.z) < 110)
-    .sort((a, b) => b.z - a.z)[0] || perto(M.mesa);
+  const banco = M.mesa && cen().moveis.filter((m) => m.tipo === 'banco')
+    .sort((a, b) => Math.hypot(a.x - M.mesa.x, a.z - M.mesa.z) - Math.hypot(b.x - M.mesa.x, b.z - M.mesa.z))[0];
+  const cadJantar = !banco && cadeiras.filter((c) => c !== cadEscr && M.mesa && Math.hypot(c.x - M.mesa.x, c.z - M.mesa.z) < 110)[0];
   const P = pessoa, g = P.grupo;
 
   // 07:00 — acordar
@@ -14091,7 +14201,13 @@ async function roteiro() {
     await usar(M.tv, 1, 1.4);
     await mudarPose({ alcancar: 0 }, 0.3);
   }
-  if (cadJantar) {
+  if (banco && entradasBanco.has(banco.id)) {
+    const levantar = await sentarNoBanco(banco, M.mesa);
+    await mudarPose({ comer: 1 }, 0.5);
+    await esperar(3.5);
+    await mudarPose({ comer: 0 }, 0.5);
+    await levantar();
+  } else if (cadJantar) {
     legenda(8, 'Café na mesa de jantar');
     const levantar = await sentar(cadJantar);
     await mudarPose({ comer: 1 }, 0.5);

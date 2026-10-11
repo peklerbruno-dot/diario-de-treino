@@ -126,6 +126,13 @@ const folhas = (n, yBase, alt, raio, cor = 'principal') => ({
   y: `${yBase}+(i%4)*${alt}/4`, ry: '-i*137', rz: '18+(i%3)*12', cor, acab: 'planta',
 });
 
+// cuba de apoio e torneira (lavatório), deslocadas x cm para a direita
+const cubaTorneira = (x) => [
+  { f: 'torno', pts: [[0, 0], [9, 0], [16, 4], [19, 12], [18.4, 12.5], [15, 5], [0, 2]], y: 'A', x, cor: 'secundaria', acab: 'ceramica' },
+  { f: 'cil', raio: 1.3, a: 26, y: 'A', x, z: '-P/2+5', cor: '#d0d3d7', acab: 'metal' },
+  { f: 'cil', raio: 1, a: 12, eixo: 'z', y: 'A+25', x, z: '-P/2+10', cor: '#d0d3d7', acab: 'metal' },
+];
+
 const CATALOGO = [
   // ================================================================ QUARTO
   {
@@ -732,14 +739,26 @@ const CATALOGO = [
     dim: { l: 65, p: 42, a: 85 }, cores: { principal: '#c4a27a', secundaria: '#f7f7f5' }, rotulosCores: ['Gabinete', 'Cuba'],
     acao: ['Abrir portas', 'Fechar portas'],
     uso: [frente(55, 'Uso')],
-    partes: [
-      { f: 'caixa', l: 'L', p: 'P', a: 'A-18', y: 15, acab: 'madeira', r: 0.6 },
-      { f: 'caixa', n: 2, l: 'L/2-1.5', p: 1.8, a: 'A-22', y: 17, x: '(i*2-1)*L/4', z: 'P/2+0.9', acab: 'madeira',
-        mov: { gira: '(i*2-1)*100', eixo: 'y', px: '(i*2-1)*(L/2-0.8)', pz: 'P/2+0.9' } },
-      { f: 'caixa', l: 'L', p: 'P', a: 3, y: 'A-3', cor: '#ffffff', acab: 'granilite' },
-      { f: 'torno', pts: [[0, 0], [9, 0], [16, 4], [19, 12], [18.4, 12.5], [15, 5], [0, 2]], y: 'A', cor: 'secundaria', acab: 'ceramica' },
-      { f: 'cil', raio: 1.3, a: 26, y: 'A', z: '-P/2+5', cor: '#d0d3d7', acab: 'metal' },
-      { f: 'cil', raio: 1, a: 12, eixo: 'z', y: 'A+25', z: '-P/2+10', cor: '#d0d3d7', acab: 'metal' },
+    variantes: [
+      { id: 'inteiro', nome: 'Pedra inteira', partes: [
+        { f: 'caixa', l: 'L', p: 'P', a: 'A-18', y: 15, acab: 'madeira', r: 0.6 },
+        { f: 'caixa', n: 2, l: 'L/2-1.5', p: 1.8, a: 'A-22', y: 17, x: '(i*2-1)*L/4', z: 'P/2+0.9', acab: 'madeira',
+          mov: { gira: '(i*2-1)*100', eixo: 'y', px: '(i*2-1)*(L/2-0.8)', pz: 'P/2+0.9' } },
+        { f: 'caixa', l: 'L', p: 'P', a: 3, y: 'A-3', cor: '#ffffff', acab: 'granilite' },
+        ...cubaTorneira(0),
+      ] },
+      // canto da frente à esquerda recortado (28 × 9 cm na pedra e no gabinete):
+      // por ali passa a folha da porta do banheiro
+      { id: 'recorte', nome: 'Pedra com recorte para a porta', recorte: { x0: '-L/2', x1: '-L/2+28', z0: 'P/2-9', z1: 'P/2' }, partes: [
+        { f: 'caixa', l: 'L-28', p: 'P', a: 'A-18', y: 15, x: 14, acab: 'madeira', r: 0.6 },
+        { f: 'caixa', l: 28, p: 'P-9', a: 'A-18', y: 15, x: '-L/2+14', z: -4.5, acab: 'madeira', r: 0.6 },
+        { f: 'caixa', l: 27, p: 1.8, a: 'A-22', y: 17, x: '-L/2+14', z: 'P/2-9+0.9', acab: 'madeira' },
+        { f: 'caixa', n: 2, l: '(L-28)/2-1.5', p: 1.8, a: 'A-22', y: 17, x: 'i ? L/2-(L-28)/4 : -L/2+28+(L-28)/4', z: 'P/2+0.9', acab: 'madeira',
+          mov: { gira: '(i*2-1)*100', eixo: 'y', px: 'i ? L/2-0.8 : -L/2+28.8', pz: 'P/2+0.9' } },
+        { f: 'caixa', l: 'L-28', p: 'P', a: 3, y: 'A-3', x: 14, cor: '#ffffff', acab: 'granilite' },
+        { f: 'caixa', l: 28, p: 'P-9', a: 3, y: 'A-3', x: '-L/2+14', z: -4.5, cor: '#ffffff', acab: 'granilite' },
+        ...cubaTorneira(8),
+      ] },
     ],
   },
   {

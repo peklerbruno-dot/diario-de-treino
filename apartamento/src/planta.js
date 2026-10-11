@@ -23,7 +23,7 @@
 // =====================================================================
 
 const PLANTA_ORIGINAL = {
-  revisao: 6,
+  revisao: 7,
   alturaParede: 260,
 
   // Local e orientação — usados para calcular o sol por data e hora.
@@ -86,7 +86,7 @@ const PLANTA_ORIGINAL = {
 // ---------------------------------------------------------------------
 // Banheiro da planta final (o mesmo em todos os cenários)
 const BANHEIRO = [
-  { tipo: 'lavatorio', nome: 'Lavatório (gabinete 90)', x: 396.5, z: 505, rot: 90, l: 90, p: 43, a: 85,
+  { tipo: 'lavatorio', nome: 'Lavatório (gabinete 90)', variante: 'recorte', x: 396.5, z: 505, rot: 90, l: 90, p: 43, a: 85,
     cores: { principal: '#a8784f', secundaria: '#f7f7f5' } },
   { tipo: 'vaso',      nome: 'Vaso sanitário', x: 385.5, z: 576, rot: 90, l: 38, p: 65, a: 75 },
   { tipo: 'box_banho', nome: 'Box (vidro fixo)', variante: 'fixo', x: 349, z: 658, rot: 180, l: 78, p: 84, a: 200,
@@ -98,7 +98,7 @@ const BANHEIRO = [
 // (2,55 px/cm) e decorada com o moodboard: freijó, azul-acinzentado,
 // terracota, mostarda, vinho, granilite e azulejo 10×10 com rejunte escuro.
 // ---------------------------------------------------------------------
-const FREIJO = '#a8784f', FREIJO_ESCURO = '#7a5236', AZUL = '#5d6c84', TERRACOTA = '#8f4325';
+const FREIJO = '#a8784f', AZUL = '#5d6c84', TERRACOTA = '#8f4325';
 const CREME = '#ece3d1', MOSTARDA = '#b8892c', VINHO = '#5e1a2a', GRAFITE = '#2f3036';
 
 const MOVEIS_FINAL = [
@@ -114,14 +114,8 @@ const MOVEIS_FINAL = [
     cores: { principal: '#ffffff', secundaria: FREIJO } },
   { tipo: 'mesa_jantar', nome: 'Mesa de jantar', variante: 'retangular', x: 199.5, z: 79.5, rot: 0, l: 88, p: 88, a: 76,
     cores: { principal: FREIJO, secundaria: '#2b2622' } },
-  { tipo: 'cadeira', nome: 'Cadeira de jantar', variante: 'curva', x: 133.5, z: 93, rot: 270, l: 45, p: 50, a: 82, acab: 'palha',
-    cores: { principal: '#dcc79d', secundaria: FREIJO_ESCURO } },
-  { tipo: 'cadeira', nome: 'Cadeira de jantar', variante: 'curva', x: 206.5, z: 145, rot: 180, l: 45, p: 50, a: 82, acab: 'palha',
-    cores: { principal: '#dcc79d', secundaria: FREIJO_ESCURO } },
-  { tipo: 'luminaria', nome: 'Pendente de papel de arroz', variante: 'papel', x: 199.5, z: 79.5, rot: 0, y: 160, l: 55, p: 55, a: 100,
-    cores: { principal: '#f6e7c8', secundaria: '#2b2b2b' } },
   // ---- cozinha
-  { tipo: 'peninsula', nome: 'Península', x: 266.5, z: 76.5, rot: 270, l: 153, p: 45, a: 90, acab: 'madeira',
+  { tipo: 'peninsula', nome: 'Península', x: 260, z: 76.5, rot: 270, l: 153, p: 32, a: 90, acab: 'madeira',
     cores: { principal: FREIJO, secundaria: '#ffffff' } },
   { tipo: 'modulo_cozinha', nome: 'Módulo ao lado do shaft', x: 374, z: 23, rot: 90, l: 46, p: 28, a: 90, acab: 'madeira',
     cores: { principal: FREIJO, secundaria: '#ffffff' } },
@@ -134,8 +128,6 @@ const MOVEIS_FINAL = [
   // ---- estar
   { tipo: 'estante_giratoria', nome: 'Estante divisória com TV giratória', x: 109, z: 230, rot: 0, l: 218, p: 40, a: 220,
     cores: { principal: FREIJO, secundaria: '#1f1f21' } },
-  { tipo: 'planta', nome: 'Costela-de-adão', variante: 'costela', x: 34, z: 181, rot: 0, l: 48, p: 48, a: 130,
-    cores: { principal: '#4c7044', secundaria: '#b9ad99' } },
   { tipo: 'sofa', nome: 'Sofá retrátil de veludo', variante: 'retratil', x: 115.5, z: 405, rot: 180, l: 200, p: 90, a: 88, acab: 'veludo',
     cores: { principal: TERRACOTA, secundaria: '#3a2a20' } },
   { tipo: 'luminaria', nome: 'Arandela articulada', variante: 'arandela', x: 60, z: 443, rot: 180, y: 145, l: 110, p: 14, a: 60,
@@ -178,7 +170,7 @@ const MOVEIS_FINAL = [
 
 const CENARIO_FINAL = {
   id: 'planta-final',
-  nome: 'Planta final',
+  nome: 'Mesa quadrada 88',
   moveis: MOVEIS_FINAL,
   zonas: [
     { funcao: 'office',  x: 63,  z: 57.5, l: 126, p: 115 },
@@ -199,37 +191,15 @@ const CENARIO_FINAL = {
 // que nunca são usados ao mesmo tempo não contam como conflito de uso.
 const USO_ALTERNADO = [['Cadeira do escritório', 'Cadeira de jantar']];
 
-const ITENS_JANTAR = ['Mesa de jantar', 'Cadeira de jantar', 'Pendente de papel de arroz'];
-const semJantar = MOVEIS_FINAL.filter((m) => !ITENS_JANTAR.includes(m.nome));
-const cadeiraJantar = (x, z, rot) => ({ tipo: 'cadeira', nome: 'Cadeira de jantar', variante: 'curva', x, z, rot, l: 45, p: 50, a: 82, acab: 'palha',
-  cores: { principal: '#dcc79d', secundaria: FREIJO_ESCURO } });
-const pendenteJantar = (x, z) => ({ tipo: 'luminaria', nome: 'Pendente de papel de arroz', variante: 'papel', x, z, rot: 0, y: 160, l: 55, p: 55, a: 100,
-  cores: { principal: '#f6e7c8', secundaria: '#2b2b2b' } });
-
+// Duas opções de jantar, as duas só com o banco (sem cadeiras) e com a
+// península reduzida: a mesa quadrada da planta final e uma redonda.
 const CENARIOS_JANTAR = [
   {
-    id: 'jantar-1', nome: 'Jantar 1 · mesa 80 afastada',
+    id: 'mesa-redonda', nome: 'Mesa redonda 80',
     moveis: [
-      ...semJantar,
-      { tipo: 'mesa_jantar', nome: 'Mesa de jantar', variante: 'retangular', x: 197, z: 87, rot: 0, l: 80, p: 80, a: 76,
-        cores: { principal: FREIJO, secundaria: '#2b2622' } },
-      cadeiraJantar(134.5, 93, 270), cadeiraJantar(197, 149.5, 180), pendenteJantar(197, 87),
-    ],
-    zonas: CENARIO_FINAL.zonas,
-  },
-  {
-    id: 'jantar-2', nome: 'Jantar 2 · sem cadeira oeste',
-    moveis: MOVEIS_FINAL.filter((m) => !(m.nome === 'Cadeira de jantar' && m.rot === 270)),
-    zonas: CENARIO_FINAL.zonas,
-  },
-  {
-    id: 'jantar-3', nome: 'Jantar 3 · mesa redonda 80',
-    moveis: [
-      ...semJantar,
+      ...MOVEIS_FINAL.filter((m) => m.nome !== 'Mesa de jantar'),
       { tipo: 'mesa_redonda', nome: 'Mesa de jantar', variante: 'pe_central', x: 197, z: 88, rot: 0, l: 80, p: 80, a: 76,
         cores: { principal: FREIJO, secundaria: '#2b2622' }, acab: 'madeira' },
-      // as duas cadeiras lado a lado no lado sul: o canto do banco fica livre para entrar
-      cadeiraJantar(174, 144, 180), cadeiraJantar(220, 144, 180), pendenteJantar(197, 88),
     ],
     zonas: CENARIO_FINAL.zonas,
   },

@@ -59,20 +59,18 @@ jantar não contam como conflito entre si (`USO_ALTERNADO`, em `src/planta.js`).
 
 ## Opções de jantar
 
-Três abas comparam o canto de refeição da planta final (o resto é igual). Em todas, a
-bancada do escritório tem **110 × 70 cm**; a cadeira de jantar do lado do escritório desceu
-para não bater nela. As antigas "Office na janela" e "Sofá em cima" foram descartadas.
+Duas abas, iguais em tudo menos na mesa. Nas duas: **só o banco** (sem cadeiras de jantar),
+**península com 32 cm** de profundidade (cabe um prato ou uma panela; o corredor da cozinha
+fica com 84 cm), bancada do escritório **110 × 70 cm** e lavatório com **recorte na pedra**
+para a porta do banheiro passar.
 
-| Aba | Mesa | Lugares | Relatório |
-| --- | --- | --- | --- |
-| Planta final | quadrada 88 × 88 | 4 a 44 cm cada (apertado) | banco sem entrada |
-| Jantar 1 | quadrada 80 × 80, afastada do banco | 3 confortáveis | banco sem entrada; cadeira sul com 35 cm para afastar |
-| Jantar 2 | 88 × 88 sem a cadeira oeste | 3 | banco entra pela frente num trecho de 30 cm (apertado) |
-| **Jantar 3** | **redonda Ø 80, pé central, 2 cadeiras ao sul** | **3 com folga** | **sem problemas**: banco entra por um trecho de 45 cm |
+| Aba | Mesa | Entrada no banco |
+| --- | --- | --- |
+| Mesa quadrada 88 | 88 × 88, a da planta final | pela frente, num trecho de 30 cm (apertado) |
+| **Mesa redonda 80** | **Ø 80, pé central** | **pela frente, num trecho de 45 cm** |
 
-A mesa redonda de pé central é a que melhor resolve: não tem quinas no caminho do banco.
-Com a bancada de 70 cm, a cadeira do escritório fica com 32 cm até a costela-de-adão para ser
-afastada (ideal 40): é o único "atenção" do escritório.
+No filme, a pessoa toma café no banco: entra pela faixa livre e escorrega até o meio da mesa.
+Saíram o pendente de papel de arroz e a costela-de-adão.
 
 ## Como usar
 
@@ -109,21 +107,21 @@ Cadeiras podem entrar embaixo de mesas sem aviso; tapetes e box não geram aviso
 
 ## Planta final (BePê)
 
-A aba **Planta final** é a planta do estudo preliminar, medida na imagem (2,55 px/cm) e decorada
+A aba **Mesa quadrada 88** é a planta do estudo preliminar, medida na imagem (2,55 px/cm) e decorada
 com o moodboard das referências:
 
 - **Paleta:** freijó (`#a8784f`), azul-acinzentado (`#5d6c84`), terracota (`#8f4325`),
   mostarda (`#b8892c`), vinho (`#5e1a2a`), creme e grafite.
 - **Materiais:** granilite nos tampos, azulejo 10×10 com rejunte azul-marinho na cozinha e no
   banheiro, veludo no sofá, tweed no banco, xadrez vichy na cama, cabeceira canelada, linho e
-  voil nas cortinas, palhinha nas cadeiras, papel de arroz no pendente.
+  voil nas cortinas.
 - **Peças das referências:** estante divisória vazada com TV giratória (botão "Girar a TV"),
-  sofá retrátil de veludo terracota, arandela articulada preta, pendente de papel de arroz,
-  moldura ondulada com fotos, mesa carretel vinho, costela-de-adão, tapeçaria sobre a cama.
+  sofá retrátil de veludo terracota, arandela articulada preta, moldura ondulada com fotos,
+  mesa carretel vinho, tapeçaria sobre a cama.
 
 O que é interpretação da planta (fácil de trocar no painel do móvel):
 o bloco entre a bancada de trabalho e a península virou **banco de jantar** (a mesa encosta nele);
-a península tem 90 cm de altura; a cama ficou com 128 × 188 (na planta mede ~120 × 186).
+a península tem 90 cm de altura (e 32 cm de profundidade); a cama ficou com 128 × 188 (na planta mede ~120 × 186).
 O banheiro tem 2,64 m² contando o shaft; a área livre, sem o shaft, é 2,37 m².
 
 ## Realismo
