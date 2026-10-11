@@ -1343,7 +1343,11 @@ const temMov = (def, m) => partesDe(def, m).some((p) => p.mov);
 function pegada(m) {
   const gira = m.rot % 180 !== 0;
   const w = gira ? m.p : m.l, d = gira ? m.l : m.p;
-  return { x0: m.x - w / 2, x1: m.x + w / 2, z0: m.z - d / 2, z1: m.z + d / 2, w, d, y0: m.y || 0, y1: (m.y || 0) + m.a };
+  const pg = { x0: m.x - w / 2, x1: m.x + w / 2, z0: m.z - d / 2, z1: m.z + d / 2, w, d, y0: m.y || 0, y1: (m.y || 0) + m.a };
+  // recorte (ex.: canto da pedra da pia por onde passa a porta): fica de fora
+  const rc = varianteDe(defCatalogo(m.tipo), m)?.recorte;
+  if (rc) pg.furos = [retanguloPlanta(m, ...['x0', 'x1', 'z0', 'z1'].map((k) => avaliar(rc[k], m.l, m.p, m.a)))];
+  return pg;
 }
 function encaixar(m) {
   const pg = pegada(m);
@@ -1630,6 +1634,7 @@ function bloqueiaGiro(pg, giro) {
     if (r * Math.sin(t) < 5) continue; // folha praticamente fechada, no plano da parede
     const x = giro.c[0] + giro.du[0] * r * Math.cos(t) + giro.dv[0] * r * Math.sin(t);
     const z = giro.c[1] + giro.du[1] * r * Math.cos(t) + giro.dv[1] * r * Math.sin(t);
+    if (pg.furos?.some((f) => x > f.x0 - 0.5 && x < f.x1 + 0.5 && z > f.z0 - 0.5 && z < f.z1 + 0.5)) continue;
     if (x > pg.x0 + 0.5 && x < pg.x1 - 0.5 && z > pg.z0 + 0.5 && z < pg.z1 - 0.5) return true;
   }
   return false;
@@ -3284,8 +3289,9 @@ function faixa(r, eixo, de, ate) {
 
 function montarMedidas() {
   limparMedidas();
-  // 1. caixa de cada móvel com tudo aberto
-  const aberto = new Map();
+  // 1. caixa de cada móvel com tudo aberto (e, para as checagens, cada folha
+  // ou gaveta separada: a caixa geral marcaria cantos vazios como ocupados)
+  const aberto = new Map(), partes = new Map();
   for (const a of uso.lista) {
     if (a.tipo !== 'abrir') continue;
     const obj = objDe(a.m);
@@ -3294,14 +3300,19 @@ function montarMedidas() {
     aplicarAbertura(obj, b0 > 0.5 ? 0 : 1);
     obj.updateMatrixWorld(true);
     const bx = new T.Box3().setFromObject(obj);
-    aplicarAbertura(obj, b0);
     const pg = pegada(a.m);
+    partes.set(a.m.id, [pg, ...obj.userData.anim.map((an) => {
+      const b = new T.Box3().setFromObject(an.g);
+      return { x0: b.min.x, x1: b.max.x, z0: b.min.z, z1: b.max.z, y0: b.min.y, y1: b.max.y };
+    })]);
+    aplicarAbertura(obj, b0);
     aberto.set(a.m.id, { ...pg, x0: Math.min(pg.x0, bx.min.x), x1: Math.max(pg.x1, bx.max.x), z0: Math.min(pg.z0, bx.min.z), z1: Math.max(pg.z1, bx.max.z) });
   }
   for (const a of uso.lista) {
     if (a.tipo !== 'cadeira') continue;
     const [fx, fz] = dirFrente(a.m.rot), pg = pegada(a.m);
     aberto.set(a.m.id, { ...pg, x0: pg.x0 - Math.max(0, fx) * 32, x1: pg.x1 - Math.min(0, fx) * 32, z0: pg.z0 - Math.max(0, fz) * 32, z1: pg.z1 - Math.min(0, fz) * 32 });
+    partes.set(a.m.id, [aberto.get(a.m.id)]);
   }
   const paredes = doc.planta.paredes.filter((w) => !w.demolida).map((w) => ({ ...caixaParede(w), nome: 'parede' }));
   const obstaculos = (m, pg) => [
@@ -3312,7 +3323,7 @@ function montarMedidas() {
       if (d2.colide === false || ignoraPar(d1, d2) || usoAlternado(m, o)) return false;
       const po = pegada(o);
       return po.y0 < pg.y1 && po.y1 > pg.y0; // na mesma altura
-    }).map((o) => ({ ...(aberto.get(o.id) || pegada(o)), nome: o.nome.toLowerCase() })),
+    }).flatMap((o) => (partes.get(o.id) || [pegada(o)]).map((r) => ({ ...r, nome: o.nome.toLowerCase() }))),
   ];
 
   // 2. o que abre: faixa laranja que cresce + "abre N cm"; com tudo aberto, "sobra N cm"
@@ -3365,19 +3376,23 @@ function montarMedidas() {
   // 3. portas: o giro da folha (raio = largura) e se bate em algo
   for (const g of girosPortas()) {
     if (!uso.lista.some((a) => a.tipo === 'porta' && a.ab.id === g.ab.id)) continue;
-    const bate = cen().moveis.filter((m) => (defCatalogo(m.tipo) || {}).colide !== false && pegada(m).y0 < 60 && bloqueiaGiro(aberto.get(m.id) || pegada(m), g)).map((m) => m.nome.toLowerCase());
-    const st = bate.length ? 'problema' : 'ok', n = 24;
+    // com os móveis fechados (o normal) e, à parte, se algum aberto atrapalha
+    const noChao = cen().moveis.filter((m) => (defCatalogo(m.tipo) || {}).colide !== false && pegada(m).y0 < 60);
+    const bate = noChao.filter((m) => bloqueiaGiro(pegada(m), g)).map((m) => m.nome.toLowerCase());
+    const seAberto = noChao.filter((m) => partes.has(m.id) && !bate.includes(m.nome.toLowerCase())
+      && partes.get(m.id).some((r) => (r.y0 ?? 0) < 60 && bloqueiaGiro(r, g))).map((m) => m.nome.toLowerCase());
+    const st = bate.length ? 'problema' : seAberto.length ? 'atencao' : 'ok', n = 24;
     const pos = new Float32Array((n + 2) * 3), idx = [];
     for (let i = 1; i <= n; i++) idx.push(0, i, i + 1);
     const geo = new T.BufferGeometry();
     geo.setAttribute('position', new T.BufferAttribute(pos, 3));
     geo.setIndex(idx);
-    const setor = new T.Mesh(geo, MAT_MED[st === 'ok' ? 'abre' : 'problema']);
+    const setor = new T.Mesh(geo, MAT_MED[st === 'ok' ? 'abre' : st]);
     setor.renderOrder = 2;
     grpMedidas.add(setor);
     const ponto = (t, r) => [g.c[0] + g.du[0] * r * Math.cos(t) + g.dv[0] * r * Math.sin(t), g.c[1] + g.du[1] * r * Math.cos(t) + g.dv[1] * r * Math.sin(t)];
     const [mx, mz] = ponto(Math.PI / 4, g.R * 0.62);
-    const rot = rotuloMedida(`porta ${fmt(g.R)} cm · ${bate.length ? `bate: ${bate.join(', ')}` : 'abre livre'}`, mx, 3, mz, st);
+    const rot = rotuloMedida(`porta ${fmt(g.R)} cm · ${bate.length ? `bate: ${bate.join(', ')}` : seAberto.length ? `abre livre (só bate se ${seAberto.join(', ')} estiver aberto)` : 'abre livre'}`, mx, 3, mz, st);
     animMedidas.push((k) => {
       pos.set([g.c[0], 0.9, g.c[1]], 0);
       for (let i = 0; i <= n; i++) { const [x, z] = ponto((Math.PI / 2) * k * (i / n), g.R); pos.set([x, 0.9, z], (i + 1) * 3); }
@@ -3665,6 +3680,111 @@ async function sentar(c, { puxar = 30, depois = 18 } = {}) {
   };
 }
 
+// anda em linha reta (lugares apertados, onde a grade de caminhos não passa)
+async function andarDireto(x, z) {
+  const [x0, z0] = pos2(), total = Math.hypot(x - x0, z - z0);
+  if (total < 2) return;
+  const fase0 = pessoa.fase;
+  pessoa.yawAlvo = Math.atan2(x - x0, z - z0);
+  await durante(total / (VEL_ANDAR * 0.7), (u) => {
+    pessoa.grupo.position.x = x0 + (x - x0) * u;
+    pessoa.grupo.position.z = z0 + (z - z0) * u;
+    pessoa.fase = fase0 + ((u * total) / 110) * Math.PI * 2;
+    pessoa.ps.andar = Math.min(1, (u * total) / 15, ((1 - u) * total) / 15 + 0.05);
+  });
+  pessoa.ps.andar = 0;
+}
+function moverMesa(mesa, [dx, dz]) {
+  const obj = objDe(mesa);
+  if (obj) { obj.position.x = mesa.x + dx; obj.position.z = mesa.z + dz; }
+}
+
+// Sentar no banco de jantar. Com uma faixa livre na frente (mesa redonda),
+// entra por ela e escorrega até o meio da mesa. Sem entrada (mesa quadrada
+// encostada), precisa puxar a mesa, dar a volta e sentar — como na vida real.
+async function sentarNoBanco(banco, mesa) {
+  const e = entradasBanco.get(banco.id), [fe, fs] = e.frente, eixo = e.eixo;
+  const borda = bordaDe(e.pg, fe, fs), pgM = pegada(mesa);
+  const pt = (ao, fora) => (eixo === 'x' ? [ao, borda + fs * fora] : [borda + fs * fora, ao]);
+  const longe = (bordaDe(pgM, fe, fs) - borda) * fs;           // borda de lá da mesa
+  const meioMesa = eixo === 'x' ? mesa.x : mesa.z;
+  const vf = fe === 'x' ? [fs, 0] : [0, fs];                      // para onde o banco olha
+  const assento = (ao) => pt(ao, -(eixo === 'x' ? e.pg.d : e.pg.w) / 2 + 6);
+  const sentarEm = async (ao) => {
+    olharPara(pos2()[0] + vf[0] * 100, pos2()[1] + vf[1] * 100);
+    await esperar(0.4);
+    const p0 = pos2(), a = assento(ao);
+    await durante(0.9, (u) => {
+      const k = ease(u);
+      pessoa.grupo.position.x = p0[0] + (a[0] - p0[0]) * k;
+      pessoa.grupo.position.z = p0[1] + (a[1] - p0[1]) * k;
+      pessoa.ps.sentar = ease((u - 0.2) / 0.8);
+    });
+  };
+  const levantarDe = async (ao) => {
+    const p0 = pos2(), a = pt(ao, 22);
+    await durante(0.8, (u) => {
+      const k = ease(u);
+      pessoa.ps.sentar = 1 - ease(u / 0.8);
+      pessoa.grupo.position.x = p0[0] + (a[0] - p0[0]) * k;
+      pessoa.grupo.position.z = p0[1] + (a[1] - p0[1]) * k;
+    });
+  };
+  const escorregar = async (de, ate) => {
+    const a0 = assento(de), a1 = assento(ate);
+    await animar(Math.min(1.6, Math.abs(ate - de) / 30 + 0.3), (k) => {
+      pessoa.grupo.position.x = a0[0] + (a1[0] - a0[0]) * k;
+      pessoa.grupo.position.z = a0[1] + (a1[1] - a0[1]) * k;
+    });
+  };
+  if (e.faixa) {
+    const ao = (e.faixa[0] + e.faixa[1]) / 2;
+    legenda(8, `Café: entrar no banco pela faixa livre (${fmt(e.largura)} cm)`);
+    await andarAte(...pt(ao, longe + 35));
+    await andarDireto(...pt(ao, 24));
+    await sentarEm(ao);
+    await escorregar(ao, meioMesa);
+    return async () => {
+      await escorregar(meioMesa, ao);
+      await levantarDe(ao);
+      await andarDireto(...pt(ao, longe + 35));
+    };
+  }
+  // sem entrada: puxa a mesa 40 cm, dá a volta pelo lado e senta
+  legenda(8, 'Café: banco sem entrada — puxar a mesa');
+  const lado = (eixo === 'x' ? pgM.x0 : pgM.z0) - 24;
+  const passo = (d) => [vf[0] * d, vf[1] * d];
+  await andarAte(...pt(meioMesa, longe + 32));
+  await virar(...pt(meioMesa, 0));
+  await mudarPose({ alcancar: 1 }, 0.3);
+  const p0 = pos2();
+  await animar(1, (k) => {
+    moverMesa(mesa, passo(40 * k));
+    pessoa.grupo.position.x = p0[0] + vf[0] * 40 * k;
+    pessoa.grupo.position.z = p0[1] + vf[1] * 40 * k;
+  });
+  await mudarPose({ alcancar: 0 }, 0.3);
+  await andarDireto(...pt(lado, longe + 72));
+  await andarDireto(...pt(lado, 22));
+  await andarDireto(...pt(meioMesa, 22));
+  await sentarEm(meioMesa);
+  await animar(0.8, (k) => moverMesa(mesa, passo(40 - 22 * k))); // aproxima a mesa
+  return async () => {
+    await animar(0.8, (k) => moverMesa(mesa, passo(18 + 22 * k)));
+    await levantarDe(meioMesa);
+    await andarDireto(...pt(lado, 22));
+    await andarDireto(...pt(lado, longe + 72));
+    await andarDireto(...pt(meioMesa, longe + 72));
+    await virar(...pt(meioMesa, 0));
+    const p1 = pos2();
+    await animar(1, (k) => {
+      moverMesa(mesa, passo(40 * (1 - k)));
+      pessoa.grupo.position.x = p1[0] - vf[0] * 40 * k;
+      pessoa.grupo.position.z = p1[1] - vf[1] * 40 * k;
+    });
+  };
+}
+
 // ---- filme: câmera, legendas e roteiro
 const CAPITULOS = ['Acordar', 'Banheiro', 'Café', 'Trabalho', 'Sair', 'Voltar', 'Noite', 'Dormir'];
 const filme = { ang: 0.7, alvo: new T.Vector3(), cam: new T.Vector3(), cap: 0, horaAlvo: 7, ultimaLuz: 0 };
@@ -3735,8 +3855,9 @@ async function roteiro() {
   const cadeiras = cen().moveis.filter((m) => m.tipo === 'cadeira' || m.tipo === 'cadeira_escritorio');
   const perto = (alvo) => alvo && cadeiras.slice().sort((a, b) => Math.hypot(a.x - alvo.x, a.z - alvo.z) - Math.hypot(b.x - alvo.x, b.z - alvo.z))[0];
   const cadEscr = achar((m) => m.nome === 'Cadeira do escritório') || perto(M.trabalho);
-  const cadJantar = cadeiras.filter((c) => c !== cadEscr && M.mesa && Math.hypot(c.x - M.mesa.x, c.z - M.mesa.z) < 110)
-    .sort((a, b) => b.z - a.z)[0] || perto(M.mesa);
+  const banco = M.mesa && cen().moveis.filter((m) => m.tipo === 'banco')
+    .sort((a, b) => Math.hypot(a.x - M.mesa.x, a.z - M.mesa.z) - Math.hypot(b.x - M.mesa.x, b.z - M.mesa.z))[0];
+  const cadJantar = !banco && cadeiras.filter((c) => c !== cadEscr && M.mesa && Math.hypot(c.x - M.mesa.x, c.z - M.mesa.z) < 110)[0];
   const P = pessoa, g = P.grupo;
 
   // 07:00 — acordar
@@ -3837,7 +3958,13 @@ async function roteiro() {
     await usar(M.tv, 1, 1.4);
     await mudarPose({ alcancar: 0 }, 0.3);
   }
-  if (cadJantar) {
+  if (banco && entradasBanco.has(banco.id)) {
+    const levantar = await sentarNoBanco(banco, M.mesa);
+    await mudarPose({ comer: 1 }, 0.5);
+    await esperar(3.5);
+    await mudarPose({ comer: 0 }, 0.5);
+    await levantar();
+  } else if (cadJantar) {
     legenda(8, 'Café na mesa de jantar');
     const levantar = await sentar(cadJantar);
     await mudarPose({ comer: 1 }, 0.5);
