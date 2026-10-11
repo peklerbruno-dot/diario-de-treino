@@ -4,6 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Apartamento 3D</title>
+<meta name="theme-color" content="#1d2530">
+<script>
+// Publicado como site (ex.: GitHub Pages): vira app instalável e abre sem
+// internet. Aberto com duplo clique ou no claude.ai, nada disso é usado.
+if (/^https?:$/.test(location.protocol) && !/claude/.test(location.hostname)) {
+  document.head.append(Object.assign(document.createElement('link'), { rel: 'manifest', href: 'app/manifest.webmanifest' }));
+  document.head.append(Object.assign(document.createElement('link'), { rel: 'apple-touch-icon', href: 'app/icone-192.png' }));
+  document.head.append(Object.assign(document.createElement('link'), { rel: 'icon', href: 'app/icone-192.png' }));
+  if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
 <style>
 /* =====================================================================
    ESTILO
@@ -382,7 +393,7 @@ details.mais > .conteudo { padding-bottom: 10px; }
       <button id="bCaminhar" title="Andar por dentro, na altura dos olhos (C)"><span aria-hidden="true">🚶</span><span class="rot">Andar</span></button>
       <button id="bVista" title="Planta vista de cima (T)"><span aria-hidden="true">▦</span><span class="rot">Planta</span></button>
       <button id="bCorte" title="Baixar as paredes para ver o interior"><span aria-hidden="true">✂</span><span class="rot">Cortar</span></button>
-      <button id="bFoto" title="Foto realista: luz calculada por traçado de raios"><span aria-hidden="true">📷</span><span class="rot">Foto</span></button>
+      <button id="bFoto" title="Foto realista (F)"><span aria-hidden="true">📷</span><span class="rot">Foto</span></button>
       <button id="bEnquadrar" title="Ver o apartamento inteiro"><span aria-hidden="true">⤢</span><span class="rot">Inteiro</span></button>
     </div>
 
@@ -422,15 +433,15 @@ details.mais > .conteudo { padding-bottom: 10px; }
         <p class="nota">No celular, também dá para tocar e segurar na foto para salvar.</p>
       </div>
     </div>
-    <div id="ajuda" class="so-arrumar">Toque: selecionar · arraste: mover · R: girar · Del: remover</div>
+    <div id="ajuda" class="so-arrumar">Clique: selecionar · arraste: mover · R: girar · Del: remover · 1 2 3: modos · F: foto</div>
   </main>
 
   <aside id="painel"></aside>
 
   <nav id="modos" aria-label="Modo">
-    <button data-modo="visitar"><span aria-hidden="true">👁</span><b>Visitar</b><small>passear e fotografar</small></button>
-    <button data-modo="arrumar"><span aria-hidden="true">🛋</span><b>Arrumar</b><small>mover e trocar móveis</small></button>
-    <button data-modo="conferir"><span aria-hidden="true">📏</span><b>Conferir</b><small>espaços e medidas</small></button>
+    <button data-modo="visitar" title="Visitar (tecla 1)"><span aria-hidden="true">👁</span><b>Visitar</b><small>passear e fotografar</small></button>
+    <button data-modo="arrumar" title="Arrumar (tecla 2)"><span aria-hidden="true">🛋</span><b>Arrumar</b><small>mover e trocar móveis</small></button>
+    <button data-modo="conferir" title="Conferir (tecla 3)"><span aria-hidden="true">📏</span><b>Conferir</b><small>espaços e medidas</small></button>
   </nav>
 </div>
 

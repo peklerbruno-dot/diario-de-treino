@@ -4,6 +4,19 @@ Simulador 3D editável do apartamento, para testar disposições de móveis.
 **Abra `simulador.html` com duplo clique.** Funciona sem internet e sem servidor: o three.js
 está embutido no próprio arquivo.
 
+## Onde abrir
+
+- **No PC, sem nada:** baixe `simulador.html` e dê duplo clique. Funciona sem internet.
+- **Como site:** com esta pasta no GitHub Pages do repositório (branch `main`), o endereço é
+  `https://peklerbruno-dot.github.io/diario-de-treino/apartamento/`.
+- **Como app:** aberto pelo site, o Chrome ou o Edge mostram **Instalar** na barra de endereço
+  (no iPhone: Compartilhar → Adicionar à Tela de Início). Abre em janela própria, com ícone, e
+  funciona sem internet depois da primeira visita (`sw.js` guarda a última versão).
+- Os layouts ficam salvos em cada navegador; para levar de um para outro, use
+  **Arquivo → Exportar/Importar**.
+
+No teclado: `1` `2` `3` trocam o modo, `F` abre a foto, `C` caminha, `T` alterna a planta.
+
 ## Três modos
 
 A barra de baixo troca o modo de uso:
@@ -158,6 +171,7 @@ apartamento/
   src/pagina.html     ← estilo e interface
   vendor/             ← three.js r170 empacotado (e o arquivo de entrada usado para gerá-lo)
   montar.mjs          ← junta tudo em simulador.html
+  index.html, sw.js, app/  ← só para o site: redireciona, guarda offline, manifesto e ícones
 ```
 
 Depois de editar algo em `src/`, rode `node apartamento/montar.mjs` para regenerar o

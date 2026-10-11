@@ -2083,6 +2083,8 @@ document.addEventListener('keydown', (e) => {
   if (e.target.closest('input, textarea, select, dialog')) return;
   const ctrl = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
   if (foto.ativa || !$('#fotoMenu').hidden) { if (k === 'escape') fecharFoto(); return; }
+  if (!ctrl && !e.altKey && { 1: 'visitar', 2: 'arrumar', 3: 'conferir' }[k]) { setModo({ 1: 'visitar', 2: 'arrumar', 3: 'conferir' }[k]); return; }
+  if (!ctrl && k === 'f') { abrirFoto(); return; }
   const edita = ['delete', 'backspace', 'r'].includes(k) || (ctrl && k === 'd') || (k.startsWith('arrow') && !vista.caminhar);
   if (modo !== 'arrumar' && edita) return;
   if (ctrl && k === 'z' && !e.shiftKey) { e.preventDefault(); desfazer(); }
