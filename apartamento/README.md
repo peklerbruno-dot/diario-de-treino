@@ -94,11 +94,12 @@ O banheiro tem 2,64 m² contando o shaft; a área livre, sem o shaft, é 2,37 m�
   sol calculado por data e hora, sombras suaves e **oclusão ambiente** (as sombras de contato
   nos cantos e sob os móveis). No celular a oclusão começa desligada.
 - **📷 Foto realista:** simula o caminho da luz (traçado de raios, com `three-gpu-pathtracer`):
-  a luz rebate nas paredes, atravessa as cortinas, reflete no piso e nos metais. A imagem
-  começa granulada e limpa sozinha: 1 a 3 minutos num computador ou celular recente.
-  Mexer na câmera recomeça. Há controles de exposição e de hora do dia.
-  Dentro do apartamento (🚶 Caminhar) a foto tem teto e a luz entra só pelas janelas; na órbita
-  é uma maquete sem teto.
+  a luz rebate nas paredes, atravessa as cortinas, reflete no piso e nos metais. Escolhe-se onde
+  (um cômodo ou a vista atual) e quando (manhã, meio-dia, fim de tarde, noite); enquanto a foto
+  é revelada (1 a 3 minutos) a câmera fica parada. No fim, um filtro usa a imagem normal como
+  guia para tirar o granulado sem borrar as bordas, e a exposição se ajusta sozinha.
+  Nos cômodos a foto tem teto e a luz entra só pelas janelas; na vista de fora é uma maquete
+  sem teto.
 
 ## Apartamento decorado
 
