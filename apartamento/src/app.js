@@ -78,6 +78,14 @@ function prepararDoc(d) {
   d.planta.pontosEletricos ||= [];
   d.planta.local ||= clonar(PLANTA_ORIGINAL.local);
   d.planta.orientacao ??= PLANTA_ORIGINAL.orientacao;
+  // cenários novos do original (ex.: opções de jantar) entram num layout já
+  // salvo; um cenário que a pessoa apagou não volta
+  d.originaisVistos ||= d.cenarios.map((c) => c.nome);
+  for (const c of CENARIOS_ORIGINAIS) {
+    if (d.originaisVistos.includes(c.nome)) continue;
+    d.originaisVistos.push(c.nome);
+    if (!d.cenarios.some((x) => x.nome === c.nome)) d.cenarios.push(clonar(c));
+  }
   for (const a of d.planta.aberturas) a.id ||= novoId('ab');
   for (const c of d.cenarios) {
     c.id ||= novoId('c');
@@ -664,9 +672,56 @@ function montarCenaFoto() {
   return c;
 }
 
+// Passo 1: escolher onde e quando. Passo 2: revelar (a câmera fica parada,
+// atrás de uma prévia desfocada, para nada recomeçar sem querer).
+// Passo 3: a foto pronta aparece como imagem, com luz e Salvar.
+const HORAS_FOTO = [['Manhã', 8], ['Meio-dia', 12], ['Fim de tarde', 17], ['Noite', 20]];
+const escolhaFoto = { onde: null, hora: null };
+
 function abrirFoto() {
+  if (foto.ativa) fecharFoto();
+  const vistas = typeof VISTAS_VISITA !== 'undefined' ? VISTAS_VISITA : [];
+  const daqui = vista.caminhar ? 'Daqui' : 'Vista atual (maquete)';
+  if (!escolhaFoto.onde || (escolhaFoto.onde !== daqui && !vistas.some((v) => v.nome === escolhaFoto.onde))) {
+    escolhaFoto.onde = vista.caminhar ? daqui : (vistas.find((v) => v.nome === vistaAtual) || vistas[0])?.nome ?? daqui;
+  }
+  escolhaFoto.hora ??= luz.hora;
+  const desenhar = () => {
+    const onde = $('#fotoOnde'), quando = $('#fotoQuando');
+    onde.textContent = ''; quando.textContent = '';
+    for (const n of [daqui, ...vistas.map((v) => v.nome)]) {
+      onde.append(botao(n, () => { escolhaFoto.onde = n; desenhar(); }, { class: escolhaFoto.onde === n ? 'ativo' : '' }));
+    }
+    const horas = HORAS_FOTO.some(([, h]) => h === luz.hora) ? HORAS_FOTO : [[`Agora ${horaTxt(luz.hora)}`, luz.hora], ...HORAS_FOTO];
+    for (const [n, h] of horas) {
+      quando.append(botao(n, () => { escolhaFoto.hora = h; desenhar(); }, { class: escolhaFoto.hora === h ? 'ativo' : '' }));
+    }
+  };
+  desenhar();
+  $('#fotoMenu').hidden = false;
+}
+
+function fotografar() {
+  $('#fotoMenu').hidden = true;
+  const v = (typeof VISTAS_VISITA !== 'undefined' ? VISTAS_VISITA : []).find((x) => x.nome === escolhaFoto.onde);
   if (vista.topo) alternarVista();
   if (sel) selecionar(null);
+  if (v) {
+    cancelAnimationFrame(animarVista.id);
+    if (!vista.caminhar) alternarCaminhada();
+    Object.assign(andar, { x: v.x, z: v.z, yaw: v.yaw, pitch: v.pitch });
+    aplicarCameraAndar();
+    vistaAtual = v.nome;
+  }
+  luz.hora = escolhaFoto.hora;
+  try { localStorage.setItem(CHAVE_LUZ, JSON.stringify(luz)); } catch { /* ok */ }
+  aplicarSol();
+  // prévia: o quadro normal, desfocado atrás do aviso de progresso; também
+  // serve de guia para limpar o granulado no fim (bordas e cores nítidas)
+  grpSel.visible = grpZonas.visible = false;
+  desenharQuadro();
+  foto.guia = lerCanvas();
+  $('#fotoPrevia').src = renderer.domElement.toDataURL('image/jpeg', 0.7);
   foto.antes = { env: cena.environment, bg: cena.background, envI: cena.environmentIntensity };
   foto.ceu ??= texturaCeu();
   cena.environment = foto.ceu;
@@ -677,19 +732,20 @@ function abrirFoto() {
   if (!foto.pt) {
     foto.pt = new T.WebGLPathTracer(renderer);
     Object.assign(foto.pt, { minSamples: 0, renderDelay: 0, fadeDuration: 0, bounces: 6, filterGlossyFactor: 0.5 });
-    foto.pt.tiles.set(ehToque ? 3 : 2, ehToque ? 3 : 2);
+    foto.pt.tiles.set(2, 2);
   }
-  foto.pt.renderScale = ehToque ? 0.5 : 1;
+  foto.pt.renderScale = ehToque ? 0.6 : 1;
+  foto.meta = ehToque ? 140 : 260;
   // interior pede mais exposição que a maquete vista de fora
-  const exp = vista.caminhar ? 2.6 : 1.1;
-  renderer.toneMappingExposure = exp;
-  $('#fotoExposicao').value = String(exp);
+  renderer.toneMappingExposure = vista.caminhar ? 2.6 : 1.1;
   foto.ativa = true;
+  foto.pronta = false;
   document.body.classList.add('modo-foto');
-  $('#painelFoto').hidden = false;
-  $('#fotoHora').value = String(luz.hora);
-  $('#fotoHoraTxt').textContent = horaTxt(luz.hora);
-  $('#fotoStatus').textContent = 'Preparando a cena…';
+  $('#fotoPronta').hidden = true;
+  $('#fotoRevelando').hidden = false;
+  $('#fotoBarra').style.width = '0';
+  $('#fotoStatus').textContent = 'Preparando a cena… (pode travar alguns segundos)';
+  $('#fotoJa').disabled = true;
   // deixa o aviso aparecer antes do trabalho pesado (montar a cena para os raios)
   setTimeout(() => {
     if (!foto.ativa) return;
@@ -697,52 +753,125 @@ function abrirFoto() {
     foto.descartar = [];
     foto.cena = montarCenaFoto();
     foto.pt.setScene(foto.cena, camPersp);
-    foto.cam.copy(camPersp.matrixWorld);
     foto.t0 = performance.now();
-  }, 60);
+    foto.t1 = 0;
+  }, 80);
 }
 
 function quadroFoto() {
-  if (!vista.caminhar) ctlPersp.update();
-  if (!foto.t0) return;
-  camPersp.updateMatrixWorld();
-  if (!camPersp.matrixWorld.equals(foto.cam)) { // câmera mexeu: recomeça
-    foto.cam.copy(camPersp.matrixWorld);
-    foto.pt.updateCamera();
-    foto.t0 = performance.now();
-  }
+  if (!foto.t0 || foto.pronta) return;
   const n = foto.pt.samples;
   if (n < foto.meta) foto.pt.renderSample();
+  else { terminarFoto(); return; }
   const agora = performance.now();
-  if (agora - foto.ultimaUI > 250) {
+  if (n >= 1 && !foto.t1) foto.t1 = agora; // a primeira passada inclui compilar os shaders
+  if (agora - foto.ultimaUI > 300) {
     foto.ultimaUI = agora;
-    const pronto = Math.min(1, n / foto.meta);
-    $('#fotoBarra').style.width = `${pronto * 100}%`;
-    $('#fotoStatus').textContent = n >= foto.meta
-      ? `Pronta · ${foto.meta} passadas`
-      : `${Math.floor(n)} de ${foto.meta} passadas · ${Math.round((agora - foto.t0) / 1000)} s`;
+    $('#fotoBarra').style.width = `${Math.min(1, n / foto.meta) * 100}%`;
+    $('#fotoJa').disabled = n < 8;
+    if (n < 1) { $('#fotoStatus').textContent = 'Preparando a luz…'; return; }
+    const ritmo = (agora - foto.t1) / Math.max(1, n - 1);
+    const falta = Math.max(1, Math.round(((foto.meta - n) * ritmo) / 1000));
+    $('#fotoStatus').textContent = n < 4 ? 'Calculando a luz…' : `${Math.round((n / foto.meta) * 100)}% · faltam ~${falta < 60 ? `${falta} s` : `${Math.ceil(falta / 60)} min`}`;
   }
 }
 
-function recomecarFoto() {
-  if (!foto.ativa || !foto.t0) return;
-  luzDaFoto();
-  // o sol e as luminárias mudam com a hora: refaz a cópia da cena
-  for (const g of foto.descartar) g.dispose();
-  foto.descartar = [];
-  foto.cena = montarCenaFoto();
-  foto.pt.setScene(foto.cena, camPersp);
-  foto.t0 = performance.now();
+// lê o canvas do 3D (logo depois de desenhar, no mesmo instante)
+function lerCanvas(w, h) {
+  const src = renderer.domElement;
+  w ??= src.width; h ??= src.height;
+  const c = Object.assign(document.createElement('canvas'), { width: w, height: h });
+  const g = c.getContext('2d', { willReadFrequently: true });
+  g.drawImage(src, 0, 0, w, h);
+  return g.getImageData(0, 0, w, h);
+}
+
+// Tira o granulado: média dos vizinhos que, na imagem normal (guia), têm a
+// mesma cor, ou seja, são da mesma superfície. Assim as bordas continuam
+// nítidas. Com poucas passadas, o raio é maior.
+function limparGranulado(img, guia, raio) {
+  const { width: W, height: H, data: a } = img, b = guia.data, out = new Uint8ClampedArray(a.length);
+  const passo = raio > 3 ? 2 : 1, offs = [];
+  for (let dy = -raio; dy <= raio; dy += passo) for (let dx = -raio; dx <= raio; dx += passo) {
+    offs.push(dx, dy, Math.exp(-(dx * dx + dy * dy) / (2 * (raio / 1.6) ** 2)));
+  }
+  const tab = new Float32Array(1024); // peso pela diferença de cor da guia
+  for (let i = 0; i < 1024; i++) tab[i] = Math.exp(-(i * 16) / (2 * 14 * 14));
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = (y * W + x) * 4, gr = b[i], gg = b[i + 1], gb = b[i + 2];
+    let sr = 0, sg = 0, sb = 0, sw = 0;
+    for (let k = 0; k < offs.length; k += 3) {
+      const xx = x + offs[k], yy = y + offs[k + 1];
+      if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
+      const j = (yy * W + xx) * 4;
+      const d = ((b[j] - gr) ** 2 + (b[j + 1] - gg) ** 2 + (b[j + 2] - gb) ** 2) >> 4;
+      if (d >= 1024) continue;
+      const w = offs[k + 2] * tab[d];
+      sr += a[j] * w; sg += a[j + 1] * w; sb += a[j + 2] * w; sw += w;
+    }
+    out[i] = sr / sw; out[i + 1] = sg / sw; out[i + 2] = sb / sw; out[i + 3] = 255;
+  }
+  return new ImageData(out, W, H);
+}
+
+// mostra o resultado como imagem (é ela que se salva)
+function mostrarFoto() {
+  foto.pt.renderSample();
+  let img = lerCanvas();
+  const n = foto.pt.samples;
+  const raio = n < 24 ? 8 : n < 80 ? 4 : n < 200 ? 3 : 2;
+  if (foto.guia && foto.guia.width === img.width && foto.guia.height === img.height) img = limparGranulado(img, foto.guia, raio);
+  const c = Object.assign(document.createElement('canvas'), { width: img.width, height: img.height });
+  c.getContext('2d').putImageData(img, 0, 0);
+  $('#fotoImg').src = c.toDataURL('image/jpeg', 0.92);
+}
+
+// exposição automática: ajusta até o brilho médio ficar agradável
+function autoExposicao() {
+  for (let k = 0; k < 3; k++) {
+    foto.pt.renderSample();
+    const d = lerCanvas(48, 48).data;
+    let soma = 0;
+    for (let i = 0; i < d.length; i += 4) soma += (0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]) / 255;
+    const media = soma / (d.length / 4);
+    const f = Math.min(3, Math.max(0.5, (0.46 / Math.max(media, 0.02)) ** 1.5));
+    if (Math.abs(f - 1) < 0.08) break;
+    renderer.toneMappingExposure = Math.min(8, Math.max(0.3, renderer.toneMappingExposure * f));
+  }
+}
+
+function terminarFoto() {
+  if (!foto.ativa || !foto.t0 || foto.pronta) return;
+  foto.pronta = true;
+  $('#fotoStatus').textContent = 'Finalizando…';
+  setTimeout(() => {
+    autoExposicao();
+    mostrarFoto();
+    $('#fotoRevelando').hidden = true;
+    $('#fotoPronta').hidden = false;
+  }, 30);
+}
+
+function luzFoto(fator) {
+  if (!foto.pronta) return;
+  renderer.toneMappingExposure = Math.min(6, Math.max(0.3, renderer.toneMappingExposure * fator));
+  mostrarFoto();
 }
 
 function fecharFoto() {
+  $('#fotoMenu').hidden = true;
+  if (!foto.ativa) return;
   foto.ativa = false;
+  foto.pronta = false;
   foto.t0 = 0;
   for (const g of foto.descartar || []) g.dispose();
   foto.descartar = [];
   foto.cena = null;
+  foto.guia = null;
   document.body.classList.remove('modo-foto');
-  $('#painelFoto').hidden = true;
+  $('#fotoRevelando').hidden = true;
+  $('#fotoPronta').hidden = true;
+  $('#fotoImg').removeAttribute('src');
   cena.environment = foto.antes.env;
   cena.background = foto.antes.bg;
   hemi.visible = true;
@@ -750,12 +879,21 @@ function fecharFoto() {
   renderer.toneMappingExposure = 1;
   aplicarSol();
   ctlPersp.enabled = !vista.caminhar && !vista.topo;
+  atualizarBotoes();
+  renderVistas();
 }
 
-function salvarFoto() {
-  if (!foto.t0) return;
-  foto.pt.renderSample(); // desenha agora para ler o canvas no mesmo instante
-  renderer.domElement.toBlob((b) => baixar(b, `apartamento-${slug(cen().nome)}-foto-${horaTxt(luz.hora).replace(':', 'h')}.png`));
+async function salvarFoto() {
+  const src = $('#fotoImg').src;
+  if (!src) return;
+  const nome = `apartamento-${slug(escolhaFoto.onde || cen().nome)}-${horaTxt(luz.hora).replace(':', 'h')}.jpg`;
+  const blob = await (await fetch(src)).blob();
+  // no celular, "Compartilhar" tem "Salvar imagem" (vai para as Fotos)
+  const arquivo = new File([blob], nome, { type: 'image/jpeg' });
+  if (ehToque && navigator.canShare?.({ files: [arquivo] })) {
+    try { await navigator.share({ files: [arquivo] }); return; } catch (e) { if (e.name === 'AbortError') return; }
+  }
+  baixar(blob, nome);
 }
 
 // =====================================================================
@@ -1944,7 +2082,7 @@ function empurrar(dx, dz) {
 document.addEventListener('keydown', (e) => {
   if (e.target.closest('input, textarea, select, dialog')) return;
   const ctrl = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
-  if (foto.ativa) { if (k === 'escape') fecharFoto(); return; }
+  if (foto.ativa || !$('#fotoMenu').hidden) { if (k === 'escape') fecharFoto(); return; }
   const edita = ['delete', 'backspace', 'r'].includes(k) || (ctrl && k === 'd') || (k.startsWith('arrow') && !vista.caminhar);
   if (modo !== 'arrumar' && edita) return;
   if (ctrl && k === 'z' && !e.shiftKey) { e.preventDefault(); desfazer(); }
@@ -2570,16 +2708,16 @@ $('#bVista').onclick = alternarVista;
 $('#bCorte').onclick = () => { vista.corte = !vista.corte; construirPlanta(); atualizarBotoes(); };
 $('#bEnquadrar').onclick = () => { if (vista.caminhar) alternarCaminhada(); enquadrar(); };
 $('#bCaminhar').onclick = () => { if (!foto.ativa) alternarCaminhada(); };
-$('#bFoto').onclick = () => (foto.ativa ? fecharFoto() : abrirFoto());
+$('#bFoto').onclick = () => (foto.ativa || !$('#fotoMenu').hidden ? fecharFoto() : abrirFoto());
+$('#fotoMenuFechar').onclick = fecharFoto;
+$('#fotoIr').onclick = fotografar;
+$('#fotoJa').onclick = terminarFoto;
+$('#fotoCancelar').onclick = fecharFoto;
 $('#fotoFechar').onclick = fecharFoto;
+$('#fotoOutra').onclick = () => { fecharFoto(); abrirFoto(); };
 $('#fotoSalvar').onclick = salvarFoto;
-$('#fotoExposicao').addEventListener('input', (e) => { renderer.toneMappingExposure = +e.target.value; });
-$('#fotoHora').addEventListener('input', (e) => {
-  luz.hora = +e.target.value;
-  $('#fotoHoraTxt').textContent = horaTxt(luz.hora);
-  try { localStorage.setItem(CHAVE_LUZ, JSON.stringify(luz)); } catch { /* ok */ }
-  recomecarFoto();
-});
+$('#fotoClara').onclick = () => luzFoto(1.25);
+$('#fotoEscura').onclick = () => luzFoto(0.8);
 $('#bPNG').onclick = exportarPNG;
 $('#bGaveta').onclick = () => document.body.classList.toggle('lateral-aberta');
 $('#buscaCatalogo').addEventListener('input', (e) => { filtroCatalogo = e.target.value; renderCatalogo(); });
@@ -2595,7 +2733,7 @@ if (!['visitar', 'arrumar', 'conferir'].includes(modo)) modo = 'visitar';
 let vistaAtual = null;
 
 function setModo(novo, manterSel = false) {
-  if (foto.ativa) fecharFoto();
+  fecharFoto();
   modo = novo;
   try { localStorage.setItem('simulador-apto:modo', modo); } catch { /* ok */ }
   document.body.classList.remove('modo-visitar', 'modo-arrumar', 'modo-conferir', 'lateral-aberta');
@@ -2921,7 +3059,7 @@ async function importarJSON(arquivo) {
 }
 
 function exportarPNG() {
-  if (foto.ativa) { salvarFoto(); return; }
+  if (foto.pronta) { salvarFoto(); return; }
   grpSel.visible = false;
   if (!foto.ativa) desenharQuadro(); // na foto realista, o canvas já tem a imagem
   const src = renderer.domElement;

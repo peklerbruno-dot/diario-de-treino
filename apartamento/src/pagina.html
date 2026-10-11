@@ -129,15 +129,26 @@ button.acao:hover:not(:disabled) { background: #2a6fd0; border-color: #2a6fd0; }
 .item-canto em { font-style: normal; font-size: 12px; color: var(--suave); }
 .item-canto.ativo { background: var(--azul-claro); }
 body.caminhando #bussola, body.caminhando #ajuda { display: none; }
-#painelFoto { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); width: min(440px, calc(100% - 24px)); z-index: 12;
-  background: rgba(255,255,255,.95); border-radius: 14px; padding: 12px 14px; box-shadow: 0 10px 34px rgba(0,0,0,.18); }
-.foto-topo { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.foto-folha { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); width: min(460px, calc(100% - 24px)); z-index: 30;
+  background: rgba(255,255,255,.97); border-radius: 16px; padding: 14px 16px 16px; box-shadow: 0 10px 34px rgba(0,0,0,.22); max-height: calc(100% - 28px); overflow-y: auto; }
+.foto-folha h4 { margin: 12px 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--suave); }
+.foto-folha .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.foto-folha .chips button { border-radius: 999px; padding: 8px 13px; }
+.foto-folha .chips button.ativo { background: var(--texto); color: #fff; border-color: var(--texto); }
+.foto-folha .x { border: 0; background: none; font-size: 16px; padding: 2px 6px; }
+button.grande { width: 100%; margin-top: 14px; padding: 13px; font-size: 16px; font-weight: 600; background: var(--azul); color: #fff; border-color: var(--azul); border-radius: 12px; }
+.foto-topo { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
 .foto-topo span { font-size: 12px; color: var(--suave); font-variant-numeric: tabular-nums; }
-.foto-barra { height: 4px; background: var(--linha); border-radius: 4px; margin: 8px 0; overflow: hidden; }
+.foto-tela { position: absolute; inset: 0; z-index: 30; background: #111; display: flex; align-items: center; justify-content: center; }
+.foto-tela img { width: 100%; height: 100%; object-fit: contain; -webkit-touch-callout: default; user-select: auto; }
+#fotoPrevia { filter: blur(6px) brightness(.8); transform: scale(1.04); }
+.foto-cartao { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); width: min(440px, calc(100% - 24px));
+  background: rgba(255,255,255,.96); border-radius: 14px; padding: 12px 14px; box-shadow: 0 10px 34px rgba(0,0,0,.3); }
+.foto-cartao > span { font-size: 12px; color: var(--suave); font-variant-numeric: tabular-nums; }
+.foto-cartao .luz { align-items: center; margin-top: 0; }
+.foto-cartao .luz span { font-size: 12px; color: var(--suave); margin-right: auto; }
+.foto-barra { height: 6px; background: var(--linha); border-radius: 6px; margin: 8px 0 6px; overflow: hidden; }
 .foto-barra i { display: block; height: 100%; width: 0; background: var(--azul); transition: width .25s; }
-.foto-controles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px; color: var(--suave); }
-.foto-controles input { width: 100%; }
-.foto-controles b { color: var(--texto); font-variant-numeric: tabular-nums; }
 button.acao-sec { background: var(--texto); color: #fff; border-color: var(--texto); }
 body.modo-foto #rotulos, body.modo-foto #cotas, body.modo-foto #avisos, body.modo-foto #ajuda, body.modo-foto #painel { display: none !important; }
 body.modo-foto #bFoto { background: var(--azul-claro); border-color: var(--azul); color: var(--azul); }
@@ -386,15 +397,30 @@ details.mais > .conteudo { padding-bottom: 10px; }
     <!-- Arrumar/Conferir no celular: abre a gaveta lateral -->
     <button id="bGaveta"></button>
 
-    <div id="painelFoto" hidden>
-      <div class="foto-topo"><b>📷 Foto realista</b><span id="fotoStatus"></span></div>
-      <div class="foto-barra"><i id="fotoBarra"></i></div>
-      <div class="foto-controles">
-        <label>Exposição <input id="fotoExposicao" type="range" min="0.4" max="3.5" step="0.05" value="1"></label>
-        <label>Hora <b id="fotoHoraTxt"></b> <input id="fotoHora" type="range" min="5" max="20" step="0.25"></label>
+    <!-- Foto realista em 3 passos: escolher (onde e quando) → revelar → ver e salvar -->
+    <div id="fotoMenu" class="foto-folha" hidden>
+      <div class="foto-topo"><b>📷 Foto realista</b><button id="fotoMenuFechar" class="x" aria-label="Fechar">✕</button></div>
+      <p class="nota">A luz é calculada de verdade (sol, janelas, reflexos). Escolha o cômodo e a hora e toque em Fotografar: a foto fica pronta em 1 a 3 minutos.</p>
+      <h4>Onde</h4><div id="fotoOnde" class="chips"></div>
+      <h4>Quando</h4><div id="fotoQuando" class="chips"></div>
+      <button id="fotoIr" class="grande">📷 Fotografar</button>
+    </div>
+    <div id="fotoRevelando" class="foto-tela" hidden>
+      <img id="fotoPrevia" alt="">
+      <div class="foto-cartao">
+        <b>Revelando a foto…</b>
+        <div class="foto-barra"><i id="fotoBarra"></i></div>
+        <span id="fotoStatus"></span>
+        <div class="linha-botoes"><button id="fotoJa">Ver já (menos nítida)</button><button id="fotoCancelar">Cancelar</button></div>
       </div>
-      <div class="linha-botoes"><button id="fotoSalvar" class="acao-sec">Salvar foto</button><button id="fotoFechar">Fechar</button></div>
-      <p class="nota">Mexa a câmera e a foto recomeça. Fica limpa em 1 a 3 minutos.</p>
+    </div>
+    <div id="fotoPronta" class="foto-tela" hidden>
+      <img id="fotoImg" alt="Foto realista do apartamento">
+      <div class="foto-cartao">
+        <div class="linha-botoes luz"><span>Luz</span><button id="fotoEscura">− Mais escura</button><button id="fotoClara">＋ Mais clara</button></div>
+        <div class="linha-botoes"><button id="fotoSalvar" class="acao-sec">⬇ Salvar foto</button><button id="fotoOutra">Outra foto</button><button id="fotoFechar">Fechar</button></div>
+        <p class="nota">No celular, também dá para tocar e segurar na foto para salvar.</p>
+      </div>
     </div>
     <div id="ajuda" class="so-arrumar">Toque: selecionar · arraste: mover · R: girar · Del: remover</div>
   </main>

@@ -59,7 +59,7 @@ libera a passagem entre o jantar e a cadeira do escritório.
 | Abrir e usar | botão azul **Abrir portas / Estender / Abrir baú…** no painel do móvel |
 | Distâncias | cotas pretas no piso ao redor do móvel selecionado; clique e digite a distância |
 | Cantos | lateral **Cantos**: home office, jantar, TV, dormir… com área e lista de móveis |
-| Foto realista | botão **📷 Foto realista**: renderização por traçado de raios da vista atual (melhor caminhando); **Salvar foto** baixa o PNG |
+| Foto realista | botão **📷 Foto**: escolha o cômodo e a hora, toque em **Fotografar**; em 1 a 3 minutos a foto aparece, com **Mais clara/Mais escura** e **Salvar foto** (no celular abre o Compartilhar → Salvar imagem) |
 | Pintura | painel da parede: **Pintura** muda a cor de cada parede |
 | Caminhar | botão **🚶 Caminhar** (ou `C`): arraste para olhar, toque no piso para andar, W/A/S/D |
 | Luz do sol | seção **Luz do sol**: data, hora (4h–20h) e ▶ **Passar o dia**; a bússola no canto mostra o norte |
