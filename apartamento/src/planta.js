@@ -23,7 +23,7 @@
 // =====================================================================
 
 const PLANTA_ORIGINAL = {
-  revisao: 7,
+  revisao: 8,
   alturaParede: 260,
 
   // Local e orientação — usados para calcular o sol por data e hora.
@@ -89,6 +89,7 @@ const BANHEIRO = [
   { tipo: 'lavatorio', nome: 'Lavatório (gabinete 90)', variante: 'recorte', x: 396.5, z: 505, rot: 90, l: 90, p: 43, a: 85,
     cores: { principal: '#a8784f', secundaria: '#f7f7f5' } },
   { tipo: 'vaso',      nome: 'Vaso sanitário', x: 385.5, z: 576, rot: 90, l: 38, p: 65, a: 75 },
+  { tipo: 'chuveiro', nome: 'Chuveiro', x: 349, z: 680, rot: 180, l: 24, p: 40, a: 215 },
   { tipo: 'box_banho', nome: 'Box (vidro fixo)', variante: 'fixo', x: 349, z: 658, rot: 180, l: 78, p: 84, a: 200,
     cores: { principal: '#d9d6d0', secundaria: '#2b2b2b' } },
 ];
@@ -119,12 +120,17 @@ const MOVEIS_FINAL = [
     cores: { principal: FREIJO, secundaria: '#ffffff' } },
   { tipo: 'modulo_cozinha', nome: 'Módulo ao lado do shaft', x: 374, z: 23, rot: 90, l: 46, p: 28, a: 90, acab: 'madeira',
     cores: { principal: FREIJO, secundaria: '#ffffff' } },
-  { tipo: 'bancada_cozinha', nome: 'Bancada (cooktop + cuba)', x: 390, z: 153.5, rot: 90, espelhado: true, l: 215, p: 60, a: 90, acab: 'madeira',
+  { tipo: 'bancada_cozinha', nome: 'Bancada (cooktop + cuba)', variante: 'eletros', x: 390, z: 153.5, rot: 90, espelhado: true, l: 215, p: 60, a: 90, acab: 'madeira',
     cores: { principal: FREIJO, secundaria: '#ffffff' } },
   { tipo: 'armario_aereo', nome: 'Armário aéreo azul', x: 402.5, z: 153.5, rot: 90, y: 150, l: 215, p: 35, a: 70, acab: 'laca',
     cores: { principal: AZUL, secundaria: '#e6e3dd' } },
+  // depurador embutido sob o aéreo, sobre o cooktop (40 cm da ponta do shaft)
+  { tipo: 'depurador', nome: 'Depurador', x: 405, z: 86, rot: 90, y: 144, l: 60, p: 30, a: 6 },
   { tipo: 'geladeira', nome: 'Geladeira', variante: 'inverse', x: 383, z: 303, rot: 90, l: 70, p: 70, a: 185,
     cores: { principal: '#c9ccd0', secundaria: '#7d8186' } },
+  // ---- ar-condicionado: sala na parede do fundo (sopra ao longo do apartamento), quarto na parede do pé da cama
+  { tipo: 'ar_split', nome: 'Ar-condicionado da sala', x: 184.5, z: 10, rot: 0, y: 222, l: 80, p: 20, a: 28 },
+  { tipo: 'ar_split', nome: 'Ar-condicionado do quarto', x: 170, z: 690, rot: 180, y: 222, l: 80, p: 20, a: 28 },
   // ---- estar
   { tipo: 'estante_giratoria', nome: 'Estante divisória com TV giratória', x: 109, z: 230, rot: 0, l: 218, p: 40, a: 220,
     cores: { principal: FREIJO, secundaria: '#1f1f21' } },

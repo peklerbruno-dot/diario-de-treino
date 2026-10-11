@@ -72,6 +72,17 @@ para a porta do banheiro passar.
 No filme, a pessoa toma café no banco: entra pela faixa livre e escorrega até o meio da mesa.
 Saíram o pendente de papel de arroz e a costela-de-adão.
 
+## Eletrodomésticos e instalações
+
+- **Bancada da cozinha** (variante "Com forno e lava e seca"), da ponta da geladeira para a do
+  shaft: lava e seca 60 cm, duas portas de 31 cm sob a cuba (eixo a 92 cm da ponta), porta-temperos
+  de 23 cm, forno de embutir 60 cm sob o cooktop e arremate de 9 cm. A variante "4 portas" é a
+  original, com a cuba a 75 cm.
+- **Depurador** de 60 cm embutido sob o armário aéreo, sobre o cooktop (a 54 cm do tampo: conferir
+  a altura mínima do fabricante).
+- **Chuveiro** na parede do fundo do box; **ar-condicionado split** na parede do fundo da sala
+  (sobre o banco) e na parede do pé da cama, no quarto.
+
 ## Como usar
 
 | Ação | Como |
