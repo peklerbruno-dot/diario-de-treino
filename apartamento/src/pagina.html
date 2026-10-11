@@ -163,6 +163,40 @@ button.grande { width: 100%; margin-top: 14px; padding: 13px; font-size: 16px; f
 button.acao-sec { background: var(--texto); color: #fff; border-color: var(--texto); }
 body.modo-foto #rotulos, body.modo-foto #cotas, body.modo-foto #avisos, body.modo-foto #ajuda, body.modo-foto #painel { display: none !important; }
 body.modo-foto #bFoto { background: var(--azul-claro); border-color: var(--azul); color: var(--azul); }
+/* simulação de uso e filme */
+body.cinema #vistas, body.cinema #rotulos, body.cinema #cotas, body.cinema #avisos, body.cinema #ajuda, body.cinema #painel, body.cinema #solVisita { display: none !important; }
+body.cinema-filme #ferramentas, body.cinema-filme #bussola, body.cinema-filme #bGaveta { display: none !important; }
+body.cinema-filme #app { grid-template-columns: 0 1fr; }
+body.cinema-filme #lateral { display: none; }
+#usoBarra { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); z-index: 20; display: flex; align-items: center; gap: 10px;
+  max-width: calc(100% - 100px); background: rgba(29,37,48,.92); color: #fff; border-radius: 999px; padding: 6px 6px 6px 16px; box-shadow: 0 6px 22px rgba(0,0,0,.2); font-size: 13px; }
+#usoBarra b { white-space: nowrap; font-weight: 600; }
+#usoBarra span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+#usoBarra em { font-style: normal; opacity: .6; white-space: nowrap; font-variant-numeric: tabular-nums; }
+#usoBarra button { border: 0; background: rgba(255,255,255,.14); color: #fff; width: 32px; height: 32px; border-radius: 50%; padding: 0; }
+@media (max-width: 700px) {
+  #usoBarra { top: auto; bottom: 12px; left: 12px; right: 12px; transform: none; max-width: none; border-radius: 14px; flex-wrap: wrap; row-gap: 2px; padding: 8px 8px 8px 14px; }
+  #usoBarra span { order: 5; flex-basis: 100%; white-space: normal; opacity: .9; }
+  #usoBarra em { margin-left: auto; }
+  .cine-legenda b { font-size: 22px; }
+  .cine-legenda span { font-size: 14px; }
+}
+#filme { position: absolute; inset: 0; z-index: 25; pointer-events: none; font-family: inherit; }
+#filme .cine-topo, #filme .cine-base { position: absolute; left: 0; right: 0; background: #0b0d10; color: #e9e6df; display: flex; align-items: center; padding: 0 16px; }
+#filme .cine-topo { top: 0; height: max(44px, 9%); justify-content: space-between; }
+#filme .cine-base { bottom: 0; height: max(40px, 9%); }
+.cine-titulo { font-size: 13px; letter-spacing: .04em; opacity: .75; }
+.cine-botoes { display: flex; gap: 6px; pointer-events: auto; }
+.cine-botoes button { background: rgba(255,255,255,.12); color: #fff; border: 0; border-radius: 8px; min-width: 38px; height: 30px; font-variant-numeric: tabular-nums; }
+.cine-legenda { position: absolute; left: 18px; bottom: calc(max(40px, 9%) + 14px); display: flex; align-items: baseline; gap: 12px; color: #fff;
+  text-shadow: 0 1px 8px rgba(0,0,0,.6); background: linear-gradient(90deg, rgba(0,0,0,.45), rgba(0,0,0,0)); padding: 8px 40px 8px 12px; border-radius: 8px; }
+.cine-legenda b { font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.cine-legenda span { font-size: 16px; }
+#filmeCaps { display: flex; gap: 4px; width: 100%; }
+#filmeCaps i { flex: 1; height: 4px; border-radius: 2px; background: rgba(255,255,255,.18); }
+#filmeCaps i.feito { background: #e9e6df; }
+#filmeCaps i.atual { background: linear-gradient(90deg, #e9e6df, rgba(255,255,255,.35)); }
+#filmeVeu { position: absolute; inset: 0; background: #0b0d10; opacity: 0; display: grid; place-items: center; color: #e9e6df; font-size: 20px; letter-spacing: .03em; }
 #dica { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: var(--texto); color: #fff; padding: 4px 10px; border-radius: 999px; font-size: 12px; pointer-events: none; }
 #ajuda { position: absolute; right: 12px; bottom: 12px; font-size: 11px; color: var(--suave); background: rgba(255,255,255,.8); border-radius: 8px; padding: 4px 8px; pointer-events: none; }
 #toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); background: var(--texto); color: #fff; padding: 10px 16px;
@@ -394,6 +428,8 @@ details.mais > .conteudo { padding-bottom: 10px; }
       <button id="bVista" title="Planta vista de cima (T)"><span aria-hidden="true">▦</span><span class="rot">Planta</span></button>
       <button id="bCorte" title="Baixar as paredes para ver o interior"><span aria-hidden="true">✂</span><span class="rot">Cortar</span></button>
       <button id="bFoto" title="Foto realista (F)"><span aria-hidden="true">📷</span><span class="rot">Foto</span></button>
+      <button id="bUso" title="Simular o uso: portas, armários, TV, cadeiras e fogão abrindo e fechando"><span aria-hidden="true">▶</span><span class="rot">Usar</span></button>
+      <button id="bFilme" title="Filme: um dia de uma pessoa no apartamento"><span aria-hidden="true">🎬</span><span class="rot">Filme</span></button>
       <button id="bEnquadrar" title="Ver o apartamento inteiro"><span aria-hidden="true">⤢</span><span class="rot">Inteiro</span></button>
     </div>
 
@@ -432,6 +468,21 @@ details.mais > .conteudo { padding-bottom: 10px; }
         <div class="linha-botoes"><button id="fotoSalvar" class="acao-sec">⬇ Salvar foto</button><button id="fotoOutra">Outra foto</button><button id="fotoFechar">Fechar</button></div>
         <p class="nota">No celular, também dá para tocar e segurar na foto para salvar.</p>
       </div>
+    </div>
+    <!-- Simulação de uso: uma coisa de cada vez abre e fecha -->
+    <div id="usoBarra" hidden>
+      <b>▶ Simulação de uso</b><span id="usoTxt"></span><em id="usoPasso"></em>
+      <button id="usoPausa" aria-label="Pausar">⏸</button><button id="usoFechar" aria-label="Parar">✕</button>
+    </div>
+    <!-- Filme: um dia no apartamento -->
+    <div id="filme" hidden>
+      <div class="cine-topo">
+        <span class="cine-titulo">🎬 Um dia no apartamento</span>
+        <span class="cine-botoes"><button id="filmePausa">⏸</button><button id="filmeVel">1×</button><button id="filmeFechar" aria-label="Fechar">✕</button></span>
+      </div>
+      <div class="cine-legenda"><b id="filmeHora"></b><span id="filmeTxt"></span></div>
+      <div class="cine-base"><div id="filmeCaps"></div></div>
+      <div id="filmeVeu"><span id="filmeVeuTxt"></span></div>
     </div>
     <div id="ajuda" class="so-arrumar">Clique: selecionar · arraste: mover · R: girar · Del: remover · 1 2 3: modos · F: foto</div>
   </main>

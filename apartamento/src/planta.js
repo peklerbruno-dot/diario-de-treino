@@ -16,14 +16,14 @@
 // AMBIENTES: polígono pela linha de centro das paredes. A área útil é
 // calculada descontando meia espessura de cada parede na borda.
 //
-// Disposição medida nos prints "Office na janela" e "Sofá em cima"
-// (escala de 1,43 px/cm sobre o interior de 420 × 700).
+// Paredes medidas nos primeiros prints (1,43 px/cm sobre o interior de
+// 420 × 700) e conferidas na planta final (2,55 px/cm).
 // 'revisao' muda quando a planta original muda: um layout salvo com revisão
 // antiga é guardado como cópia e o simulador abre a planta nova.
 // =====================================================================
 
 const PLANTA_ORIGINAL = {
-  revisao: 5,
+  revisao: 6,
   alturaParede: 260,
 
   // Local e orientação — usados para calcular o sol por data e hora.
@@ -93,38 +93,6 @@ const BANHEIRO = [
     cores: { principal: '#d9d6d0', secundaria: '#2b2b2b' } },
 ];
 
-const MOVEIS_COMUNS = [
-  // Quarto: cama com a cabeceira na parede da sala, guarda-roupa de correr na parede do banheiro
-  { tipo: 'cama_box',     nome: 'Cama box viúva', variante: 'cabeceira', x: 121, z: 554, rot: 0, l: 128, p: 188, a: 60 },
-  { tipo: 'criado_mudo',  nome: 'Criado-mudo',    x: 28,    z: 480,   rot: 0,  l: 45,  p: 40,  a: 55 },
-  { tipo: 'guarda_roupa', nome: 'Guarda-roupa de correr', x: 272.5, z: 620, rot: 90, l: 160, p: 55, a: 220 },
-  // Cozinha: bancada com o cooktop no alto, cuba abaixo; geladeira com folga de 10 cm
-  { tipo: 'bancada_cozinha', nome: 'Bancada (cuba + cooktop)', x: 390, z: 159, rot: 90, espelhado: true, l: 224, p: 60, a: 90 },
-  { tipo: 'geladeira',    nome: 'Geladeira',      x: 375,   z: 316,   rot: 90, l: 70,  p: 70,  a: 185 },
-  ...BANHEIRO,
-];
-
-// Decoração comum: persianas nas três janelas, quarto, cozinha e banheiro
-const DECOR_COMUNS = [
-  { tipo: 'persiana', nome: 'Persiana (janela 115)', x: 4, z: 118.5, rot: 270, y: 95, l: 125, p: 8, a: 130 },
-  { tipo: 'persiana', nome: 'Persiana (janela 155)', x: 4, z: 328,   rot: 270, y: 95, l: 165, p: 8, a: 130 },
-  { tipo: 'persiana', nome: 'Persiana (janela 136)', x: 4, z: 588.5, rot: 270, y: 95, l: 146, p: 8, a: 130 },
-  { tipo: 'tapete',   nome: 'Tapete do quarto', variante: 'borda', x: 121, z: 610, rot: 0, l: 170, p: 130, a: 1 },
-  { tipo: 'quadro',   nome: 'Quadros sobre a cama', variante: 'trio', x: 121, z: 461.5, rot: 0, y: 112, l: 120, p: 3, a: 45 },
-  { tipo: 'luminaria', nome: 'Abajur', variante: 'abajur', x: 28, z: 480, rot: 0, y: 55, l: 30, p: 30, a: 45 },
-  { tipo: 'armario_aereo', nome: 'Armário aéreo', x: 402.5, z: 159, rot: 90, y: 150, l: 224, p: 35, a: 70 },
-  { tipo: 'espelho',  nome: 'Espelho do banheiro', variante: 'redondo', x: 418.5, z: 505, rot: 90, y: 100, l: 55, p: 3, a: 75 },
-  { tipo: 'planta',   nome: 'Costela-de-adão', variante: 'costela', x: 300, z: 25, rot: 0, l: 45, p: 45, a: 120 },
-];
-
-const CANTOS_COMUNS = [
-  { funcao: 'cozinha', x: 355, z: 175, l: 130, p: 350 },
-  { funcao: 'dormir',  x: 150, z: 580, l: 300, p: 240 },
-  { funcao: 'banho',   x: 365, z: 580, l: 110, p: 240 },
-  { funcao: 'circulacao', nome: 'Entrada', x: 290, z: 405, l: 100, p: 90 },
-];
-
-
 // ---------------------------------------------------------------------
 // PLANTA FINAL (BePê · estudo preliminar) — medida na planta final
 // (2,55 px/cm) e decorada com o moodboard: freijó, azul-acinzentado,
@@ -135,9 +103,9 @@ const CREME = '#ece3d1', MOSTARDA = '#b8892c', VINHO = '#5e1a2a', GRAFITE = '#2f
 
 const MOVEIS_FINAL = [
   // ---- home office (na janela de 115)
-  { tipo: 'mesa_computador', nome: 'Bancada de trabalho', variante: 'notebook', x: 71, z: 22.5, rot: 0, l: 110, p: 45, a: 75,
+  { tipo: 'mesa_computador', nome: 'Bancada de trabalho', variante: 'notebook', x: 71, z: 35, rot: 0, l: 110, p: 70, a: 75,
     cores: { principal: AZUL, secundaria: '#1f1f21' } },
-  { tipo: 'cadeira', nome: 'Cadeira do escritório', variante: 'concha', x: 57, z: 72, rot: 180, l: 50, p: 55, a: 82,
+  { tipo: 'cadeira', nome: 'Cadeira do escritório', variante: 'concha', x: 57, z: 97, rot: 180, l: 50, p: 55, a: 82,
     cores: { principal: '#f2efe8', secundaria: FREIJO } },
   { tipo: 'quadro', nome: 'Moldura ondulada com fotos', variante: 'ondulada', x: 71, z: 1.5, rot: 0, y: 118, l: 50, p: 3, a: 60,
     cores: { principal: AZUL, secundaria: '#6b3a24' } },
@@ -146,7 +114,7 @@ const MOVEIS_FINAL = [
     cores: { principal: '#ffffff', secundaria: FREIJO } },
   { tipo: 'mesa_jantar', nome: 'Mesa de jantar', variante: 'retangular', x: 199.5, z: 79.5, rot: 0, l: 88, p: 88, a: 76,
     cores: { principal: FREIJO, secundaria: '#2b2622' } },
-  { tipo: 'cadeira', nome: 'Cadeira de jantar', variante: 'curva', x: 133.5, z: 80, rot: 270, l: 45, p: 50, a: 82, acab: 'palha',
+  { tipo: 'cadeira', nome: 'Cadeira de jantar', variante: 'curva', x: 133.5, z: 93, rot: 270, l: 45, p: 50, a: 82, acab: 'palha',
     cores: { principal: '#dcc79d', secundaria: FREIJO_ESCURO } },
   { tipo: 'cadeira', nome: 'Cadeira de jantar', variante: 'curva', x: 206.5, z: 145, rot: 180, l: 45, p: 50, a: 82, acab: 'palha',
     cores: { principal: '#dcc79d', secundaria: FREIJO_ESCURO } },
@@ -227,6 +195,10 @@ const CENARIO_FINAL = {
 // TRÊS OPÇÕES PARA O JANTAR — a planta final com só a mesa e as cadeiras
 // mudando, para comparar no modo Conferir.
 // ---------------------------------------------------------------------
+// Mora uma pessoa: quem janta não está no escritório (e vice-versa). Pares
+// que nunca são usados ao mesmo tempo não contam como conflito de uso.
+const USO_ALTERNADO = [['Cadeira do escritório', 'Cadeira de jantar']];
+
 const ITENS_JANTAR = ['Mesa de jantar', 'Cadeira de jantar', 'Pendente de papel de arroz'];
 const semJantar = MOVEIS_FINAL.filter((m) => !ITENS_JANTAR.includes(m.nome));
 const cadeiraJantar = (x, z, rot) => ({ tipo: 'cadeira', nome: 'Cadeira de jantar', variante: 'curva', x, z, rot, l: 45, p: 50, a: 82, acab: 'palha',
@@ -241,7 +213,7 @@ const CENARIOS_JANTAR = [
       ...semJantar,
       { tipo: 'mesa_jantar', nome: 'Mesa de jantar', variante: 'retangular', x: 197, z: 87, rot: 0, l: 80, p: 80, a: 76,
         cores: { principal: FREIJO, secundaria: '#2b2622' } },
-      cadeiraJantar(134.5, 87, 270), cadeiraJantar(197, 149.5, 180), pendenteJantar(197, 87),
+      cadeiraJantar(134.5, 93, 270), cadeiraJantar(197, 149.5, 180), pendenteJantar(197, 87),
     ],
     zonas: CENARIO_FINAL.zonas,
   },
@@ -273,58 +245,8 @@ const VISTAS_VISITA = [
   { nome: 'Banheiro', x: 330, z: 470, yaw: -2.5, pitch: -0.35 },
 ];
 
+// Office na janela e Sofá em cima foram descartados (planta final + 3 jantares).
 const CENARIOS_ORIGINAIS = [
   CENARIO_FINAL,
   ...CENARIOS_JANTAR,
-  {
-    id: 'office-janela',
-    nome: 'Office na janela',
-    moveis: [
-      ...MOVEIS_COMUNS, ...DECOR_COMUNS,
-      { tipo: 'mesa_computador',    nome: 'Mesa de computador', variante: 'escrivaninha', x: 70, z: 35, rot: 0, l: 140, p: 70, a: 75 },
-      { tipo: 'cadeira_escritorio', nome: 'Cadeira',            x: 70,    z: 60,    rot: 180, l: 60,  p: 60, a: 100 },
-      { tipo: 'prateleira',         nome: 'Prateleira',         x: 70,    z: 11,    rot: 0,   y: 150, l: 100, p: 22, a: 26 },
-      { tipo: 'mesa_jantar',        nome: 'Mesa de jantar',     x: 211,   z: 120,   rot: 0,   l: 110, p: 75, a: 76 },
-      { tipo: 'cadeira',            nome: 'Cadeira de jantar',  x: 185,   z: 83,    rot: 0,   l: 45,  p: 50, a: 90 },
-      { tipo: 'cadeira',            nome: 'Cadeira de jantar',  x: 237,   z: 83,    rot: 0,   l: 45,  p: 50, a: 90 },
-      { tipo: 'luminaria',          nome: 'Pendente da mesa', variante: 'pendente', x: 211, z: 120, rot: 0, y: 170, l: 40, p: 40, a: 90 },
-      { tipo: 'estante_tv',         nome: 'Estante divisória com TV', x: 80.5, z: 227.5, rot: 0, l: 160, p: 45, a: 180 },
-      { tipo: 'painel_fixo',        nome: 'Painel fixo',        x: 186,   z: 228,   rot: 0,   l: 50,  p: 5,  a: 210 },
-      { tipo: 'porta_correr',       nome: 'Porta de correr 2 folhas', x: 218, z: 334, rot: 90, l: 200, p: 8, a: 210 },
-      { tipo: 'sofa_chaise',        nome: 'Sofá 3 lugares com chaise', variante: 'chaise', x: 102.5, z: 370, rot: 180, espelhado: true, l: 205, p: 160, a: 85 },
-      { tipo: 'tapete',             nome: 'Tapete da sala', variante: 'listrado', x: 110, z: 302, rot: 0, l: 180, p: 100, a: 1 },
-      { tipo: 'quadro',             nome: 'Quadro sobre o sofá', variante: 'tela', x: 102.5, z: 448.5, rot: 180, y: 115, l: 100, p: 3, a: 60 },
-    ],
-    zonas: [
-      { funcao: 'office', x: 75,  z: 67.5,  l: 150, p: 135 },
-      { funcao: 'jantar', x: 220, z: 112.5, l: 140, p: 165 },
-      { funcao: 'estar',  x: 107.5, z: 325, l: 215, p: 250 },
-      ...CANTOS_COMUNS,
-    ],
-  },
-  {
-    id: 'sofa-em-cima',
-    nome: 'Sofá em cima',
-    moveis: [
-      ...MOVEIS_COMUNS, ...DECOR_COMUNS,
-      { tipo: 'sofa_chaise',        nome: 'Sofá 2 lugares com chaise', variante: 'chaise', x: 100, z: 75, rot: 0, l: 200, p: 150, a: 85 },
-      { tipo: 'tapete',             nome: 'Tapete da sala', variante: 'borda', x: 105, z: 120, rot: 0, l: 180, p: 110, a: 1 },
-      { tipo: 'quadro',             nome: 'Quadros sobre o sofá', variante: 'trio', x: 100, z: 1.5, rot: 0, y: 120, l: 120, p: 3, a: 45 },
-      { tipo: 'porta_correr',       nome: 'Porta de correr 2 folhas', x: 222, z: 100, rot: 90, l: 200, p: 8, a: 210 },
-      { tipo: 'estante_tv',         nome: 'Estante divisória com TV', x: 100, z: 201.5, rot: 180, l: 200, p: 45, a: 180 },
-      { tipo: 'mesa_jantar',        nome: 'Mesa de jantar',     x: 56,    z: 343.5, rot: 0,   l: 80,  p: 70, a: 76 },
-      { tipo: 'cadeira',            nome: 'Cadeira de jantar',  x: 56,    z: 309,   rot: 0,   l: 45,  p: 50, a: 90 },
-      { tipo: 'cadeira',            nome: 'Cadeira de jantar',  x: 56,    z: 379,   rot: 180, l: 45,  p: 50, a: 90 },
-      { tipo: 'luminaria',          nome: 'Pendente da mesa', variante: 'pendente', x: 56, z: 343.5, rot: 0, y: 170, l: 40, p: 40, a: 90 },
-      { tipo: 'mesa_computador',    nome: 'Mesa', variante: 'escrivaninha', x: 172, z: 422.5, rot: 180, l: 100, p: 55, a: 75 },
-      { tipo: 'cadeira_escritorio', nome: 'Cadeira',            x: 172,   z: 390,   rot: 0,   l: 60,  p: 60, a: 100 },
-      { tipo: 'prateleira',         nome: 'Prateleira',         x: 172,   z: 439,   rot: 180, y: 150, l: 90, p: 22, a: 26 },
-    ],
-    zonas: [
-      { funcao: 'estar',  x: 109, z: 112.5, l: 218, p: 225 },
-      { funcao: 'jantar', x: 55,  z: 340,   l: 110, p: 160 },
-      { funcao: 'office', x: 175, z: 395,   l: 120, p: 110 },
-      ...CANTOS_COMUNS,
-    ],
-  },
 ];

@@ -163,6 +163,40 @@ button.grande { width: 100%; margin-top: 14px; padding: 13px; font-size: 16px; f
 button.acao-sec { background: var(--texto); color: #fff; border-color: var(--texto); }
 body.modo-foto #rotulos, body.modo-foto #cotas, body.modo-foto #avisos, body.modo-foto #ajuda, body.modo-foto #painel { display: none !important; }
 body.modo-foto #bFoto { background: var(--azul-claro); border-color: var(--azul); color: var(--azul); }
+/* simulação de uso e filme */
+body.cinema #vistas, body.cinema #rotulos, body.cinema #cotas, body.cinema #avisos, body.cinema #ajuda, body.cinema #painel, body.cinema #solVisita { display: none !important; }
+body.cinema-filme #ferramentas, body.cinema-filme #bussola, body.cinema-filme #bGaveta { display: none !important; }
+body.cinema-filme #app { grid-template-columns: 0 1fr; }
+body.cinema-filme #lateral { display: none; }
+#usoBarra { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); z-index: 20; display: flex; align-items: center; gap: 10px;
+  max-width: calc(100% - 100px); background: rgba(29,37,48,.92); color: #fff; border-radius: 999px; padding: 6px 6px 6px 16px; box-shadow: 0 6px 22px rgba(0,0,0,.2); font-size: 13px; }
+#usoBarra b { white-space: nowrap; font-weight: 600; }
+#usoBarra span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+#usoBarra em { font-style: normal; opacity: .6; white-space: nowrap; font-variant-numeric: tabular-nums; }
+#usoBarra button { border: 0; background: rgba(255,255,255,.14); color: #fff; width: 32px; height: 32px; border-radius: 50%; padding: 0; }
+@media (max-width: 700px) {
+  #usoBarra { top: auto; bottom: 12px; left: 12px; right: 12px; transform: none; max-width: none; border-radius: 14px; flex-wrap: wrap; row-gap: 2px; padding: 8px 8px 8px 14px; }
+  #usoBarra span { order: 5; flex-basis: 100%; white-space: normal; opacity: .9; }
+  #usoBarra em { margin-left: auto; }
+  .cine-legenda b { font-size: 22px; }
+  .cine-legenda span { font-size: 14px; }
+}
+#filme { position: absolute; inset: 0; z-index: 25; pointer-events: none; font-family: inherit; }
+#filme .cine-topo, #filme .cine-base { position: absolute; left: 0; right: 0; background: #0b0d10; color: #e9e6df; display: flex; align-items: center; padding: 0 16px; }
+#filme .cine-topo { top: 0; height: max(44px, 9%); justify-content: space-between; }
+#filme .cine-base { bottom: 0; height: max(40px, 9%); }
+.cine-titulo { font-size: 13px; letter-spacing: .04em; opacity: .75; }
+.cine-botoes { display: flex; gap: 6px; pointer-events: auto; }
+.cine-botoes button { background: rgba(255,255,255,.12); color: #fff; border: 0; border-radius: 8px; min-width: 38px; height: 30px; font-variant-numeric: tabular-nums; }
+.cine-legenda { position: absolute; left: 18px; bottom: calc(max(40px, 9%) + 14px); display: flex; align-items: baseline; gap: 12px; color: #fff;
+  text-shadow: 0 1px 8px rgba(0,0,0,.6); background: linear-gradient(90deg, rgba(0,0,0,.45), rgba(0,0,0,0)); padding: 8px 40px 8px 12px; border-radius: 8px; }
+.cine-legenda b { font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.cine-legenda span { font-size: 16px; }
+#filmeCaps { display: flex; gap: 4px; width: 100%; }
+#filmeCaps i { flex: 1; height: 4px; border-radius: 2px; background: rgba(255,255,255,.18); }
+#filmeCaps i.feito { background: #e9e6df; }
+#filmeCaps i.atual { background: linear-gradient(90deg, #e9e6df, rgba(255,255,255,.35)); }
+#filmeVeu { position: absolute; inset: 0; background: #0b0d10; opacity: 0; display: grid; place-items: center; color: #e9e6df; font-size: 20px; letter-spacing: .03em; }
 #dica { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: var(--texto); color: #fff; padding: 4px 10px; border-radius: 999px; font-size: 12px; pointer-events: none; }
 #ajuda { position: absolute; right: 12px; bottom: 12px; font-size: 11px; color: var(--suave); background: rgba(255,255,255,.8); border-radius: 8px; padding: 4px 8px; pointer-events: none; }
 #toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); background: var(--texto); color: #fff; padding: 10px 16px;
@@ -394,6 +428,8 @@ details.mais > .conteudo { padding-bottom: 10px; }
       <button id="bVista" title="Planta vista de cima (T)"><span aria-hidden="true">▦</span><span class="rot">Planta</span></button>
       <button id="bCorte" title="Baixar as paredes para ver o interior"><span aria-hidden="true">✂</span><span class="rot">Cortar</span></button>
       <button id="bFoto" title="Foto realista (F)"><span aria-hidden="true">📷</span><span class="rot">Foto</span></button>
+      <button id="bUso" title="Simular o uso: portas, armários, TV, cadeiras e fogão abrindo e fechando"><span aria-hidden="true">▶</span><span class="rot">Usar</span></button>
+      <button id="bFilme" title="Filme: um dia de uma pessoa no apartamento"><span aria-hidden="true">🎬</span><span class="rot">Filme</span></button>
       <button id="bEnquadrar" title="Ver o apartamento inteiro"><span aria-hidden="true">⤢</span><span class="rot">Inteiro</span></button>
     </div>
 
@@ -432,6 +468,21 @@ details.mais > .conteudo { padding-bottom: 10px; }
         <div class="linha-botoes"><button id="fotoSalvar" class="acao-sec">⬇ Salvar foto</button><button id="fotoOutra">Outra foto</button><button id="fotoFechar">Fechar</button></div>
         <p class="nota">No celular, também dá para tocar e segurar na foto para salvar.</p>
       </div>
+    </div>
+    <!-- Simulação de uso: uma coisa de cada vez abre e fecha -->
+    <div id="usoBarra" hidden>
+      <b>▶ Simulação de uso</b><span id="usoTxt"></span><em id="usoPasso"></em>
+      <button id="usoPausa" aria-label="Pausar">⏸</button><button id="usoFechar" aria-label="Parar">✕</button>
+    </div>
+    <!-- Filme: um dia no apartamento -->
+    <div id="filme" hidden>
+      <div class="cine-topo">
+        <span class="cine-titulo">🎬 Um dia no apartamento</span>
+        <span class="cine-botoes"><button id="filmePausa">⏸</button><button id="filmeVel">1×</button><button id="filmeFechar" aria-label="Fechar">✕</button></span>
+      </div>
+      <div class="cine-legenda"><b id="filmeHora"></b><span id="filmeTxt"></span></div>
+      <div class="cine-base"><div id="filmeCaps"></div></div>
+      <div id="filmeVeu"><span id="filmeVeuTxt"></span></div>
     </div>
     <div id="ajuda" class="so-arrumar">Clique: selecionar · arraste: mover · R: girar · Del: remover · 1 2 3: modos · F: foto</div>
   </main>
@@ -9950,14 +10001,14 @@ const CATALOGO = [
 // AMBIENTES: polígono pela linha de centro das paredes. A área útil é
 // calculada descontando meia espessura de cada parede na borda.
 //
-// Disposição medida nos prints "Office na janela" e "Sofá em cima"
-// (escala de 1,43 px/cm sobre o interior de 420 × 700).
+// Paredes medidas nos primeiros prints (1,43 px/cm sobre o interior de
+// 420 × 700) e conferidas na planta final (2,55 px/cm).
 // 'revisao' muda quando a planta original muda: um layout salvo com revisão
 // antiga é guardado como cópia e o simulador abre a planta nova.
 // =====================================================================
 
 const PLANTA_ORIGINAL = {
-  revisao: 5,
+  revisao: 6,
   alturaParede: 260,
 
   // Local e orientação — usados para calcular o sol por data e hora.
@@ -10027,38 +10078,6 @@ const BANHEIRO = [
     cores: { principal: '#d9d6d0', secundaria: '#2b2b2b' } },
 ];
 
-const MOVEIS_COMUNS = [
-  // Quarto: cama com a cabeceira na parede da sala, guarda-roupa de correr na parede do banheiro
-  { tipo: 'cama_box',     nome: 'Cama box viúva', variante: 'cabeceira', x: 121, z: 554, rot: 0, l: 128, p: 188, a: 60 },
-  { tipo: 'criado_mudo',  nome: 'Criado-mudo',    x: 28,    z: 480,   rot: 0,  l: 45,  p: 40,  a: 55 },
-  { tipo: 'guarda_roupa', nome: 'Guarda-roupa de correr', x: 272.5, z: 620, rot: 90, l: 160, p: 55, a: 220 },
-  // Cozinha: bancada com o cooktop no alto, cuba abaixo; geladeira com folga de 10 cm
-  { tipo: 'bancada_cozinha', nome: 'Bancada (cuba + cooktop)', x: 390, z: 159, rot: 90, espelhado: true, l: 224, p: 60, a: 90 },
-  { tipo: 'geladeira',    nome: 'Geladeira',      x: 375,   z: 316,   rot: 90, l: 70,  p: 70,  a: 185 },
-  ...BANHEIRO,
-];
-
-// Decoração comum: persianas nas três janelas, quarto, cozinha e banheiro
-const DECOR_COMUNS = [
-  { tipo: 'persiana', nome: 'Persiana (janela 115)', x: 4, z: 118.5, rot: 270, y: 95, l: 125, p: 8, a: 130 },
-  { tipo: 'persiana', nome: 'Persiana (janela 155)', x: 4, z: 328,   rot: 270, y: 95, l: 165, p: 8, a: 130 },
-  { tipo: 'persiana', nome: 'Persiana (janela 136)', x: 4, z: 588.5, rot: 270, y: 95, l: 146, p: 8, a: 130 },
-  { tipo: 'tapete',   nome: 'Tapete do quarto', variante: 'borda', x: 121, z: 610, rot: 0, l: 170, p: 130, a: 1 },
-  { tipo: 'quadro',   nome: 'Quadros sobre a cama', variante: 'trio', x: 121, z: 461.5, rot: 0, y: 112, l: 120, p: 3, a: 45 },
-  { tipo: 'luminaria', nome: 'Abajur', variante: 'abajur', x: 28, z: 480, rot: 0, y: 55, l: 30, p: 30, a: 45 },
-  { tipo: 'armario_aereo', nome: 'Armário aéreo', x: 402.5, z: 159, rot: 90, y: 150, l: 224, p: 35, a: 70 },
-  { tipo: 'espelho',  nome: 'Espelho do banheiro', variante: 'redondo', x: 418.5, z: 505, rot: 90, y: 100, l: 55, p: 3, a: 75 },
-  { tipo: 'planta',   nome: 'Costela-de-adão', variante: 'costela', x: 300, z: 25, rot: 0, l: 45, p: 45, a: 120 },
-];
-
-const CANTOS_COMUNS = [
-  { funcao: 'cozinha', x: 355, z: 175, l: 130, p: 350 },
-  { funcao: 'dormir',  x: 150, z: 580, l: 300, p: 240 },
-  { funcao: 'banho',   x: 365, z: 580, l: 110, p: 240 },
-  { funcao: 'circulacao', nome: 'Entrada', x: 290, z: 405, l: 100, p: 90 },
-];
-
-
 // ---------------------------------------------------------------------
 // PLANTA FINAL (BePê · estudo preliminar) — medida na planta final
 // (2,55 px/cm) e decorada com o moodboard: freijó, azul-acinzentado,
@@ -10069,9 +10088,9 @@ const CREME = '#ece3d1', MOSTARDA = '#b8892c', VINHO = '#5e1a2a', GRAFITE = '#2f
 
 const MOVEIS_FINAL = [
   // ---- home office (na janela de 115)
-  { tipo: 'mesa_computador', nome: 'Bancada de trabalho', variante: 'notebook', x: 71, z: 22.5, rot: 0, l: 110, p: 45, a: 75,
+  { tipo: 'mesa_computador', nome: 'Bancada de trabalho', variante: 'notebook', x: 71, z: 35, rot: 0, l: 110, p: 70, a: 75,
     cores: { principal: AZUL, secundaria: '#1f1f21' } },
-  { tipo: 'cadeira', nome: 'Cadeira do escritório', variante: 'concha', x: 57, z: 72, rot: 180, l: 50, p: 55, a: 82,
+  { tipo: 'cadeira', nome: 'Cadeira do escritório', variante: 'concha', x: 57, z: 97, rot: 180, l: 50, p: 55, a: 82,
     cores: { principal: '#f2efe8', secundaria: FREIJO } },
   { tipo: 'quadro', nome: 'Moldura ondulada com fotos', variante: 'ondulada', x: 71, z: 1.5, rot: 0, y: 118, l: 50, p: 3, a: 60,
     cores: { principal: AZUL, secundaria: '#6b3a24' } },
@@ -10080,7 +10099,7 @@ const MOVEIS_FINAL = [
     cores: { principal: '#ffffff', secundaria: FREIJO } },
   { tipo: 'mesa_jantar', nome: 'Mesa de jantar', variante: 'retangular', x: 199.5, z: 79.5, rot: 0, l: 88, p: 88, a: 76,
     cores: { principal: FREIJO, secundaria: '#2b2622' } },
-  { tipo: 'cadeira', nome: 'Cadeira de jantar', variante: 'curva', x: 133.5, z: 80, rot: 270, l: 45, p: 50, a: 82, acab: 'palha',
+  { tipo: 'cadeira', nome: 'Cadeira de jantar', variante: 'curva', x: 133.5, z: 93, rot: 270, l: 45, p: 50, a: 82, acab: 'palha',
     cores: { principal: '#dcc79d', secundaria: FREIJO_ESCURO } },
   { tipo: 'cadeira', nome: 'Cadeira de jantar', variante: 'curva', x: 206.5, z: 145, rot: 180, l: 45, p: 50, a: 82, acab: 'palha',
     cores: { principal: '#dcc79d', secundaria: FREIJO_ESCURO } },
@@ -10161,6 +10180,10 @@ const CENARIO_FINAL = {
 // TRÊS OPÇÕES PARA O JANTAR — a planta final com só a mesa e as cadeiras
 // mudando, para comparar no modo Conferir.
 // ---------------------------------------------------------------------
+// Mora uma pessoa: quem janta não está no escritório (e vice-versa). Pares
+// que nunca são usados ao mesmo tempo não contam como conflito de uso.
+const USO_ALTERNADO = [['Cadeira do escritório', 'Cadeira de jantar']];
+
 const ITENS_JANTAR = ['Mesa de jantar', 'Cadeira de jantar', 'Pendente de papel de arroz'];
 const semJantar = MOVEIS_FINAL.filter((m) => !ITENS_JANTAR.includes(m.nome));
 const cadeiraJantar = (x, z, rot) => ({ tipo: 'cadeira', nome: 'Cadeira de jantar', variante: 'curva', x, z, rot, l: 45, p: 50, a: 82, acab: 'palha',
@@ -10175,7 +10198,7 @@ const CENARIOS_JANTAR = [
       ...semJantar,
       { tipo: 'mesa_jantar', nome: 'Mesa de jantar', variante: 'retangular', x: 197, z: 87, rot: 0, l: 80, p: 80, a: 76,
         cores: { principal: FREIJO, secundaria: '#2b2622' } },
-      cadeiraJantar(134.5, 87, 270), cadeiraJantar(197, 149.5, 180), pendenteJantar(197, 87),
+      cadeiraJantar(134.5, 93, 270), cadeiraJantar(197, 149.5, 180), pendenteJantar(197, 87),
     ],
     zonas: CENARIO_FINAL.zonas,
   },
@@ -10207,60 +10230,10 @@ const VISTAS_VISITA = [
   { nome: 'Banheiro', x: 330, z: 470, yaw: -2.5, pitch: -0.35 },
 ];
 
+// Office na janela e Sofá em cima foram descartados (planta final + 3 jantares).
 const CENARIOS_ORIGINAIS = [
   CENARIO_FINAL,
   ...CENARIOS_JANTAR,
-  {
-    id: 'office-janela',
-    nome: 'Office na janela',
-    moveis: [
-      ...MOVEIS_COMUNS, ...DECOR_COMUNS,
-      { tipo: 'mesa_computador',    nome: 'Mesa de computador', variante: 'escrivaninha', x: 70, z: 35, rot: 0, l: 140, p: 70, a: 75 },
-      { tipo: 'cadeira_escritorio', nome: 'Cadeira',            x: 70,    z: 60,    rot: 180, l: 60,  p: 60, a: 100 },
-      { tipo: 'prateleira',         nome: 'Prateleira',         x: 70,    z: 11,    rot: 0,   y: 150, l: 100, p: 22, a: 26 },
-      { tipo: 'mesa_jantar',        nome: 'Mesa de jantar',     x: 211,   z: 120,   rot: 0,   l: 110, p: 75, a: 76 },
-      { tipo: 'cadeira',            nome: 'Cadeira de jantar',  x: 185,   z: 83,    rot: 0,   l: 45,  p: 50, a: 90 },
-      { tipo: 'cadeira',            nome: 'Cadeira de jantar',  x: 237,   z: 83,    rot: 0,   l: 45,  p: 50, a: 90 },
-      { tipo: 'luminaria',          nome: 'Pendente da mesa', variante: 'pendente', x: 211, z: 120, rot: 0, y: 170, l: 40, p: 40, a: 90 },
-      { tipo: 'estante_tv',         nome: 'Estante divisória com TV', x: 80.5, z: 227.5, rot: 0, l: 160, p: 45, a: 180 },
-      { tipo: 'painel_fixo',        nome: 'Painel fixo',        x: 186,   z: 228,   rot: 0,   l: 50,  p: 5,  a: 210 },
-      { tipo: 'porta_correr',       nome: 'Porta de correr 2 folhas', x: 218, z: 334, rot: 90, l: 200, p: 8, a: 210 },
-      { tipo: 'sofa_chaise',        nome: 'Sofá 3 lugares com chaise', variante: 'chaise', x: 102.5, z: 370, rot: 180, espelhado: true, l: 205, p: 160, a: 85 },
-      { tipo: 'tapete',             nome: 'Tapete da sala', variante: 'listrado', x: 110, z: 302, rot: 0, l: 180, p: 100, a: 1 },
-      { tipo: 'quadro',             nome: 'Quadro sobre o sofá', variante: 'tela', x: 102.5, z: 448.5, rot: 180, y: 115, l: 100, p: 3, a: 60 },
-    ],
-    zonas: [
-      { funcao: 'office', x: 75,  z: 67.5,  l: 150, p: 135 },
-      { funcao: 'jantar', x: 220, z: 112.5, l: 140, p: 165 },
-      { funcao: 'estar',  x: 107.5, z: 325, l: 215, p: 250 },
-      ...CANTOS_COMUNS,
-    ],
-  },
-  {
-    id: 'sofa-em-cima',
-    nome: 'Sofá em cima',
-    moveis: [
-      ...MOVEIS_COMUNS, ...DECOR_COMUNS,
-      { tipo: 'sofa_chaise',        nome: 'Sofá 2 lugares com chaise', variante: 'chaise', x: 100, z: 75, rot: 0, l: 200, p: 150, a: 85 },
-      { tipo: 'tapete',             nome: 'Tapete da sala', variante: 'borda', x: 105, z: 120, rot: 0, l: 180, p: 110, a: 1 },
-      { tipo: 'quadro',             nome: 'Quadros sobre o sofá', variante: 'trio', x: 100, z: 1.5, rot: 0, y: 120, l: 120, p: 3, a: 45 },
-      { tipo: 'porta_correr',       nome: 'Porta de correr 2 folhas', x: 222, z: 100, rot: 90, l: 200, p: 8, a: 210 },
-      { tipo: 'estante_tv',         nome: 'Estante divisória com TV', x: 100, z: 201.5, rot: 180, l: 200, p: 45, a: 180 },
-      { tipo: 'mesa_jantar',        nome: 'Mesa de jantar',     x: 56,    z: 343.5, rot: 0,   l: 80,  p: 70, a: 76 },
-      { tipo: 'cadeira',            nome: 'Cadeira de jantar',  x: 56,    z: 309,   rot: 0,   l: 45,  p: 50, a: 90 },
-      { tipo: 'cadeira',            nome: 'Cadeira de jantar',  x: 56,    z: 379,   rot: 180, l: 45,  p: 50, a: 90 },
-      { tipo: 'luminaria',          nome: 'Pendente da mesa', variante: 'pendente', x: 56, z: 343.5, rot: 0, y: 170, l: 40, p: 40, a: 90 },
-      { tipo: 'mesa_computador',    nome: 'Mesa', variante: 'escrivaninha', x: 172, z: 422.5, rot: 180, l: 100, p: 55, a: 75 },
-      { tipo: 'cadeira_escritorio', nome: 'Cadeira',            x: 172,   z: 390,   rot: 0,   l: 60,  p: 60, a: 100 },
-      { tipo: 'prateleira',         nome: 'Prateleira',         x: 172,   z: 439,   rot: 180, y: 150, l: 90, p: 22, a: 26 },
-    ],
-    zonas: [
-      { funcao: 'estar',  x: 109, z: 112.5, l: 218, p: 225 },
-      { funcao: 'jantar', x: 55,  z: 340,   l: 110, p: 160 },
-      { funcao: 'office', x: 175, z: 395,   l: 120, p: 110 },
-      ...CANTOS_COMUNS,
-    ],
-  },
 ];
 
 </script>
@@ -11191,6 +11164,7 @@ function caixa(l, a, p, mat, x, y, z, info) {
 
 function construirPlanta() {
   limpar(grpPlanta);
+  portasGiro.clear();
   const pl = doc.planta;
   const H = pl.alturaParede;
   const Hc = vista.corte && !vista.caminhar ? Math.min(H, CFG.alturaCorte) : H;
@@ -11272,6 +11246,16 @@ function construirParede(w, pl, H, Hc) {
   return g;
 }
 
+// Folhas das portas (para abrir e fechar na simulação de uso e no filme).
+// 1 = aberta (como no desenho da planta), 0 = fechada.
+const portasGiro = new Map();
+const estadoPortas = new Map();
+function porta(id, k) {
+  estadoPortas.set(id, k);
+  const p = portasGiro.get(id);
+  if (p) p.piv.rotation.y = (1 - k) * p.fechada;
+}
+
 function construirAbertura(g, ab, w, Hc, info) {
   const e = w.esp, u0 = ab.pos, L = ab.largura;
   const add = (l, a, p, mat, x, y, z) => {
@@ -11298,13 +11282,20 @@ function construirAbertura(g, ab, w, Hc, info) {
     const R = L - 2 * bt, noInicio = ab.dobradica !== 'fim';
     const uh = noInicio ? u0 + bt : u0 + L - bt, sU = noInicio ? 1 : -1, v0 = (lado * e) / 2;
     const hf = h - bt - 1;
-    add(3.5, hf, R, MAT.folha, uh + sU * 1.75, hf / 2 + 0.5, v0 + (lado * R) / 2);
+    // a folha gira em torno da dobradiça: aberta (padrão) ou fechada no vão
+    const piv = new T.Group();
+    piv.position.set(uh, 0, v0);
+    g.add(piv);
+    const yf1 = Math.min(hf + 0.5, Hc);
+    if (yf1 > 1) piv.add(caixa(3.5, yf1 - 0.5, R, MAT.folha, sU * 1.75, (yf1 + 0.5) / 2, (lado * R) / 2, info));
     if (Hc > 105) {
       const mc = new T.Mesh(new T.CylinderGeometry(1, 1, 12, 10), MAT.macaneta);
       mc.rotation.z = Math.PI / 2;
-      mc.position.set(uh + sU * 1.75, 105, v0 + lado * (R - 6));
-      g.add(mc);
+      mc.position.set(sU * 1.75, 105, lado * (R - 6));
+      piv.add(mc);
     }
+    portasGiro.set(ab.id, { piv, fechada: sU * lado * (Math.PI / 2) });
+    piv.rotation.y = (1 - (estadoPortas.get(ab.id) ?? 1)) * sU * lado * (Math.PI / 2);
     const arco = [];
     for (let i = 0; i <= 24; i++) {
       const t = (i / 24) * (Math.PI / 2);
@@ -11838,6 +11829,10 @@ function caixaParede(w) {
   const e = w.esp / 2;
   return { x0: Math.min(w.x1, w.x2) - e, x1: Math.max(w.x1, w.x2) + e, z0: Math.min(w.z1, w.z2) - e, z1: Math.max(w.z1, w.z2) + e, y0: 0, y1: 9999 };
 }
+// Mora uma pessoa: o que se usa em momentos diferentes não conflita
+// (ex.: a cadeira do escritório e as de jantar; ver USO_ALTERNADO).
+const usoAlternado = (a, b) => (typeof USO_ALTERNADO !== 'undefined' ? USO_ALTERNADO : [])
+  .some(([p, q]) => (a.nome === p && b.nome === q) || (a.nome === q && b.nome === p));
 const ignoraPar = (a, b) => (a.ignora || []).includes(b.grupo) || (b.ignora || []).includes(a.grupo);
 
 // Giro de cada porta: dobradiça, raio e os dois sentidos do quarto de círculo.
@@ -11891,7 +11886,7 @@ function verificarColisoes() {
     // área de uso: o que estiver no chão (até 1 m de altura) atrapalha
     zonasUso(A.m).forEach((z, k) => {
       const quem = [
-        ...itens.filter((B) => B !== A && !ignoraPar(A.def, B.def) && B.pg.y0 < 60 && sobrepoe(z, B.pg)).map((B) => B.m.nome),
+        ...itens.filter((B) => B !== A && !ignoraPar(A.def, B.def) && !usoAlternado(A.m, B.m) && B.pg.y0 < 60 && sobrepoe(z, B.pg)).map((B) => B.m.nome),
         ...paredes.filter(({ cx }) => sobrepoe(z, cx)).map(({ w }) => `parede ${w.nome}`),
       ];
       if (!quem.length) return;
@@ -12177,7 +12172,8 @@ let arr = null; // gesto em andamento
 
 function aoPressionar(e) {
   toques.set(e.pointerId, true);
-  if (foto.ativa) {
+  if (cinema.modo === 'filme') return;
+  if (foto.ativa || cinema.modo === 'uso') {
     if (vista.caminhar && toques.size === 1) {
       arr = { id: e.pointerId, x: e.clientX, y: e.clientY, alvo: null, movido: false, olhar: true, yaw0: andar.yaw, pitch0: andar.pitch };
       renderer.domElement.setPointerCapture(e.pointerId);
@@ -12354,6 +12350,11 @@ document.addEventListener('keydown', (e) => {
   if (e.target.closest('input, textarea, select, dialog')) return;
   const ctrl = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
   if (foto.ativa || !$('#fotoMenu').hidden) { if (k === 'escape') fecharFoto(); return; }
+  if (cinema.modo) {
+    if (k === 'escape') pararCinema();
+    else if (k === ' ') { e.preventDefault(); alternarPausaCinema(); }
+    if (cinema.modo === 'filme' || !vista.caminhar) return;
+  }
   if (!ctrl && !e.altKey && { 1: 'visitar', 2: 'arrumar', 3: 'conferir' }[k]) { setModo({ 1: 'visitar', 2: 'arrumar', 3: 'conferir' }[k]); return; }
   if (!ctrl && k === 'f') { abrirFoto(); return; }
   const edita = ['delete', 'backspace', 'r'].includes(k) || (ctrl && k === 'd') || (k.startsWith('arrow') && !vista.caminhar);
@@ -12940,6 +12941,8 @@ function atualizarBotoes() {
   $('#bCaminhar').classList.toggle('ligado', vista.caminhar);
   $('#bCaminhar').querySelector('.rot').textContent = vista.caminhar ? 'Sair' : 'Andar';
   $('#bFoto').classList.toggle('ligado', foto.ativa);
+  $('#bUso').classList.toggle('ligado', cinema.modo === 'uso');
+  $('#bFilme').classList.toggle('ligado', cinema.modo === 'filme');
   $('#bVista').disabled = vista.caminhar;
   $('#bCorte').disabled = vista.caminhar;
 }
@@ -12981,6 +12984,22 @@ $('#bVista').onclick = alternarVista;
 $('#bCorte').onclick = () => { vista.corte = !vista.corte; construirPlanta(); atualizarBotoes(); };
 $('#bEnquadrar').onclick = () => { if (vista.caminhar) alternarCaminhada(); enquadrar(); };
 $('#bCaminhar').onclick = () => { if (!foto.ativa) alternarCaminhada(); };
+function alternarPausaCinema() {
+  if (cinema.modo === 'filme' && cinema.fim) { iniciarFilme(); return; }
+  cinema.pausa = !cinema.pausa;
+  $('#usoPausa').textContent = cinema.pausa ? '▶' : '⏸';
+  $('#filmePausa').textContent = cinema.pausa ? '▶' : '⏸';
+}
+$('#bUso').onclick = () => { if (foto.ativa) return; cinema.modo === 'uso' ? pararCinema() : iniciarUso(); };
+$('#bFilme').onclick = () => { if (foto.ativa) return; cinema.modo === 'filme' ? pararCinema() : iniciarFilme(); };
+$('#usoPausa').onclick = alternarPausaCinema;
+$('#usoFechar').onclick = pararCinema;
+$('#filmePausa').onclick = alternarPausaCinema;
+$('#filmeFechar').onclick = pararCinema;
+$('#filmeVel').onclick = () => {
+  cinema.vel = cinema.vel === 1 ? 2 : cinema.vel === 2 ? 4 : 1;
+  $('#filmeVel').textContent = `${cinema.vel}×`;
+};
 $('#bFoto').onclick = () => (foto.ativa || !$('#fotoMenu').hidden ? fecharFoto() : abrirFoto());
 $('#fotoMenuFechar').onclick = fecharFoto;
 $('#fotoIr').onclick = fotografar;
@@ -13007,6 +13026,7 @@ let vistaAtual = null;
 
 function setModo(novo, manterSel = false) {
   fecharFoto();
+  pararCinema();
   modo = novo;
   try { localStorage.setItem('simulador-apto:modo', modo); } catch { /* ok */ }
   document.body.classList.remove('modo-visitar', 'modo-arrumar', 'modo-conferir', 'lateral-aberta');
@@ -13095,7 +13115,7 @@ function obstaculosPara(m, ignorar = true) {
   for (const o of cen().moveis) {
     if (o.id === m.id) continue;
     const d2 = defCatalogo(o.tipo) || {};
-    if (d2.colide === false || (ignorar && ignoraPar(def, d2))) continue;
+    if (d2.colide === false || (ignorar && ignoraPar(def, d2)) || usoAlternado(m, o)) continue;
     const pg = pegada(o);
     if (pg.y0 >= 60) continue;
     lista.push({ ...pg, nome: o.nome.toLowerCase(), id: o.id });
@@ -13253,6 +13273,716 @@ function painelConferirMovel(p, cab, m) {
       ...calcularCotas(m).map((c) => el('div', { class: 'linha-uso ok' }, el('span', {}, NOME_DIR[c.eixo + c.s]), el('b', {}, `${fmt(c.dist)} cm`))))),
     el('div', { class: 'linha-botoes fim' }, botao('✏️ Arrumar este móvel', () => { const id = m.id; setModo('arrumar', true); selecionar({ tipo: 'movel', id }); }, { class: 'acao' })),
   );
+}
+
+// =====================================================================
+// 9c. A CASA EM USO — simulação de uso e filme de um dia
+// =====================================================================
+// Só mexe no 3D (nada vai para o layout salvo). Ao terminar, a cena é
+// reconstruída a partir do documento e tudo volta ao lugar.
+//  - Simulação de uso: um por um, cada coisa da casa abre e fecha — portas,
+//    armários, geladeira, gavetas, TV giratória, sofá, cadeiras sendo
+//    puxadas, fogão aceso.
+//  - Filme: uma pessoa vive um dia no apartamento, andando por caminhos
+//    livres (calculados na planta) e usando as coisas, com hora e luz do sol.
+const dirFrente = (rot) => [-Math.sin(rad(rot)), Math.cos(rad(rot))]; // para onde o móvel olha
+const objDe = (m) => objMovel.get(m.id);
+const ease = (u) => { u = Math.min(1, Math.max(0, u)); return u * u * (3 - 2 * u); };
+const nomeAcao = (def, m) => { const a = acaoDe(def, m); return Array.isArray(a) ? a : [a, a]; };
+
+const cinema = { modo: null, pausa: false, vel: 1, t: 0, tarefas: [], antes: null, legenda: '' };
+
+// ---- peças auxiliares: chamas do fogão e cadeira puxada
+const matChama = new T.MeshBasicMaterial({ color: '#4da3ff', transparent: true, opacity: 0.85, depthWrite: false });
+const matChamaMiolo = new T.MeshBasicMaterial({ color: '#bfe4ff', transparent: true, opacity: 0.9, depthWrite: false });
+function chamas(m) {
+  const obj = objDe(m);
+  if (!obj) return null;
+  if (obj.userData.chamas) return obj.userData.chamas;
+  const g = new T.Group();
+  for (const [dx, dz, r] of [[-14, -11, 6], [14, -11, 6], [-14, 11, 4.5], [14, 11, 4.5]]) {
+    const q = new T.Group();
+    q.position.set(m.l / 2 - 40 + dx, m.a + 1.6, dz);
+    const n = Math.round(r * 2.2);
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2;
+      const c = new T.Mesh(new T.ConeGeometry(0.7, 2.6, 6), i % 2 ? matChama : matChamaMiolo);
+      c.position.set(Math.cos(a) * r * 0.8, 1.3, Math.sin(a) * r * 0.8);
+      q.add(c);
+    }
+    g.add(q);
+  }
+  g.visible = false;
+  obj.children[0].add(g);
+  obj.userData.chamas = g;
+  return g;
+}
+function fogo(m, k, t) {
+  const g = chamas(m);
+  if (!g) return;
+  g.visible = k > 0.02;
+  g.children.forEach((q, i) => q.scale.set(1, Math.max(0.01, k * (0.85 + 0.25 * Math.sin(t * 23 + i * 1.7))), 1));
+}
+function puxarCadeira(m, cm) {
+  const obj = objDe(m);
+  if (!obj) return;
+  const [fx, fz] = dirFrente(m.rot);
+  obj.position.set(m.x - fx * cm, m.y || 0, m.z - fz * cm);
+}
+function abrirMovel(m, k) { const obj = objDe(m); if (obj) aplicarAbertura(obj, k); }
+
+// ---- relógio da cena: tarefas com duração, que andam com o tempo do filme
+function durante(dur, fn = () => {}) {
+  return new Promise((res, rej) => cinema.tarefas.push({ t0: cinema.t, dur: Math.max(0.001, dur), fn, res, rej }));
+}
+const esperar = (s) => durante(s);
+
+function tickCinema(dt) {
+  if (!cinema.modo) return;
+  if (!cinema.pausa) cinema.t += Math.min(dt, 0.1) * cinema.vel;
+  for (const tf of [...cinema.tarefas]) {
+    const u = Math.min(1, (cinema.t - tf.t0) / tf.dur);
+    tf.fn(u);
+    if (u >= 1) { cinema.tarefas.splice(cinema.tarefas.indexOf(tf), 1); tf.res(); }
+  }
+  if (cinema.modo === 'uso') tickUso();
+  else tickFilme(dt);
+}
+
+function iniciarCinema(modo) {
+  pararCinema();
+  fecharFoto();
+  if (sel) selecionar(null);
+  cinema.antes = { caminhar: vista.caminhar, topo: vista.topo, corte: vista.corte, hora: luz.hora,
+    pos: camPersp.position.clone(), alvo: ctlPersp.target.clone(), fov: camPersp.fov };
+  Object.assign(cinema, { modo, pausa: false, vel: 1, t: 0, tarefas: [] });
+  document.body.classList.add('cinema', `cinema-${modo}`);
+  grpSel.visible = grpZonas.visible = false;
+}
+
+function pararCinema() {
+  if (!cinema.modo) return;
+  const a = cinema.antes, era = cinema.modo;
+  for (const tf of cinema.tarefas) tf.rej(new Error('fim'));
+  cinema.tarefas = [];
+  cinema.modo = null;
+  document.body.classList.remove('cinema', 'cinema-uso', 'cinema-filme');
+  $('#usoBarra').hidden = true;
+  $('#filme').hidden = true;
+  if (pessoa.grupo.parent) cena.remove(pessoa.grupo);
+  estadoPortas.clear();
+  luz.hora = a.hora;
+  vista.corte = a.corte;
+  if (era === 'filme') {
+    camPersp.fov = a.fov; camPersp.updateProjectionMatrix();
+    camPersp.position.copy(a.pos); ctlPersp.target.copy(a.alvo);
+    ctlPersp.enabled = !vista.caminhar && !vista.topo;
+  }
+  grpSel.visible = grpZonas.visible = true;
+  construirPlanta(); construirMoveis(); construirZonas(); desenharSelecao();
+  atualizarBotoes(); renderVistas();
+}
+
+// ---------------------------------------------------------------------
+// 1. SIMULAÇÃO DE USO: cada coisa abre e fecha, uma depois da outra
+// ---------------------------------------------------------------------
+const uso = { lista: [], passo: 1.25, dur: 2.4 };
+
+function centroPorta(ab) {
+  const w = parede(ab.parede), u = ab.pos + ab.largura / 2, lado = ab.lado === -1 ? -1 : 1;
+  return horizontal(w) ? [w.x1 + u, w.z1 + lado * 30] : [w.x1 - lado * 30, w.z1 + u];
+}
+
+function acoesDeUso() {
+  const lista = [];
+  const ordemAmb = ['cozinha', 'sala', 'quarto', 'banheiro'];
+  const rank = (x, z) => { const a = doc.planta.ambientes.find((am) => dentro([x, z], am.pontos)); return a ? ordemAmb.indexOf(a.id) : 9; };
+  for (const ab of doc.planta.aberturas) {
+    if (ab.tipo !== 'porta' || !portasGiro.has(ab.id)) continue;
+    const [x, z] = centroPorta(ab);
+    const ext = parede(ab.parede)?.id.startsWith('ext');
+    lista.push({ tipo: 'porta', ab, x, z, r: ext ? -1 : rank(x, z) - 0.5, nome: ext ? 'Porta de entrada' : `Porta ${ab.id === 'porta-banho' ? 'do banheiro' : ab.id === 'porta-quarto' ? 'do quarto' : ''}`.trim(), acao: 'Fechar e abrir' });
+  }
+  for (const m of cen().moveis) {
+    const def = defCatalogo(m.tipo) || {};
+    const r = rank(m.x, m.z);
+    if (temMov(def, m) && nomeAcao(def, m)[0] !== '—') {
+      lista.push({ tipo: 'abrir', m, x: m.x, z: m.z, r, nome: m.nome, acao: nomeAcao(def, m)[(m.aberto || 0) > 0.5 ? 1 : 0] });
+    }
+    if (m.tipo === 'cadeira' || m.tipo === 'cadeira_escritorio') lista.push({ tipo: 'cadeira', m, x: m.x, z: m.z, r, nome: m.nome, acao: 'Puxar para sentar' });
+    if (m.tipo === 'bancada_cozinha') lista.push({ tipo: 'fogo', m, x: m.x, z: m.z + 0.1, r, nome: 'Fogão (cooktop)', acao: 'Acender e apagar' });
+  }
+  return lista.sort((a, b) => a.r - b.r || a.z - b.z || a.x - b.x);
+}
+
+// 0 → 1 → 0 dentro da janela da ação (sobe, segura, desce)
+const sobeDesce = (u) => (u <= 0 || u >= 1 ? 0 : u < 0.32 ? ease(u / 0.32) : u < 0.62 ? 1 : 1 - ease((u - 0.62) / 0.38));
+
+function aplicarAcao(a, k) {
+  if (a.tipo === 'porta') porta(a.ab.id, 1 - k);
+  else if (a.tipo === 'cadeira') puxarCadeira(a.m, 32 * k);
+  else if (a.tipo === 'fogo') fogo(a.m, k, cinema.t);
+  else { const b = a.m.aberto || 0; abrirMovel(a.m, b + (b > 0.5 ? -b : 1 - b) * k); }
+}
+
+function iniciarUso() {
+  iniciarCinema('uso');
+  if (!vista.caminhar && !vista.corte) { vista.corte = true; construirPlanta(); } // paredes baixas: dá para ver tudo
+  uso.lista = acoesDeUso();
+  $('#usoBarra').hidden = false;
+  atualizarBotoes();
+}
+
+function tickUso() {
+  const { lista, passo, dur } = uso, total = (lista.length - 1) * passo + dur + 1.2;
+  const t = cinema.t % total;
+  let atual = null;
+  lista.forEach((a, i) => {
+    const u = (t - i * passo) / dur, k = sobeDesce(u);
+    aplicarAcao(a, k);
+    if (u > 0 && u < 1 && (!atual || i * passo > atual.i * passo)) atual = { a, i };
+  });
+  const txt = atual ? `${atual.a.nome} · ${atual.a.acao}` : 'Recomeçando…';
+  if (txt !== cinema.legenda) {
+    cinema.legenda = txt;
+    $('#usoTxt').textContent = txt;
+    $('#usoPasso').textContent = atual ? `${atual.i + 1} de ${lista.length}` : '';
+  }
+}
+
+// ---------------------------------------------------------------------
+// 2. FILME: a pessoa
+// ---------------------------------------------------------------------
+// Boneco de 1,70 m feito de cápsulas, com quadril, joelhos, ombros e
+// cotovelos articulados. Origem nos pés; olha para +z.
+const pessoa = { grupo: new T.Group(), ps: null, yaw: 0, yawAlvo: 0, fase: 0 };
+(function montarPessoa() {
+  const mat = (cor, r = 0.8) => new T.MeshStandardMaterial({ color: cor, roughness: r });
+  const pele = mat('#c99a78', 0.6), camisa = mat('#b8892c'), calca = mat('#2f3036', 0.85), tenis = mat('#ece8df', 0.7), cabelo = mat('#2a1d16', 0.9);
+  const cap = (r, len, m, pai, y) => {
+    const o = new T.Mesh(new T.CapsuleGeometry(r, len, 4, 12), m);
+    o.position.y = y; o.castShadow = true; pai.add(o); return o;
+  };
+  const g = pessoa.grupo;
+  g.rotation.order = 'YXZ';
+  const quadril = new T.Group(); quadril.position.y = 92; g.add(quadril);
+  const tronco = new T.Group(); quadril.add(tronco);
+  cap(13, 30, camisa, tronco, 25).scale.set(1.3, 1, 0.78);
+  cap(4.5, 5, pele, tronco, 50);
+  const cabeca = new T.Group(); cabeca.position.y = 55; tronco.add(cabeca);
+  const rosto = new T.Mesh(new T.SphereGeometry(10.5, 22, 16), pele); rosto.scale.set(0.88, 1.08, 0.98); rosto.position.y = 9; rosto.castShadow = true; cabeca.add(rosto);
+  const cab = new T.Mesh(new T.SphereGeometry(11.2, 22, 16, 0, Math.PI * 2, 0, Math.PI * 0.56), cabelo); cab.position.set(0, 10.5, -1); cab.rotation.x = -0.35; cabeca.add(cab);
+  const perna = (sx) => {
+    const coxa = new T.Group(); coxa.position.x = sx * 8.5; quadril.add(coxa);
+    cap(7, 30, calca, coxa, -22);
+    const joelho = new T.Group(); joelho.position.y = -44; coxa.add(joelho);
+    cap(5.6, 32, calca, joelho, -21);
+    const pe = new T.Mesh(new T.RoundedBoxGeometry(9.5, 6, 25, 2, 2.5), tenis); pe.position.set(0, -45, 5); pe.castShadow = true; joelho.add(pe);
+    return { coxa, joelho };
+  };
+  const braco = (sx) => {
+    const ombro = new T.Group(); ombro.position.set(sx * 20, 43, 0); tronco.add(ombro);
+    cap(5, 19, camisa, ombro, -12);
+    const cotovelo = new T.Group(); cotovelo.position.y = -28; ombro.add(cotovelo);
+    cap(4.2, 17, pele, cotovelo, -12);
+    const mao = new T.Mesh(new T.SphereGeometry(4.6, 12, 10), pele); mao.position.y = -26; mao.scale.set(0.8, 1.1, 1); cotovelo.add(mao);
+    return { ombro, cotovelo };
+  };
+  Object.assign(pessoa, { quadril, tronco, cabeca, pe: [perna(-1), perna(1)], br: [braco(-1), braco(1)] });
+}());
+
+const POSE_BASE = { andar: 0, sentar: 0, deitar: 0, alcancar: 0, digitar: 0, comer: 0, colo: 0, mexer: 0 };
+function posePessoa(t) {
+  const p = pessoa.ps, f = pessoa.fase;
+  const sw = Math.sin(f) * 0.5 * p.andar;
+  const s = p.sentar;
+  pessoa.pe.forEach(({ coxa, joelho }, i) => {
+    const sg = i ? -1 : 1;
+    coxa.rotation.x = sg * sw * (1 - s) - s * Math.PI / 2;
+    joelho.rotation.x = Math.max(0, sg * Math.sin(f + 0.9)) * 0.7 * p.andar * (1 - s) + s * Math.PI / 2;
+  });
+  pessoa.quadril.position.y = 92 - s * 45 + Math.abs(Math.cos(f)) * 1.6 * p.andar;
+  pessoa.tronco.rotation.x = 0.04 * p.andar - 0.06 * s + 0.08 * (p.digitar + p.mexer);
+  // braços: balanço ao andar e gestos (alcançar, digitar, comer, mãos no colo)
+  const resp = Math.sin(t * 1.6) * 0.015;
+  pessoa.br.forEach(({ ombro, cotovelo }, i) => {
+    const sg = i ? 1 : -1, dir = i === 1;
+    let ox = -sg * sw * 0.8 + resp, cx = -0.15 * p.andar;
+    const mesa = Math.max(p.digitar, p.mexer, dir ? 0 : p.comer);
+    ox += mesa * (-0.7) + p.colo * (-0.45); cx += mesa * (-1.0) + p.colo * (-0.8);
+    if (p.digitar) cx += Math.sin(t * 9 + i * 2) * 0.06 * p.digitar;
+    if (p.mexer && dir) { ox += Math.sin(t * 3) * 0.12 * p.mexer; }
+    if (dir && p.comer) { const c = 0.5 + 0.5 * Math.sin(t * 2.2); ox += p.comer * (-0.55 - 0.25 * c); cx += p.comer * (-1.25 - 0.6 * c); }
+    if (dir && p.alcancar) { ox += p.alcancar * -1.35; cx += p.alcancar * 0.15; }
+    ombro.rotation.set(ox, 0, sg * 0.07 * (1 - p.deitar));
+    cotovelo.rotation.x = cx;
+  });
+  pessoa.cabeca.rotation.x = 0.1 * (p.digitar + p.comer + p.mexer);
+}
+
+async function mudarPose(alvo, dur = 0.7) {
+  const de = { ...pessoa.ps };
+  await durante(dur, (u) => { const k = ease(u); for (const [n, v] of Object.entries(alvo)) pessoa.ps[n] = de[n] + (v - de[n]) * k; });
+}
+
+// ---- caminhos livres: grade de 10 cm sobre a planta (A* + atalhos retos)
+const GRADE = { x0: -40, z0: -40, x1: 560, z1: 740, c: 10 };
+let mapa = null;
+function montarMapa() {
+  const { x0, z0, x1, z1, c } = GRADE, nx = Math.ceil((x1 - x0) / c), nz = Math.ceil((z1 - z0) / c), raio = 19;
+  const solidos = [];
+  for (const w of doc.planta.paredes) {
+    if (w.demolida) continue;
+    const cx = caixaParede(w), hz = horizontal(w);
+    // tira os vãos das portas
+    let trechos = hz ? [[cx.x0, cx.x1]] : [[cx.z0, cx.z1]];
+    for (const ab of doc.planta.aberturas.filter((a) => a.parede === w.id && a.tipo !== 'janela')) {
+      const a0 = (hz ? w.x1 : w.z1) + ab.pos + 3, a1 = a0 + ab.largura - 6;
+      trechos = trechos.flatMap(([u, v]) => [[u, Math.min(v, a0)], [Math.max(u, a1), v]]).filter(([u, v]) => v - u > 0.5);
+    }
+    for (const [u, v] of trechos) solidos.push(hz ? { ...cx, x0: u, x1: v } : { ...cx, z0: u, z1: v });
+  }
+  for (const m of cen().moveis) {
+    const def = defCatalogo(m.tipo) || {};
+    if (def.colide === false || (m.y || 0) >= 100) continue;
+    solidos.push(pegada(m));
+  }
+  const bloq = new Uint8Array(nx * nz);
+  for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
+    const x = x0 + (i + 0.5) * c, z = z0 + (j + 0.5) * c;
+    if (solidos.some((r) => x > r.x0 - raio && x < r.x1 + raio && z > r.z0 - raio && z < r.z1 + raio)) bloq[j * nx + i] = 1;
+  }
+  mapa = { nx, nz, bloq };
+}
+const celula = (x, z) => [Math.max(0, Math.min(mapa.nx - 1, Math.floor((x - GRADE.x0) / GRADE.c))), Math.max(0, Math.min(mapa.nz - 1, Math.floor((z - GRADE.z0) / GRADE.c)))];
+const centroCel = (i, j) => [GRADE.x0 + (i + 0.5) * GRADE.c, GRADE.z0 + (j + 0.5) * GRADE.c];
+const livreCel = (i, j) => i >= 0 && j >= 0 && i < mapa.nx && j < mapa.nz && !mapa.bloq[j * mapa.nx + i];
+function livreMaisPerto([i, j]) {
+  if (livreCel(i, j)) return [i, j];
+  for (let r = 1; r < 30; r++) {
+    let melhor = null, d = Infinity;
+    for (let dj = -r; dj <= r; dj++) for (let di = -r; di <= r; di++) {
+      if (Math.max(Math.abs(di), Math.abs(dj)) !== r || !livreCel(i + di, j + dj)) continue;
+      const dd = di * di + dj * dj;
+      if (dd < d) { d = dd; melhor = [i + di, j + dj]; }
+    }
+    if (melhor) return melhor;
+  }
+  return [i, j];
+}
+function visivel(a, b) {
+  const n = Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 4);
+  for (let k = 1; k < n; k++) {
+    const [i, j] = celula(a[0] + ((b[0] - a[0]) * k) / n, a[1] + ((b[1] - a[1]) * k) / n);
+    if (!livreCel(i, j)) return false;
+  }
+  return true;
+}
+function rota(de, ate) {
+  const ini = livreMaisPerto(celula(...de)), fim = livreMaisPerto(celula(...ate));
+  const { nx } = mapa, id = ([i, j]) => j * nx + i;
+  const g = new Map([[id(ini), 0]]), veio = new Map(), aberta = [[0, ini]];
+  const h = ([i, j]) => { const dx = Math.abs(i - fim[0]), dz = Math.abs(j - fim[1]); return Math.max(dx, dz) + 0.414 * Math.min(dx, dz); };
+  let achou = false;
+  while (aberta.length) {
+    let mi = 0;
+    for (let k = 1; k < aberta.length; k++) if (aberta[k][0] < aberta[mi][0]) mi = k;
+    const [, cur] = aberta.splice(mi, 1)[0];
+    if (cur[0] === fim[0] && cur[1] === fim[1]) { achou = true; break; }
+    for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) {
+      if (!di && !dj) continue;
+      const nb = [cur[0] + di, cur[1] + dj];
+      if (!livreCel(...nb) || (di && dj && (!livreCel(cur[0] + di, cur[1]) || !livreCel(cur[0], cur[1] + dj)))) continue;
+      const ng = g.get(id(cur)) + (di && dj ? 1.414 : 1);
+      if (ng < (g.get(id(nb)) ?? Infinity)) { g.set(id(nb), ng); veio.set(id(nb), cur); aberta.push([ng + h(nb), nb]); }
+    }
+  }
+  if (!achou) return [de, ate];
+  const cels = [fim];
+  while (cels[0] !== ini && veio.has(id(cels[0]))) cels.unshift(veio.get(id(cels[0])));
+  const pts = [de, ...cels.slice(1, -1).map(([i, j]) => centroCel(i, j)), ate];
+  // atalhos: liga direto os pontos que se enxergam
+  const lisa = [pts[0]];
+  let k = 0;
+  while (k < pts.length - 1) {
+    let n = pts.length - 1;
+    while (n > k + 1 && !visivel(pts[k], pts[n])) n--;
+    lisa.push(pts[n]); k = n;
+  }
+  return lisa;
+}
+
+// ---- ações da pessoa
+const VEL_ANDAR = 105; // cm/s
+const pos2 = () => [pessoa.grupo.position.x, pessoa.grupo.position.z];
+function olharPara(x, z) { const [px, pz] = pos2(); pessoa.yawAlvo = Math.atan2(x - px, z - pz); }
+async function andarAte(x, z) {
+  const pts = rota(pos2(), [x, z]);
+  const seg = [];
+  let total = 0;
+  for (let k = 1; k < pts.length; k++) { const d = Math.hypot(pts[k][0] - pts[k - 1][0], pts[k][1] - pts[k - 1][1]); seg.push(d); total += d; }
+  if (total < 2) return;
+  const fase0 = pessoa.fase;
+  await durante(total / VEL_ANDAR + 0.15, (u) => {
+    let s = Math.min(total, u * (total + 0.15 * VEL_ANDAR)), k = 0;
+    const s0 = s;
+    while (k < seg.length - 1 && s > seg[k]) { s -= seg[k]; k++; }
+    const a = pts[k], b = pts[k + 1], t = seg[k] ? Math.min(1, s / seg[k]) : 1;
+    pessoa.grupo.position.x = a[0] + (b[0] - a[0]) * t;
+    pessoa.grupo.position.z = a[1] + (b[1] - a[1]) * t;
+    pessoa.yawAlvo = Math.atan2(b[0] - a[0], b[1] - a[1]);
+    pessoa.fase = fase0 + (s0 / 130) * Math.PI * 2;
+    pessoa.ps.andar = Math.min(1, s0 / 25, (total - s0) / 25 + 0.05);
+  });
+  pessoa.ps.andar = 0;
+}
+async function virar(x, z) { olharPara(x, z); await esperar(0.45); }
+const animar = (dur, fn) => durante(dur, (u) => fn(ease(u)));
+const estadoFilme = new Map(); // id do móvel → quanto está aberto no filme
+async function usar(m, alvo, dur = 0.8) {
+  const de = estadoFilme.get(m.id) ?? (m.aberto || 0);
+  estadoFilme.set(m.id, alvo);
+  await animar(dur, (k) => abrirMovel(m, de + (alvo - de) * k));
+}
+async function abrirPorta(id, alvo, dur = 0.9) {
+  const de = estadoPortas.get(id) ?? 1;
+  await animar(dur, (k) => porta(id, de + (alvo - de) * k));
+}
+// ponto a uma distância da frente do móvel (fora da área dele)
+function naFrente(m, dist, lateral = 0) {
+  const [fx, fz] = dirFrente(m.rot), pg = pegada(m), prof = m.rot % 180 ? pg.w : pg.d;
+  return [m.x + fx * (prof / 2 + dist) + fz * lateral, m.z + fz * (prof / 2 + dist) - fx * lateral];
+}
+
+async function sentar(c, { puxar = 30, depois = 18 } = {}) {
+  const [fx, fz] = dirFrente(c.rot);
+  await andarAte(c.x - fx * 58, c.z - fz * 58); // atrás da cadeira
+  await virar(c.x + fx * 100, c.z + fz * 100);
+  await animar(0.7, (k) => puxarCadeira(c, puxar * k));
+  const p0 = pos2(), assento = [c.x - fx * (puxar + 6), c.z - fz * (puxar + 6)];
+  await durante(0.9, (u) => {
+    const k = ease(u);
+    pessoa.grupo.position.x = p0[0] + (assento[0] - p0[0]) * k;
+    pessoa.grupo.position.z = p0[1] + (assento[1] - p0[1]) * k;
+    pessoa.ps.sentar = ease((u - 0.25) / 0.75);
+  });
+  await animar(0.6, (k) => {
+    puxarCadeira(c, puxar - depois * k);
+    pessoa.grupo.position.x = assento[0] + fx * depois * k;
+    pessoa.grupo.position.z = assento[1] + fz * depois * k;
+  });
+  return async () => { // levantar
+    const p1 = pos2();
+    await animar(0.6, (k) => {
+      puxarCadeira(c, puxar - depois + depois * k);
+      pessoa.grupo.position.x = p1[0] - fx * depois * k;
+      pessoa.grupo.position.z = p1[1] - fz * depois * k;
+    });
+    const p2 = pos2();
+    await durante(0.8, (u) => {
+      const k = ease(u);
+      pessoa.ps.sentar = 1 - ease(u / 0.75);
+      pessoa.grupo.position.x = p2[0] - fx * 26 * k;
+      pessoa.grupo.position.z = p2[1] - fz * 26 * k;
+    });
+    await animar(0.7, (k) => puxarCadeira(c, puxar * (1 - k)));
+  };
+}
+
+// ---- filme: câmera, legendas e roteiro
+const CAPITULOS = ['Acordar', 'Banheiro', 'Café', 'Trabalho', 'Sair', 'Voltar', 'Noite', 'Dormir'];
+const filme = { ang: 0.7, alvo: new T.Vector3(), cam: new T.Vector3(), cap: 0, horaAlvo: 7, ultimaLuz: 0 };
+
+function tickFilme(dt) {
+  const p = pessoa;
+  let d = p.yawAlvo - p.yaw;
+  d = Math.atan2(Math.sin(d), Math.cos(d));
+  p.yaw += d * Math.min(1, dt * cinema.vel * 7);
+  p.grupo.rotation.y = p.yaw;
+  posePessoa(cinema.t);
+  // deitado: o corpo gira para a horizontal (cabeça para trás)
+  p.grupo.rotation.x = -p.ps.deitar * Math.PI / 2;
+  // câmera: segue a pessoa de cima, girando devagar em volta
+  if (!cinema.pausa) filme.ang += dt * 0.05 * cinema.vel;
+  const alvo = new T.Vector3(p.grupo.position.x, 85 + (p.grupo.position.y || 0) * 0.3, p.grupo.position.z);
+  // bem de cima: as paredes cortadas e os móveis altos não tapam a pessoa;
+  // com a tela em pé (celular), a câmera se afasta para caber o cômodo
+  const longe = Math.min(1.8, Math.max(1, 1.1 / camPersp.aspect)), R = 240 * longe, H = 470 * longe;
+  const quer = alvo.clone().add(new T.Vector3(Math.sin(filme.ang) * R, H, Math.cos(filme.ang) * R));
+  const k = 1 - Math.exp(-dt * 2.2);
+  filme.alvo.lerp(alvo, k); filme.cam.lerp(quer, k);
+  camPersp.position.copy(filme.cam);
+  camPersp.lookAt(filme.alvo);
+  // hora: anda até a hora da cena; o sol acompanha
+  if (Math.abs(luz.hora - filme.horaAlvo) > 0.01) {
+    luz.hora += (filme.horaAlvo - luz.hora) * Math.min(1, dt * 1.5 * cinema.vel);
+    const agora = performance.now();
+    if (agora - filme.ultimaLuz > 120) { filme.ultimaLuz = agora; aplicarSol(); $('#filmeHora').textContent = horaTxt(luz.hora); }
+  }
+}
+
+function legenda(hora, txt, cap) {
+  filme.horaAlvo = hora;
+  if (cap != null) filme.cap = cap;
+  $('#filmeTxt').textContent = txt;
+  $('#filmeHora').textContent = horaTxt(hora);
+  const box = $('#filmeCaps');
+  box.textContent = '';
+  CAPITULOS.forEach((n, i) => box.append(el('i', { class: i < filme.cap ? 'feito' : i === filme.cap ? 'atual' : '', title: n })));
+}
+async function escurecer(txt, hora) {
+  const v = $('#filmeVeu');
+  $('#filmeVeuTxt').textContent = txt;
+  await animar(0.6, (k) => { v.style.opacity = k; });
+  luz.hora = filme.horaAlvo = hora; aplicarSol();
+  $('#filmeHora').textContent = horaTxt(hora);
+  await esperar(1.3);
+  await animar(0.6, (k) => { v.style.opacity = 1 - k; });
+}
+
+function achar(f) { return cen().moveis.find(f); }
+
+async function roteiro() {
+  const M = {
+    cama: achar((m) => m.tipo === 'cama_box'),
+    armario: achar((m) => m.tipo === 'guarda_roupa'),
+    cortina: achar((m) => m.tipo === 'cortina' && dentro([m.x, m.z], ambiente('quarto')?.pontos || [])) || achar((m) => m.tipo === 'cortina'),
+    lavatorio: achar((m) => m.tipo === 'lavatorio'),
+    geladeira: achar((m) => m.tipo === 'geladeira'),
+    bancada: achar((m) => m.tipo === 'bancada_cozinha'),
+    aereo: achar((m) => m.tipo === 'armario_aereo'),
+    tv: achar((m) => m.tipo === 'estante_giratoria'),
+    sofa: achar((m) => m.tipo === 'sofa' || m.tipo === 'sofa_chaise'),
+    mesa: achar((m) => m.tipo === 'mesa_jantar' || m.tipo === 'mesa_redonda'),
+    trabalho: achar((m) => m.tipo === 'mesa_computador'),
+  };
+  const cadeiras = cen().moveis.filter((m) => m.tipo === 'cadeira' || m.tipo === 'cadeira_escritorio');
+  const perto = (alvo) => alvo && cadeiras.slice().sort((a, b) => Math.hypot(a.x - alvo.x, a.z - alvo.z) - Math.hypot(b.x - alvo.x, b.z - alvo.z))[0];
+  const cadEscr = achar((m) => m.nome === 'Cadeira do escritório') || perto(M.trabalho);
+  const cadJantar = cadeiras.filter((c) => c !== cadEscr && M.mesa && Math.hypot(c.x - M.mesa.x, c.z - M.mesa.z) < 110)
+    .sort((a, b) => b.z - a.z)[0] || perto(M.mesa);
+  const P = pessoa, g = P.grupo;
+
+  // 07:00 — acordar
+  legenda(6.9, 'Acordar', 0);
+  luz.hora = 6.9; aplicarSol();
+  for (const id of ['porta-quarto', 'porta-banho', 'porta-entrada']) porta(id, 0);
+  if (M.cortina) { abrirMovel(M.cortina, 0); estadoFilme.set(M.cortina.id, 0); }
+  if (M.cama) {
+    const pg = pegada(M.cama), [fx, fz] = dirFrente(M.cama.rot);
+    // deitado: pés para o pé da cama, cabeça na cabeceira
+    g.position.set(M.cama.x - fz * 14 + fx * (M.cama.p / 2 - 14), M.cama.a + 10, M.cama.z + fz * (M.cama.p / 2 - 14) + fx * 14);
+    P.yaw = P.yawAlvo = Math.atan2(fx, fz);
+    Object.assign(P.ps, { deitar: 1 });
+    filme.alvo.set(g.position.x, 85, g.position.z);
+    const longe = Math.min(1.8, Math.max(1, 1.1 / camPersp.aspect));
+    filme.cam.copy(filme.alvo).add(new T.Vector3(Math.sin(filme.ang) * 240 * longe, 470 * longe, Math.cos(filme.ang) * 240 * longe));
+    await esperar(1.6);
+    // levanta pelo lado livre da cama
+    const lado = pg.x1 + 30 < 300 ? 1 : -1;
+    const fora = [M.cama.x + lado * (pg.w / 2 + 32), M.cama.z + 10];
+    const p0 = pos2();
+    await durante(1.4, (u) => {
+      const k = ease(u);
+      P.ps.deitar = 1 - k;
+      g.position.x = p0[0] + (fora[0] - p0[0]) * k;
+      g.position.z = p0[1] + (fora[1] - p0[1]) * k;
+      g.position.y = (M.cama.a + 10) * (1 - k);
+      P.yawAlvo = P.yaw = P.yaw + (Math.atan2(lado, 0) - P.yaw) * k;
+    });
+  }
+  if (M.cortina) {
+    legenda(7.05, 'Abrir a cortina');
+    await andarAte(...naFrente(M.cortina, 45));
+    await virar(M.cortina.x, M.cortina.z);
+    await mudarPose({ alcancar: 1 }, 0.4);
+    await usar(M.cortina, 1, 1.2);
+    await mudarPose({ alcancar: 0 }, 0.4);
+  }
+  if (M.armario) {
+    legenda(7.15, 'Pegar a roupa no guarda-roupa');
+    await andarAte(...naFrente(M.armario, 50));
+    await virar(M.armario.x, M.armario.z);
+    await mudarPose({ alcancar: 1 }, 0.4);
+    await usar(M.armario, 1, 0.9);
+    await esperar(1.2);
+    await usar(M.armario, 0, 0.9);
+    await mudarPose({ alcancar: 0 }, 0.4);
+  }
+  // banheiro
+  legenda(7.3, 'Abrir a porta do quarto', 1);
+  await andarAte(195, 505);
+  await virar(255, 440);
+  await mudarPose({ alcancar: 1 }, 0.3);
+  await abrirPorta('porta-quarto', 1);
+  await mudarPose({ alcancar: 0 }, 0.3);
+  if (M.lavatorio) {
+    legenda(7.4, 'Banheiro');
+    await andarAte(345, 420);
+    await virar(348, 470);
+    await mudarPose({ alcancar: 1 }, 0.3);
+    await abrirPorta('porta-banho', 1);
+    await mudarPose({ alcancar: 0 }, 0.3);
+    await andarAte(...naFrente(M.lavatorio, 32));
+    await virar(M.lavatorio.x, M.lavatorio.z);
+    await mudarPose({ mexer: 1 }, 0.5);
+    await esperar(2);
+    await mudarPose({ mexer: 0 }, 0.5);
+  }
+  // café
+  legenda(7.7, 'Café da manhã', 2);
+  if (M.geladeira) {
+    await andarAte(...naFrente(M.geladeira, 50, 10));
+    await virar(M.geladeira.x, M.geladeira.z);
+    await mudarPose({ alcancar: 1 }, 0.3);
+    await usar(M.geladeira, 1, 0.8);
+    await esperar(0.9);
+    await usar(M.geladeira, 0, 0.8);
+    await mudarPose({ alcancar: 0 }, 0.3);
+  }
+  if (M.bancada) {
+    legenda(7.8, 'Fogão: esquentar o café');
+    const [bx, bz] = paraPlanta(M.bancada, M.bancada.l / 2 - 40, 0);
+    const [fx, fz] = dirFrente(M.bancada.rot);
+    await andarAte(bx + fx * (M.bancada.p / 2 + 30), bz + fz * (M.bancada.p / 2 + 30));
+    await virar(bx, bz);
+    await mudarPose({ mexer: 1 }, 0.4);
+    await animar(0.6, (k) => fogo(M.bancada, k, cinema.t));
+    await durante(3, () => fogo(M.bancada, 1, cinema.t));
+    await animar(0.5, (k) => fogo(M.bancada, 1 - k, cinema.t));
+    if (M.aereo) { await mudarPose({ mexer: 0, alcancar: 1 }, 0.3); await usar(M.aereo, 1, 0.7); await esperar(0.6); await usar(M.aereo, 0, 0.7); }
+    await mudarPose({ mexer: 0, alcancar: 0 }, 0.3);
+  }
+  if (M.tv && M.mesa) {
+    legenda(7.95, 'Girar a TV para a mesa');
+    await andarAte(M.tv.x + 60, M.tv.z - pegada(M.tv).d / 2 - 35);
+    await virar(M.tv.x, M.tv.z);
+    await mudarPose({ alcancar: 1 }, 0.3);
+    await usar(M.tv, 1, 1.4);
+    await mudarPose({ alcancar: 0 }, 0.3);
+  }
+  if (cadJantar) {
+    legenda(8, 'Café na mesa de jantar');
+    const levantar = await sentar(cadJantar);
+    await mudarPose({ comer: 1 }, 0.5);
+    await esperar(3.5);
+    await mudarPose({ comer: 0 }, 0.5);
+    await levantar();
+  }
+  // trabalho
+  if (cadEscr) {
+    legenda(9, 'Trabalhar no escritório', 3);
+    const levantar = await sentar(cadEscr, { puxar: 32, depois: 22 });
+    await mudarPose({ digitar: 1 }, 0.5);
+    filme.horaAlvo = 12;
+    await esperar(5);
+    await mudarPose({ digitar: 0 }, 0.5);
+    await levantar();
+  }
+  // sair de casa
+  legenda(12.3, 'Sair de casa', 4);
+  await andarAte(340, 395); // fora do giro da folha
+  await virar(426, 391);
+  await mudarPose({ alcancar: 1 }, 0.3);
+  await abrirPorta('porta-entrada', 1);
+  await mudarPose({ alcancar: 0 }, 0.3);
+  await andarAte(500, 391);
+  await virar(420, 391);
+  await abrirPorta('porta-entrada', 0);
+  await escurecer('Algumas horas depois…', 18.5);
+  // voltar
+  legenda(18.5, 'Voltar para casa', 5);
+  await abrirPorta('porta-entrada', 1);
+  await andarAte(340, 395);
+  await virar(426, 391);
+  await abrirPorta('porta-entrada', 0);
+  // noite
+  if (M.sofa) {
+    legenda(19.5, 'Sofá e TV', 6);
+    if (M.tv) {
+      await andarAte(M.tv.x + 60, M.tv.z - pegada(M.tv).d / 2 - 35);
+      await virar(M.tv.x, M.tv.z);
+      await mudarPose({ alcancar: 1 }, 0.3);
+      await usar(M.tv, 0, 1.4);
+      await mudarPose({ alcancar: 0 }, 0.3);
+    }
+    const [fx, fz] = dirFrente(M.sofa.rot);
+    await andarAte(...naFrente(M.sofa, 30));
+    await virar(M.sofa.x + fx * 300, M.sofa.z + fz * 300);
+    const p0 = pos2(), assento = [M.sofa.x + fx * 4, M.sofa.z + fz * 4];
+    await durante(1, (u) => {
+      const k = ease(u);
+      g.position.x = p0[0] + (assento[0] - p0[0]) * k;
+      g.position.z = p0[1] + (assento[1] - p0[1]) * k;
+      P.ps.sentar = ease((u - 0.2) / 0.8);
+    });
+    await mudarPose({ colo: 1 }, 0.4);
+    filme.horaAlvo = 21;
+    const def = defCatalogo(M.sofa.tipo);
+    if (temMov(def, M.sofa)) {
+      await usar(M.sofa, 1, 1.2);
+      await esperar(4);
+      await usar(M.sofa, 0, 1.2);
+    } else await esperar(4);
+    await mudarPose({ colo: 0 }, 0.3);
+    const p1 = pos2();
+    await durante(0.9, (u) => {
+      const k = ease(u);
+      P.ps.sentar = 1 - k;
+      g.position.x = p1[0] + fx * 30 * k;
+      g.position.z = p1[1] + fz * 30 * k;
+    });
+  }
+  // dormir
+  legenda(23, 'Dormir', 7);
+  if (M.cama) {
+    const pg = pegada(M.cama), [fx, fz] = dirFrente(M.cama.rot), lado = pg.x1 + 30 < 300 ? 1 : -1;
+    await andarAte(M.cama.x + lado * (pg.w / 2 + 32), M.cama.z + 10);
+    await virar(M.cama.x, M.cama.z);
+    const p0 = pos2(), deitado = [M.cama.x - fz * 14 + fx * (M.cama.p / 2 - 14), M.cama.z + fz * (M.cama.p / 2 - 14) + fx * 14];
+    const y0 = P.yaw, y1 = Math.atan2(fx, fz);
+    let dy = y1 - y0; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+    await durante(1.5, (u) => {
+      const k = ease(u);
+      P.ps.deitar = k;
+      g.position.x = p0[0] + (deitado[0] - p0[0]) * k;
+      g.position.z = p0[1] + (deitado[1] - p0[1]) * k;
+      g.position.y = (M.cama.a + 10) * k;
+      P.yaw = P.yawAlvo = y0 + dy * k;
+    });
+  }
+  await esperar(1.5);
+  await escurecer('Fim', 23);
+}
+
+function iniciarFilme() {
+  iniciarCinema('filme');
+  if (vista.caminhar) alternarCaminhada();
+  if (vista.topo) alternarVista();
+  vista.corte = true;
+  ctlPersp.enabled = false;
+  camPersp.fov = 42; camPersp.updateProjectionMatrix();
+  construirPlanta();
+  estadoFilme.clear();
+  montarMapa();
+  // o que fica pendurado no alto (quadros, pendente, arandela, espelho) some no filme
+  for (const m of cen().moveis) {
+    const obj = objDe(m);
+    if (obj && (m.y || 0) >= 100 && m.tipo !== 'armario_aereo') obj.visible = false;
+  }
+  pessoa.ps = { ...POSE_BASE };
+  pessoa.grupo.position.set(200, 0, 300);
+  pessoa.grupo.rotation.set(0, 0, 0);
+  cena.add(pessoa.grupo);
+  filme.ang = 0.7; filme.cap = 0;
+  $('#filmeVeu').style.opacity = 0;
+  $('#filme').hidden = false;
+  $('#filmePausa').textContent = '⏸';
+  $('#filmeVel').textContent = '1×';
+  atualizarBotoes();
+  roteiro().then(() => { if (cinema.modo === 'filme') { $('#filmeTxt').textContent = 'Fim — toque em ↻ para ver de novo'; $('#filmePausa').textContent = '↻'; cinema.fim = true; } })
+    .catch((e) => { if (e?.message !== 'fim') console.error(e); });
+  cinema.fim = false;
 }
 
 // =====================================================================
@@ -13480,8 +14210,13 @@ enquadrar();
   if (algum) { construirMoveis(); desenharSelecao(); }
 })();
 
+let ultimoQuadro = performance.now();
 renderer.setAnimationLoop(() => {
+  const agora = performance.now(), dt = (agora - ultimoQuadro) / 1000;
+  ultimoQuadro = agora;
   if (foto.ativa) { quadroFoto(); return; }
+  if (cinema.modo) tickCinema(dt);
+  if (cinema.modo === 'filme') { desenharQuadro(); return; }
   if (!vista.caminhar) ctlAtivo().update();
   desenharQuadro();
   posicionarRotulos();
@@ -13493,7 +14228,7 @@ renderer.setAnimationLoop(() => {
 // acesso pelo console, útil para testes e ajustes finos
 window.simulador = { get doc() { return doc; }, atualizarTudo, selecionar, esticar, areaUtil, areaConstruida, alternarVista, enquadrar, exportarPNG, CFG, camera: camAtiva,
   _grp: grpMoveis, olhar(px, py, pz, tx, ty, tz) { camPersp.position.set(px, py, pz); ctlPersp.target.set(tx, ty, tz); ctlPersp.update(); },
-  alternarAbertura: (id) => alternarAbertura(movel(id)), alternarCaminhada, camadas, andar, aplicarCameraAndar, alvo: (x, y) => alvoEm({ clientX: x, clientY: y }), get sel() { return sel; } };
+  alternarAbertura: (id) => alternarAbertura(movel(id)), alternarCaminhada, camadas, andar, aplicarCameraAndar, cinema, pessoa, alvo: (x, y) => alvoEm({ clientX: x, clientY: y }), get sel() { return sel; } };
 })();
 
 </script>

@@ -15,7 +15,8 @@ está embutido no próprio arquivo.
 - Os layouts ficam salvos em cada navegador; para levar de um para outro, use
   **Arquivo → Exportar/Importar**.
 
-No teclado: `1` `2` `3` trocam o modo, `F` abre a foto, `C` caminha, `T` alterna a planta.
+No teclado: `1` `2` `3` trocam o modo, `F` abre a foto, `C` caminha, `T` alterna a planta;
+no filme e na simulação, espaço pausa e `Esc` fecha.
 
 ## Três modos
 
@@ -35,19 +36,38 @@ A barra de baixo troca o modo de uso:
 
 As ferramentas da tela (Andar, Planta, Cortar, Foto, Inteiro) ficam na coluna à direita.
 
+## A casa em uso
+
+- **▶ Usar (simulação de uso):** uma coisa de cada vez abre e fecha, da entrada até o banheiro:
+  as três portas, guarda-roupa, criado-mudo, armários da cozinha, geladeira, armário aéreo,
+  península, TV giratória, sofá retrátil, cortinas, cadeiras sendo puxadas e o fogão aceso.
+  A barra mostra o que está se mexendo; dá para pausar e girar a câmera enquanto isso.
+- **🎬 Filme (um dia no apartamento):** uma pessoa acorda às 7h, abre a cortina e o
+  guarda-roupa, vai ao banheiro, abre a geladeira, acende o fogão, gira a TV para a mesa,
+  toma café, trabalha no escritório, sai, volta à noite, vê TV no sofá estendido e vai dormir.
+  Ela anda por caminhos livres calculados na planta (desvia dos móveis), e a hora e a luz do
+  sol acompanham a cena. Pausar, 1×/2×/4× e fechar ficam no alto.
+- Nada disso altera o layout: ao fechar, tudo volta como estava.
+
+Mora uma pessoa: quem janta não está no escritório. Por isso a cadeira do escritório e as de
+jantar não contam como conflito entre si (`USO_ALTERNADO`, em `src/planta.js`).
+
 ## Opções de jantar
 
-Três abas comparam o canto de refeição da planta final (o resto é igual):
+Três abas comparam o canto de refeição da planta final (o resto é igual). Em todas, a
+bancada do escritório tem **110 × 70 cm**; a cadeira de jantar do lado do escritório desceu
+para não bater nela. As antigas "Office na janela" e "Sofá em cima" foram descartadas.
 
 | Aba | Mesa | Lugares | Relatório |
 | --- | --- | --- | --- |
-| Planta final | quadrada 88 × 88 | 4 a 44 cm cada (apertado) | banco sem entrada; cadeira oeste a 26 cm da do escritório |
-| Jantar 1 | quadrada 80 × 80, afastada do banco | 3 confortáveis | banco sem entrada; cadeiras com 27 e 35 cm de passagem |
+| Planta final | quadrada 88 × 88 | 4 a 44 cm cada (apertado) | banco sem entrada |
+| Jantar 1 | quadrada 80 × 80, afastada do banco | 3 confortáveis | banco sem entrada; cadeira sul com 35 cm para afastar |
 | Jantar 2 | 88 × 88 sem a cadeira oeste | 3 | banco entra pela frente num trecho de 30 cm (apertado) |
 | **Jantar 3** | **redonda Ø 80, pé central, 2 cadeiras ao sul** | **3 com folga** | **sem problemas**: banco entra por um trecho de 45 cm |
 
-A mesa redonda de pé central é a que melhor resolve: não tem quinas no caminho do banco e
-libera a passagem entre o jantar e a cadeira do escritório.
+A mesa redonda de pé central é a que melhor resolve: não tem quinas no caminho do banco.
+Com a bancada de 70 cm, a cadeira do escritório fica com 32 cm até a costela-de-adão para ser
+afastada (ideal 40): é o único "atenção" do escritório.
 
 ## Como usar
 
@@ -165,7 +185,7 @@ porque mudam de lugar entre os cenários. Quando a planta original muda, `revisa
 ```
 apartamento/
   simulador.html      ← o arquivo final (gerado; é este que se abre)
-  src/planta.js       ← DADOS: paredes, portas, janelas, ambientes e os dois cenários
+  src/planta.js       ← DADOS: paredes, portas, janelas, ambientes e os cenários (planta final + 3 jantares)
   src/catalogo.js     ← DADOS: catálogo de móveis (formas, formatos, movimentos, áreas de uso)
   src/app.js          ← aplicação, em seções numeradas (1. Configuração … 12. Início)
   src/pagina.html     ← estilo e interface
