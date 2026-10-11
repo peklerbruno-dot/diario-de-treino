@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Apartamento 3D</title>
+<meta name="theme-color" content="#1d2530">
+<script>
+// Publicado como site (ex.: GitHub Pages): vira app instalável e abre sem
+// internet. Aberto com duplo clique ou no claude.ai, nada disso é usado.
+if (/^https?:$/.test(location.protocol) && !/claude/.test(location.hostname)) {
+  document.head.append(Object.assign(document.createElement('link'), { rel: 'manifest', href: 'app/manifest.webmanifest' }));
+  document.head.append(Object.assign(document.createElement('link'), { rel: 'apple-touch-icon', href: 'app/icone-192.png' }));
+  document.head.append(Object.assign(document.createElement('link'), { rel: 'icon', href: 'app/icone-192.png' }));
+  if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+<style>
+/* =====================================================================
+   ESTILO
+   ===================================================================== */
+:root {
+  --fundo: #f6f7f9; --painel: #ffffff; --linha: #e3e6ea; --texto: #1d2530; --suave: #6b7480;
+  --azul: #2f80ed; --azul-claro: #e8f1fd; --vermelho: #d0453b; --verde: #2e8b57;
+  --raio: 10px; --lateral: 272px; --painel-w: 300px; --barra: 52px;
+  font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--texto);
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--fundo); }
+button { font: inherit; color: inherit; cursor: pointer; border: 1px solid var(--linha); background: #fff;
+  border-radius: 8px; padding: 6px 10px; touch-action: manipulation; }
+button:hover:not(:disabled) { border-color: #c5cbd3; background: #fafbfc; }
+button:disabled { opacity: .4; cursor: default; }
+button.ligado { background: var(--azul-claro); border-color: var(--azul); color: var(--azul); }
+button.perigo { color: var(--vermelho); }
+button.link { border: 0; background: none; padding: 2px 0; color: var(--azul); font-size: 12px; }
+button.link.perigo { color: var(--vermelho); }
+
+#app { display: grid; height: 100%; grid-template: var(--barra) 1fr / var(--lateral) 1fr; position: relative; }
+
+/* ---- barra superior */
+#barra { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 0 12px;
+  background: var(--painel); border-bottom: 1px solid var(--linha); min-width: 0; }
+.marca { font-weight: 700; white-space: nowrap; }
+#abas { display: flex; gap: 4px; overflow-x: auto; flex: 1; min-width: 0; scrollbar-width: none; }
+.aba { white-space: nowrap; border-radius: 999px; padding: 6px 14px; display: flex; gap: 8px; align-items: center; }
+.aba.ativa, .aba.ativa:hover:not(:disabled) { background: var(--texto); color: #fff; border-color: var(--texto); }
+.aba .fechar { opacity: .6; font-size: 16px; line-height: 1; }
+.aba .fechar:hover { opacity: 1; }
+.aba.nova { padding: 6px 12px; font-weight: 600; }
+.acoes { display: flex; gap: 6px; align-items: center; }
+.acoes button { white-space: nowrap; }
+details.menu { position: relative; }
+details.menu summary { list-style: none; cursor: pointer; border: 1px solid var(--linha); border-radius: 8px; padding: 6px 10px; background: #fff; }
+details.menu summary::-webkit-details-marker { display: none; }
+details.menu > div { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; background: #fff; border: 1px solid var(--linha);
+  border-radius: var(--raio); box-shadow: 0 10px 30px rgba(20,30,40,.14); padding: 6px; display: grid; min-width: 230px; }
+details.menu > div button { border: 0; text-align: left; padding: 8px 10px; }
+details.menu > div hr { border: 0; border-top: 1px solid var(--linha); margin: 4px 0; }
+#bLateral { display: none; }
+
+/* ---- lateral esquerda */
+#lateral { background: var(--painel); border-right: 1px solid var(--linha); overflow-y: auto; padding: 12px; }
+#lateral h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--suave); margin: 14px 0 8px; }
+#lateral h2:first-child { margin-top: 0; }
+#avisoPlanta { background: #fff6e0; border: 1px solid #f0d58a; color: #6b5310; border-radius: 8px; padding: 8px 10px; font-size: 12px; margin-bottom: 10px; }
+.tab-areas { width: 100%; border-collapse: collapse; }
+.tab-areas td { padding: 5px 4px; border-bottom: 1px solid var(--linha); }
+.tab-areas td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+.tab-areas tr { cursor: pointer; }
+.tab-areas tr:hover td { background: #fafbfc; }
+.tab-areas tr.ativo td { background: var(--azul-claro); color: var(--azul); }
+.tab-areas tr.soma td { font-weight: 600; border-bottom: 0; cursor: default; background: none; }
+.comparativo { background: var(--fundo); border-radius: 8px; padding: 8px 10px; margin-top: 6px; display: grid; gap: 3px; }
+.comparativo div { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; }
+.comparativo b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.comparativo .ok b { color: var(--verde); }
+.comparativo .alerta b { color: #b7791f; }
+.interruptor { display: flex; align-items: center; gap: 8px; padding: 5px 0; cursor: pointer; }
+.interruptor em { margin-left: auto; font-style: normal; font-size: 12px; color: var(--suave); }
+#buscaCatalogo { width: 100%; padding: 7px 10px; border: 1px solid var(--linha); border-radius: 8px; font: inherit; margin-bottom: 4px; }
+#catalogo h4 { margin: 10px 0 4px; font-size: 12px; color: var(--suave); font-weight: 600; }
+.item-cat { display: flex; width: 100%; align-items: center; gap: 8px; border: 0; padding: 6px 6px; border-radius: 6px; text-align: left; }
+.item-cat:hover { background: var(--fundo) !important; }
+.item-cat i { width: 14px; height: 14px; border-radius: 4px; border: 1px solid rgba(0,0,0,.12); flex: none; }
+.item-cat span { flex: 1; }
+.item-cat em { font-style: normal; font-size: 12px; color: var(--suave); }
+.nota { font-size: 12px; color: var(--suave); margin: 6px 0 0; }
+#salvo { font-size: 11px; color: var(--suave); margin-top: 16px; }
+
+/* ---- palco 3D */
+#palco { position: relative; overflow: hidden; min-width: 0; }
+#palco canvas { display: block; width: 100%; height: 100%; touch-action: none; outline: none; }
+#rotulos { position: absolute; inset: 0; pointer-events: none; }
+.rotulo { position: absolute; left: 0; top: 0; background: rgba(255,255,255,.86); border-radius: 8px; padding: 3px 9px;
+  text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,.08); white-space: nowrap; }
+.rotulo b { display: block; font-size: 12px; }
+.rotulo span { font-size: 12px; color: var(--suave); font-variant-numeric: tabular-nums; }
+.rotulo.ativo { background: var(--azul); color: #fff; }
+.rotulo.ativo span { color: #dce9fb; }
+#avisos { position: absolute; left: 12px; bottom: 12px; max-width: min(560px, calc(100% - 24px)); background: #fff; border: 1px solid #f1c6c2;
+  border-radius: var(--raio); padding: 8px 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; box-shadow: 0 6px 20px rgba(0,0,0,.08); }
+#avisos b { color: var(--vermelho); margin-right: 4px; }
+#avisos button { font-size: 12px; padding: 3px 8px; border-color: #f1c6c2; }
+#avisos span { font-size: 12px; color: var(--suave); }
+#bussola { position: absolute; top: 12px; left: 12px; width: 40px; height: 40px; pointer-events: none; }
+#bussola { top: 18px; left: 18px; }
+#bussola b { position: absolute; left: 20px; top: -7px; transform: translate(-50%, -50%); font-size: 11px; color: var(--vermelho); }
+.luz-local { font-size: 13px; margin-bottom: 8px; }
+.faixa-hora { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; align-items: center; margin-top: 8px; }
+.faixa-hora span { font-size: 12px; color: var(--suave); }
+.faixa-hora b { text-align: right; font-variant-numeric: tabular-nums; }
+.faixa-hora input { grid-column: 1 / -1; width: 100%; accent-color: #e0a030; }
+#cotas { position: absolute; inset: 0; pointer-events: none; }
+.cota { position: absolute; left: 0; top: 0; pointer-events: auto; font-size: 11px; font-weight: 600; padding: 1px 6px; border-radius: 6px;
+  background: #1d2530; color: #fff; border: 0; font-variant-numeric: tabular-nums; }
+.cota::after { content: ' cm'; font-weight: 400; opacity: .7; }
+.cota:hover { background: var(--azul) !important; }
+.cota-campo { position: absolute; left: 0; top: 0; width: 64px; pointer-events: auto; font: inherit; font-size: 13px; padding: 2px 6px;
+  border: 2px solid var(--azul); border-radius: 6px; }
+.rotulo-zona { position: absolute; left: 0; top: 0; font-size: 11px; font-weight: 600; color: #fff; background: var(--cor); padding: 1px 7px;
+  border-radius: 999px; white-space: nowrap; opacity: .85; pointer-events: none; }
+.rotulo-zona.ativo { opacity: 1; box-shadow: 0 0 0 2px #fff; }
+.opcoes { display: flex; flex-wrap: wrap; gap: 6px; }
+.opcoes button { font-size: 13px; padding: 5px 9px; }
+.opcoes button.ativo { background: var(--texto); color: #fff; border-color: var(--texto); }
+.opcoes button[style*="--cor"].ativo { background: var(--cor); border-color: var(--cor); }
+button.acao { width: 100%; background: var(--azul); color: #fff; border-color: var(--azul); font-weight: 600; padding: 9px; }
+button.acao:hover:not(:disabled) { background: #2a6fd0; border-color: #2a6fd0; }
+.linha-uso { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; padding: 5px 8px; border-radius: 6px; margin-bottom: 4px; }
+.linha-uso.ok { background: #eaf6ef; color: var(--verde); }
+.linha-uso.alerta { background: #fdecea; color: var(--vermelho); }
+.lista-moveis { display: grid; gap: 2px; }
+.lista-moveis button { display: flex; justify-content: space-between; gap: 8px; border: 0; padding: 6px 4px; text-align: left; border-radius: 6px; }
+.lista-moveis em { font-style: normal; font-size: 12px; color: var(--suave); white-space: nowrap; }
+.item-canto { display: flex; width: 100%; align-items: center; gap: 8px; border: 0; padding: 5px 6px; border-radius: 6px; text-align: left; }
+.item-canto i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.item-canto span { flex: 1; }
+.item-canto em { font-style: normal; font-size: 12px; color: var(--suave); }
+.item-canto.ativo { background: var(--azul-claro); }
+body.caminhando #bussola, body.caminhando #ajuda { display: none; }
+.foto-folha { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); width: min(460px, calc(100% - 24px)); z-index: 30;
+  background: rgba(255,255,255,.97); border-radius: 16px; padding: 14px 16px 16px; box-shadow: 0 10px 34px rgba(0,0,0,.22); max-height: calc(100% - 28px); overflow-y: auto; }
+.foto-folha h4 { margin: 12px 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--suave); }
+.foto-folha .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.foto-folha .chips button { border-radius: 999px; padding: 8px 13px; }
+.foto-folha .chips button.ativo { background: var(--texto); color: #fff; border-color: var(--texto); }
+.foto-folha .x { border: 0; background: none; font-size: 16px; padding: 2px 6px; }
+button.grande { width: 100%; margin-top: 14px; padding: 13px; font-size: 16px; font-weight: 600; background: var(--azul); color: #fff; border-color: var(--azul); border-radius: 12px; }
+.foto-topo { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+.foto-topo span { font-size: 12px; color: var(--suave); font-variant-numeric: tabular-nums; }
+.foto-tela { position: absolute; inset: 0; z-index: 30; background: #111; display: flex; align-items: center; justify-content: center; }
+.foto-tela img { width: 100%; height: 100%; object-fit: contain; -webkit-touch-callout: default; user-select: auto; }
+#fotoPrevia { filter: blur(6px) brightness(.8); transform: scale(1.04); }
+.foto-cartao { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); width: min(440px, calc(100% - 24px));
+  background: rgba(255,255,255,.96); border-radius: 14px; padding: 12px 14px; box-shadow: 0 10px 34px rgba(0,0,0,.3); }
+.foto-cartao > span { font-size: 12px; color: var(--suave); font-variant-numeric: tabular-nums; }
+.foto-cartao .luz { align-items: center; margin-top: 0; }
+.foto-cartao .luz span { font-size: 12px; color: var(--suave); margin-right: auto; }
+.foto-barra { height: 6px; background: var(--linha); border-radius: 6px; margin: 8px 0 6px; overflow: hidden; }
+.foto-barra i { display: block; height: 100%; width: 0; background: var(--azul); transition: width .25s; }
+button.acao-sec { background: var(--texto); color: #fff; border-color: var(--texto); }
+body.modo-foto #rotulos, body.modo-foto #cotas, body.modo-foto #avisos, body.modo-foto #ajuda, body.modo-foto #painel { display: none !important; }
+body.modo-foto #bFoto { background: var(--azul-claro); border-color: var(--azul); color: var(--azul); }
+/* simulação de uso e filme */
+body.cinema #vistas, body.cinema #rotulos, body.cinema #cotas, body.cinema #avisos, body.cinema #ajuda, body.cinema #painel, body.cinema #solVisita { display: none !important; }
+body.cinema-filme #ferramentas, body.cinema-filme #bussola, body.cinema-filme #bGaveta { display: none !important; }
+body.cinema-filme #app { grid-template-columns: 0 1fr; }
+body.cinema-filme #lateral { display: none; }
+#usoBarra { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); z-index: 20; display: flex; align-items: center; gap: 10px;
+  max-width: calc(100% - 100px); background: rgba(29,37,48,.92); color: #fff; border-radius: 999px; padding: 6px 6px 6px 16px; box-shadow: 0 6px 22px rgba(0,0,0,.2); font-size: 13px; }
+#usoBarra b { white-space: nowrap; font-weight: 600; }
+#usoBarra span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+#usoBarra em { font-style: normal; opacity: .6; white-space: nowrap; font-variant-numeric: tabular-nums; }
+#usoBarra button { border: 0; background: rgba(255,255,255,.14); color: #fff; width: 32px; height: 32px; border-radius: 50%; padding: 0; }
+@media (max-width: 700px) {
+  #usoBarra { top: auto; bottom: 12px; left: 12px; right: 12px; transform: none; max-width: none; border-radius: 14px; flex-wrap: wrap; row-gap: 2px; padding: 8px 8px 8px 14px; }
+  #usoBarra span { order: 5; flex-basis: 100%; white-space: normal; opacity: .9; }
+  #usoBarra em { margin-left: auto; }
+  .cine-legenda b { font-size: 22px; }
+  .cine-legenda span { font-size: 14px; }
+}
+#filme { position: absolute; inset: 0; z-index: 25; pointer-events: none; font-family: inherit; }
+#filme .cine-topo, #filme .cine-base { position: absolute; left: 0; right: 0; background: #0b0d10; color: #e9e6df; display: flex; align-items: center; padding: 0 16px; }
+#filme .cine-topo { top: 0; height: max(44px, 9%); justify-content: space-between; }
+#filme .cine-base { bottom: 0; height: max(40px, 9%); }
+.cine-titulo { font-size: 13px; letter-spacing: .04em; opacity: .75; }
+.cine-botoes { display: flex; gap: 6px; pointer-events: auto; }
+.cine-botoes button { background: rgba(255,255,255,.12); color: #fff; border: 0; border-radius: 8px; min-width: 38px; height: 30px; font-variant-numeric: tabular-nums; }
+.cine-legenda { position: absolute; left: 18px; bottom: calc(max(40px, 9%) + 14px); display: flex; align-items: baseline; gap: 12px; color: #fff;
+  text-shadow: 0 1px 8px rgba(0,0,0,.6); background: linear-gradient(90deg, rgba(0,0,0,.45), rgba(0,0,0,0)); padding: 8px 40px 8px 12px; border-radius: 8px; }
+.cine-legenda b { font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.cine-legenda span { font-size: 16px; }
+#filmeCaps { display: flex; gap: 4px; width: 100%; }
+#filmeCaps i { flex: 1; height: 4px; border-radius: 2px; background: rgba(255,255,255,.18); }
+#filmeCaps i.feito { background: #e9e6df; }
+#filmeCaps i.atual { background: linear-gradient(90deg, #e9e6df, rgba(255,255,255,.35)); }
+#filmeVeu { position: absolute; inset: 0; background: #0b0d10; opacity: 0; display: grid; place-items: center; color: #e9e6df; font-size: 20px; letter-spacing: .03em; }
+#dica { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: var(--texto); color: #fff; padding: 4px 10px; border-radius: 999px; font-size: 12px; pointer-events: none; }
+#ajuda { position: absolute; right: 12px; bottom: 12px; font-size: 11px; color: var(--suave); background: rgba(255,255,255,.8); border-radius: 8px; padding: 4px 8px; pointer-events: none; }
+#toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); background: var(--texto); color: #fff; padding: 10px 16px;
+  border-radius: 10px; opacity: 0; transition: .2s; pointer-events: none; z-index: 50; max-width: 90vw; }
+#toast.visivel { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---- painel da seleção */
+/* flutua sobre a cena: abrir o painel não muda o tamanho da vista 3D */
+#painel { position: absolute; top: var(--barra); right: 0; bottom: 0; width: var(--painel-w); overflow: hidden auto; z-index: 10;
+  background: var(--painel); border-left: 1px solid var(--linha); padding: 12px 14px 20px; box-shadow: -8px 0 24px rgba(20,30,40,.06); display: none; }
+body.com-painel #painel { display: block; }
+body.com-painel #ajuda { display: none; }
+#painel header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+#painel header small { color: var(--suave); font-size: 12px; }
+#painel header h2 { margin: 0; font-size: 17px; }
+#painel .fechar { border: 0; font-size: 20px; line-height: 1; padding: 2px 6px; }
+.bloco { border-top: 1px solid var(--linha); padding: 10px 0; }
+.bloco h3 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--suave); }
+.grade2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.grade3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+.campo { display: grid; grid-template-columns: 1fr auto; align-items: center; border: 1px solid var(--linha); border-radius: 8px; padding: 3px 8px 5px; background: #fff; }
+.campo:focus-within { border-color: var(--azul); box-shadow: 0 0 0 3px var(--azul-claro); }
+.campo span { grid-column: 1 / -1; font-size: 11px; color: var(--suave); }
+.campo input, .campo select { border: 0; outline: 0; font: inherit; font-size: 15px; width: 100%; min-width: 0; padding: 0; background: none; font-variant-numeric: tabular-nums; }
+.campo em { font-style: normal; font-size: 11px; color: var(--suave); }
+.campo.largo { grid-template-columns: 1fr; }
+.campo.cor { grid-template-columns: 1fr; }
+.campo.cor input { height: 28px; cursor: pointer; }
+.linha-botoes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.linha-botoes.fim { border-top: 1px solid var(--linha); padding-top: 12px; }
+.status { border-radius: 8px; padding: 7px 10px; font-size: 13px; margin-bottom: 8px; }
+.status.ok { background: #eaf6ef; color: var(--verde); }
+.status.alerta { background: #fdecea; color: var(--vermelho); }
+.abertura { border: 1px solid var(--linha); border-radius: 8px; padding: 8px; margin-bottom: 8px; }
+.abertura.ativa { border-color: var(--azul); box-shadow: 0 0 0 3px var(--azul-claro); }
+.abertura-cab { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.area-grande { font-size: 26px; font-weight: 700; margin: 4px 0 10px; }
+.area-grande small { display: block; font-size: 12px; font-weight: 400; color: var(--suave); }
+
+/* ---- diálogo .glb */
+dialog { border: 0; border-radius: 14px; padding: 18px; width: min(420px, 92vw); box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+dialog h3 { margin: 0 0 12px; }
+dialog form { display: grid; gap: 10px; }
+dialog p { margin: 0; font-size: 13px; color: var(--suave); }
+dialog menu { display: flex; justify-content: flex-end; gap: 8px; padding: 0; margin: 6px 0 0; }
+dialog button[value="ok"] { background: var(--azul); color: #fff; border-color: var(--azul); }
+
+/* ---- telas estreitas (celular / tablet em pé) */
+@media (max-width: 860px) {
+  :root { --barra: 96px; }
+  #app { grid-template: var(--barra) 1fr / 1fr; }
+  #barra { flex-wrap: wrap; align-content: center; row-gap: 6px; padding: 6px 10px; }
+  #abas { order: 3; flex-basis: 100%; }
+  .acoes { flex: 1; justify-content: flex-end; gap: 4px; }
+  .acoes button, details.menu summary { padding: 6px 7px; white-space: nowrap; font-size: 13px; }
+  #bEnquadrar { display: none; }
+  .marca { display: none; }
+  #bLateral { display: inline-block; }
+  #lateral { position: fixed; top: var(--barra); bottom: 0; left: 0; width: min(88vw, 320px); z-index: 30; transform: translateX(-102%);
+    transition: transform .2s; box-shadow: 10px 0 30px rgba(0,0,0,.12); }
+  body.lateral-aberta #lateral { transform: none; }
+  #painel { position: fixed; top: auto; left: 0; right: 0; bottom: 0; width: auto; z-index: 25; max-height: 48vh; border-left: 0; border-top: 1px solid var(--linha);
+    box-shadow: 0 -10px 30px rgba(0,0,0,.12); border-radius: 14px 14px 0 0; }
+  .acoes .texto { display: none; }
+  #ajuda { display: none; }
+}
+
+/* =====================================================================
+   MODOS (Visitar · Arrumar · Conferir)
+   ===================================================================== */
+:root { --modos: 62px; }
+#app { grid-template: "barra barra" var(--barra) "lateral palco" 1fr "modos modos" var(--modos) / var(--lateral) 1fr; }
+body.modo-visitar #app { grid-template-columns: 0 1fr; }
+#barra { grid-area: barra; } #lateral { grid-area: lateral; } #palco { grid-area: palco; } #modos { grid-area: modos; }
+body.modo-visitar #lateral { display: none; }
+body:not(.modo-visitar) .so-visitar, body:not(.modo-arrumar) .so-arrumar, body:not(.modo-conferir) .so-conferir { display: none !important; }
+body.modo-visitar #rotulos, body.modo-visitar #avisos, body.modo-visitar #cotas { display: none !important; }
+body.modo-conferir #avisos { display: none !important; }
+#painel { bottom: var(--modos) !important; }
+
+#modos { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--painel); border-top: 1px solid var(--linha); z-index: 40; }
+#modos button { border: 0; border-radius: 0; background: none; display: grid; grid-template-columns: auto auto; justify-content: center; align-items: center;
+  column-gap: 8px; padding: 6px; color: var(--suave); }
+#modos button span { grid-row: span 2; font-size: 22px; }
+#modos button b { font-size: 14px; text-align: left; }
+#modos button small { font-size: 11px; text-align: left; }
+#modos button.ativo { color: var(--texto); background: var(--azul-claro); box-shadow: inset 0 3px 0 var(--azul); }
+
+#ferramentas { position: absolute; right: 12px; top: 12px; display: grid; gap: 6px; z-index: 11; }
+#ferramentas button { width: 58px; height: 52px; display: grid; place-items: center; align-content: center; gap: 1px; padding: 4px; border-radius: 12px;
+  background: rgba(255,255,255,.94); box-shadow: 0 2px 10px rgba(20,30,40,.1); }
+#ferramentas button span { font-size: 18px; line-height: 1; }
+#ferramentas .rot { font-size: 10px; color: var(--suave); }
+#ferramentas button.ligado { background: var(--azul); border-color: var(--azul); }
+#ferramentas button.ligado span, #ferramentas button.ligado .rot { color: #fff; }
+body.com-painel #ferramentas { right: calc(var(--painel-w) + 12px); }
+
+#vistas { position: absolute; left: 12px; right: 84px; bottom: 12px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; z-index: 11; padding: 2px; }
+#vistas button { white-space: nowrap; border-radius: 999px; padding: 9px 14px; background: rgba(255,255,255,.94); box-shadow: 0 2px 10px rgba(20,30,40,.1); font-weight: 500; }
+#vistas button.ativo { background: var(--texto); color: #fff; border-color: var(--texto); }
+#vistas button.sol { margin-left: auto; }
+#solVisita { position: absolute; left: 12px; bottom: 64px; width: min(360px, calc(100% - 24px)); background: rgba(255,255,255,.96); border-radius: 14px;
+  padding: 12px 14px; box-shadow: 0 10px 30px rgba(0,0,0,.15); z-index: 12; }
+#solVisita input { width: 100%; accent-color: #e0a030; }
+
+#bGaveta { display: none; }
+
+/* catálogo com miniaturas */
+#catalogo { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+#catalogo h4 { grid-column: 1 / -1; margin: 10px 0 0; }
+.cartao-cat { display: grid; grid-template-rows: auto auto; gap: 2px; padding: 6px; border-radius: 10px; text-align: left; background: #fff; }
+.cartao-cat:hover { border-color: var(--azul) !important; }
+.cartao-cat .mini { aspect-ratio: 1; border-radius: 8px; background: #f2f0ec center / cover no-repeat; display: grid; place-items: center; color: var(--suave); font-size: 11px; }
+.cartao-cat b { font-size: 12px; font-weight: 600; line-height: 1.2; }
+.cartao-cat em { font-style: normal; font-size: 11px; color: var(--suave); }
+
+/* painel do móvel compacto */
+.acoes-rapidas { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 4px 0 10px; }
+.acoes-rapidas button { display: grid; place-items: center; gap: 2px; padding: 8px 2px; font-size: 18px; border-radius: 10px; }
+.acoes-rapidas button small { font-size: 10px; color: var(--suave); }
+.acoes-rapidas button.perigo small { color: var(--vermelho); }
+details.mais { border-top: 1px solid var(--linha); }
+details.mais > summary { cursor: pointer; padding: 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--suave); font-weight: 600; list-style: none; }
+details.mais > summary::after { content: ' ▸'; }
+details.mais[open] > summary::after { content: ' ▾'; }
+details.mais > .conteudo { padding-bottom: 10px; }
+
+/* relatório de conferência */
+.resumo-rel { display: flex; gap: 6px; margin-bottom: 10px; }
+.resumo-rel span { flex: 1; text-align: center; border-radius: 8px; padding: 6px 4px; font-size: 12px; }
+.resumo-rel .ok, .item-rel.ok i { background: #e3f4ea; color: var(--verde); }
+.resumo-rel .atencao, .item-rel.atencao i { background: #fdf3dc; color: #a46a00; }
+.resumo-rel .problema, .item-rel.problema i { background: #fdecea; color: var(--vermelho); }
+.rel-amb { font-size: 12px; font-weight: 600; margin: 12px 0 4px; color: var(--suave); }
+.item-rel { display: grid; grid-template-columns: 22px 1fr; gap: 2px 8px; width: 100%; text-align: left; border: 0; padding: 7px 6px; border-radius: 8px; }
+.item-rel i { grid-row: span 2; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 12px; font-weight: 700; }
+.item-rel b { font-size: 13px; font-weight: 600; }
+.item-rel small { font-size: 12px; color: var(--suave); }
+.item-rel.ativo { background: var(--azul-claro) !important; }
+
+@media (max-width: 860px) {
+  :root { --barra: 52px; --modos: 58px; }
+  #app, body.modo-visitar #app { grid-template: "barra" var(--barra) "palco" 1fr "modos" var(--modos) / 1fr; }
+  #barra { flex-wrap: nowrap; }
+  #abas { order: 0; flex-basis: auto; }
+  #modos button small { display: none; }
+  #modos button { grid-template-columns: auto; justify-items: center; row-gap: 0; }
+  #modos button span { grid-row: auto; font-size: 20px; }
+  #modos button b { font-size: 12px; }
+  #lateral { top: var(--barra) !important; bottom: var(--modos) !important; }
+  body.modo-visitar #lateral { display: none; }
+  #painel { bottom: var(--modos) !important; max-height: 52vh; }
+  #ferramentas { top: 8px; right: 8px; }
+  #ferramentas button { width: 50px; height: 46px; }
+  body.com-painel #ferramentas { right: 8px; }
+  body.com-painel #vistas, body.com-painel #bGaveta { display: none !important; }
+  #vistas { right: 8px; left: 8px; bottom: 8px; }
+  body:not(.modo-visitar) #bGaveta { display: block; position: absolute; left: 8px; bottom: 8px; z-index: 11; border-radius: 999px; padding: 10px 16px;
+    background: var(--texto); color: #fff; border-color: var(--texto); font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,.2); }
+  #avisos { bottom: 60px; }
+  #bLateral { display: none !important; }
+}
+</style>
+</head>
+<body>
+<!-- =====================================================================
+     INTERFACE
+     ===================================================================== -->
+<div id="app">
+  <header id="barra">
+    <div class="marca">Apartamento 3D</div>
+    <nav id="abas" aria-label="Cenários"></nav>
+    <div class="acoes">
+      <button id="bDesfazer" class="so-arrumar" title="Desfazer (Ctrl+Z)">↶</button>
+      <button id="bRefazer" class="so-arrumar" title="Refazer (Ctrl+Shift+Z)">↷</button>
+      <button id="bPNG" title="Salvar a vista como imagem">PNG</button>
+      <details class="menu">
+        <summary>Arquivo ▾</summary>
+        <div>
+          <button id="bSalvar">Salvar no navegador</button>
+          <button id="bExportar">Exportar layout (.json)</button>
+          <button id="bImportar">Importar layout (.json)</button>
+          <hr>
+          <button id="bGLB">Importar modelo .glb</button>
+          <hr>
+          <button id="bOriginal">Voltar ao original</button>
+        </div>
+      </details>
+    </div>
+  </header>
+
+  <aside id="lateral">
+    <div id="avisoPlanta" hidden></div>
+    <!-- Arrumar -->
+    <section class="lat so-arrumar">
+      <h2>Adicionar móvel</h2>
+      <input id="buscaCatalogo" type="search" placeholder="Buscar: sofá, mesa, planta…">
+      <div id="catalogo"></div>
+      <button id="bGLB2" style="width:100%;margin-top:10px">Importar modelo .glb…</button>
+      <h2>Cantos</h2>
+      <div id="cantos"></div>
+      <h2>Mostrar</h2>
+      <div id="mostrar"></div>
+      <h2>Demolição</h2>
+      <div id="demolicao"></div>
+    </section>
+    <!-- Conferir -->
+    <section class="lat so-conferir">
+      <h2>Conferir espaços</h2>
+      <div id="relatorio"></div>
+      <h2>Áreas</h2>
+      <div id="areas"></div>
+      <h2>Luz do sol</h2>
+      <div id="luz"></div>
+    </section>
+    <div id="salvo"></div>
+  </aside>
+
+  <main id="palco">
+    <div id="rotulos"></div>
+    <div id="cotas"></div>
+    <div id="bussola" title="Norte"><svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="18" fill="rgba(255,255,255,.88)" stroke="#d5dae0"/><path d="M20 5 L26 21 L20 18 L14 21 Z" fill="#d0453b"/><path d="M20 35 L14 19 L20 22 L26 19 Z" fill="#9aa3ad"/></svg><b>N</b></div>
+    <div id="dica" hidden></div>
+    <div id="avisos" hidden></div>
+
+    <!-- ferramentas da vista (todas os modos) -->
+    <div id="ferramentas">
+      <button id="bCaminhar" title="Andar por dentro, na altura dos olhos (C)"><span aria-hidden="true">🚶</span><span class="rot">Andar</span></button>
+      <button id="bVista" title="Planta vista de cima (T)"><span aria-hidden="true">▦</span><span class="rot">Planta</span></button>
+      <button id="bCorte" title="Baixar as paredes para ver o interior"><span aria-hidden="true">✂</span><span class="rot">Cortar</span></button>
+      <button id="bFoto" title="Foto realista (F)"><span aria-hidden="true">📷</span><span class="rot">Foto</span></button>
+      <button id="bUso" title="Simular o uso: portas, armários, TV, cadeiras e fogão abrindo e fechando"><span aria-hidden="true">▶</span><span class="rot">Usar</span></button>
+      <button id="bFilme" title="Filme: um dia de uma pessoa no apartamento"><span aria-hidden="true">🎬</span><span class="rot">Filme</span></button>
+      <button id="bEnquadrar" title="Ver o apartamento inteiro"><span aria-hidden="true">⤢</span><span class="rot">Inteiro</span></button>
+    </div>
+
+    <!-- Visitar: atalhos de cômodos e hora do sol -->
+    <div id="vistas" class="so-visitar"></div>
+    <div id="solVisita" class="so-visitar" hidden>
+      <div class="foto-topo"><b>☀ Luz do dia</b><span id="solVisitaTxt"></span></div>
+      <input id="solVisitaHora" type="range" min="5" max="20" step="0.25">
+      <div class="linha-botoes"><button id="solVisitaDia">▶ Passar o dia</button><button id="solVisitaFechar">Fechar</button></div>
+    </div>
+
+    <!-- Arrumar/Conferir no celular: abre a gaveta lateral -->
+    <button id="bGaveta"></button>
+
+    <!-- Foto realista em 3 passos: escolher (onde e quando) → revelar → ver e salvar -->
+    <div id="fotoMenu" class="foto-folha" hidden>
+      <div class="foto-topo"><b>📷 Foto realista</b><button id="fotoMenuFechar" class="x" aria-label="Fechar">✕</button></div>
+      <p class="nota">A luz é calculada de verdade (sol, janelas, reflexos). Escolha o cômodo e a hora e toque em Fotografar: a foto fica pronta em 1 a 3 minutos.</p>
+      <h4>Onde</h4><div id="fotoOnde" class="chips"></div>
+      <h4>Quando</h4><div id="fotoQuando" class="chips"></div>
+      <button id="fotoIr" class="grande">📷 Fotografar</button>
+    </div>
+    <div id="fotoRevelando" class="foto-tela" hidden>
+      <img id="fotoPrevia" alt="">
+      <div class="foto-cartao">
+        <b>Revelando a foto…</b>
+        <div class="foto-barra"><i id="fotoBarra"></i></div>
+        <span id="fotoStatus"></span>
+        <div class="linha-botoes"><button id="fotoJa">Ver já (menos nítida)</button><button id="fotoCancelar">Cancelar</button></div>
+      </div>
+    </div>
+    <div id="fotoPronta" class="foto-tela" hidden>
+      <img id="fotoImg" alt="Foto realista do apartamento">
+      <div class="foto-cartao">
+        <div class="linha-botoes luz"><span>Luz</span><button id="fotoEscura">− Mais escura</button><button id="fotoClara">＋ Mais clara</button></div>
+        <div class="linha-botoes"><button id="fotoSalvar" class="acao-sec">⬇ Salvar foto</button><button id="fotoOutra">Outra foto</button><button id="fotoFechar">Fechar</button></div>
+        <p class="nota">No celular, também dá para tocar e segurar na foto para salvar.</p>
+      </div>
+    </div>
+    <!-- Simulação de uso: uma coisa de cada vez abre e fecha -->
+    <div id="usoBarra" hidden>
+      <b>▶ Simulação de uso</b><span id="usoTxt"></span><em id="usoPasso"></em>
+      <button id="usoPausa" aria-label="Pausar">⏸</button><button id="usoFechar" aria-label="Parar">✕</button>
+    </div>
+    <!-- Filme: um dia no apartamento -->
+    <div id="filme" hidden>
+      <div class="cine-topo">
+        <span class="cine-titulo">🎬 Um dia no apartamento</span>
+        <span class="cine-botoes"><button id="filmePausa">⏸</button><button id="filmeVel">1×</button><button id="filmeFechar" aria-label="Fechar">✕</button></span>
+      </div>
+      <div class="cine-legenda"><b id="filmeHora"></b><span id="filmeTxt"></span></div>
+      <div class="cine-base"><div id="filmeCaps"></div></div>
+      <div id="filmeVeu"><span id="filmeVeuTxt"></span></div>
+    </div>
+    <div id="ajuda" class="so-arrumar">Clique: selecionar · arraste: mover · R: girar · Del: remover · 1 2 3: modos · F: foto</div>
+  </main>
+
+  <aside id="painel"></aside>
+
+  <nav id="modos" aria-label="Modo">
+    <button data-modo="visitar" title="Visitar (tecla 1)"><span aria-hidden="true">👁</span><b>Visitar</b><small>passear e fotografar</small></button>
+    <button data-modo="arrumar" title="Arrumar (tecla 2)"><span aria-hidden="true">🛋</span><b>Arrumar</b><small>mover e trocar móveis</small></button>
+    <button data-modo="conferir" title="Conferir (tecla 3)"><span aria-hidden="true">📏</span><b>Conferir</b><small>espaços e medidas</small></button>
+  </nav>
+</div>
+
+<div id="toast" role="status"></div>
+<input type="file" id="arqJSON" accept=".json,application/json" hidden>
+<input type="file" id="arqGLB" accept=".glb,.gltf" hidden>
+
+<dialog id="dlgGLB">
+  <form method="dialog">
+    <h3>Importar modelo .glb</h3>
+    <label class="campo largo"><span>Nome no catálogo</span><input id="glbNome" type="text"></label>
+    <p>Tamanho no arquivo: <b id="glbOriginal"></b></p>
+    <label class="campo"><span>1 unidade do arquivo equivale a</span><input id="glbEscala" type="text" inputmode="decimal"><em>cm</em></label>
+    <p>Resultado: <b id="glbResultado"></b> (L × P × A). Dá para mudar as medidas depois, no painel do móvel.</p>
+    <menu><button value="cancel">Cancelar</button><button value="ok">Adicionar ao catálogo</button></menu>
+  </form>
+</dialog>
+
+<!-- =====================================================================
+     BIBLIOTECA 3D (three.js embutido — funciona sem internet)
+     ===================================================================== -->
+<script>/*@THREE@*/</script>
+
+<!-- =====================================================================
+     CATÁLOGO DE MÓVEIS (dados)
+     ===================================================================== -->
+<script>/*@CATALOGO@*/</script>
+
+<!-- =====================================================================
+     PLANTA E CENÁRIOS (dados)
+     ===================================================================== -->
+<script>/*@PLANTA@*/</script>
+
+<!-- =====================================================================
+     APLICAÇÃO
+     ===================================================================== -->
+<script>/*@APP@*/</script>
+</body>
+</html>

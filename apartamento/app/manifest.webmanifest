@@ -1,0 +1,16 @@
+{
+  "name": "Apartamento 3D",
+  "short_name": "Apartamento",
+  "description": "Simulador 3D do apartamento: visitar, arrumar os móveis e conferir os espaços.",
+  "lang": "pt-BR",
+  "start_url": "../simulador.html",
+  "scope": "../",
+  "display": "standalone",
+  "background_color": "#f6f7f9",
+  "theme_color": "#1d2530",
+  "icons": [
+    { "src": "icone-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icone-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
