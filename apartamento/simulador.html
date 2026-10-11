@@ -9116,6 +9116,78 @@ const cubaTorneira = (x) => [
   { f: 'cil', raio: 1, a: 12, eixo: 'z', y: 'A+25', x, z: '-P/2+10', cor: '#d0d3d7', acab: 'metal' },
 ];
 
+// ---- bancada da cozinha: corpo, frentes e tampo (com cooktop e objetos)
+const BANCADA_CORPO = [
+      { f: 'caixa', l: 'L', p: 'P-8', a: 10, z: -4, cor: '#2b2b2b' },
+      { f: 'caixa', l: 'L', p: 2, a: 'A-14', y: 10, z: '-P/2+1', cor: '#e6e3dd' },
+      { f: 'caixa', l: 'L', p: 'P-4', a: 2, y: 10, z: -2, cor: '#e6e3dd' },
+      { f: 'caixa', n: 2, l: 2, p: 'P-4', a: 'A-14', y: 10, x: '(i*2-1)*(L/2-1)', z: -2, cor: 'principal', acab: 'laca' },
+      { f: 'caixa', l: 'L-4', p: 'P-10', a: 1.8, y: '10+(A-16)/2', z: -3, cor: '#e6e3dd' },
+      { f: 'cil', n: 'floor(L/45)', raio: 9, raio2: 9, a: 12, y: 12, x: '-L/2+25+i*42', z: -4, cor: ['#b5432f', '#d9d4cc', '#3d5c6e'], acab: 'ceramica' },
+      { f: 'cil', n: 'floor(L/30)', raio: 4, a: 15, y: '12+(A-16)/2', x: '-L/2+15+i*28', z: -6, cor: ['#f3efe6', '#d8c079', '#a8c5b5'], acab: 'vidro' },
+];
+const BANCADA_4PORTAS = [
+      // portas (giram) e puxadores
+      ...[0, 1, 2, 3].flatMap((k) => {
+        const mov = { gira: -105, eixo: 'y', px: `-L/2+${k}*L/4+0.6`, pz: 'P/2-1' };
+        return [
+          { f: 'caixa', l: 'L/4-1.2', p: 1.8, a: 'A-17', y: 11, x: `-L/2+L/8+${k}*L/4`, z: 'P/2-1', cor: 'principal', acab: '@', mov },
+          { f: 'caixa', l: 'L/4-8', p: 2, a: 1.2, y: 'A-10', x: `-L/2+L/8+${k}*L/4`, z: 'P/2+0.6', cor: '#26324a', acab: 'laca', mov },
+        ];
+      }),
+];
+// porta da bancada entre s e s+w (expressões em cm a partir do centro);
+// lado -1 = dobradiça à esquerda, 1 = à direita
+const portaBancada = (s, w, lado) => {
+  const mov = { gira: lado < 0 ? -105 : 105, eixo: 'y', px: lado < 0 ? `(${s})+0.6` : `(${s})+(${w})-0.6`, pz: 'P/2-1' };
+  return [
+    { f: 'caixa', l: `(${w})-1.2`, p: 1.8, a: 'A-17', y: 11, x: `(${s})+(${w})/2`, z: 'P/2-1', cor: 'principal', acab: '@', mov },
+    { f: 'caixa', l: `max(4,(${w})-8)`, p: 2, a: 1.2, y: 'A-10', x: `(${s})+(${w})/2`, z: 'P/2+0.6', cor: '#26324a', acab: 'laca', mov },
+  ];
+};
+const BANCADA_ELETROS = [
+  // lava e seca 60 × 55 × 85, no piso, com a porta redonda
+  { f: 'caixa', l: 59.5, p: 'P-4', a: 'A-4.5', x: '-L/2+30', z: -2, cor: '#eceeef', acab: 'laca', r: 1 },
+  { f: 'caixa', l: 57, p: 1, a: 9, y: 'A-15', x: '-L/2+30', z: 'P/2-3.5', cor: '#dfe3e6', acab: 'laca' },
+  { f: 'cil', raio: 2.6, a: 2, eixo: 'z', y: 'A-10.5', x: '-L/2+48', z: 'P/2-2', cor: '#9a9ea3', acab: 'metal' },
+  { f: 'cil', raio: 16, a: 3, eixo: 'z', y: 40, x: '-L/2+30', z: 'P/2-2', cor: '#cfd4d8', acab: 'metal', mov: { gira: -100, eixo: 'y', px: '-L/2+14', pz: 'P/2-2' } },
+  { f: 'cil', raio: 11.5, a: 3.4, eixo: 'z', y: 44.5, x: '-L/2+30', z: 'P/2-2', cor: '#2a3540', acab: 'vidro', mov: { gira: -100, eixo: 'y', px: '-L/2+14', pz: 'P/2-2' } },
+  // duas portas sob a cuba e o porta-temperos
+  ...portaBancada('-L/2+60', 31, -1),
+  ...portaBancada('-L/2+91', 31, 1),
+  ...portaBancada('-L/2+122', 'L-192', 1),
+  // forno de embutir 60 × 55 × 60 sob o cooktop (porta abre para baixo) e gaveta embaixo
+  { f: 'caixa', l: 59, p: 1.8, a: 18, y: 11, x: 'L/2-40', z: 'P/2-1', cor: 'principal', acab: '@' },
+  { f: 'caixa', l: 40, p: 2, a: 1.2, y: 25, x: 'L/2-40', z: 'P/2+0.6', cor: '#26324a', acab: 'laca' },
+  { f: 'caixa', l: 59, p: 'P-6', a: 56, y: 30, x: 'L/2-40', z: -3, cor: '#1d1e20', acab: 'metal' },
+  { f: 'caixa', l: 59, p: 2, a: 9, y: 77, x: 'L/2-40', z: 'P/2-1.5', cor: '#2a2b2e', acab: 'metal' },
+  { f: 'caixa', l: 59, p: 2, a: 46, y: 30, x: 'L/2-40', z: 'P/2-1', cor: '#151618', acab: 'vidro', mov: { gira: 88, eixo: 'x', py: 30, pz: 'P/2-1' } },
+  { f: 'cil', raio: 1, a: 48, eixo: 'x', y: 72, x: 'L/2-40', z: 'P/2+2.5', cor: '#c9ccd0', acab: 'metal', mov: { gira: 88, eixo: 'x', py: 30, pz: 'P/2-1' } },
+  // arremate fixo junto ao shaft
+  { f: 'caixa', l: 9, p: 1.8, a: 'A-17', y: 11, x: 'L/2-5', z: 'P/2-1', cor: 'principal', acab: '@' },
+];
+const bancadaTopo = (cubaX) => [
+      { f: 'caixa', l: 'L', p: 'P', a: 3.5, y: 'A-3.5', cor: 'secundaria', acab: 'granilite' },
+      { f: 'caixa', l: 'L', p: 1, a: 55, y: 'A', z: '-P/2+0.5', cor: '#ffffff', acab: 'azulejo_grade' },
+      // cuba e torneira
+      { f: 'caixa', l: 52, p: 42, a: 0.6, y: 'A', x: cubaX, z: -2, cor: '#b9bdc2', acab: 'metal' },
+      { f: 'caixa', l: 46, p: 36, a: 0.8, y: 'A', x: cubaX, z: -2, cor: '#7d8186', acab: 'metal' },
+      { f: 'cil', raio: 1.4, a: 30, y: 'A', x: cubaX, z: '-P/2+6', cor: '#d0d3d7', acab: 'metal' },
+      { f: 'cil', raio: 1.1, a: 16, eixo: 'z', y: 'A+29', x: cubaX, z: '-P/2+13', cor: '#d0d3d7', acab: 'metal' },
+      { f: 'caixa', l: 30, p: 20, a: 1.5, y: 'A', x: '-L/2+30', z: 4, ry: -8, cor: '#b78b5c', acab: 'madeira', r: 0.6 },
+      // cooktop 58 × 50
+      { f: 'caixa', l: 58, p: 50, a: 0.8, y: 'A', x: 'L/2-40', cor: '#0e0e10', acab: 'vidro' },
+      { f: 'caixa', l: 58, p: 50, a: 0.6, y: 'A', x: 'L/2-40', cor: '#111214', acab: 'tela' },
+      ...[[-14, -11, 6], [14, -11, 6], [-14, 11, 4.5], [14, 11, 4.5]].map(([dx, dz, r]) => (
+        { f: 'cil', raio: r, a: 1.2, y: 'A+0.2', x: `L/2-40+${dx}`, z: dz, cor: '#3a3a3c', acab: 'metal' })),
+      { f: 'cil', raio: 10, raio2: 9, a: 9, y: 'A+1.4', x: 'L/2-54', z: -11, cor: '#1f2a3d', acab: 'laca' },
+      // cafeteira, potes e garrafa
+      { f: 'caixa', l: 18, p: 22, a: 30, y: 'A', x: 'L/2-100', z: '-P/2+16', cor: '#1d1d1f', acab: 'laca', r: 2 },
+      { f: 'cil', raio: 6, a: 12, y: 'A+2', x: 'L/2-100', z: '-P/2+26', cor: '#cfe6ee', acab: 'vidro' },
+      { f: 'cil', n: 3, raio: 5, a: '14+i*3', y: 'A', x: '-L/2+12+i*11', z: '-P/2+9', cor: ['#e9e2d3', '#8f3f22', '#e9e2d3'], acab: 'ceramica' },
+      { f: 'torno', pts: [[0, 0], [4, 0], [4, 22], [1.5, 27], [1.5, 31], [0, 31]], x: 'L/2-122', y: 'A', z: '-P/2+8', cor: '#3c5a46', acab: 'vidro' },
+];
+
 const CATALOGO = [
   // ================================================================ QUARTO
   {
@@ -9383,6 +9455,17 @@ const CATALOGO = [
     ],
   },
 
+  {
+    tipo: 'ar_split', nome: 'Ar-condicionado split', cat: 'Sala', colide: false, elev: 222,
+    dim: { l: 80, p: 20, a: 28 }, cores: { principal: '#f4f5f6', secundaria: '#c9ccd0' }, rotulosCores: ['Corpo', 'Aleta'],
+    acao: ['Abrir a aleta', 'Fechar a aleta'],
+    partes: [
+      { f: 'caixa', l: 'L', p: 'P', a: 'A', cor: 'principal', acab: 'laca', r: 4 },
+      { f: 'caixa', l: 'L-12', p: 0.6, a: 1.4, y: 'A-9', z: 'P/2', cor: 'secundaria' },
+      { f: 'caixa', l: 'L-8', p: 7, a: 0.8, y: 1.5, z: 'P/2-4', cor: 'secundaria', acab: 'laca', mov: { gira: -55, eixo: 'x', py: 1.5, pz: 'P/2-1' } },
+    ],
+  },
+
   // ================================================================ DIVISÓRIAS
   {
     tipo: 'porta_correr', nome: 'Porta de correr 2 folhas', cat: 'Divisórias',
@@ -9591,41 +9674,11 @@ const CATALOGO = [
     acabamentos: ['laca', 'madeira'], acabTampo: true,
     acao: ['Abrir armários', 'Fechar armários'],
     uso: [frente(90, 'Corredor da cozinha')],
-    partes: [
-      { f: 'caixa', l: 'L', p: 'P-8', a: 10, z: -4, cor: '#2b2b2b' },
-      { f: 'caixa', l: 'L', p: 2, a: 'A-14', y: 10, z: '-P/2+1', cor: '#e6e3dd' },
-      { f: 'caixa', l: 'L', p: 'P-4', a: 2, y: 10, z: -2, cor: '#e6e3dd' },
-      { f: 'caixa', n: 2, l: 2, p: 'P-4', a: 'A-14', y: 10, x: '(i*2-1)*(L/2-1)', z: -2, cor: 'principal', acab: 'laca' },
-      { f: 'caixa', l: 'L-4', p: 'P-10', a: 1.8, y: '10+(A-16)/2', z: -3, cor: '#e6e3dd' },
-      { f: 'cil', n: 'floor(L/45)', raio: 9, raio2: 9, a: 12, y: 12, x: '-L/2+25+i*42', z: -4, cor: ['#b5432f', '#d9d4cc', '#3d5c6e'], acab: 'ceramica' },
-      { f: 'cil', n: 'floor(L/30)', raio: 4, a: 15, y: '12+(A-16)/2', x: '-L/2+15+i*28', z: -6, cor: ['#f3efe6', '#d8c079', '#a8c5b5'], acab: 'vidro' },
-      // portas (giram) e puxadores
-      ...[0, 1, 2, 3].flatMap((k) => {
-        const mov = { gira: -105, eixo: 'y', px: `-L/2+${k}*L/4+0.6`, pz: 'P/2-1' };
-        return [
-          { f: 'caixa', l: 'L/4-1.2', p: 1.8, a: 'A-17', y: 11, x: `-L/2+L/8+${k}*L/4`, z: 'P/2-1', cor: 'principal', acab: '@', mov },
-          { f: 'caixa', l: 'L/4-8', p: 2, a: 1.2, y: 'A-10', x: `-L/2+L/8+${k}*L/4`, z: 'P/2+0.6', cor: '#26324a', acab: 'laca', mov },
-        ];
-      }),
-      { f: 'caixa', l: 'L', p: 'P', a: 3.5, y: 'A-3.5', cor: 'secundaria', acab: 'granilite' },
-      { f: 'caixa', l: 'L', p: 1, a: 55, y: 'A', z: '-P/2+0.5', cor: '#ffffff', acab: 'azulejo_grade' },
-      // cuba e torneira
-      { f: 'caixa', l: 52, p: 42, a: 0.6, y: 'A', x: '-L/2+75', z: -2, cor: '#b9bdc2', acab: 'metal' },
-      { f: 'caixa', l: 46, p: 36, a: 0.8, y: 'A', x: '-L/2+75', z: -2, cor: '#7d8186', acab: 'metal' },
-      { f: 'cil', raio: 1.4, a: 30, y: 'A', x: '-L/2+75', z: '-P/2+6', cor: '#d0d3d7', acab: 'metal' },
-      { f: 'cil', raio: 1.1, a: 16, eixo: 'z', y: 'A+29', x: '-L/2+75', z: '-P/2+13', cor: '#d0d3d7', acab: 'metal' },
-      { f: 'caixa', l: 30, p: 20, a: 1.5, y: 'A', x: '-L/2+30', z: 4, ry: -8, cor: '#b78b5c', acab: 'madeira', r: 0.6 },
-      // cooktop 58 × 50
-      { f: 'caixa', l: 58, p: 50, a: 0.8, y: 'A', x: 'L/2-40', cor: '#0e0e10', acab: 'vidro' },
-      { f: 'caixa', l: 58, p: 50, a: 0.6, y: 'A', x: 'L/2-40', cor: '#111214', acab: 'tela' },
-      ...[[-14, -11, 6], [14, -11, 6], [-14, 11, 4.5], [14, 11, 4.5]].map(([dx, dz, r]) => (
-        { f: 'cil', raio: r, a: 1.2, y: 'A+0.2', x: `L/2-40+${dx}`, z: dz, cor: '#3a3a3c', acab: 'metal' })),
-      { f: 'cil', raio: 10, raio2: 9, a: 9, y: 'A+1.4', x: 'L/2-54', z: -11, cor: '#1f2a3d', acab: 'laca' },
-      // cafeteira, potes e garrafa
-      { f: 'caixa', l: 18, p: 22, a: 30, y: 'A', x: 'L/2-100', z: '-P/2+16', cor: '#1d1d1f', acab: 'laca', r: 2 },
-      { f: 'cil', raio: 6, a: 12, y: 'A+2', x: 'L/2-100', z: '-P/2+26', cor: '#cfe6ee', acab: 'vidro' },
-      { f: 'cil', n: 3, raio: 5, a: '14+i*3', y: 'A', x: '-L/2+12+i*11', z: '-P/2+9', cor: ['#e9e2d3', '#8f3f22', '#e9e2d3'], acab: 'ceramica' },
-      { f: 'torno', pts: [[0, 0], [4, 0], [4, 22], [1.5, 27], [1.5, 31], [0, 31]], x: 'L/2-122', y: 'A', z: '-P/2+8', cor: '#3c5a46', acab: 'vidro' },
+    variantes: [
+      { id: 'portas', nome: '4 portas', partes: [...BANCADA_CORPO, ...BANCADA_4PORTAS, ...bancadaTopo("-L/2+75")] },
+      // da ponta da geladeira para a do shaft: lava e seca (60), 2 portas sob a
+      // cuba (62), porta-temperos, forno de embutir (60) sob o cooktop, arremate
+      { id: 'eletros', nome: 'Com forno e lava e seca', partes: [...BANCADA_CORPO, ...BANCADA_ELETROS, ...bancadaTopo('-L/2+92')] },
     ],
   },
   {
@@ -9671,6 +9724,17 @@ const CATALOGO = [
         }),
       ],
     })),
+  },
+
+  {
+    tipo: 'depurador', nome: 'Depurador de embutir', cat: 'Cozinha', colide: false, elev: 144,
+    dim: { l: 60, p: 30, a: 6 }, cores: { principal: '#c9ccd0', secundaria: '#1d1e20' }, rotulosCores: ['Corpo', 'Visor'],
+    acao: ['Puxar o visor', 'Recolher o visor'],
+    partes: [
+      { f: 'caixa', l: 'L', p: 'P', a: 'A-1.5', y: 1.5, cor: 'principal', acab: 'metal' },
+      { f: 'caixa', n: 2, l: 'L/2-6', p: 'P-8', a: 0.4, y: 1.1, x: '(i*2-1)*L/4', z: -2, cor: '#8a8e93', acab: 'metal' },
+      { f: 'caixa', l: 'L-2', p: 8, a: 1.5, y: 0, z: 'P/2-4', cor: 'secundaria', acab: 'vidro', mov: { desliza: [0, 0, 14] } },
+    ],
   },
 
   // ================================================================ BANHEIRO
@@ -9764,6 +9828,18 @@ const CATALOGO = [
         { f: 'esfera', n: 'floor((A-6)/7)+1', raio: 4, ez: 0.4, x: 'L/2-3', y: '-1+i*(A-6)/floor((A-6)/7)', cor: 'secundaria', acab: 'laca' },
         { f: 'caixa', l: 'L-12', p: 0.6, a: 'A-12', y: 6, z: 'P/2', cor: 'principal', acab: 'espelho' },
       ] },
+    ],
+  },
+
+  {
+    tipo: 'chuveiro', nome: 'Chuveiro', cat: 'Banheiro', colide: false,
+    dim: { l: 24, p: 40, a: 215 }, cores: { principal: '#d0d3d7', secundaria: '#1f1f21' }, rotulosCores: ['Metal', 'Registro'],
+    partes: [
+      { f: 'cil', raio: 1.3, a: 'P-12', eixo: 'z', y: 'A-4', z: '-P/2+(P-12)/2', cor: 'principal', acab: 'metal' },
+      { f: 'cil', raio: 'L/2', a: 2.5, y: 'A-8', z: 'P/2-L/2', cor: 'principal', acab: 'metal' },
+      { f: 'cil', raio: 'L/2-1.5', a: 0.4, y: 'A-8.3', z: 'P/2-L/2', cor: '#9a9ea3', acab: 'metal' },
+      { f: 'cil', raio: 3.5, a: 3, eixo: 'z', y: 110, z: '-P/2+1.5', cor: 'principal', acab: 'metal' },
+      { f: 'caixa', l: 1.6, p: 4, a: 6, y: 107, z: '-P/2+5', cor: 'secundaria', acab: 'metal' },
     ],
   },
 
@@ -10037,7 +10113,7 @@ const CATALOGO = [
 // =====================================================================
 
 const PLANTA_ORIGINAL = {
-  revisao: 7,
+  revisao: 8,
   alturaParede: 260,
 
   // Local e orientação — usados para calcular o sol por data e hora.
@@ -10103,6 +10179,7 @@ const BANHEIRO = [
   { tipo: 'lavatorio', nome: 'Lavatório (gabinete 90)', variante: 'recorte', x: 396.5, z: 505, rot: 90, l: 90, p: 43, a: 85,
     cores: { principal: '#a8784f', secundaria: '#f7f7f5' } },
   { tipo: 'vaso',      nome: 'Vaso sanitário', x: 385.5, z: 576, rot: 90, l: 38, p: 65, a: 75 },
+  { tipo: 'chuveiro', nome: 'Chuveiro', x: 349, z: 680, rot: 180, l: 24, p: 40, a: 215 },
   { tipo: 'box_banho', nome: 'Box (vidro fixo)', variante: 'fixo', x: 349, z: 658, rot: 180, l: 78, p: 84, a: 200,
     cores: { principal: '#d9d6d0', secundaria: '#2b2b2b' } },
 ];
@@ -10133,12 +10210,17 @@ const MOVEIS_FINAL = [
     cores: { principal: FREIJO, secundaria: '#ffffff' } },
   { tipo: 'modulo_cozinha', nome: 'Módulo ao lado do shaft', x: 374, z: 23, rot: 90, l: 46, p: 28, a: 90, acab: 'madeira',
     cores: { principal: FREIJO, secundaria: '#ffffff' } },
-  { tipo: 'bancada_cozinha', nome: 'Bancada (cooktop + cuba)', x: 390, z: 153.5, rot: 90, espelhado: true, l: 215, p: 60, a: 90, acab: 'madeira',
+  { tipo: 'bancada_cozinha', nome: 'Bancada (cooktop + cuba)', variante: 'eletros', x: 390, z: 153.5, rot: 90, espelhado: true, l: 215, p: 60, a: 90, acab: 'madeira',
     cores: { principal: FREIJO, secundaria: '#ffffff' } },
   { tipo: 'armario_aereo', nome: 'Armário aéreo azul', x: 402.5, z: 153.5, rot: 90, y: 150, l: 215, p: 35, a: 70, acab: 'laca',
     cores: { principal: AZUL, secundaria: '#e6e3dd' } },
+  // depurador embutido sob o aéreo, sobre o cooktop (40 cm da ponta do shaft)
+  { tipo: 'depurador', nome: 'Depurador', x: 405, z: 86, rot: 90, y: 144, l: 60, p: 30, a: 6 },
   { tipo: 'geladeira', nome: 'Geladeira', variante: 'inverse', x: 383, z: 303, rot: 90, l: 70, p: 70, a: 185,
     cores: { principal: '#c9ccd0', secundaria: '#7d8186' } },
+  // ---- ar-condicionado: sala na parede do fundo (sopra ao longo do apartamento), quarto na parede do pé da cama
+  { tipo: 'ar_split', nome: 'Ar-condicionado da sala', x: 184.5, z: 10, rot: 0, y: 222, l: 80, p: 20, a: 28 },
+  { tipo: 'ar_split', nome: 'Ar-condicionado do quarto', x: 170, z: 690, rot: 180, y: 222, l: 80, p: 20, a: 28 },
   // ---- estar
   { tipo: 'estante_giratoria', nome: 'Estante divisória com TV giratória', x: 109, z: 230, rot: 0, l: 218, p: 40, a: 220,
     cores: { principal: FREIJO, secundaria: '#1f1f21' } },
