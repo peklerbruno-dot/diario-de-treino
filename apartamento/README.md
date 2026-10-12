@@ -74,10 +74,9 @@ Saíram o pendente de papel de arroz e a costela-de-adão.
 
 ## Eletrodomésticos e instalações
 
-- **Bancada da cozinha** (variante "Com forno e lava e seca"), da ponta da geladeira para a do
-  shaft: lava e seca 60 cm, duas portas de 31 cm sob a cuba (eixo a 92 cm da ponta), porta-temperos
-  de 23 cm, forno de embutir 60 cm sob o cooktop e arremate de 9 cm. A variante "4 portas" é a
-  original, com a cuba a 75 cm.
+- **Bancada da cozinha** (variante "Com forno"), da ponta da geladeira para a do shaft: três
+  portas iguais (a do meio sob a cuba, a 75 cm da ponta), forno de embutir 60 cm sob o cooktop e
+  arremate de 9 cm. Não há máquina de lavar no apartamento. A variante "4 portas" é a original.
 - **Depurador** de 60 cm embutido sob o armário aéreo, sobre o cooktop (a 54 cm do tampo: conferir
   a altura mínima do fabricante).
 - **Chuveiro** na parede do fundo do box; **ar-condicionado split** na parede do fundo da sala
