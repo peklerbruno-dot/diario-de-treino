@@ -162,6 +162,23 @@ const portaBancada = (s, w, lado) => {
     { f: 'caixa', l: `max(4,(${w})-8)`, p: 2, a: 1.2, y: 'A-10', x: `(${s})+(${w})/2`, z: 'P/2+0.6', cor: '#26324a', acab: 'laca', mov },
   ];
 };
+// Armário aéreo: caixa + portas basculantes num trecho de largura W
+// centrado em cx (o nicho do micro-ondas usa o resto)
+const AEREO_CORPO = [
+  { f: 'caixa', l: 'L', p: 2, a: 'A', z: '-P/2+1', cor: 'secundaria' },
+  { f: 'caixa', n: 2, l: 'L', p: 'P-2', a: 2, y: 'i ? A-2 : 0', z: -1, cor: 'principal', acab: 'laca' },
+  { f: 'caixa', n: 2, l: 2, p: 'P-2', a: 'A', x: '(i*2-1)*(L/2-1)', z: -1, cor: 'principal', acab: 'laca' },
+];
+const aereoPortas = (W, cx) => [
+  { f: 'caixa', l: `${W}-4`, p: 'P-6', a: 1.6, y: 'A/2', x: cx, z: -2, cor: 'secundaria' },
+  { f: 'cil', n: `floor((${W})/14)`, raio: 3.6, raio2: 4.2, a: 9, y: 2, x: `${cx}-(${W})/2+8+i*13`, z: -3, cor: ['#ffffff', '#e8e2d6', '#3d5c6e'], acab: 'ceramica' },
+  { f: 'caixa', n: `floor((${W})/30)`, l: 24, p: 'P-12', a: 6, y: 'A/2+1.6', x: `${cx}-(${W})/2+15+i*27`, z: -3, cor: '#f7f7f5', acab: 'ceramica', r: 2 },
+  { f: 'caixa', n: 2, l: `(${W})/2-1.5`, p: 1.8, a: 'A-1', y: 0.5, x: `${cx}+(i*2-1)*(${W})/4`, z: 'P/2-0.9', cor: 'principal', acab: '@',
+    mov: { gira: -80, eixo: 'x', py: 'A', pz: 'P/2' } },
+  { f: 'caixa', n: 2, l: `(${W})/2-12`, p: 1.6, a: 1.2, y: 1.5, x: `${cx}+(i*2-1)*(${W})/4`, z: 'P/2+0.8', cor: '#9a9a9a', acab: 'metal',
+    mov: { gira: -80, eixo: 'x', py: 'A', pz: 'P/2' } },
+];
+
 const BANCADA_ELETROS = [
   // da ponta da geladeira: três portas iguais (a do meio fica sob a cuba)
   ...portaBancada('-L/2', '(L-70)/3', -1),
@@ -697,17 +714,25 @@ const CATALOGO = [
     dim: { l: 120, p: 35, a: 70 }, cores: { principal: '#f2f0ec', secundaria: '#e6e3dd' }, rotulosCores: ['Portas', 'Interior'],
     acabamentos: ['laca', 'madeira'],
     acao: ['Abrir portas', 'Fechar portas'],
-    partes: [
-      { f: 'caixa', l: 'L', p: 2, a: 'A', z: '-P/2+1', cor: 'secundaria' },
-      { f: 'caixa', n: 2, l: 'L', p: 'P-2', a: 2, y: 'i ? A-2 : 0', z: -1, cor: 'principal', acab: 'laca' },
-      { f: 'caixa', n: 2, l: 2, p: 'P-2', a: 'A', x: '(i*2-1)*(L/2-1)', z: -1, cor: 'principal', acab: 'laca' },
-      { f: 'caixa', l: 'L-4', p: 'P-6', a: 1.6, y: 'A/2', z: -2, cor: 'secundaria' },
-      { f: 'cil', n: 'floor(L/14)', raio: 3.6, raio2: 4.2, a: 9, y: 2, x: '-L/2+8+i*13', z: -3, cor: ['#ffffff', '#e8e2d6', '#3d5c6e'], acab: 'ceramica' },
-      { f: 'caixa', n: 'floor(L/30)', l: 24, p: 'P-12', a: 6, y: 'A/2+1.6', x: '-L/2+15+i*27', z: -3, cor: '#f7f7f5', acab: 'ceramica', r: 2 },
-      { f: 'caixa', n: 2, l: 'L/2-1.5', p: 1.8, a: 'A-1', y: 0.5, x: '(i*2-1)*L/4', z: 'P/2-0.9', cor: 'principal', acab: '@',
-        mov: { gira: -80, eixo: 'x', py: 'A', pz: 'P/2' } },
-      { f: 'caixa', n: 2, l: 'L/2-12', p: 1.6, a: 1.2, y: 1.5, x: '(i*2-1)*L/4', z: 'P/2+0.8', cor: '#9a9a9a', acab: 'metal',
-        mov: { gira: -80, eixo: 'x', py: 'A', pz: 'P/2' } },
+    variantes: [
+      { id: 'portas', nome: '2 portas', partes: [...AEREO_CORPO, ...aereoPortas('L', 0)] },
+      // nicho aberto de 60 na ponta +L/2 (a da geladeira na cozinha) para o
+      // micro-ondas, com uma porta basculante baixa em cima; o resto, 2 portas
+      { id: 'micro', nome: 'Com nicho do micro-ondas', partes: [
+        ...AEREO_CORPO,
+        ...aereoPortas('L-62', -31),
+        { f: 'caixa', l: 2, p: 'P-2', a: 'A-4', y: 2, x: 'L/2-61', z: -1, cor: 'principal', acab: 'laca' },
+        { f: 'caixa', l: 58, p: 'P-2', a: 2, y: 42, x: 'L/2-31', z: -1, cor: 'principal', acab: 'laca' },
+        // micro-ondas (~ 48 × 36 × 28) com folga de ventilação
+        { f: 'caixa', l: 48, p: 'min(36,P-4)', a: 28, y: 2.5, x: 'L/2-31', z: -1, cor: '#2a2b2e', acab: 'metal', r: 1.5 },
+        { f: 'caixa', l: 34, p: 0.6, a: 22, y: 5.5, x: 'L/2-36', z: 'min(36,P-4)/2-0.7', cor: '#111214', acab: 'vidro' },
+        { f: 'caixa', l: 9, p: 0.6, a: 22, y: 5.5, x: 'L/2-12', z: 'min(36,P-4)/2-0.7', cor: '#5c5f63', acab: 'metal' },
+        // porta basculante sobre o nicho
+        { f: 'caixa', l: 58.5, p: 1.8, a: 'A-45', y: 44.5, x: 'L/2-31', z: 'P/2-0.9', cor: 'principal', acab: '@',
+          mov: { gira: -80, eixo: 'x', py: 'A', pz: 'P/2' } },
+        { f: 'caixa', l: 40, p: 1.6, a: 1.2, y: 46, x: 'L/2-31', z: 'P/2+0.8', cor: '#9a9a9a', acab: 'metal',
+          mov: { gira: -80, eixo: 'x', py: 'A', pz: 'P/2' } },
+      ] },
     ],
   },
   {
