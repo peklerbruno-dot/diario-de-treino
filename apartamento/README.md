@@ -59,26 +59,31 @@ jantar não contam como conflito entre si (`USO_ALTERNADO`, em `src/planta.js`).
 
 ## Opções de jantar
 
-Duas abas, iguais em tudo menos na mesa. Nas duas: **só o banco** (sem cadeiras de jantar),
+Três abas, iguais em tudo menos na mesa. Nas duas: **só o banco** (sem cadeiras de jantar),
 **península com 32 cm** de profundidade (cabe um prato ou uma panela; o corredor da cozinha
-fica com 84 cm), bancada do escritório **110 × 70 cm** e lavatório com **recorte na pedra**
+fica com 84 cm), bancada do escritório **110 × 61 cm** no canto (encostada na parede das janelas e
+terminando onde a janela de 115 começa), armário aéreo com **nicho do micro-ondas** e lavatório com **recorte na pedra**
 para a porta do banheiro passar.
 
 | Aba | Mesa | Entrada no banco | Mesa ao alcance (sentado no banco) |
 | --- | --- | --- | --- |
-| Mesa quadrada 88 | 88 × 88, a da planta final | trecho de 30 cm (apertado) | 0,5 cm |
-| Mesa redonda 80 | Ø 80, pé central | trecho de 45 cm; ~33 cm na quina da bancada de trabalho | 13 cm |
-| Redonda 80 afastada | Ø 80, 20 cm mais longe do banco | livre (117 cm) | 33 cm: longe demais para comer |
-| **Redonda 70** | **Ø 70, pé central, junto à península** | **trecho de 53 cm; ~42 cm na quina** | **13 cm** |
+| Mesa quadrada 88 | 88 × 88, a da planta final | trecho de 29,5 cm (apertado) | 0,5 cm |
+| Mesa redonda 80 | Ø 80, pé central | trecho de 45 cm; ~51 cm na quina da bancada de trabalho | 13 cm |
+| **Redonda 70** | **Ø 70, pé central, junto à península** | **trecho de 53 cm; ~60 cm na quina** | **13 cm** |
 
 No filme, a pessoa toma café no banco: entra pela faixa livre e escorrega até o meio da mesa.
-Saíram o pendente de papel de arroz e a costela-de-adão.
+Saíram o pendente de papel de arroz e a costela-de-adão. O tamanho e a posição da mesa redonda
+se mudam direto no modo Arrumar (por isso não há mais a aba "afastada").
 
 ## Eletrodomésticos e instalações
 
 - **Bancada da cozinha** (variante "Com forno"), da ponta da geladeira para a do shaft: três
   portas iguais (a do meio sob a cuba, a 75 cm da ponta), forno de embutir 60 cm sob o cooktop e
   arremate de 9 cm. Não há máquina de lavar no apartamento. A variante "4 portas" é a original.
+- **Armário aéreo** com 40 cm de profundidade (variante "Com nicho do micro-ondas"): na ponta da
+  geladeira, longe do cooktop, um nicho aberto de 58 × 40 cm (vão interno, ~38 de fundo) para
+  um micro-ondas de até ~50 × 36 × 30 cm, com porta basculante baixa em cima; o resto são duas
+  portas basculantes. O micro-ondas fica a 150 cm do chão (base do aéreo).
 - **Depurador** de 60 cm embutido sob o armário aéreo, sobre o cooktop (a 54 cm do tampo: conferir
   a altura mínima do fabricante).
 - **Chuveiro** na parede do fundo do box; **ar-condicionado split** na parede do fundo da sala

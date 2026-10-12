@@ -23,7 +23,7 @@
 // =====================================================================
 
 const PLANTA_ORIGINAL = {
-  revisao: 9,
+  revisao: 10,
   alturaParede: 260,
 
   // Local e orientação — usados para calcular o sol por data e hora.
@@ -103,12 +103,12 @@ const FREIJO = '#a8784f', AZUL = '#5d6c84', TERRACOTA = '#8f4325';
 const CREME = '#ece3d1', MOSTARDA = '#b8892c', VINHO = '#5e1a2a', GRAFITE = '#2f3036';
 
 const MOVEIS_FINAL = [
-  // ---- home office (na janela de 115)
-  { tipo: 'mesa_computador', nome: 'Bancada de trabalho', variante: 'notebook', x: 71, z: 35, rot: 0, l: 110, p: 70, a: 75,
+  // ---- home office: encostada na parede das janelas, terminando onde a janela de 115 começa (z 61)
+  { tipo: 'mesa_computador', nome: 'Bancada de trabalho', variante: 'notebook', x: 55, z: 30.5, rot: 0, l: 110, p: 61, a: 75,
     cores: { principal: AZUL, secundaria: '#1f1f21' } },
-  { tipo: 'cadeira', nome: 'Cadeira do escritório', variante: 'concha', x: 57, z: 97, rot: 180, l: 50, p: 55, a: 82,
+  { tipo: 'cadeira', nome: 'Cadeira do escritório', variante: 'concha', x: 55, z: 88, rot: 180, l: 50, p: 55, a: 82,
     cores: { principal: '#f2efe8', secundaria: FREIJO } },
-  { tipo: 'quadro', nome: 'Moldura ondulada com fotos', variante: 'ondulada', x: 71, z: 1.5, rot: 0, y: 118, l: 50, p: 3, a: 60,
+  { tipo: 'quadro', nome: 'Moldura ondulada com fotos', variante: 'ondulada', x: 55, z: 1.5, rot: 0, y: 118, l: 50, p: 3, a: 60,
     cores: { principal: AZUL, secundaria: '#6b3a24' } },
   // ---- jantar
   { tipo: 'banco', nome: 'Banco de jantar', x: 184.5, z: 17.5, rot: 0, l: 117, p: 35, a: 45, acab: 'tweed',
@@ -122,7 +122,7 @@ const MOVEIS_FINAL = [
     cores: { principal: FREIJO, secundaria: '#ffffff' } },
   { tipo: 'bancada_cozinha', nome: 'Bancada (cooktop + cuba)', variante: 'eletros', x: 390, z: 153.5, rot: 90, espelhado: true, l: 215, p: 60, a: 90, acab: 'madeira',
     cores: { principal: FREIJO, secundaria: '#ffffff' } },
-  { tipo: 'armario_aereo', nome: 'Armário aéreo azul', x: 402.5, z: 153.5, rot: 90, y: 150, l: 215, p: 35, a: 70, acab: 'laca',
+  { tipo: 'armario_aereo', nome: 'Armário aéreo azul', variante: 'micro', x: 400, z: 153.5, rot: 90, y: 150, l: 215, p: 40, a: 70, acab: 'laca',
     cores: { principal: AZUL, secundaria: '#e6e3dd' } },
   // depurador embutido sob o aéreo, sobre o cooktop (40 cm da ponta do shaft)
   { tipo: 'depurador', nome: 'Depurador', x: 405, z: 86, rot: 90, y: 144, l: 60, p: 30, a: 6 },
@@ -207,8 +207,6 @@ const comMesa = (id, nome, mesa) => ({
 });
 const CENARIOS_JANTAR = [
   comMesa('mesa-redonda', 'Mesa redonda 80', mesaRedonda(80, 197, 88)),
-  // afastada 20 cm do banco: entra fácil, mas a mesa fica a 33 cm do banco (longe para comer)
-  comMesa('redonda-afastada', 'Redonda 80 afastada', mesaRedonda(80, 197, 108)),
   // Ø70 encostada na península: ~42 cm na quina da bancada de trabalho e mesa a 13 cm do banco
   comMesa('redonda-70', 'Redonda 70', mesaRedonda(70, 202, 83)),
 ];
