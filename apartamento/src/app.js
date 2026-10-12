@@ -1117,7 +1117,7 @@ function construirAbertura(g, ab, w, Hc, info) {
       const borda = new T.LineSegments(new T.EdgesGeometry(fant.geometry), MAT.janelaBorda);
       borda.position.copy(fant.position);
       g.add(borda);
-      const faixa = new T.Mesh(new T.BoxGeometry(L, 1.2, e + 1), MAT.janelaFaixa);
+      const faixa = new T.Mesh(new T.BoxGeometry(L + 6, 1.2, e + 7), MAT.janelaFaixa); // cobre também o peitoril
       faixa.position.set(u0 + L / 2, Math.min(Hc, vista.topo ? 9999 : Hc) + 0.7, 0);
       faixa.userData = info;
       g.add(faixa);
