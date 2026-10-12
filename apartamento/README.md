@@ -96,6 +96,14 @@ Saíram o pendente de papel de arroz e a costela-de-adão.
 - **Celular, modo Arrumar:** o painel do móvel é uma gaveta baixa (nome, ações, setas de mover
   5 cm e medidas); "mais opções" expande. A vista sobe para o móvel ficar visível acima dela.
   Os conflitos ficam numa etiqueta que abre com um toque.
+- **Girar arrastando:** a alça redonda azul, no canto do móvel selecionado; arraste em volta dele
+  e ele gira de 90 em 90°.
+- **Encostar sozinho:** ao arrastar, a até 12 cm de uma parede ou de outro móvel, ele encosta
+  (aparece "Encostado: …"). No PC, segure Alt para soltar livre.
+- **Alinhar:** com um móvel selecionado, toque em **Alinhar** e depois no(s) outro(s) (no PC,
+  Shift + clique). Aparecem Esquerdas, Centros, Direitas, Topos, Meios e Bases, como na vista de cima.
+- **Régua (📐 Medir ou tecla M):** toque em dois pontos; encaixa nas bordas de paredes e móveis e
+  endireita medidas quase retas. Mostra o total e, na diagonal, ↔ e ↕. "Limpar" apaga.
 - **Menu ⋯ Mais:** imagem PNG, salvar, exportar/importar layout, modelo 3D e voltar ao original.
 
 ## Como usar
