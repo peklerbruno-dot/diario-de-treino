@@ -553,6 +553,9 @@ function texturaCimento() {
 }
 
 const MAT = {
+  janelaFantasma: new T.MeshBasicMaterial({ color: '#5aa9e6', transparent: true, opacity: 0.22, depthWrite: false }),
+  janelaBorda: new T.LineBasicMaterial({ color: '#2f80ed' }),
+  janelaFaixa: new T.MeshBasicMaterial({ color: '#2f80ed' }),
   parede: new T.MeshStandardMaterial({ color: '#efe9df', roughness: 0.93 }),
   paredeSel: new T.MeshStandardMaterial({ color: '#cfe0fb', roughness: 0.9, emissive: '#2f80ed', emissiveIntensity: 0.12 }),
   topo: new T.MeshStandardMaterial({ color: '#3f4349', roughness: 0.85 }),
@@ -1104,6 +1107,21 @@ function construirAbertura(g, ab, w, Hc, info) {
     add(4, h - 2 * pf, 5, MAT.esquadria, u0 + L / 2, y0 + h / 2, 0);
     add(L / 2 - pf, h - 2 * pf, 0.8, MAT.vidro, u0 + L / 4 + pf / 4, y0 + h / 2, -1.5);
     add(L / 2 - pf, h - 2 * pf, 0.8, MAT.vidro, u0 + (3 * L) / 4 - pf / 4, y0 + h / 2, 1.5);
+    // paredes cortadas ou vista de cima: a janela aparece como vidro azul na
+    // altura real e numa faixa azul no topo da parede (como na planta baixa)
+    if (Hc < y0 + h || vista.topo) {
+      const fant = new T.Mesh(new T.BoxGeometry(L, h, e + 2), MAT.janelaFantasma);
+      fant.position.set(u0 + L / 2, y0 + h / 2, 0);
+      fant.userData = info;
+      g.add(fant);
+      const borda = new T.LineSegments(new T.EdgesGeometry(fant.geometry), MAT.janelaBorda);
+      borda.position.copy(fant.position);
+      g.add(borda);
+      const faixa = new T.Mesh(new T.BoxGeometry(L, 1.2, e + 1), MAT.janelaFaixa);
+      faixa.position.set(u0 + L / 2, Math.min(Hc, vista.topo ? 9999 : Hc) + 0.7, 0);
+      faixa.userData = info;
+      g.add(faixa);
+    }
   } else if (ab.tipo === 'porta') {
     const h = ab.altura, bt = 3, lado = ab.lado === -1 ? -1 : 1;
     add(bt, h, e + 2, MAT.batente, u0 + bt / 2, h / 2, 0);
@@ -1180,6 +1198,20 @@ function montarRotulos() {
     camadaRotulos.append(div);
     return { div, pos: new T.Vector3(x, 1, z), nome: amb.nome, area: m2(areaUtil(amb)) };
   });
+  // janelas: etiqueta azul junto de cada uma, com largura × altura
+  for (const ab of doc.planta.aberturas.filter((a) => a.tipo === 'janela')) {
+    const w = parede(ab.parede);
+    if (!w || w.demolida) continue;
+    const u = ab.pos + ab.largura / 2, hz = horizontal(w);
+    const c = doc.planta.contorno, cx = (Math.min(...c.map((p) => p[0])) + Math.max(...c.map((p) => p[0]))) / 2, cz = (Math.min(...c.map((p) => p[1])) + Math.max(...c.map((p) => p[1]))) / 2;
+    let x = hz ? w.x1 + u : w.x1, z = hz ? w.z1 : w.z1 + u;
+    if (hz) z += Math.sign(cz - z) * 30; else x += Math.sign(cx - x) * 30; // para dentro
+    const div = document.createElement('div');
+    div.className = 'rotulo janela';
+    div.textContent = `Janela ${fmt(ab.largura)} × ${fmt(ab.altura)}`;
+    camadaRotulos.append(div);
+    rotulos.push({ div, pos: new T.Vector3(x, ab.peitoril + ab.altura / 2, z) });
+  }
 }
 function posicionar(lista) {
   const w = palco.clientWidth, h = palco.clientHeight, v = new T.Vector3();
@@ -1652,9 +1684,10 @@ function construirMoveis() {
 // prateleiras, armários aéreos — some para mostrar o que está embaixo.
 function aplicarVisibilidadeTopo() {
   sujarSombra();
+  const cortado = (vista.topo || (vista.corte && !vista.caminhar)) && !(typeof cinema !== 'undefined' && cinema.modo);
   for (const m of cen().moveis) {
     const obj = objMovel.get(m.id);
-    if (obj) obj.visible = !(vista.topo && (m.y || 0) >= 140);
+    if (obj) obj.visible = !(vista.topo && (m.y || 0) >= 140) && !(cortado && (m.tipo === 'cortina' || m.tipo === 'persiana'));
   }
 }
 
@@ -1993,6 +2026,7 @@ function alternarCaminhada() {
     ctlPersp.enabled = true; ctlPersp.update();
   }
   document.body.classList.toggle('caminhando', vista.caminhar);
+  aplicarVisibilidadeTopo();
   construirPlanta(); construirZonas(); desenharSelecao(); atualizarBotoes();
 }
 function andarPara(x, z) {
@@ -3134,6 +3168,7 @@ function alternarVista() {
   vista.topo = !vista.topo;
   ctlPersp.enabled = !vista.topo;
   ctlTopo.enabled = vista.topo;
+  construirPlanta(); // na planta, as janelas viram faixas azuis no topo da parede
   aplicarVisibilidadeTopo();
   atualizarBotoes();
 }
@@ -3141,7 +3176,7 @@ function alternarVista() {
 $('#bDesfazer').onclick = desfazer;
 $('#bRefazer').onclick = refazer;
 $('#bVista').onclick = alternarVista;
-$('#bCorte').onclick = () => { vista.corte = !vista.corte; construirPlanta(); atualizarBotoes(); };
+$('#bCorte').onclick = () => { vista.corte = !vista.corte; construirPlanta(); aplicarVisibilidadeTopo(); atualizarBotoes(); };
 $('#bEnquadrar').onclick = () => { if (vista.caminhar) alternarCaminhada(); enquadrar(); };
 $('#bCaminhar').onclick = () => { if (!foto.ativa) alternarCaminhada(); };
 function alternarPausaCinema() {

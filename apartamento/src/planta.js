@@ -23,7 +23,7 @@
 // =====================================================================
 
 const PLANTA_ORIGINAL = {
-  revisao: 8,
+  revisao: 9,
   alturaParede: 260,
 
   // Local e orientação — usados para calcular o sol por data e hora.
@@ -140,12 +140,12 @@ const MOVEIS_FINAL = [
     cores: { principal: '#141414', secundaria: '#141414' } },
   { tipo: 'quadro', nome: 'Quadro azul e verde', variante: 'tela', x: 160, z: 448.5, rot: 180, y: 118, l: 55, p: 3, a: 70,
     cores: { principal: '#2d4a6e', secundaria: '#2b2b2b' } },
-  // ---- cortinas de linho nas três janelas
-  { tipo: 'cortina', nome: 'Cortina (janela 115)', x: 7, z: 103, rot: 270, l: 196, p: 10, a: 250, acab: 'voil', aberto: 0.55,
+  // ---- cortinas nas três janelas: largura da janela + 15 cm de cada lado, centradas nela
+  { tipo: 'cortina', nome: 'Cortina (janela 115)', x: 7, z: 118.5, rot: 270, l: 145, p: 10, a: 250, acab: 'voil', aberto: 0.8,
     cores: { principal: '#e9e3d8', secundaria: '#3a3a3c' } },
-  { tipo: 'cortina', nome: 'Cortina (janela 155)', x: 7, z: 349, rot: 270, l: 196, p: 10, a: 250, acab: 'voil', aberto: 0.55,
+  { tipo: 'cortina', nome: 'Cortina (janela 155)', x: 7, z: 328.5, rot: 270, l: 185, p: 10, a: 250, acab: 'voil', aberto: 0.8,
     cores: { principal: '#e9e3d8', secundaria: '#3a3a3c' } },
-  { tipo: 'cortina', nome: 'Cortina (janela 136)', x: 7, z: 578, rot: 270, l: 232, p: 10, a: 250, acab: 'linho', aberto: 0.55,
+  { tipo: 'cortina', nome: 'Cortina (janela 136)', x: 7, z: 589, rot: 270, l: 166, p: 10, a: 250, acab: 'linho', aberto: 0.8,
     cores: { principal: '#d9cdb8', secundaria: '#3a3a3c' } },
   // ---- quarto
   { tipo: 'cama_box', nome: 'Cama box viúva', variante: 'canelada', x: 123, z: 558, rot: 0, l: 128, p: 196, a: 60, acab: 'xadrez',
