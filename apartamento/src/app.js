@@ -3348,7 +3348,7 @@ function conferir() {
         if (dc.grupo !== 'cadeira') continue;
         const pc = pegada(c);
         const dx = Math.max(pc.x0 - pg.x1, pg.x0 - pc.x1, 0), dz = Math.max(pc.z0 - pg.z1, pg.z0 - pc.z1, 0);
-        if (Math.max(dx, dz) > 20) continue;
+        if (Math.max(dx, dz) > (c.tipo === 'banco' ? 45 : 20)) continue;
         const rx = (c.x - m.x) / pg.w, rz = (c.z - m.z) / pg.d;
         const lado = Math.abs(rx) > Math.abs(rz) ? (rx > 0 ? 'L' : 'O') : (rz > 0 ? 'S' : 'N');
         const horiz = lado === 'N' || lado === 'S';
@@ -3409,6 +3409,17 @@ function conferir() {
       else if (melhorFrente >= 28) { st = 'atencao'; detalhe = `entra pela frente só por um trecho de ${fmt(melhorFrente)} cm (as pontas estão fechadas)`; }
       else { st = 'problema'; detalhe = `pontas com ${fmt(a.livre)} e ${fmt(b.livre)} cm e frente tomada · para sentar é preciso puxar a mesa`; }
       itens.push({ amb, st, ids: [m.id], titulo: `${m.nome}: como sentar`, detalhe });
+      // e, sentado, a mesa fica ao alcance? (vão entre a frente do banco e a borda da mesa)
+      const mesaFrente = moveis.filter((o) => (defCatalogo(o.tipo) || {}).grupo === 'mesa' && o.tipo !== 'mesa_computador').map((o) => {
+        const t = pegada(o), vao = (bordaDe(t, frente[0], -frente[1]) - bordaDe(pg, frente[0], frente[1])) * frente[1];
+        const cobre = Math.min(t[c1], pg[c1]) - Math.max(t[c0], pg[c0]);
+        return { o, vao, cobre };
+      }).filter((x) => x.cobre > 20 && x.vao > -60 && x.vao < 80).sort((a, b) => a.vao - b.vao)[0];
+      if (mesaFrente) {
+        const v = Math.max(0, mesaFrente.vao), st2 = v <= 15 ? 'ok' : v <= 25 ? 'atencao' : 'problema';
+        itens.push({ amb, st: st2, ids: [m.id, mesaFrente.o.id], titulo: `${m.nome}: mesa ao alcance`,
+          detalhe: `${fmt(v)} cm entre a frente do banco e a mesa${st2 === 'ok' ? '' : st2 === 'atencao' ? ' · um pouco longe para comer (ideal até 15)' : ' · longe demais para comer sentado (ideal até 15)'}` });
+      }
       entradasBanco.set(m.id, { pg, eixo, frente, faixa: melhorFaixa, largura: melhorFrente, pontas: [a.livre, b.livre], st });
     }
   }
