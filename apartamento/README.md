@@ -64,10 +64,12 @@ Duas abas, iguais em tudo menos na mesa. Nas duas: **só o banco** (sem cadeiras
 fica com 84 cm), bancada do escritório **110 × 70 cm** e lavatório com **recorte na pedra**
 para a porta do banheiro passar.
 
-| Aba | Mesa | Entrada no banco |
-| --- | --- | --- |
-| Mesa quadrada 88 | 88 × 88, a da planta final | pela frente, num trecho de 30 cm (apertado) |
-| **Mesa redonda 80** | **Ø 80, pé central** | **pela frente, num trecho de 45 cm** |
+| Aba | Mesa | Entrada no banco | Mesa ao alcance (sentado no banco) |
+| --- | --- | --- | --- |
+| Mesa quadrada 88 | 88 × 88, a da planta final | trecho de 30 cm (apertado) | 0,5 cm |
+| Mesa redonda 80 | Ø 80, pé central | trecho de 45 cm; ~33 cm na quina da bancada de trabalho | 13 cm |
+| Redonda 80 afastada | Ø 80, 20 cm mais longe do banco | livre (117 cm) | 33 cm: longe demais para comer |
+| **Redonda 70** | **Ø 70, pé central, junto à península** | **trecho de 53 cm; ~42 cm na quina** | **13 cm** |
 
 No filme, a pessoa toma café no banco: entra pela faixa livre e escorrega até o meio da mesa.
 Saíram o pendente de papel de arroz e a costela-de-adão.

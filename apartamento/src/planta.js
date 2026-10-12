@@ -199,16 +199,18 @@ const USO_ALTERNADO = [['Cadeira do escritório', 'Cadeira de jantar']];
 
 // Duas opções de jantar, as duas só com o banco (sem cadeiras) e com a
 // península reduzida: a mesa quadrada da planta final e uma redonda.
+const mesaRedonda = (d, x, z) => ({ tipo: 'mesa_redonda', nome: 'Mesa de jantar', variante: 'pe_central', x, z, rot: 0, l: d, p: d, a: 76,
+  cores: { principal: FREIJO, secundaria: '#2b2622' }, acab: 'madeira' });
+const comMesa = (id, nome, mesa) => ({
+  id, nome, zonas: CENARIO_FINAL.zonas,
+  moveis: [...MOVEIS_FINAL.filter((m) => m.nome !== 'Mesa de jantar'), mesa],
+});
 const CENARIOS_JANTAR = [
-  {
-    id: 'mesa-redonda', nome: 'Mesa redonda 80',
-    moveis: [
-      ...MOVEIS_FINAL.filter((m) => m.nome !== 'Mesa de jantar'),
-      { tipo: 'mesa_redonda', nome: 'Mesa de jantar', variante: 'pe_central', x: 197, z: 88, rot: 0, l: 80, p: 80, a: 76,
-        cores: { principal: FREIJO, secundaria: '#2b2622' }, acab: 'madeira' },
-    ],
-    zonas: CENARIO_FINAL.zonas,
-  },
+  comMesa('mesa-redonda', 'Mesa redonda 80', mesaRedonda(80, 197, 88)),
+  // afastada 20 cm do banco: entra fácil, mas a mesa fica a 33 cm do banco (longe para comer)
+  comMesa('redonda-afastada', 'Redonda 80 afastada', mesaRedonda(80, 197, 108)),
+  // Ø70 encostada na península: ~42 cm na quina da bancada de trabalho e mesa a 13 cm do banco
+  comMesa('redonda-70', 'Redonda 70', mesaRedonda(70, 202, 83)),
 ];
 
 // Atalhos do modo Visitar: onde ficar e para onde olhar em cada cômodo

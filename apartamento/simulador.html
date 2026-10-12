@@ -10349,16 +10349,18 @@ const USO_ALTERNADO = [['Cadeira do escritório', 'Cadeira de jantar']];
 
 // Duas opções de jantar, as duas só com o banco (sem cadeiras) e com a
 // península reduzida: a mesa quadrada da planta final e uma redonda.
+const mesaRedonda = (d, x, z) => ({ tipo: 'mesa_redonda', nome: 'Mesa de jantar', variante: 'pe_central', x, z, rot: 0, l: d, p: d, a: 76,
+  cores: { principal: FREIJO, secundaria: '#2b2622' }, acab: 'madeira' });
+const comMesa = (id, nome, mesa) => ({
+  id, nome, zonas: CENARIO_FINAL.zonas,
+  moveis: [...MOVEIS_FINAL.filter((m) => m.nome !== 'Mesa de jantar'), mesa],
+});
 const CENARIOS_JANTAR = [
-  {
-    id: 'mesa-redonda', nome: 'Mesa redonda 80',
-    moveis: [
-      ...MOVEIS_FINAL.filter((m) => m.nome !== 'Mesa de jantar'),
-      { tipo: 'mesa_redonda', nome: 'Mesa de jantar', variante: 'pe_central', x: 197, z: 88, rot: 0, l: 80, p: 80, a: 76,
-        cores: { principal: FREIJO, secundaria: '#2b2622' }, acab: 'madeira' },
-    ],
-    zonas: CENARIO_FINAL.zonas,
-  },
+  comMesa('mesa-redonda', 'Mesa redonda 80', mesaRedonda(80, 197, 88)),
+  // afastada 20 cm do banco: entra fácil, mas a mesa fica a 33 cm do banco (longe para comer)
+  comMesa('redonda-afastada', 'Redonda 80 afastada', mesaRedonda(80, 197, 108)),
+  // Ø70 encostada na península: ~42 cm na quina da bancada de trabalho e mesa a 13 cm do banco
+  comMesa('redonda-70', 'Redonda 70', mesaRedonda(70, 202, 83)),
 ];
 
 // Atalhos do modo Visitar: onde ficar e para onde olhar em cada cômodo
@@ -13733,7 +13735,7 @@ function conferir() {
         if (dc.grupo !== 'cadeira') continue;
         const pc = pegada(c);
         const dx = Math.max(pc.x0 - pg.x1, pg.x0 - pc.x1, 0), dz = Math.max(pc.z0 - pg.z1, pg.z0 - pc.z1, 0);
-        if (Math.max(dx, dz) > 20) continue;
+        if (Math.max(dx, dz) > (c.tipo === 'banco' ? 45 : 20)) continue;
         const rx = (c.x - m.x) / pg.w, rz = (c.z - m.z) / pg.d;
         const lado = Math.abs(rx) > Math.abs(rz) ? (rx > 0 ? 'L' : 'O') : (rz > 0 ? 'S' : 'N');
         const horiz = lado === 'N' || lado === 'S';
@@ -13794,6 +13796,17 @@ function conferir() {
       else if (melhorFrente >= 28) { st = 'atencao'; detalhe = `entra pela frente só por um trecho de ${fmt(melhorFrente)} cm (as pontas estão fechadas)`; }
       else { st = 'problema'; detalhe = `pontas com ${fmt(a.livre)} e ${fmt(b.livre)} cm e frente tomada · para sentar é preciso puxar a mesa`; }
       itens.push({ amb, st, ids: [m.id], titulo: `${m.nome}: como sentar`, detalhe });
+      // e, sentado, a mesa fica ao alcance? (vão entre a frente do banco e a borda da mesa)
+      const mesaFrente = moveis.filter((o) => (defCatalogo(o.tipo) || {}).grupo === 'mesa' && o.tipo !== 'mesa_computador').map((o) => {
+        const t = pegada(o), vao = (bordaDe(t, frente[0], -frente[1]) - bordaDe(pg, frente[0], frente[1])) * frente[1];
+        const cobre = Math.min(t[c1], pg[c1]) - Math.max(t[c0], pg[c0]);
+        return { o, vao, cobre };
+      }).filter((x) => x.cobre > 20 && x.vao > -60 && x.vao < 80).sort((a, b) => a.vao - b.vao)[0];
+      if (mesaFrente) {
+        const v = Math.max(0, mesaFrente.vao), st2 = v <= 15 ? 'ok' : v <= 25 ? 'atencao' : 'problema';
+        itens.push({ amb, st: st2, ids: [m.id, mesaFrente.o.id], titulo: `${m.nome}: mesa ao alcance`,
+          detalhe: `${fmt(v)} cm entre a frente do banco e a mesa${st2 === 'ok' ? '' : st2 === 'atencao' ? ' · um pouco longe para comer (ideal até 15)' : ' · longe demais para comer sentado (ideal até 15)'}` });
+      }
       entradasBanco.set(m.id, { pg, eixo, frente, faixa: melhorFaixa, largura: melhorFrente, pontas: [a.livre, b.livre], st });
     }
   }
