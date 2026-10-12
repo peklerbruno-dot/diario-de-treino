@@ -196,6 +196,17 @@ body:not(.modo-visitar) #vistas button.sol { display: none; }
 .mover { display: grid; grid-template-columns: auto repeat(4, 40px); gap: 6px; align-items: center; margin: 0 0 10px; }
 .mover small { color: var(--suave); font-size: 12px; margin-right: 4px; }
 .mover button { height: 36px; padding: 0; font-size: 16px; border-radius: 10px; }
+/* régua e alinhar */
+#reguaRotulos { position: absolute; inset: 0; pointer-events: none; z-index: 7; }
+.regua-rot { position: absolute; left: 0; top: 0; background: #e5484d; color: #fff; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 999px;
+  white-space: nowrap; font-variant-numeric: tabular-nums; box-shadow: 0 2px 6px rgba(0,0,0,.25); }
+#reguaBarra { position: absolute; left: 50%; top: 56px; transform: translateX(-50%); z-index: 20; display: flex; align-items: center; gap: 10px;
+  background: rgba(29,37,48,.92); color: #fff; border-radius: 999px; padding: 6px 6px 6px 16px; font-size: 13px; box-shadow: 0 6px 22px rgba(0,0,0,.2); max-width: calc(100% - 24px); }
+#reguaBarra span { opacity: .8; }
+#reguaBarra button { border: 0; background: rgba(255,255,255,.16); color: #fff; border-radius: 999px; padding: 6px 12px; }
+.alinhar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.alinhar button { padding: 8px 4px; font-size: 13px; }
+.acoes-rapidas button.ativo { background: var(--azul-claro); border-color: var(--azul); }
 /* simulação de uso e filme */
 body.cinema #vistas, body.cinema #rotulos, body.cinema #cotas, body.cinema #avisos, body.cinema #ajuda, body.cinema #painel, body.cinema #solVisita { display: none !important; }
 body.cinema-filme #ferramentas, body.cinema-filme #bussola, body.cinema-filme #bGaveta { display: none !important; }
@@ -400,6 +411,8 @@ details.mais > .conteudo { padding-bottom: 10px; }
     background: var(--texto); color: #fff; border-color: var(--texto); font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,.2); }
   #avisos { bottom: 60px; }
   #bLateral { display: none !important; }
+  #reguaBarra { top: auto; bottom: 12px; font-size: 12px; }
+  #reguaBarra span { display: none; }
   #controlesEsq { left: 8px; top: 56px; }
   #controlesEsq button { width: 42px; height: 42px; }
   body:not(.modo-visitar) #vistas { top: 8px; left: 56px; right: 66px; }
@@ -468,6 +481,7 @@ details.mais > .conteudo { padding-bottom: 10px; }
       <button id="bVista" title="Planta vista de cima (T)"><span aria-hidden="true">▦</span><span class="rot">Planta</span></button>
       <button id="bCorte" title="Baixar as paredes para ver o interior"><span aria-hidden="true">✂</span><span class="rot">Cortar</span></button>
       <button id="bFoto" title="Foto realista (F)"><span aria-hidden="true">📷</span><span class="rot">Foto</span></button>
+      <button id="bRegua" title="Régua: medir entre dois pontos (M)"><span aria-hidden="true">📐</span><span class="rot">Medir</span></button>
       <button id="bUso" title="Simular o uso: portas, armários, TV, cadeiras e fogão abrindo e fechando juntos"><span aria-hidden="true">▶</span><span class="rot">Usar</span></button>
       <button id="bFilme" title="Filme: um dia de uma pessoa no apartamento"><span aria-hidden="true">🎬</span><span class="rot">Filme</span></button>
       <button id="bEnquadrar" title="Ver o apartamento inteiro"><span aria-hidden="true">⤢</span><span class="rot">Inteiro</span></button>
@@ -522,6 +536,8 @@ details.mais > .conteudo { padding-bottom: 10px; }
       <button id="usoMedidas" class="medir" title="Mostrar medidas: quanto abre e quanto sobra">📏</button><button id="usoPausa" aria-label="Pausar">⏸</button><button id="usoFechar" aria-label="Parar">✕</button>
     </div>
     <div id="medidasUso"></div>
+    <div id="reguaRotulos"></div>
+    <div id="reguaBarra" hidden><b>📐 Régua</b><span>toque em dois pontos para medir</span><button id="reguaLimpar">Limpar</button><button id="reguaFechar" aria-label="Fechar">✕</button></div>
     <!-- Filme: um dia no apartamento -->
     <div id="filme" hidden>
       <div class="cine-topo">
@@ -532,7 +548,7 @@ details.mais > .conteudo { padding-bottom: 10px; }
       <div class="cine-base"><div id="filmeCaps"></div></div>
       <div id="filmeVeu"><span id="filmeVeuTxt"></span></div>
     </div>
-    <div id="ajuda" class="so-arrumar">Clique seleciona · arraste o selecionado para mover · setas azuis: tamanho · R: girar · Del: remover · +/−: zoom</div>
+    <div id="ajuda" class="so-arrumar">Clique seleciona · arraste o selecionado · setas: tamanho · alça redonda: girar · Shift+clique: alinhar · M: régua · +/−: zoom</div>
   </main>
 
   <aside id="painel"></aside>
@@ -11787,6 +11803,33 @@ function pegada(m) {
   if (rc) pg.furos = [retanguloPlanta(m, ...['x0', 'x1', 'z0', 'z1'].map((k) => avaliar(rc[k], m.l, m.p, m.a)))];
   return pg;
 }
+// Encostar sozinho: perto (até 12 cm) de uma parede ou de outro móvel, o
+// móvel encosta nele. Segure Alt (no PC) para soltar livre.
+const ENCOSTO = 12;
+function encostar(m) {
+  const pg = pegada(m), d1 = defCatalogo(m.tipo) || {};
+  const alvos = [
+    ...doc.planta.paredes.filter((w) => !w.demolida).map((w) => ({ ...caixaParede(w), nome: 'parede' })),
+    ...cen().moveis.filter((o) => {
+      const d2 = defCatalogo(o.tipo) || {};
+      if (o.id === m.id || d2.colide === false || ignoraPar(d1, d2)) return false;
+      const po = pegada(o);
+      return po.y0 < pg.y1 && po.y1 > pg.y0;
+    }).map((o) => ({ ...pegada(o), nome: o.nome.toLowerCase() })),
+  ];
+  let bx = null, bz = null, qx = '', qz = '';
+  for (const r of alvos) {
+    if (Math.min(pg.z1, r.z1) - Math.max(pg.z0, r.z0) > 1) {
+      for (const d of [r.x1 - pg.x0, r.x0 - pg.x1]) if (Math.abs(d) <= ENCOSTO && (bx === null || Math.abs(d) < Math.abs(bx))) { bx = d; qx = r.nome; }
+    }
+    if (Math.min(pg.x1, r.x1) - Math.max(pg.x0, r.x0) > 1) {
+      for (const d of [r.z1 - pg.z0, r.z0 - pg.z1]) if (Math.abs(d) <= ENCOSTO && (bz === null || Math.abs(d) < Math.abs(bz))) { bz = d; qz = r.nome; }
+    }
+  }
+  if (bx !== null) m.x += bx;
+  if (bz !== null) m.z += bz;
+  return [bx !== null && qx, bz !== null && qz].filter(Boolean);
+}
 function encaixar(m) {
   const pg = pegada(m);
   m.x = snap(pg.x0) + pg.w / 2;
@@ -12201,7 +12244,8 @@ function desenharSelecao() {
   if (!vista.caminhar && modo === 'arrumar') for (const id of colisoes.porMovel.keys()) { const m = movel(id); if (m) marca(m, matCol, linhaCol); }
   const selM = sel?.tipo === 'movel' ? movel(sel.id) : null;
   if (selM) marca(selM, matSel, linhaSel);
-  desenharAlcas(selM);
+  for (const id of selExtra) { const o = movel(id); if (o) marca(o, matSel, linhaSel); }
+  desenharAlcas(selExtra.length ? null : selM);
   if (vista.caminhar || modo === 'visitar') return;
   // áreas de uso: de todos (camada ligada ou modo Conferir) ou só do móvel selecionado
   const todas = camadas.uso || modo === 'conferir';
@@ -12377,6 +12421,19 @@ function texturaAlca() {
   texAlca.colorSpace = T.SRGBColorSpace;
   return texAlca;
 }
+let texGira = null;
+function texturaGira() {
+  if (texGira) return texGira;
+  const c = Object.assign(document.createElement('canvas'), { width: 128, height: 128 }), g = c.getContext('2d');
+  g.beginPath(); g.arc(64, 64, 58, 0, Math.PI * 2); g.fillStyle = '#2f80ed'; g.fill();
+  g.strokeStyle = '#ffffff'; g.fillStyle = '#ffffff'; g.lineWidth = 9; g.lineCap = 'round';
+  g.beginPath(); g.arc(64, 64, 30, -Math.PI * 0.35, Math.PI * 1.25); g.stroke();
+  const a = -Math.PI * 0.35, x = 64 + Math.cos(a) * 30, y = 64 + Math.sin(a) * 30;
+  g.beginPath(); g.moveTo(x + 14, y - 2); g.lineTo(x - 6, y - 14); g.lineTo(x - 4, y + 10); g.closePath(); g.fill();
+  texGira = new T.CanvasTexture(c);
+  texGira.colorSpace = T.SRGBColorSpace;
+  return texGira;
+}
 const NOME_DIM = { l: 'Largura', p: 'Profundidade', a: 'Altura' };
 const dimDoEixo = (m, eixo) => (eixo === 'y' ? 'a' : (m.rot % 180 === 0) === (eixo === 'x') ? 'l' : 'p');
 function desenharAlcas(m) {
@@ -12386,9 +12443,10 @@ function desenharAlcas(m) {
   // fora do centro do lado, para não cair sobre as cotas de distância
   const dz = Math.min(pg.d * 0.3, 40), dx = Math.min(pg.w * 0.3, 40);
   const pos = { 'x-1': [pg.x0 - off, y0, m.z + dz], 'x1': [pg.x1 + off, y0, m.z + dz], 'z-1': [m.x + dx, y0, pg.z0 - off], 'z1': [m.x + dx, y0, pg.z1 + off], 'y1': [m.x, (m.y || 0) + m.a + 20, m.z] };
+  pos.r1 = [pg.x0 - off * 0.8, y0, pg.z0 - off * 0.8]; // girar: no canto
   for (const [chave, [x, y, z]] of Object.entries(pos)) {
     const eixo = chave[0], sinal = chave.endsWith('-1') ? -1 : 1;
-    const mt = new T.SpriteMaterial({ map: texturaAlca(), depthTest: false, transparent: true });
+    const mt = new T.SpriteMaterial({ map: eixo === 'r' ? texturaGira() : texturaAlca(), depthTest: false, transparent: true });
     const sp = new T.Sprite(mt);
     sp.position.set(x, y, z);
     sp.scale.set(0.075, 0.075, 1);
@@ -12405,7 +12463,7 @@ function atualizarAlcas() {
   const px = LEVE ? 46 : 36; // tamanho na tela, igual em qualquer zoom
   for (const sp of grpAlcas.children) {
     a.copy(sp.position).project(cam); b.copy(sp.position).addScaledVector(sp.userData.eixoV, 20).project(cam);
-    sp.material.rotation = Math.atan2((b.y - a.y) * H, (b.x - a.x) * W);
+    sp.material.rotation = sp.userData.eixo === 'r' ? 0 : Math.atan2((b.y - a.y) * H, (b.x - a.x) * W);
     const porPx = vista.topo ? (camTopo.top - camTopo.bottom) / camTopo.zoom / H
       : (2 * cam.position.distanceTo(sp.position) * Math.tan(rad(camPersp.fov / 2))) / H;
     const k = px * porPx;
@@ -12434,8 +12492,9 @@ function iniciarAlca(e, alvo) {
   const inicio = ray.ray.intersectPlane(plano, new T.Vector3());
   if (!inicio) return;
   ctlAtivo().enabled = false;
-  Object.assign(arr, { alca: alvo, plano, inicio, estado: JSON.stringify(doc), m0: { l: m.l, p: m.p, a: m.a, x: m.x, z: m.z } });
+  Object.assign(arr, { alca: alvo, plano, inicio, estado: JSON.stringify(doc), m0: { l: m.l, p: m.p, a: m.a, x: m.x, z: m.z, rot: m.rot } });
   renderer.domElement.setPointerCapture(e.pointerId);
+  if (alvo.eixo === 'r') { arr.ang0 = Math.atan2(inicio.z - m.z, inicio.x - m.x); dica('Girar: arraste em volta do móvel (de 90 em 90°)'); return; }
   dica(`${NOME_DIM[dimDoEixo(m, alvo.eixo)]}: ${fmt(m[dimDoEixo(m, alvo.eixo)])} cm — arraste`);
 }
 function moverAlca(e) {
@@ -12444,6 +12503,18 @@ function moverAlca(e) {
   raioDe(e);
   const p = m && ray.ray.intersectPlane(arr.plano, new T.Vector3());
   if (!p) return;
+  if (arr.alca.eixo === 'r') { // gira de 90 em 90°, em volta do centro
+    let d = Math.atan2(p.z - m.z, p.x - m.x) - arr.ang0;
+    d = Math.atan2(Math.sin(d), Math.cos(d));
+    const rot = (((arr.m0.rot + Math.round(grau(d) / 90) * 90) % 360) + 360) % 360;
+    if (rot === m.rot) return;
+    m.rot = rot;
+    reconstruirMovel(m);
+    verificarColisoes();
+    desenharSelecao();
+    dica(`Girado ${(((rot - arr.m0.rot) % 360) + 360) % 360}°`);
+    return;
+  }
   const { eixo, s: sinal } = arr.alca, dim = dimDoEixo(m, eixo);
   const delta = (p[eixo] - arr.inicio[eixo]) * (eixo === 'y' ? 1 : sinal);
   const novo = Math.round(Math.max(10, Math.min(800, arr.m0[dim] + delta)));
@@ -12461,8 +12532,91 @@ function soltarAlca(g) {
   if (g.movido) { registrar(g.estado); atualizarTudo(); }
 }
 
+let selExtra = [], escolhendoOutro = false; // outros móveis selecionados (para alinhar)
+function adicionarSelecao(id) {
+  if (sel?.tipo !== 'movel' || id === sel.id) return;
+  selExtra = selExtra.includes(id) ? selExtra.filter((x) => x !== id) : [...selExtra, id];
+  desenharSelecao();
+  renderPainel();
+}
+function alinhar(como) {
+  const ref = pegada(movel(sel.id));
+  alterar(() => {
+    for (const id of selExtra) {
+      const o = movel(id), po = pegada(o);
+      if (como === 'x0') o.x += ref.x0 - po.x0;
+      else if (como === 'xc') o.x += (ref.x0 + ref.x1) / 2 - (po.x0 + po.x1) / 2;
+      else if (como === 'x1') o.x += ref.x1 - po.x1;
+      else if (como === 'z0') o.z += ref.z0 - po.z0;
+      else if (como === 'zc') o.z += (ref.z0 + ref.z1) / 2 - (po.z0 + po.z1) / 2;
+      else if (como === 'z1') o.z += ref.z1 - po.z1;
+    }
+  });
+}
+// ---- régua: toque em dois pontos para medir (encaixa nas bordas de paredes e móveis)
+const grpRegua = new T.Group();
+grpRegua.renderOrder = 9;
+cena.add(grpRegua);
+const regua = { ativa: false, a: null, medidas: [] };
+let reguaTela = [];
+const matRegua = new T.LineBasicMaterial({ color: '#e5484d', depthTest: false });
+const matPontoRegua = new T.MeshBasicMaterial({ color: '#e5484d', depthTest: false });
+function alternarRegua(ligar = !regua.ativa) {
+  if (ligar && vista.caminhar) alternarCaminhada();
+  regua.ativa = ligar;
+  regua.a = null;
+  if (!ligar) regua.medidas = [];
+  document.body.classList.toggle('regua', ligar);
+  $('#reguaBarra').hidden = !ligar;
+  desenharRegua();
+  atualizarBotoes();
+}
+function pontoRegua(e) {
+  raioDe(e);
+  const hit = ray.intersectObjects([grpMoveis, grpPlanta], true).find((h) => h.object.userData.tipo);
+  const p = hit ? hit.point : pontoNoPiso(e);
+  if (!p) return;
+  let x = p.x, z = p.z;
+  // encaixa nas bordas próximas (até 6 cm)
+  const bordas = [...doc.planta.paredes.filter((w) => !w.demolida).map(caixaParede), ...cen().moveis.map(pegada)];
+  const perto = (v, lista) => { let b = v, d = 6; for (const c of lista) if (Math.abs(c - v) < d) { d = Math.abs(c - v); b = c; } return b; };
+  x = perto(x, bordas.flatMap((r) => [r.x0, r.x1]));
+  z = perto(z, bordas.flatMap((r) => [r.z0, r.z1]));
+  if (!regua.a) { regua.a = [x, z]; desenharRegua(); dica('Agora toque no segundo ponto'); return; }
+  // quase reta: endireita
+  const [ax, az] = regua.a;
+  if (Math.abs(x - ax) < Math.abs(z - az) * 0.14) x = ax;
+  if (Math.abs(z - az) < Math.abs(x - ax) * 0.14) z = az;
+  regua.medidas.push([regua.a, [x, z]]);
+  regua.a = null;
+  dica('');
+  desenharRegua();
+}
+function desenharRegua() {
+  limpar(grpRegua);
+  const caixa = $('#reguaRotulos');
+  caixa.textContent = '';
+  reguaTela = [];
+  const y = 4;
+  const ponto = ([x, z]) => { const m = new T.Mesh(new T.SphereGeometry(2.2, 10, 8), matPontoRegua); m.position.set(x, y, z); m.renderOrder = 9; grpRegua.add(m); };
+  if (regua.a) ponto(regua.a);
+  for (const [a, b] of regua.medidas) {
+    ponto(a); ponto(b);
+    const l = new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(a[0], y, a[1]), new T.Vector3(b[0], y, b[1])]), matRegua);
+    l.renderOrder = 9;
+    grpRegua.add(l);
+    const dx = Math.abs(b[0] - a[0]), dz = Math.abs(b[1] - a[1]), d = Math.hypot(dx, dz);
+    const txt = dx > 1 && dz > 1 ? `${fmt(Math.round(d))} cm (↔ ${fmt(Math.round(dx))} · ↕ ${fmt(Math.round(dz))})` : `${fmt(Math.round(d))} cm`;
+    const r = el('div', { class: 'regua-rot' }, txt);
+    caixa.append(r);
+    reguaTela.push({ el: r, pos: new T.Vector3((a[0] + b[0]) / 2, y, (a[1] + b[1]) / 2) });
+  }
+}
+
 function selecionar(s) {
   sel = s;
+  selExtra = [];
+  escolhendoOutro = false;
   construirPlanta();
   construirZonas();
   desenharSelecao();
@@ -12512,6 +12666,7 @@ function aoPressionar(e) {
   }
   if (toques.size > 1) { if (arr?.arrastavel) cancelarArraste(); arr = null; return; }
   if (e.pointerType === 'mouse' && e.button !== 0) return;
+  if (regua.ativa) { arr = { id: e.pointerId, x: e.clientX, y: e.clientY, alvo: null, movido: false }; return; }
   const alvo = alvoEm(e);
   arr = { id: e.pointerId, x: e.clientX, y: e.clientY, alvo, movido: false };
   const jaSel = (tipo) => alvo?.tipo === tipo && sel?.tipo === tipo && sel.id === alvo.id;
@@ -12561,6 +12716,8 @@ function aoMover(e) {
     m.x = arr.x0 + (p.x - arr.inicio.x);
     m.z = arr.z0 + (p.z - arr.inicio.z);
     encaixar(m);
+    const encostou = e.altKey ? [] : encostar(m);
+    dica(encostou.length ? `Encostado: ${[...new Set(encostou)].join(' e ')}` : '');
     objMovel.get(m.id)?.position.set(m.x, m.y || 0, m.z);
     verificarColisoes();
     desenharSelecao();
@@ -12604,6 +12761,7 @@ function aoSoltar(e) {
   if (g.olhar && (g.movido || foto.ativa)) return;
   if (g.movido) return; // foi órbita/arraste de câmera
   const a = g.alvo;
+  if (regua.ativa && !vista.caminhar) { pontoRegua(e); return; }
   // toque duplo (fora do caminhar): aproxima naquele ponto
   const agora = performance.now();
   if (!vista.caminhar && ultimoToque && agora - ultimoToque.t < 320 && Math.hypot(e.clientX - ultimoToque.x, e.clientY - ultimoToque.y) < 30) {
@@ -12629,6 +12787,7 @@ function aoSoltar(e) {
     return;
   }
   if (!a) selecionar(null);
+  else if (a.tipo === 'movel' && modo === 'arrumar' && sel?.tipo === 'movel' && (e.shiftKey || escolhendoOutro)) { escolhendoOutro = false; adicionarSelecao(a.id); }
   else if (a.tipo === 'movel') selecionar({ tipo: 'movel', id: a.id });
   else if (a.tipo === 'parede') selecionar({ tipo: 'parede', id: a.id, abertura: a.abertura });
   else if (a.tipo === 'ambiente') selecionar({ tipo: 'ambiente', id: a.id });
@@ -12718,6 +12877,8 @@ document.addEventListener('keydown', (e) => {
   }
   if (!ctrl && !e.altKey && { 1: 'visitar', 2: 'arrumar', 3: 'conferir' }[k]) { setModo({ 1: 'visitar', 2: 'arrumar', 3: 'conferir' }[k]); return; }
   if (!ctrl && k === 'f') { abrirFoto(); return; }
+  if (!ctrl && k === 'm') { alternarRegua(); return; }
+  if (k === 'escape' && regua.ativa) { alternarRegua(false); return; }
   if (!ctrl && (k === '+' || k === '=')) { zoomPasso(0.7); return; }
   if (!ctrl && (k === '-' || k === '_')) { zoomPasso(1.45); return; }
   const edita = ['delete', 'backspace', 'r'].includes(k) || (ctrl && k === 'd') || (k.startsWith('arrow') && !vista.caminhar);
@@ -13032,8 +13193,13 @@ function painelMovel(p, cab) {
   const aberto = (m.aberto || 0) > 0.5;
   const NOME_DIR = { 'x1': 'Livre à direita', 'x-1': 'Livre à esquerda', 'z1': 'Livre abaixo', 'z-1': 'Livre acima' };
   const zonas = zonasUso(m);
+  const outros = selExtra.map(movel).filter(Boolean);
   anexar(p,
     cab(m.nome, vr ? `${def.nome} · ${vr.nome}` : def.nome),
+    outros.length ? secao(`Alinhar ${outros.length === 1 ? outros[0].nome : `${outros.length} móveis`} com este`,
+      el('div', { class: 'alinhar' }, ...[['⇤', 'Esquerdas', 'x0'], ['↔', 'Centros', 'xc'], ['⇥', 'Direitas', 'x1'], ['⤒', 'Topos', 'z0'], ['↕', 'Meios', 'zc'], ['⤓', 'Bases', 'z1']]
+        .map(([i, t, c]) => botao(`${i} ${t}`, () => alinhar(c)))),
+      el('p', { class: 'nota' }, 'Lados como na vista de cima (Planta). Toque fora para soltar a seleção.')) : null,
     el('div', { class: 'status ' + (col ? 'alerta' : 'ok') }, col ? `⚠ ${[...new Set(col)].join('; ')}` : '✓ Cabe e dá para usar'),
     el('div', { class: 'acoes-rapidas' },
       botaoRapido('↻', 'Girar', () => girar(1)),
@@ -13041,6 +13207,10 @@ function painelMovel(p, cab) {
       temMov(def, m) ? botaoRapido(aberto ? '■' : '▶', aberto ? acaoFechar : acaoAbrir, () => alternarAbertura(m)) : null,
       botaoRapido('⧉', 'Duplicar', duplicarSelecionado),
       botaoRapido('🔍', 'Focar', () => focarRet(pegada(m), 60)),
+      botaoRapido('⊞', escolhendoOutro ? 'Toque no outro' : 'Alinhar', () => {
+        escolhendoOutro = !escolhendoOutro; renderPainel();
+        if (escolhendoOutro) toast('Toque no outro móvel (ou em vários) para alinhar com este.');
+      }, { class: escolhendoOutro ? 'ativo' : '' }),
       botaoRapido('🗑', 'Remover', removerSelecionado, { class: 'perigo' })),
     el('div', { class: 'mover' }, el('small', {}, 'Mover 5 cm'),
       ...[['←', 'esq'], ['↑', 'cima'], ['↓', 'baixo'], ['→', 'dir']].map(([t, d]) => botao(t, () => empurrarTela(d), { title: `Mover para ${d === 'esq' ? 'a esquerda' : d === 'dir' ? 'a direita' : d} da tela` }))),
@@ -13322,6 +13492,7 @@ function atualizarBotoes() {
   $('#bCaminhar').querySelector('.rot').textContent = vista.caminhar ? 'Sair' : 'Andar';
   $('#bFoto').classList.toggle('ligado', foto.ativa);
   $('#bUso').classList.toggle('ligado', cinema.modo === 'uso');
+  $('#bRegua').classList.toggle('ligado', regua.ativa);
   $('#bFilme').classList.toggle('ligado', cinema.modo === 'filme');
   $('#bVista').disabled = vista.caminhar;
   $('#bCorte').disabled = vista.caminhar;
@@ -13370,6 +13541,9 @@ function alternarPausaCinema() {
   $('#usoPausa').textContent = cinema.pausa ? '▶' : '⏸';
   $('#filmePausa').textContent = cinema.pausa ? '▶' : '⏸';
 }
+$('#bRegua').onclick = () => alternarRegua();
+$('#reguaLimpar').onclick = () => { regua.medidas = []; regua.a = null; desenharRegua(); };
+$('#reguaFechar').onclick = () => alternarRegua(false);
 $('#bZoomMais').onclick = () => zoomPasso(0.7);
 $('#bZoomMenos').onclick = () => zoomPasso(1.45);
 $('#bUso').onclick = () => { if (foto.ativa) return; cinema.modo === 'uso' ? pararCinema() : iniciarUso(); };
@@ -13410,6 +13584,7 @@ let vistaAtual = null;
 function setModo(novo, manterSel = false) {
   fecharFoto();
   pararCinema();
+  if (regua.ativa && novo === 'visitar') alternarRegua(false);
   modo = novo;
   try { localStorage.setItem('simulador-apto:modo', modo); } catch { /* ok */ }
   document.body.classList.remove('modo-visitar', 'modo-arrumar', 'modo-conferir', 'lateral-aberta');
@@ -13744,6 +13919,7 @@ function tickCinema(dt) {
 
 function iniciarCinema(modo) {
   pararCinema();
+  if (regua.ativa) alternarRegua(false);
   fecharFoto();
   if (sel) selecionar(null);
   cinema.antes = { caminhar: vista.caminhar, topo: vista.topo, corte: vista.corte, hora: luz.hora,
@@ -14942,6 +15118,7 @@ renderer.setAnimationLoop(() => {
   posicionarRotulos();
   posicionarBussola();
   atualizarAlcas();
+  if (reguaTela.length) posicionar(reguaTela);
   posicionar(cotasTela);
   posicionar(rotulosZonas);
 });
