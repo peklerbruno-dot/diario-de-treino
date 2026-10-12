@@ -383,6 +383,68 @@ function enquadrar() {
   ctlPersp.update(); ctlTopo.update();
 }
 
+// ---- navegação: zoom por botão, toque duplo e enquadrar um cômodo ou móvel
+let animCam = 0;
+function moverCamera(alvo, pos, zoomTopo) {
+  cancelAnimationFrame(animCam);
+  const ctl = ctlAtivo(), cam = camAtiva();
+  const a0 = ctl.target.clone(), p0 = cam.position.clone(), z0 = camTopo.zoom, t0 = performance.now();
+  const passo = (agora) => {
+    const k = ease((agora - t0) / 450);
+    ctl.target.lerpVectors(a0, alvo, k);
+    if (vista.topo) {
+      camTopo.position.set(ctl.target.x, camTopo.position.y, ctl.target.z);
+      if (zoomTopo) { camTopo.zoom = z0 + (zoomTopo - z0) * k; camTopo.updateProjectionMatrix(); }
+    } else if (pos) cam.position.lerpVectors(p0, pos, k);
+    ctl.update();
+    if (k < 1) animCam = requestAnimationFrame(passo);
+  };
+  animCam = requestAnimationFrame(passo);
+}
+// aproxima (fator < 1) ou afasta (> 1), mantendo o ponto de interesse
+function zoomEm(ponto, fator) {
+  if (vista.caminhar) return;
+  const alvo = new T.Vector3(ponto.x, 0, ponto.z);
+  if (vista.topo) { moverCamera(alvo, null, Math.min(12, Math.max(0.4, camTopo.zoom / fator))); return; }
+  const dir = camPersp.position.clone().sub(ctlPersp.target);
+  const dist = Math.min(4000, Math.max(60, dir.length() * fator));
+  moverCamera(alvo, alvo.clone().add(dir.normalize().multiplyScalar(dist)));
+}
+function zoomPasso(fator) { zoomEm(ctlAtivo().target, fator); }
+// enquadra um retângulo da planta (cômodo ou móvel) na parte visível da tela
+function focarRet(r, folga = 40) {
+  if (vista.caminhar) alternarCaminhada();
+  const w = r.x1 - r.x0 + folga * 2, d = r.z1 - r.z0 + folga * 2;
+  const alvo = new T.Vector3((r.x0 + r.x1) / 2, 0, (r.z0 + r.z1) / 2);
+  const asp = palco.clientWidth / Math.max(1, palco.clientHeight - deslocamentoVista());
+  if (vista.topo) {
+    const base = camTopo.top - camTopo.bottom, baseW = camTopo.right - camTopo.left;
+    moverCamera(alvo, null, Math.min(12, Math.max(0.4, Math.min(base / d, baseW / w) * 0.9)));
+    return;
+  }
+  const raio = Math.max(w / Math.min(asp, 1.6), d) * 0.62;
+  const dist = raio / Math.tan(rad(camPersp.fov / 2));
+  const dir = camPersp.position.clone().sub(ctlPersp.target).normalize();
+  moverCamera(alvo, alvo.clone().add(dir.multiplyScalar(Math.max(140, dist))));
+}
+function focarAmbiente(a) {
+  const xs = a.pontos.map((p) => p[0]), zs = a.pontos.map((p) => p[1]);
+  focarRet({ x0: Math.min(...xs), x1: Math.max(...xs), z0: Math.min(...zs), z1: Math.max(...zs) }, 15);
+}
+// no celular, com a gaveta do móvel aberta, o centro da vista sobe para o que
+// está acima dela (a cena não muda de tamanho)
+function deslocamentoVista() {
+  const p = $('#painel');
+  return LEVE_TELA() && document.body.classList.contains('com-painel') && p ? p.offsetHeight : 0;
+}
+const LEVE_TELA = () => matchMedia('(max-width: 860px)').matches;
+function aplicarDeslocamento() {
+  const h = deslocamentoVista(), W = palco.clientWidth, H = Math.max(1, palco.clientHeight);
+  for (const c of [camPersp, camTopo]) {
+    if (h > 0) c.setViewOffset(W, H, 0, h / 2, W, H); else c.clearViewOffset();
+  }
+}
+
 function redimensionar() {
   const w = palco.clientWidth, h = Math.max(1, palco.clientHeight);
   renderer.setSize(w, h, false);
@@ -390,6 +452,7 @@ function redimensionar() {
   const meia = (camTopo.top - camTopo.bottom) / 2;
   camTopo.left = -meia * (w / h); camTopo.right = meia * (w / h);
   camTopo.updateProjectionMatrix();
+  aplicarDeslocamento();
 }
 new ResizeObserver(redimensionar).observe(palco);
 
@@ -1667,8 +1730,9 @@ function verificarColisoes() {
       ];
       if (!quem.length) return;
       usoBloq.add(`${A.m.id}#${k}`);
-      marcar(A.m.id, `${z.nome.toLowerCase()} bloqueada por ${quem.join(', ')}`);
-      lista.push({ ids: [A.m.id], txt: `${A.m.nome}: ${z.nome.toLowerCase()} bloqueada`, tipo: 'uso' });
+      const txtMovel = `${z.nome.toLowerCase()} bloqueada por ${quem.join(', ')}`;
+      marcar(A.m.id, txtMovel);
+      lista.push({ ids: [A.m.id], txt: `${A.m.nome}: ${z.nome.toLowerCase()} bloqueada`, tipo: 'uso', zona: `${A.m.id}#${k}`, txtMovel });
     });
   }
   for (const giro of girosPortas()) {
@@ -1681,6 +1745,13 @@ function verificarColisoes() {
   }
   colisoes = { porMovel, lista, usoBloq, portasBloq };
   conferir();
+  // espaço só apertado (70% do ideal ou mais) fica amarelo, não é conflito
+  for (const c of lista.filter((x) => x.zona && statusZona.get(x.zona) === 'atencao')) {
+    usoBloq.delete(c.zona);
+    const t = (porMovel.get(c.ids[0]) || []).filter((x) => x !== c.txtMovel);
+    if (t.length) porMovel.set(c.ids[0], t); else porMovel.delete(c.ids[0]);
+  }
+  colisoes.lista = lista.filter((x) => !(x.zona && statusZona.get(x.zona) === 'atencao'));
   renderAvisos();
 }
 
@@ -1755,13 +1826,14 @@ function desenharSelecao() {
   if (!vista.caminhar && modo === 'arrumar') for (const id of colisoes.porMovel.keys()) { const m = movel(id); if (m) marca(m, matCol, linhaCol); }
   const selM = sel?.tipo === 'movel' ? movel(sel.id) : null;
   if (selM) marca(selM, matSel, linhaSel);
+  desenharAlcas(selM);
   if (vista.caminhar || modo === 'visitar') return;
   // áreas de uso: de todos (camada ligada ou modo Conferir) ou só do móvel selecionado
   const todas = camadas.uso || modo === 'conferir';
   for (const m of cen().moveis) {
     if (!todas && m !== selM) continue;
     zonasUso(m).forEach((z, k) => {
-      const st = modo === 'conferir' ? statusZona.get(`${m.id}#${k}`) : (colisoes.usoBloq.has(`${m.id}#${k}`) ? 'problema' : 'ok');
+      const st = modo === 'conferir' || statusZona.get(`${m.id}#${k}`) === 'atencao' ? statusZona.get(`${m.id}#${k}`) : (colisoes.usoBloq.has(`${m.id}#${k}`) ? 'problema' : 'ok');
       const fundo = st === 'problema' ? matUsoBloq : st === 'atencao' ? matUsoAtencao : matUso;
       grpSel.add(malhaPoligono(retPts(z), fundo, 0.5));
       grpSel.add(contornoTracejado(retPts(z), st === 'problema' ? linhaCol : st === 'atencao' ? linhaAtencao : linhaUso, 0.6));
@@ -1912,6 +1984,108 @@ function passoAndar(frente, lado) {
   if (dentro([x, z], doc.planta.contorno)) { andar.x = x; andar.z = z; aplicarCameraAndar(); }
 }
 
+// ---- alças: as setas do móvel selecionado mudam largura, profundidade e
+// altura arrastando (o lado oposto fica parado; de 1 em 1 cm)
+const grpAlcas = new T.Group();
+grpAlcas.renderOrder = 10;
+cena.add(grpAlcas);
+let texAlca = null;
+function texturaAlca() {
+  if (texAlca) return texAlca;
+  const c = Object.assign(document.createElement('canvas'), { width: 128, height: 128 }), g = c.getContext('2d');
+  g.beginPath(); g.arc(64, 64, 58, 0, Math.PI * 2); g.fillStyle = '#ffffff'; g.fill();
+  g.lineWidth = 8; g.strokeStyle = '#2f80ed'; g.stroke();
+  g.fillStyle = '#2f80ed'; g.strokeStyle = '#2f80ed'; g.lineWidth = 9; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(34, 64); g.lineTo(94, 64); g.stroke();
+  for (const sx of [-1, 1]) { g.beginPath(); g.moveTo(64 + sx * 42, 64); g.lineTo(64 + sx * 24, 48); g.lineTo(64 + sx * 24, 80); g.closePath(); g.fill(); }
+  texAlca = new T.CanvasTexture(c);
+  texAlca.colorSpace = T.SRGBColorSpace;
+  return texAlca;
+}
+const NOME_DIM = { l: 'Largura', p: 'Profundidade', a: 'Altura' };
+const dimDoEixo = (m, eixo) => (eixo === 'y' ? 'a' : (m.rot % 180 === 0) === (eixo === 'x') ? 'l' : 'p');
+function desenharAlcas(m) {
+  limpar(grpAlcas);
+  if (!m || modo !== 'arrumar' || vista.caminhar || cinema.modo || foto.ativa) return;
+  const pg = pegada(m), y0 = (m.y || 0) + 2, off = 16;
+  // fora do centro do lado, para não cair sobre as cotas de distância
+  const dz = Math.min(pg.d * 0.3, 40), dx = Math.min(pg.w * 0.3, 40);
+  const pos = { 'x-1': [pg.x0 - off, y0, m.z + dz], 'x1': [pg.x1 + off, y0, m.z + dz], 'z-1': [m.x + dx, y0, pg.z0 - off], 'z1': [m.x + dx, y0, pg.z1 + off], 'y1': [m.x, (m.y || 0) + m.a + 20, m.z] };
+  for (const [chave, [x, y, z]] of Object.entries(pos)) {
+    const eixo = chave[0], sinal = chave.endsWith('-1') ? -1 : 1;
+    const mt = new T.SpriteMaterial({ map: texturaAlca(), depthTest: false, transparent: true });
+    const sp = new T.Sprite(mt);
+    sp.position.set(x, y, z);
+    sp.scale.set(0.075, 0.075, 1);
+    sp.renderOrder = 10;
+    sp.userData = { tipo: 'alca', id: m.id, eixo, s: sinal, eixoV: new T.Vector3(eixo === 'x' ? 1 : 0, eixo === 'y' ? 1 : 0, eixo === 'z' ? 1 : 0) };
+    grpAlcas.add(sp);
+  }
+  atualizarAlcas();
+}
+// gira a seta de cada alça para apontar ao longo do seu eixo na tela
+function atualizarAlcas() {
+  if (!grpAlcas.children.length) return;
+  const cam = camAtiva(), W = palco.clientWidth, H = Math.max(1, palco.clientHeight), a = new T.Vector3(), b = new T.Vector3();
+  const px = LEVE ? 46 : 36; // tamanho na tela, igual em qualquer zoom
+  for (const sp of grpAlcas.children) {
+    a.copy(sp.position).project(cam); b.copy(sp.position).addScaledVector(sp.userData.eixoV, 20).project(cam);
+    sp.material.rotation = Math.atan2((b.y - a.y) * H, (b.x - a.x) * W);
+    const porPx = vista.topo ? (camTopo.top - camTopo.bottom) / camTopo.zoom / H
+      : (2 * cam.position.distanceTo(sp.position) * Math.tan(rad(camPersp.fov / 2))) / H;
+    const k = px * porPx;
+    sp.scale.set(k, k, 1);
+    sp.visible = !(vista.topo && sp.userData.eixo === 'y'); // altura não se puxa na planta
+  }
+}
+function reconstruirMovel(m) {
+  const velho = objMovel.get(m.id);
+  if (velho) { grpMoveis.remove(velho); limpar(velho); }
+  const g = construirMovel(m);
+  grpMoveis.add(g);
+  objMovel.set(m.id, g);
+  sujarSombra();
+}
+function iniciarAlca(e, alvo) {
+  const m = movel(alvo.id);
+  if (!m) return;
+  const plano = new T.Plane();
+  if (alvo.eixo === 'y') {
+    const n = camAtiva().getWorldDirection(new T.Vector3()); n.y = 0;
+    if (n.lengthSq() < 1e-6) n.set(0, 0, 1);
+    plano.setFromNormalAndCoplanarPoint(n.normalize(), new T.Vector3(m.x, 0, m.z));
+  } else plano.set(new T.Vector3(0, 1, 0), -((m.y || 0) + 2));
+  raioDe(e);
+  const inicio = ray.ray.intersectPlane(plano, new T.Vector3());
+  if (!inicio) return;
+  ctlAtivo().enabled = false;
+  Object.assign(arr, { alca: alvo, plano, inicio, estado: JSON.stringify(doc), m0: { l: m.l, p: m.p, a: m.a, x: m.x, z: m.z } });
+  renderer.domElement.setPointerCapture(e.pointerId);
+  dica(`${NOME_DIM[dimDoEixo(m, alvo.eixo)]}: ${fmt(m[dimDoEixo(m, alvo.eixo)])} cm — arraste`);
+}
+function moverAlca(e) {
+  if (!arr.movido) return;
+  const m = movel(arr.alca.id);
+  raioDe(e);
+  const p = m && ray.ray.intersectPlane(arr.plano, new T.Vector3());
+  if (!p) return;
+  const { eixo, s: sinal } = arr.alca, dim = dimDoEixo(m, eixo);
+  const delta = (p[eixo] - arr.inicio[eixo]) * (eixo === 'y' ? 1 : sinal);
+  const novo = Math.round(Math.max(10, Math.min(800, arr.m0[dim] + delta)));
+  if (novo === m[dim]) return;
+  m[dim] = novo;
+  if (eixo !== 'y') m[eixo] = arr.m0[eixo] + (sinal * (novo - arr.m0[dim])) / 2;
+  reconstruirMovel(m);
+  verificarColisoes();
+  desenharSelecao();
+  dica(`${NOME_DIM[dim]}: ${fmt(novo)} cm (era ${fmt(arr.m0[dim])})`);
+}
+function soltarAlca(g) {
+  ctlAtivo().enabled = !vista.caminhar;
+  dica('');
+  if (g.movido) { registrar(g.estado); atualizarTudo(); }
+}
+
 function selecionar(s) {
   sel = s;
   construirPlanta();
@@ -1932,6 +2106,10 @@ function raioDe(e) {
 }
 function alvoEm(e) {
   raioDe(e);
+  if (grpAlcas.children.length) {
+    const h = ray.intersectObjects(grpAlcas.children.filter((o) => o.visible), false)[0];
+    if (h) return { ...h.object.userData };
+  }
   for (const h of ray.intersectObjects([grpMoveis, grpZonas, grpPlanta], true)) {
     const u = h.object.userData;
     if (u.tipo) return { tipo: u.tipo, id: u.id, abertura: u.abertura };
@@ -1945,6 +2123,7 @@ function pontoNoPiso(e) {
 
 const toques = new Map();
 let arr = null; // gesto em andamento
+let ultimoToque = null;
 
 function aoPressionar(e) {
   toques.set(e.pointerId, true);
@@ -1963,7 +2142,10 @@ function aoPressionar(e) {
   const jaSel = (tipo) => alvo?.tipo === tipo && sel?.tipo === tipo && sel.id === alvo.id;
   const paredeSel = jaSel('parede') && !parede(alvo.id)?.demolida;
   // caminhando, nada se mexe: arrastar só olha em volta
-  if (modo === 'arrumar' && !vista.caminhar && (alvo?.tipo === 'movel' || paredeSel || jaSel('zona'))) {
+  // só se arrasta o que JÁ está selecionado: o primeiro toque seleciona, e
+  // arrastar fora dele gira a câmera (nada se mexe sem querer)
+  if (modo === 'arrumar' && !vista.caminhar && alvo?.tipo === 'alca') { iniciarAlca(e, alvo); return; }
+  if (modo === 'arrumar' && !vista.caminhar && (jaSel('movel') || paredeSel || jaSel('zona'))) {
     const inicio = pontoNoPiso(e);
     if (!inicio) return;
     ctlAtivo().enabled = false;
@@ -1988,7 +2170,8 @@ function aoPressionar(e) {
 
 function aoMover(e) {
   if (!arr || e.pointerId !== arr.id) return;
-  if (!arr.movido && Math.hypot(e.clientX - arr.x, e.clientY - arr.y) > 4) arr.movido = true;
+  if (!arr.movido && Math.hypot(e.clientX - arr.x, e.clientY - arr.y) > (e.pointerType === 'touch' ? 10 : 4)) arr.movido = true;
+  if (arr.alca) { moverAlca(e); return; }
   if (arr.olhar && arr.movido) {
     andar.yaw = arr.yaw0 + (e.clientX - arr.x) * 0.0045;
     andar.pitch = Math.max(-1.2, Math.min(1.2, arr.pitch0 + (e.clientY - arr.y) * 0.0045));
@@ -2036,6 +2219,7 @@ function aoSoltar(e) {
   if (!arr || e.pointerId !== arr.id) return;
   const g = arr;
   arr = null;
+  if (g.alca) { soltarAlca(g); return; }
   if (g.arrastavel) {
     ctlAtivo().enabled = !vista.caminhar;
     if (g.movido) { registrar(g.estado); atualizarTudo(); }
@@ -2045,6 +2229,17 @@ function aoSoltar(e) {
   if (g.olhar && (g.movido || foto.ativa)) return;
   if (g.movido) return; // foi órbita/arraste de câmera
   const a = g.alvo;
+  // toque duplo (fora do caminhar): aproxima naquele ponto
+  const agora = performance.now();
+  if (!vista.caminhar && ultimoToque && agora - ultimoToque.t < 320 && Math.hypot(e.clientX - ultimoToque.x, e.clientY - ultimoToque.y) < 30) {
+    ultimoToque = null;
+    raioDe(e);
+    const hit = ray.intersectObjects([grpMoveis, grpPlanta], true)[0];
+    const p = hit ? hit.point : pontoNoPiso(e);
+    if (p) zoomEm(p, 0.55);
+    return;
+  }
+  ultimoToque = { t: agora, x: e.clientX, y: e.clientY };
   if (modo === 'visitar' && !vista.caminhar) return; // visitando: tocar não seleciona nada
   if (vista.caminhar) { // toque: anda até o ponto (ou até perto do móvel/parede tocado)
     raioDe(e);
@@ -2059,6 +2254,7 @@ function aoSoltar(e) {
     return;
   }
   if (!a) selecionar(null);
+  else if (a.tipo === 'movel') selecionar({ tipo: 'movel', id: a.id });
   else if (a.tipo === 'parede') selecionar({ tipo: 'parede', id: a.id, abertura: a.abertura });
   else if (a.tipo === 'ambiente') selecionar({ tipo: 'ambiente', id: a.id });
   else if (a.tipo === 'zona') selecionar({ tipo: 'zona', id: a.id });
@@ -2116,6 +2312,20 @@ function duplicarSelecionado() {
   alterar(() => cen().moveis.push(c));
   selecionar({ tipo: 'movel', id: c.id });
 }
+// move pelas setas da tela: "para cima" é o que sobe na tela, em qualquer vista
+function empurrarTela(dir, passo = CFG.grade) {
+  const cam = camAtiva(), c = ctlAtivo().target.clone();
+  const tela = { cima: [0, 1], baixo: [0, -1], esq: [-1, 0], dir: [1, 0] }[dir];
+  const p0 = c.clone().project(cam);
+  let melhor = null, nota = -Infinity;
+  for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+    const p1 = c.clone().add(new T.Vector3(dx * 100, 0, dz * 100)).project(cam);
+    const v = [(p1.x - p0.x) * palco.clientWidth, (p1.y - p0.y) * palco.clientHeight], n = Math.hypot(...v) || 1;
+    const d = (v[0] * tela[0] + v[1] * tela[1]) / n;
+    if (d > nota) { nota = d; melhor = [dx, dz]; }
+  }
+  empurrar(melhor[0] * passo, melhor[1] * passo);
+}
 function empurrar(dx, dz) {
   const m = sel?.tipo === 'movel' && movel(sel.id);
   if (m) alterar(() => { m.x += dx; m.z += dz; });
@@ -2133,6 +2343,8 @@ document.addEventListener('keydown', (e) => {
   }
   if (!ctrl && !e.altKey && { 1: 'visitar', 2: 'arrumar', 3: 'conferir' }[k]) { setModo({ 1: 'visitar', 2: 'arrumar', 3: 'conferir' }[k]); return; }
   if (!ctrl && k === 'f') { abrirFoto(); return; }
+  if (!ctrl && (k === '+' || k === '=')) { zoomPasso(0.7); return; }
+  if (!ctrl && (k === '-' || k === '_')) { zoomPasso(1.45); return; }
   const edita = ['delete', 'backspace', 'r'].includes(k) || (ctrl && k === 'd') || (k.startsWith('arrow') && !vista.caminhar);
   if (modo !== 'arrumar' && edita) return;
   if (ctrl && k === 'z' && !e.shiftKey) { e.preventDefault(); desfazer(); }
@@ -2408,11 +2620,20 @@ function gerarMiniaturas() {
 }
 
 // ---- painel da seleção
+let painelExpandido = false;
 function renderPainel() {
   const p = $('#painel');
+  const rolagem = p.scrollTop;
   p.textContent = '';
   document.body.classList.toggle('com-painel', !!sel);
+  p.classList.toggle('expandido', painelExpandido);
+  requestAnimationFrame(aplicarDeslocamento);
   if (!sel) return;
+  // no celular: puxador da gaveta (baixa por padrão, para mexer no móvel vendo a cena)
+  p.append(botao(painelExpandido ? 'menos opções' : 'mais opções', () => {
+    painelExpandido = !painelExpandido; renderPainel();
+  }, { class: 'puxador' }));
+  requestAnimationFrame(() => { p.scrollTop = rolagem; });
   const cab = (titulo, sub) => el('header', {}, el('div', {}, el('small', {}, sub), el('h2', {}, titulo)),
     botao('×', () => selecionar(null), { class: 'fechar', title: 'Fechar (Esc)' }));
   if (sel.tipo === 'movel') painelMovel(p, cab);
@@ -2444,7 +2665,11 @@ function painelMovel(p, cab) {
       botaoRapido('⇋', 'Espelhar', () => alterar(() => { m.espelhado = !m.espelhado; })),
       temMov(def, m) ? botaoRapido(aberto ? '■' : '▶', aberto ? acaoFechar : acaoAbrir, () => alternarAbertura(m)) : null,
       botaoRapido('⧉', 'Duplicar', duplicarSelecionado),
+      botaoRapido('🔍', 'Focar', () => focarRet(pegada(m), 60)),
       botaoRapido('🗑', 'Remover', removerSelecionado, { class: 'perigo' })),
+    el('div', { class: 'mover' }, el('small', {}, 'Mover 5 cm'),
+      ...[['←', 'esq'], ['↑', 'cima'], ['↓', 'baixo'], ['→', 'dir']].map(([t, d]) => botao(t, () => empurrarTela(d), { title: `Mover para ${d === 'esq' ? 'a esquerda' : d === 'dir' ? 'a direita' : d} da tela` }))),
+    el('p', { class: 'nota', style: 'margin:0 0 8px' }, `${fmt(m.l)} × ${fmt(m.p)} × ${fmt(m.a)} cm · arraste as setas azuis para mudar o tamanho; arraste o móvel para mover`),
     def.variantes?.length > 1 ? secao('Formato',
       el('div', { class: 'opcoes' }, ...def.variantes.map((v) => botao(v.nome, () => trocarVariante(m, def, v), { class: v === vr ? 'ativo' : '' })))) : null,
     def.acabamentos ? secao('Material',
@@ -2472,7 +2697,7 @@ function painelMovel(p, cab) {
     zonas.length ? mais('Área de uso', false,
       ...zonas.map((z, k) => el('div', { class: 'linha-uso ' + (colisoes.usoBloq.has(`${m.id}#${k}`) ? 'alerta' : 'ok') },
         el('span', {}, z.nome), el('b', {}, `${fmt(z.x1 - z.x0)} × ${fmt(z.z1 - z.z0)} cm`)))) : null,
-    el('p', { class: 'nota' }, 'Arraste o móvel no piso para mudar de lugar (encaixe de 5 cm).'),
+    el('p', { class: 'nota' }, 'Com o móvel selecionado, arraste-o para mudar de lugar (encaixe de 5 cm). Toque duplo aproxima.'),
   );
 }
 function trocarVariante(m, def, v) {
@@ -2688,13 +2913,17 @@ function painelAmbiente(p, cab) {
   );
 }
 
+let avisosAbertos = null;
 function renderAvisos() {
   const box = $('#avisos');
   box.textContent = '';
   if (!colisoes.lista.length) { box.hidden = true; return; }
   box.hidden = false;
   const n = colisoes.lista.length, uso = colisoes.lista.filter((c) => c.tipo).length;
-  box.append(el('b', {}, `⚠ ${n} ${n === 1 ? 'conflito' : 'conflitos'}${uso ? ` (${uso} de uso)` : ''}`));
+  avisosAbertos ??= !LEVE_TELA();
+  box.classList.toggle('recolhido', !avisosAbertos);
+  box.append(el('b', { onclick: () => { avisosAbertos = !avisosAbertos; renderAvisos(); }, title: 'Mostrar ou esconder a lista' },
+    `⚠ ${n} ${n === 1 ? 'conflito' : 'conflitos'}${uso ? ` (${uso} de uso)` : ''} ${avisosAbertos ? '▾' : '▸'}`));
   for (const c of colisoes.lista.slice(0, 6)) {
     box.append(el('button', { type: 'button', onclick: () => selecionar({ tipo: 'movel', id: c.ids[0] }) }, c.txt));
   }
@@ -2766,6 +2995,8 @@ function alternarPausaCinema() {
   $('#usoPausa').textContent = cinema.pausa ? '▶' : '⏸';
   $('#filmePausa').textContent = cinema.pausa ? '▶' : '⏸';
 }
+$('#bZoomMais').onclick = () => zoomPasso(0.7);
+$('#bZoomMenos').onclick = () => zoomPasso(1.45);
 $('#bUso').onclick = () => { if (foto.ativa) return; cinema.modo === 'uso' ? pararCinema() : iniciarUso(); };
 $('#bFilme').onclick = () => { if (foto.ativa) return; cinema.modo === 'filme' ? pararCinema() : iniciarFilme(); };
 $('#usoPausa').onclick = alternarPausaCinema;
@@ -2851,6 +3082,11 @@ function irPara(v) {
 function renderVistas() {
   const box = $('#vistas');
   box.textContent = '';
+  if (modo !== 'visitar') {
+    box.append(botao('Inteiro', () => enquadrar()));
+    for (const a of doc.planta.ambientes) box.append(botao(a.nome, () => focarAmbiente(a)));
+    return;
+  }
   const lista = [...(typeof VISTAS_VISITA !== 'undefined' ? VISTAS_VISITA : []), { nome: 'Maquete', tipo: 'maquete' }, { nome: 'Planta', tipo: 'planta' }];
   for (const v of lista) box.append(botao(v.nome, () => irPara(v), { class: vistaAtual === v.nome ? 'ativo' : '' }));
   box.append(botao(`☀ ${horaTxt(luz.hora)}`, () => { $('#solVisita').hidden = !$('#solVisita').hidden; atualizarSolVisita(); }, { class: 'sol' }));
@@ -4256,7 +4492,11 @@ $('#arqJSON').onchange = (e) => { const f = e.target.files[0]; e.target.value = 
 $('#arqGLB').onchange = (e) => { const f = e.target.files[0]; e.target.value = ''; if (f) aoEscolherGLB(f); };
 $('#glbEscala').addEventListener('input', atualizarPreviaGLB);
 $('#dlgGLB').addEventListener('close', () => { if ($('#dlgGLB').returnValue === 'ok' && glbPendente) confirmarGLB(); else glbPendente = null; });
-for (const d of document.querySelectorAll('details.menu')) d.addEventListener('click', (e) => { if (e.target.closest('button')) d.open = false; });
+// menu "Mais": abre como folha; qualquer escolha (ou tocar fora) fecha
+const fecharMenu = () => { $('#menuMais').hidden = true; };
+$('#bMais').onclick = () => { $('#menuMais').hidden = !$('#menuMais').hidden; };
+$('#menuFechar').onclick = fecharMenu;
+$('#menuMais').addEventListener('click', (e) => { if (e.target.id === 'menuMais' || e.target.closest('.folha-menu > button')) fecharMenu(); });
 
 // =====================================================================
 // 11. EXTENSÕES FUTURAS
@@ -4326,6 +4566,7 @@ renderer.setAnimationLoop(() => {
   desenharQuadro();
   posicionarRotulos();
   posicionarBussola();
+  atualizarAlcas();
   posicionar(cotasTela);
   posicionar(rotulosZonas);
 });
