@@ -163,6 +163,39 @@ button.grande { width: 100%; margin-top: 14px; padding: 13px; font-size: 16px; f
 button.acao-sec { background: var(--texto); color: #fff; border-color: var(--texto); }
 body.modo-foto #rotulos, body.modo-foto #cotas, body.modo-foto #avisos, body.modo-foto #ajuda, body.modo-foto #painel { display: none !important; }
 body.modo-foto #bFoto { background: var(--azul-claro); border-color: var(--azul); color: var(--azul); }
+/* menu "Mais" */
+#bMais { font-size: 15px; padding: 6px 12px; border-radius: 999px; }
+#bMais span[aria-hidden] { font-size: 20px; line-height: 1; vertical-align: -2px; }
+#menuMais { position: fixed; inset: 0; z-index: 60; background: rgba(20,25,32,.35); display: flex; justify-content: flex-end; align-items: flex-start; padding: 56px 12px 0; }
+#menuMais[hidden] { display: none; }
+.folha-menu { background: #fff; border-radius: 16px; width: min(360px, 100%); padding: 8px 8px 12px; box-shadow: 0 16px 40px rgba(0,0,0,.25); }
+.folha-menu header { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px 8px; }
+.folha-menu header button { border: 0; background: none; font-size: 18px; padding: 4px 8px; }
+.folha-menu > button { display: grid; grid-template-columns: 36px 1fr; grid-template-rows: auto auto; column-gap: 8px; width: 100%; text-align: left;
+  border: 0; border-radius: 12px; padding: 10px 8px; background: none; }
+.folha-menu > button:hover, .folha-menu > button:active { background: var(--azul-claro); }
+.folha-menu > button span { grid-row: span 2; font-size: 22px; display: grid; place-items: center; }
+.folha-menu > button b { font-size: 15px; font-weight: 600; }
+.folha-menu > button small { font-size: 12px; color: var(--suave); }
+.folha-menu > button.perigo b { color: var(--vermelho); }
+/* zoom e desfazer */
+#controlesEsq { position: absolute; left: 12px; top: 64px; display: grid; gap: 6px; z-index: 11; }
+#controlesEsq button { width: 44px; height: 44px; border-radius: 12px; font-size: 20px; padding: 0; background: rgba(255,255,255,.94); box-shadow: 0 2px 10px rgba(20,30,40,.1); }
+#controlesEsq button:disabled { opacity: .4; }
+#bDesfazer { margin-top: 8px; }
+body.caminhando #controlesEsq, body.cinema-filme #controlesEsq { display: none; }
+/* cômodos: no Visitar embaixo (andar até lá); nos outros modos em cima (enquadrar) */
+body:not(.modo-visitar) #vistas { top: 12px; bottom: auto; left: 64px; right: 84px; }
+body:not(.modo-visitar) #vistas button { padding: 7px 12px; font-size: 13px; }
+body:not(.modo-visitar) #vistas button.sol { display: none; }
+/* conflitos recolhidos numa etiqueta */
+#avisos.recolhido button, #avisos.recolhido span { display: none; }
+#avisos > b { cursor: pointer; }
+/* gaveta do móvel no celular */
+.puxador { display: none; }
+.mover { display: grid; grid-template-columns: auto repeat(4, 40px); gap: 6px; align-items: center; margin: 0 0 10px; }
+.mover small { color: var(--suave); font-size: 12px; margin-right: 4px; }
+.mover button { height: 36px; padding: 0; font-size: 16px; border-radius: 10px; }
 /* simulação de uso e filme */
 body.cinema #vistas, body.cinema #rotulos, body.cinema #cotas, body.cinema #avisos, body.cinema #ajuda, body.cinema #painel, body.cinema #solVisita { display: none !important; }
 body.cinema-filme #ferramentas, body.cinema-filme #bussola, body.cinema-filme #bGaveta { display: none !important; }
@@ -323,7 +356,7 @@ body.com-painel #ferramentas { right: calc(var(--painel-w) + 12px); }
 .cartao-cat em { font-style: normal; font-size: 11px; color: var(--suave); }
 
 /* painel do móvel compacto */
-.acoes-rapidas { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 4px 0 10px; }
+.acoes-rapidas { display: grid; grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)); gap: 6px; margin: 4px 0 10px; }
 .acoes-rapidas button { display: grid; place-items: center; gap: 2px; padding: 8px 2px; font-size: 18px; border-radius: 10px; }
 .acoes-rapidas button small { font-size: 10px; color: var(--suave); }
 .acoes-rapidas button.perigo small { color: var(--vermelho); }
@@ -367,6 +400,18 @@ details.mais > .conteudo { padding-bottom: 10px; }
     background: var(--texto); color: #fff; border-color: var(--texto); font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,.2); }
   #avisos { bottom: 60px; }
   #bLateral { display: none !important; }
+  #controlesEsq { left: 8px; top: 56px; }
+  #controlesEsq button { width: 42px; height: 42px; }
+  body:not(.modo-visitar) #vistas { top: 8px; left: 56px; right: 66px; }
+  #menuMais { align-items: flex-end; padding: 0; }
+  .folha-menu { width: 100%; border-radius: 18px 18px 0 0; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+  /* gaveta do móvel: baixa por padrão; o puxador expande */
+  #painel { max-height: 40vh !important; padding-top: 4px; }
+  #painel.expandido { max-height: 78vh !important; }
+  .puxador { display: block; width: 100%; border: 0; background: none; padding: 2px 0 8px; color: var(--suave); font-size: 12px; }
+  .puxador::before { content: ''; display: block; width: 42px; height: 5px; border-radius: 3px; background: #d5d9de; margin: 2px auto 4px; }
+  body.com-painel #controlesEsq { top: 8px; }
+  body.com-painel #vistas { display: none !important; }
 }
 </style>
 </head>
@@ -379,21 +424,7 @@ details.mais > .conteudo { padding-bottom: 10px; }
     <div class="marca">Apartamento 3D</div>
     <nav id="abas" aria-label="Cenários"></nav>
     <div class="acoes">
-      <button id="bDesfazer" class="so-arrumar" title="Desfazer (Ctrl+Z)">↶</button>
-      <button id="bRefazer" class="so-arrumar" title="Refazer (Ctrl+Shift+Z)">↷</button>
-      <button id="bPNG" title="Salvar a vista como imagem">PNG</button>
-      <details class="menu">
-        <summary>Arquivo ▾</summary>
-        <div>
-          <button id="bSalvar">Salvar no navegador</button>
-          <button id="bExportar">Exportar layout (.json)</button>
-          <button id="bImportar">Importar layout (.json)</button>
-          <hr>
-          <button id="bGLB">Importar modelo .glb</button>
-          <hr>
-          <button id="bOriginal">Voltar ao original</button>
-        </div>
-      </details>
+      <button id="bMais" aria-haspopup="dialog" title="Salvar, exportar, imagem…"><span aria-hidden="true">⋯</span> <span class="texto">Mais</span></button>
     </div>
   </header>
 
@@ -442,8 +473,15 @@ details.mais > .conteudo { padding-bottom: 10px; }
       <button id="bEnquadrar" title="Ver o apartamento inteiro"><span aria-hidden="true">⤢</span><span class="rot">Inteiro</span></button>
     </div>
 
+    <!-- zoom e desfazer, na lateral esquerda da cena -->
+    <div id="controlesEsq">
+      <button id="bZoomMais" title="Aproximar (+)" aria-label="Aproximar">＋</button>
+      <button id="bZoomMenos" title="Afastar (−)" aria-label="Afastar">－</button>
+      <button id="bDesfazer" class="so-arrumar" title="Desfazer (Ctrl+Z)" aria-label="Desfazer">↶</button>
+      <button id="bRefazer" class="so-arrumar" title="Refazer (Ctrl+Shift+Z)" aria-label="Refazer">↷</button>
+    </div>
     <!-- Visitar: atalhos de cômodos e hora do sol -->
-    <div id="vistas" class="so-visitar"></div>
+    <div id="vistas"></div>
     <div id="solVisita" class="so-visitar" hidden>
       <div class="foto-topo"><b>☀ Luz do dia</b><span id="solVisitaTxt"></span></div>
       <input id="solVisitaHora" type="range" min="5" max="20" step="0.25">
@@ -494,7 +532,7 @@ details.mais > .conteudo { padding-bottom: 10px; }
       <div class="cine-base"><div id="filmeCaps"></div></div>
       <div id="filmeVeu"><span id="filmeVeuTxt"></span></div>
     </div>
-    <div id="ajuda" class="so-arrumar">Clique: selecionar · arraste: mover · R: girar · Del: remover · 1 2 3: modos · F: foto</div>
+    <div id="ajuda" class="so-arrumar">Clique seleciona · arraste o selecionado para mover · setas azuis: tamanho · R: girar · Del: remover · +/−: zoom</div>
   </main>
 
   <aside id="painel"></aside>
@@ -506,6 +544,18 @@ details.mais > .conteudo { padding-bottom: 10px; }
   </nav>
 </div>
 
+<!-- Menu "Mais": botões grandes; no celular sobe de baixo -->
+<div id="menuMais" hidden>
+  <div class="folha-menu" role="dialog" aria-label="Mais opções">
+    <header><b>Mais opções</b><button id="menuFechar" aria-label="Fechar">✕</button></header>
+    <button id="bPNG"><span>🖼</span><b>Salvar imagem</b><small>PNG da vista atual, com as áreas</small></button>
+    <button id="bSalvar"><span>💾</span><b>Salvar agora</b><small>o layout já se salva sozinho neste aparelho</small></button>
+    <button id="bExportar"><span>⬇</span><b>Exportar layout</b><small>arquivo .json para levar a outro aparelho</small></button>
+    <button id="bImportar"><span>⬆</span><b>Importar layout</b><small>abrir um .json exportado</small></button>
+    <button id="bGLB"><span>📦</span><b>Importar modelo 3D</b><small>arquivo .glb de um móvel pronto</small></button>
+    <button id="bOriginal" class="perigo"><span>↺</span><b>Voltar ao original</b><small>desfaz tudo e reabre a planta final</small></button>
+  </div>
+</div>
 <div id="toast" role="status"></div>
 <input type="file" id="arqJSON" accept=".json,application/json" hidden>
 <input type="file" id="arqGLB" accept=".glb,.gltf" hidden>
@@ -10708,6 +10758,68 @@ function enquadrar() {
   ctlPersp.update(); ctlTopo.update();
 }
 
+// ---- navegação: zoom por botão, toque duplo e enquadrar um cômodo ou móvel
+let animCam = 0;
+function moverCamera(alvo, pos, zoomTopo) {
+  cancelAnimationFrame(animCam);
+  const ctl = ctlAtivo(), cam = camAtiva();
+  const a0 = ctl.target.clone(), p0 = cam.position.clone(), z0 = camTopo.zoom, t0 = performance.now();
+  const passo = (agora) => {
+    const k = ease((agora - t0) / 450);
+    ctl.target.lerpVectors(a0, alvo, k);
+    if (vista.topo) {
+      camTopo.position.set(ctl.target.x, camTopo.position.y, ctl.target.z);
+      if (zoomTopo) { camTopo.zoom = z0 + (zoomTopo - z0) * k; camTopo.updateProjectionMatrix(); }
+    } else if (pos) cam.position.lerpVectors(p0, pos, k);
+    ctl.update();
+    if (k < 1) animCam = requestAnimationFrame(passo);
+  };
+  animCam = requestAnimationFrame(passo);
+}
+// aproxima (fator < 1) ou afasta (> 1), mantendo o ponto de interesse
+function zoomEm(ponto, fator) {
+  if (vista.caminhar) return;
+  const alvo = new T.Vector3(ponto.x, 0, ponto.z);
+  if (vista.topo) { moverCamera(alvo, null, Math.min(12, Math.max(0.4, camTopo.zoom / fator))); return; }
+  const dir = camPersp.position.clone().sub(ctlPersp.target);
+  const dist = Math.min(4000, Math.max(60, dir.length() * fator));
+  moverCamera(alvo, alvo.clone().add(dir.normalize().multiplyScalar(dist)));
+}
+function zoomPasso(fator) { zoomEm(ctlAtivo().target, fator); }
+// enquadra um retângulo da planta (cômodo ou móvel) na parte visível da tela
+function focarRet(r, folga = 40) {
+  if (vista.caminhar) alternarCaminhada();
+  const w = r.x1 - r.x0 + folga * 2, d = r.z1 - r.z0 + folga * 2;
+  const alvo = new T.Vector3((r.x0 + r.x1) / 2, 0, (r.z0 + r.z1) / 2);
+  const asp = palco.clientWidth / Math.max(1, palco.clientHeight - deslocamentoVista());
+  if (vista.topo) {
+    const base = camTopo.top - camTopo.bottom, baseW = camTopo.right - camTopo.left;
+    moverCamera(alvo, null, Math.min(12, Math.max(0.4, Math.min(base / d, baseW / w) * 0.9)));
+    return;
+  }
+  const raio = Math.max(w / Math.min(asp, 1.6), d) * 0.62;
+  const dist = raio / Math.tan(rad(camPersp.fov / 2));
+  const dir = camPersp.position.clone().sub(ctlPersp.target).normalize();
+  moverCamera(alvo, alvo.clone().add(dir.multiplyScalar(Math.max(140, dist))));
+}
+function focarAmbiente(a) {
+  const xs = a.pontos.map((p) => p[0]), zs = a.pontos.map((p) => p[1]);
+  focarRet({ x0: Math.min(...xs), x1: Math.max(...xs), z0: Math.min(...zs), z1: Math.max(...zs) }, 15);
+}
+// no celular, com a gaveta do móvel aberta, o centro da vista sobe para o que
+// está acima dela (a cena não muda de tamanho)
+function deslocamentoVista() {
+  const p = $('#painel');
+  return LEVE_TELA() && document.body.classList.contains('com-painel') && p ? p.offsetHeight : 0;
+}
+const LEVE_TELA = () => matchMedia('(max-width: 860px)').matches;
+function aplicarDeslocamento() {
+  const h = deslocamentoVista(), W = palco.clientWidth, H = Math.max(1, palco.clientHeight);
+  for (const c of [camPersp, camTopo]) {
+    if (h > 0) c.setViewOffset(W, H, 0, h / 2, W, H); else c.clearViewOffset();
+  }
+}
+
 function redimensionar() {
   const w = palco.clientWidth, h = Math.max(1, palco.clientHeight);
   renderer.setSize(w, h, false);
@@ -10715,6 +10827,7 @@ function redimensionar() {
   const meia = (camTopo.top - camTopo.bottom) / 2;
   camTopo.left = -meia * (w / h); camTopo.right = meia * (w / h);
   camTopo.updateProjectionMatrix();
+  aplicarDeslocamento();
 }
 new ResizeObserver(redimensionar).observe(palco);
 
@@ -11992,8 +12105,9 @@ function verificarColisoes() {
       ];
       if (!quem.length) return;
       usoBloq.add(`${A.m.id}#${k}`);
-      marcar(A.m.id, `${z.nome.toLowerCase()} bloqueada por ${quem.join(', ')}`);
-      lista.push({ ids: [A.m.id], txt: `${A.m.nome}: ${z.nome.toLowerCase()} bloqueada`, tipo: 'uso' });
+      const txtMovel = `${z.nome.toLowerCase()} bloqueada por ${quem.join(', ')}`;
+      marcar(A.m.id, txtMovel);
+      lista.push({ ids: [A.m.id], txt: `${A.m.nome}: ${z.nome.toLowerCase()} bloqueada`, tipo: 'uso', zona: `${A.m.id}#${k}`, txtMovel });
     });
   }
   for (const giro of girosPortas()) {
@@ -12006,6 +12120,13 @@ function verificarColisoes() {
   }
   colisoes = { porMovel, lista, usoBloq, portasBloq };
   conferir();
+  // espaço só apertado (70% do ideal ou mais) fica amarelo, não é conflito
+  for (const c of lista.filter((x) => x.zona && statusZona.get(x.zona) === 'atencao')) {
+    usoBloq.delete(c.zona);
+    const t = (porMovel.get(c.ids[0]) || []).filter((x) => x !== c.txtMovel);
+    if (t.length) porMovel.set(c.ids[0], t); else porMovel.delete(c.ids[0]);
+  }
+  colisoes.lista = lista.filter((x) => !(x.zona && statusZona.get(x.zona) === 'atencao'));
   renderAvisos();
 }
 
@@ -12080,13 +12201,14 @@ function desenharSelecao() {
   if (!vista.caminhar && modo === 'arrumar') for (const id of colisoes.porMovel.keys()) { const m = movel(id); if (m) marca(m, matCol, linhaCol); }
   const selM = sel?.tipo === 'movel' ? movel(sel.id) : null;
   if (selM) marca(selM, matSel, linhaSel);
+  desenharAlcas(selM);
   if (vista.caminhar || modo === 'visitar') return;
   // áreas de uso: de todos (camada ligada ou modo Conferir) ou só do móvel selecionado
   const todas = camadas.uso || modo === 'conferir';
   for (const m of cen().moveis) {
     if (!todas && m !== selM) continue;
     zonasUso(m).forEach((z, k) => {
-      const st = modo === 'conferir' ? statusZona.get(`${m.id}#${k}`) : (colisoes.usoBloq.has(`${m.id}#${k}`) ? 'problema' : 'ok');
+      const st = modo === 'conferir' || statusZona.get(`${m.id}#${k}`) === 'atencao' ? statusZona.get(`${m.id}#${k}`) : (colisoes.usoBloq.has(`${m.id}#${k}`) ? 'problema' : 'ok');
       const fundo = st === 'problema' ? matUsoBloq : st === 'atencao' ? matUsoAtencao : matUso;
       grpSel.add(malhaPoligono(retPts(z), fundo, 0.5));
       grpSel.add(contornoTracejado(retPts(z), st === 'problema' ? linhaCol : st === 'atencao' ? linhaAtencao : linhaUso, 0.6));
@@ -12237,6 +12359,108 @@ function passoAndar(frente, lado) {
   if (dentro([x, z], doc.planta.contorno)) { andar.x = x; andar.z = z; aplicarCameraAndar(); }
 }
 
+// ---- alças: as setas do móvel selecionado mudam largura, profundidade e
+// altura arrastando (o lado oposto fica parado; de 1 em 1 cm)
+const grpAlcas = new T.Group();
+grpAlcas.renderOrder = 10;
+cena.add(grpAlcas);
+let texAlca = null;
+function texturaAlca() {
+  if (texAlca) return texAlca;
+  const c = Object.assign(document.createElement('canvas'), { width: 128, height: 128 }), g = c.getContext('2d');
+  g.beginPath(); g.arc(64, 64, 58, 0, Math.PI * 2); g.fillStyle = '#ffffff'; g.fill();
+  g.lineWidth = 8; g.strokeStyle = '#2f80ed'; g.stroke();
+  g.fillStyle = '#2f80ed'; g.strokeStyle = '#2f80ed'; g.lineWidth = 9; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(34, 64); g.lineTo(94, 64); g.stroke();
+  for (const sx of [-1, 1]) { g.beginPath(); g.moveTo(64 + sx * 42, 64); g.lineTo(64 + sx * 24, 48); g.lineTo(64 + sx * 24, 80); g.closePath(); g.fill(); }
+  texAlca = new T.CanvasTexture(c);
+  texAlca.colorSpace = T.SRGBColorSpace;
+  return texAlca;
+}
+const NOME_DIM = { l: 'Largura', p: 'Profundidade', a: 'Altura' };
+const dimDoEixo = (m, eixo) => (eixo === 'y' ? 'a' : (m.rot % 180 === 0) === (eixo === 'x') ? 'l' : 'p');
+function desenharAlcas(m) {
+  limpar(grpAlcas);
+  if (!m || modo !== 'arrumar' || vista.caminhar || cinema.modo || foto.ativa) return;
+  const pg = pegada(m), y0 = (m.y || 0) + 2, off = 16;
+  // fora do centro do lado, para não cair sobre as cotas de distância
+  const dz = Math.min(pg.d * 0.3, 40), dx = Math.min(pg.w * 0.3, 40);
+  const pos = { 'x-1': [pg.x0 - off, y0, m.z + dz], 'x1': [pg.x1 + off, y0, m.z + dz], 'z-1': [m.x + dx, y0, pg.z0 - off], 'z1': [m.x + dx, y0, pg.z1 + off], 'y1': [m.x, (m.y || 0) + m.a + 20, m.z] };
+  for (const [chave, [x, y, z]] of Object.entries(pos)) {
+    const eixo = chave[0], sinal = chave.endsWith('-1') ? -1 : 1;
+    const mt = new T.SpriteMaterial({ map: texturaAlca(), depthTest: false, transparent: true });
+    const sp = new T.Sprite(mt);
+    sp.position.set(x, y, z);
+    sp.scale.set(0.075, 0.075, 1);
+    sp.renderOrder = 10;
+    sp.userData = { tipo: 'alca', id: m.id, eixo, s: sinal, eixoV: new T.Vector3(eixo === 'x' ? 1 : 0, eixo === 'y' ? 1 : 0, eixo === 'z' ? 1 : 0) };
+    grpAlcas.add(sp);
+  }
+  atualizarAlcas();
+}
+// gira a seta de cada alça para apontar ao longo do seu eixo na tela
+function atualizarAlcas() {
+  if (!grpAlcas.children.length) return;
+  const cam = camAtiva(), W = palco.clientWidth, H = Math.max(1, palco.clientHeight), a = new T.Vector3(), b = new T.Vector3();
+  const px = LEVE ? 46 : 36; // tamanho na tela, igual em qualquer zoom
+  for (const sp of grpAlcas.children) {
+    a.copy(sp.position).project(cam); b.copy(sp.position).addScaledVector(sp.userData.eixoV, 20).project(cam);
+    sp.material.rotation = Math.atan2((b.y - a.y) * H, (b.x - a.x) * W);
+    const porPx = vista.topo ? (camTopo.top - camTopo.bottom) / camTopo.zoom / H
+      : (2 * cam.position.distanceTo(sp.position) * Math.tan(rad(camPersp.fov / 2))) / H;
+    const k = px * porPx;
+    sp.scale.set(k, k, 1);
+    sp.visible = !(vista.topo && sp.userData.eixo === 'y'); // altura não se puxa na planta
+  }
+}
+function reconstruirMovel(m) {
+  const velho = objMovel.get(m.id);
+  if (velho) { grpMoveis.remove(velho); limpar(velho); }
+  const g = construirMovel(m);
+  grpMoveis.add(g);
+  objMovel.set(m.id, g);
+  sujarSombra();
+}
+function iniciarAlca(e, alvo) {
+  const m = movel(alvo.id);
+  if (!m) return;
+  const plano = new T.Plane();
+  if (alvo.eixo === 'y') {
+    const n = camAtiva().getWorldDirection(new T.Vector3()); n.y = 0;
+    if (n.lengthSq() < 1e-6) n.set(0, 0, 1);
+    plano.setFromNormalAndCoplanarPoint(n.normalize(), new T.Vector3(m.x, 0, m.z));
+  } else plano.set(new T.Vector3(0, 1, 0), -((m.y || 0) + 2));
+  raioDe(e);
+  const inicio = ray.ray.intersectPlane(plano, new T.Vector3());
+  if (!inicio) return;
+  ctlAtivo().enabled = false;
+  Object.assign(arr, { alca: alvo, plano, inicio, estado: JSON.stringify(doc), m0: { l: m.l, p: m.p, a: m.a, x: m.x, z: m.z } });
+  renderer.domElement.setPointerCapture(e.pointerId);
+  dica(`${NOME_DIM[dimDoEixo(m, alvo.eixo)]}: ${fmt(m[dimDoEixo(m, alvo.eixo)])} cm — arraste`);
+}
+function moverAlca(e) {
+  if (!arr.movido) return;
+  const m = movel(arr.alca.id);
+  raioDe(e);
+  const p = m && ray.ray.intersectPlane(arr.plano, new T.Vector3());
+  if (!p) return;
+  const { eixo, s: sinal } = arr.alca, dim = dimDoEixo(m, eixo);
+  const delta = (p[eixo] - arr.inicio[eixo]) * (eixo === 'y' ? 1 : sinal);
+  const novo = Math.round(Math.max(10, Math.min(800, arr.m0[dim] + delta)));
+  if (novo === m[dim]) return;
+  m[dim] = novo;
+  if (eixo !== 'y') m[eixo] = arr.m0[eixo] + (sinal * (novo - arr.m0[dim])) / 2;
+  reconstruirMovel(m);
+  verificarColisoes();
+  desenharSelecao();
+  dica(`${NOME_DIM[dim]}: ${fmt(novo)} cm (era ${fmt(arr.m0[dim])})`);
+}
+function soltarAlca(g) {
+  ctlAtivo().enabled = !vista.caminhar;
+  dica('');
+  if (g.movido) { registrar(g.estado); atualizarTudo(); }
+}
+
 function selecionar(s) {
   sel = s;
   construirPlanta();
@@ -12257,6 +12481,10 @@ function raioDe(e) {
 }
 function alvoEm(e) {
   raioDe(e);
+  if (grpAlcas.children.length) {
+    const h = ray.intersectObjects(grpAlcas.children.filter((o) => o.visible), false)[0];
+    if (h) return { ...h.object.userData };
+  }
   for (const h of ray.intersectObjects([grpMoveis, grpZonas, grpPlanta], true)) {
     const u = h.object.userData;
     if (u.tipo) return { tipo: u.tipo, id: u.id, abertura: u.abertura };
@@ -12270,6 +12498,7 @@ function pontoNoPiso(e) {
 
 const toques = new Map();
 let arr = null; // gesto em andamento
+let ultimoToque = null;
 
 function aoPressionar(e) {
   toques.set(e.pointerId, true);
@@ -12288,7 +12517,10 @@ function aoPressionar(e) {
   const jaSel = (tipo) => alvo?.tipo === tipo && sel?.tipo === tipo && sel.id === alvo.id;
   const paredeSel = jaSel('parede') && !parede(alvo.id)?.demolida;
   // caminhando, nada se mexe: arrastar só olha em volta
-  if (modo === 'arrumar' && !vista.caminhar && (alvo?.tipo === 'movel' || paredeSel || jaSel('zona'))) {
+  // só se arrasta o que JÁ está selecionado: o primeiro toque seleciona, e
+  // arrastar fora dele gira a câmera (nada se mexe sem querer)
+  if (modo === 'arrumar' && !vista.caminhar && alvo?.tipo === 'alca') { iniciarAlca(e, alvo); return; }
+  if (modo === 'arrumar' && !vista.caminhar && (jaSel('movel') || paredeSel || jaSel('zona'))) {
     const inicio = pontoNoPiso(e);
     if (!inicio) return;
     ctlAtivo().enabled = false;
@@ -12313,7 +12545,8 @@ function aoPressionar(e) {
 
 function aoMover(e) {
   if (!arr || e.pointerId !== arr.id) return;
-  if (!arr.movido && Math.hypot(e.clientX - arr.x, e.clientY - arr.y) > 4) arr.movido = true;
+  if (!arr.movido && Math.hypot(e.clientX - arr.x, e.clientY - arr.y) > (e.pointerType === 'touch' ? 10 : 4)) arr.movido = true;
+  if (arr.alca) { moverAlca(e); return; }
   if (arr.olhar && arr.movido) {
     andar.yaw = arr.yaw0 + (e.clientX - arr.x) * 0.0045;
     andar.pitch = Math.max(-1.2, Math.min(1.2, arr.pitch0 + (e.clientY - arr.y) * 0.0045));
@@ -12361,6 +12594,7 @@ function aoSoltar(e) {
   if (!arr || e.pointerId !== arr.id) return;
   const g = arr;
   arr = null;
+  if (g.alca) { soltarAlca(g); return; }
   if (g.arrastavel) {
     ctlAtivo().enabled = !vista.caminhar;
     if (g.movido) { registrar(g.estado); atualizarTudo(); }
@@ -12370,6 +12604,17 @@ function aoSoltar(e) {
   if (g.olhar && (g.movido || foto.ativa)) return;
   if (g.movido) return; // foi órbita/arraste de câmera
   const a = g.alvo;
+  // toque duplo (fora do caminhar): aproxima naquele ponto
+  const agora = performance.now();
+  if (!vista.caminhar && ultimoToque && agora - ultimoToque.t < 320 && Math.hypot(e.clientX - ultimoToque.x, e.clientY - ultimoToque.y) < 30) {
+    ultimoToque = null;
+    raioDe(e);
+    const hit = ray.intersectObjects([grpMoveis, grpPlanta], true)[0];
+    const p = hit ? hit.point : pontoNoPiso(e);
+    if (p) zoomEm(p, 0.55);
+    return;
+  }
+  ultimoToque = { t: agora, x: e.clientX, y: e.clientY };
   if (modo === 'visitar' && !vista.caminhar) return; // visitando: tocar não seleciona nada
   if (vista.caminhar) { // toque: anda até o ponto (ou até perto do móvel/parede tocado)
     raioDe(e);
@@ -12384,6 +12629,7 @@ function aoSoltar(e) {
     return;
   }
   if (!a) selecionar(null);
+  else if (a.tipo === 'movel') selecionar({ tipo: 'movel', id: a.id });
   else if (a.tipo === 'parede') selecionar({ tipo: 'parede', id: a.id, abertura: a.abertura });
   else if (a.tipo === 'ambiente') selecionar({ tipo: 'ambiente', id: a.id });
   else if (a.tipo === 'zona') selecionar({ tipo: 'zona', id: a.id });
@@ -12441,6 +12687,20 @@ function duplicarSelecionado() {
   alterar(() => cen().moveis.push(c));
   selecionar({ tipo: 'movel', id: c.id });
 }
+// move pelas setas da tela: "para cima" é o que sobe na tela, em qualquer vista
+function empurrarTela(dir, passo = CFG.grade) {
+  const cam = camAtiva(), c = ctlAtivo().target.clone();
+  const tela = { cima: [0, 1], baixo: [0, -1], esq: [-1, 0], dir: [1, 0] }[dir];
+  const p0 = c.clone().project(cam);
+  let melhor = null, nota = -Infinity;
+  for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+    const p1 = c.clone().add(new T.Vector3(dx * 100, 0, dz * 100)).project(cam);
+    const v = [(p1.x - p0.x) * palco.clientWidth, (p1.y - p0.y) * palco.clientHeight], n = Math.hypot(...v) || 1;
+    const d = (v[0] * tela[0] + v[1] * tela[1]) / n;
+    if (d > nota) { nota = d; melhor = [dx, dz]; }
+  }
+  empurrar(melhor[0] * passo, melhor[1] * passo);
+}
 function empurrar(dx, dz) {
   const m = sel?.tipo === 'movel' && movel(sel.id);
   if (m) alterar(() => { m.x += dx; m.z += dz; });
@@ -12458,6 +12718,8 @@ document.addEventListener('keydown', (e) => {
   }
   if (!ctrl && !e.altKey && { 1: 'visitar', 2: 'arrumar', 3: 'conferir' }[k]) { setModo({ 1: 'visitar', 2: 'arrumar', 3: 'conferir' }[k]); return; }
   if (!ctrl && k === 'f') { abrirFoto(); return; }
+  if (!ctrl && (k === '+' || k === '=')) { zoomPasso(0.7); return; }
+  if (!ctrl && (k === '-' || k === '_')) { zoomPasso(1.45); return; }
   const edita = ['delete', 'backspace', 'r'].includes(k) || (ctrl && k === 'd') || (k.startsWith('arrow') && !vista.caminhar);
   if (modo !== 'arrumar' && edita) return;
   if (ctrl && k === 'z' && !e.shiftKey) { e.preventDefault(); desfazer(); }
@@ -12733,11 +12995,20 @@ function gerarMiniaturas() {
 }
 
 // ---- painel da seleção
+let painelExpandido = false;
 function renderPainel() {
   const p = $('#painel');
+  const rolagem = p.scrollTop;
   p.textContent = '';
   document.body.classList.toggle('com-painel', !!sel);
+  p.classList.toggle('expandido', painelExpandido);
+  requestAnimationFrame(aplicarDeslocamento);
   if (!sel) return;
+  // no celular: puxador da gaveta (baixa por padrão, para mexer no móvel vendo a cena)
+  p.append(botao(painelExpandido ? 'menos opções' : 'mais opções', () => {
+    painelExpandido = !painelExpandido; renderPainel();
+  }, { class: 'puxador' }));
+  requestAnimationFrame(() => { p.scrollTop = rolagem; });
   const cab = (titulo, sub) => el('header', {}, el('div', {}, el('small', {}, sub), el('h2', {}, titulo)),
     botao('×', () => selecionar(null), { class: 'fechar', title: 'Fechar (Esc)' }));
   if (sel.tipo === 'movel') painelMovel(p, cab);
@@ -12769,7 +13040,11 @@ function painelMovel(p, cab) {
       botaoRapido('⇋', 'Espelhar', () => alterar(() => { m.espelhado = !m.espelhado; })),
       temMov(def, m) ? botaoRapido(aberto ? '■' : '▶', aberto ? acaoFechar : acaoAbrir, () => alternarAbertura(m)) : null,
       botaoRapido('⧉', 'Duplicar', duplicarSelecionado),
+      botaoRapido('🔍', 'Focar', () => focarRet(pegada(m), 60)),
       botaoRapido('🗑', 'Remover', removerSelecionado, { class: 'perigo' })),
+    el('div', { class: 'mover' }, el('small', {}, 'Mover 5 cm'),
+      ...[['←', 'esq'], ['↑', 'cima'], ['↓', 'baixo'], ['→', 'dir']].map(([t, d]) => botao(t, () => empurrarTela(d), { title: `Mover para ${d === 'esq' ? 'a esquerda' : d === 'dir' ? 'a direita' : d} da tela` }))),
+    el('p', { class: 'nota', style: 'margin:0 0 8px' }, `${fmt(m.l)} × ${fmt(m.p)} × ${fmt(m.a)} cm · arraste as setas azuis para mudar o tamanho; arraste o móvel para mover`),
     def.variantes?.length > 1 ? secao('Formato',
       el('div', { class: 'opcoes' }, ...def.variantes.map((v) => botao(v.nome, () => trocarVariante(m, def, v), { class: v === vr ? 'ativo' : '' })))) : null,
     def.acabamentos ? secao('Material',
@@ -12797,7 +13072,7 @@ function painelMovel(p, cab) {
     zonas.length ? mais('Área de uso', false,
       ...zonas.map((z, k) => el('div', { class: 'linha-uso ' + (colisoes.usoBloq.has(`${m.id}#${k}`) ? 'alerta' : 'ok') },
         el('span', {}, z.nome), el('b', {}, `${fmt(z.x1 - z.x0)} × ${fmt(z.z1 - z.z0)} cm`)))) : null,
-    el('p', { class: 'nota' }, 'Arraste o móvel no piso para mudar de lugar (encaixe de 5 cm).'),
+    el('p', { class: 'nota' }, 'Com o móvel selecionado, arraste-o para mudar de lugar (encaixe de 5 cm). Toque duplo aproxima.'),
   );
 }
 function trocarVariante(m, def, v) {
@@ -13013,13 +13288,17 @@ function painelAmbiente(p, cab) {
   );
 }
 
+let avisosAbertos = null;
 function renderAvisos() {
   const box = $('#avisos');
   box.textContent = '';
   if (!colisoes.lista.length) { box.hidden = true; return; }
   box.hidden = false;
   const n = colisoes.lista.length, uso = colisoes.lista.filter((c) => c.tipo).length;
-  box.append(el('b', {}, `⚠ ${n} ${n === 1 ? 'conflito' : 'conflitos'}${uso ? ` (${uso} de uso)` : ''}`));
+  avisosAbertos ??= !LEVE_TELA();
+  box.classList.toggle('recolhido', !avisosAbertos);
+  box.append(el('b', { onclick: () => { avisosAbertos = !avisosAbertos; renderAvisos(); }, title: 'Mostrar ou esconder a lista' },
+    `⚠ ${n} ${n === 1 ? 'conflito' : 'conflitos'}${uso ? ` (${uso} de uso)` : ''} ${avisosAbertos ? '▾' : '▸'}`));
   for (const c of colisoes.lista.slice(0, 6)) {
     box.append(el('button', { type: 'button', onclick: () => selecionar({ tipo: 'movel', id: c.ids[0] }) }, c.txt));
   }
@@ -13091,6 +13370,8 @@ function alternarPausaCinema() {
   $('#usoPausa').textContent = cinema.pausa ? '▶' : '⏸';
   $('#filmePausa').textContent = cinema.pausa ? '▶' : '⏸';
 }
+$('#bZoomMais').onclick = () => zoomPasso(0.7);
+$('#bZoomMenos').onclick = () => zoomPasso(1.45);
 $('#bUso').onclick = () => { if (foto.ativa) return; cinema.modo === 'uso' ? pararCinema() : iniciarUso(); };
 $('#bFilme').onclick = () => { if (foto.ativa) return; cinema.modo === 'filme' ? pararCinema() : iniciarFilme(); };
 $('#usoPausa').onclick = alternarPausaCinema;
@@ -13176,6 +13457,11 @@ function irPara(v) {
 function renderVistas() {
   const box = $('#vistas');
   box.textContent = '';
+  if (modo !== 'visitar') {
+    box.append(botao('Inteiro', () => enquadrar()));
+    for (const a of doc.planta.ambientes) box.append(botao(a.nome, () => focarAmbiente(a)));
+    return;
+  }
   const lista = [...(typeof VISTAS_VISITA !== 'undefined' ? VISTAS_VISITA : []), { nome: 'Maquete', tipo: 'maquete' }, { nome: 'Planta', tipo: 'planta' }];
   for (const v of lista) box.append(botao(v.nome, () => irPara(v), { class: vistaAtual === v.nome ? 'ativo' : '' }));
   box.append(botao(`☀ ${horaTxt(luz.hora)}`, () => { $('#solVisita').hidden = !$('#solVisita').hidden; atualizarSolVisita(); }, { class: 'sol' }));
@@ -14581,7 +14867,11 @@ $('#arqJSON').onchange = (e) => { const f = e.target.files[0]; e.target.value = 
 $('#arqGLB').onchange = (e) => { const f = e.target.files[0]; e.target.value = ''; if (f) aoEscolherGLB(f); };
 $('#glbEscala').addEventListener('input', atualizarPreviaGLB);
 $('#dlgGLB').addEventListener('close', () => { if ($('#dlgGLB').returnValue === 'ok' && glbPendente) confirmarGLB(); else glbPendente = null; });
-for (const d of document.querySelectorAll('details.menu')) d.addEventListener('click', (e) => { if (e.target.closest('button')) d.open = false; });
+// menu "Mais": abre como folha; qualquer escolha (ou tocar fora) fecha
+const fecharMenu = () => { $('#menuMais').hidden = true; };
+$('#bMais').onclick = () => { $('#menuMais').hidden = !$('#menuMais').hidden; };
+$('#menuFechar').onclick = fecharMenu;
+$('#menuMais').addEventListener('click', (e) => { if (e.target.id === 'menuMais' || e.target.closest('.folha-menu > button')) fecharMenu(); });
 
 // =====================================================================
 // 11. EXTENSÕES FUTURAS
@@ -14651,6 +14941,7 @@ renderer.setAnimationLoop(() => {
   desenharQuadro();
   posicionarRotulos();
   posicionarBussola();
+  atualizarAlcas();
   posicionar(cotasTela);
   posicionar(rotulosZonas);
 });

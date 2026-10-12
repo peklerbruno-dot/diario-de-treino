@@ -163,6 +163,39 @@ button.grande { width: 100%; margin-top: 14px; padding: 13px; font-size: 16px; f
 button.acao-sec { background: var(--texto); color: #fff; border-color: var(--texto); }
 body.modo-foto #rotulos, body.modo-foto #cotas, body.modo-foto #avisos, body.modo-foto #ajuda, body.modo-foto #painel { display: none !important; }
 body.modo-foto #bFoto { background: var(--azul-claro); border-color: var(--azul); color: var(--azul); }
+/* menu "Mais" */
+#bMais { font-size: 15px; padding: 6px 12px; border-radius: 999px; }
+#bMais span[aria-hidden] { font-size: 20px; line-height: 1; vertical-align: -2px; }
+#menuMais { position: fixed; inset: 0; z-index: 60; background: rgba(20,25,32,.35); display: flex; justify-content: flex-end; align-items: flex-start; padding: 56px 12px 0; }
+#menuMais[hidden] { display: none; }
+.folha-menu { background: #fff; border-radius: 16px; width: min(360px, 100%); padding: 8px 8px 12px; box-shadow: 0 16px 40px rgba(0,0,0,.25); }
+.folha-menu header { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px 8px; }
+.folha-menu header button { border: 0; background: none; font-size: 18px; padding: 4px 8px; }
+.folha-menu > button { display: grid; grid-template-columns: 36px 1fr; grid-template-rows: auto auto; column-gap: 8px; width: 100%; text-align: left;
+  border: 0; border-radius: 12px; padding: 10px 8px; background: none; }
+.folha-menu > button:hover, .folha-menu > button:active { background: var(--azul-claro); }
+.folha-menu > button span { grid-row: span 2; font-size: 22px; display: grid; place-items: center; }
+.folha-menu > button b { font-size: 15px; font-weight: 600; }
+.folha-menu > button small { font-size: 12px; color: var(--suave); }
+.folha-menu > button.perigo b { color: var(--vermelho); }
+/* zoom e desfazer */
+#controlesEsq { position: absolute; left: 12px; top: 64px; display: grid; gap: 6px; z-index: 11; }
+#controlesEsq button { width: 44px; height: 44px; border-radius: 12px; font-size: 20px; padding: 0; background: rgba(255,255,255,.94); box-shadow: 0 2px 10px rgba(20,30,40,.1); }
+#controlesEsq button:disabled { opacity: .4; }
+#bDesfazer { margin-top: 8px; }
+body.caminhando #controlesEsq, body.cinema-filme #controlesEsq { display: none; }
+/* cômodos: no Visitar embaixo (andar até lá); nos outros modos em cima (enquadrar) */
+body:not(.modo-visitar) #vistas { top: 12px; bottom: auto; left: 64px; right: 84px; }
+body:not(.modo-visitar) #vistas button { padding: 7px 12px; font-size: 13px; }
+body:not(.modo-visitar) #vistas button.sol { display: none; }
+/* conflitos recolhidos numa etiqueta */
+#avisos.recolhido button, #avisos.recolhido span { display: none; }
+#avisos > b { cursor: pointer; }
+/* gaveta do móvel no celular */
+.puxador { display: none; }
+.mover { display: grid; grid-template-columns: auto repeat(4, 40px); gap: 6px; align-items: center; margin: 0 0 10px; }
+.mover small { color: var(--suave); font-size: 12px; margin-right: 4px; }
+.mover button { height: 36px; padding: 0; font-size: 16px; border-radius: 10px; }
 /* simulação de uso e filme */
 body.cinema #vistas, body.cinema #rotulos, body.cinema #cotas, body.cinema #avisos, body.cinema #ajuda, body.cinema #painel, body.cinema #solVisita { display: none !important; }
 body.cinema-filme #ferramentas, body.cinema-filme #bussola, body.cinema-filme #bGaveta { display: none !important; }
@@ -323,7 +356,7 @@ body.com-painel #ferramentas { right: calc(var(--painel-w) + 12px); }
 .cartao-cat em { font-style: normal; font-size: 11px; color: var(--suave); }
 
 /* painel do móvel compacto */
-.acoes-rapidas { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 4px 0 10px; }
+.acoes-rapidas { display: grid; grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)); gap: 6px; margin: 4px 0 10px; }
 .acoes-rapidas button { display: grid; place-items: center; gap: 2px; padding: 8px 2px; font-size: 18px; border-radius: 10px; }
 .acoes-rapidas button small { font-size: 10px; color: var(--suave); }
 .acoes-rapidas button.perigo small { color: var(--vermelho); }
@@ -367,6 +400,18 @@ details.mais > .conteudo { padding-bottom: 10px; }
     background: var(--texto); color: #fff; border-color: var(--texto); font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,.2); }
   #avisos { bottom: 60px; }
   #bLateral { display: none !important; }
+  #controlesEsq { left: 8px; top: 56px; }
+  #controlesEsq button { width: 42px; height: 42px; }
+  body:not(.modo-visitar) #vistas { top: 8px; left: 56px; right: 66px; }
+  #menuMais { align-items: flex-end; padding: 0; }
+  .folha-menu { width: 100%; border-radius: 18px 18px 0 0; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+  /* gaveta do móvel: baixa por padrão; o puxador expande */
+  #painel { max-height: 40vh !important; padding-top: 4px; }
+  #painel.expandido { max-height: 78vh !important; }
+  .puxador { display: block; width: 100%; border: 0; background: none; padding: 2px 0 8px; color: var(--suave); font-size: 12px; }
+  .puxador::before { content: ''; display: block; width: 42px; height: 5px; border-radius: 3px; background: #d5d9de; margin: 2px auto 4px; }
+  body.com-painel #controlesEsq { top: 8px; }
+  body.com-painel #vistas { display: none !important; }
 }
 </style>
 </head>
@@ -379,21 +424,7 @@ details.mais > .conteudo { padding-bottom: 10px; }
     <div class="marca">Apartamento 3D</div>
     <nav id="abas" aria-label="Cenários"></nav>
     <div class="acoes">
-      <button id="bDesfazer" class="so-arrumar" title="Desfazer (Ctrl+Z)">↶</button>
-      <button id="bRefazer" class="so-arrumar" title="Refazer (Ctrl+Shift+Z)">↷</button>
-      <button id="bPNG" title="Salvar a vista como imagem">PNG</button>
-      <details class="menu">
-        <summary>Arquivo ▾</summary>
-        <div>
-          <button id="bSalvar">Salvar no navegador</button>
-          <button id="bExportar">Exportar layout (.json)</button>
-          <button id="bImportar">Importar layout (.json)</button>
-          <hr>
-          <button id="bGLB">Importar modelo .glb</button>
-          <hr>
-          <button id="bOriginal">Voltar ao original</button>
-        </div>
-      </details>
+      <button id="bMais" aria-haspopup="dialog" title="Salvar, exportar, imagem…"><span aria-hidden="true">⋯</span> <span class="texto">Mais</span></button>
     </div>
   </header>
 
@@ -442,8 +473,15 @@ details.mais > .conteudo { padding-bottom: 10px; }
       <button id="bEnquadrar" title="Ver o apartamento inteiro"><span aria-hidden="true">⤢</span><span class="rot">Inteiro</span></button>
     </div>
 
+    <!-- zoom e desfazer, na lateral esquerda da cena -->
+    <div id="controlesEsq">
+      <button id="bZoomMais" title="Aproximar (+)" aria-label="Aproximar">＋</button>
+      <button id="bZoomMenos" title="Afastar (−)" aria-label="Afastar">－</button>
+      <button id="bDesfazer" class="so-arrumar" title="Desfazer (Ctrl+Z)" aria-label="Desfazer">↶</button>
+      <button id="bRefazer" class="so-arrumar" title="Refazer (Ctrl+Shift+Z)" aria-label="Refazer">↷</button>
+    </div>
     <!-- Visitar: atalhos de cômodos e hora do sol -->
-    <div id="vistas" class="so-visitar"></div>
+    <div id="vistas"></div>
     <div id="solVisita" class="so-visitar" hidden>
       <div class="foto-topo"><b>☀ Luz do dia</b><span id="solVisitaTxt"></span></div>
       <input id="solVisitaHora" type="range" min="5" max="20" step="0.25">
@@ -494,7 +532,7 @@ details.mais > .conteudo { padding-bottom: 10px; }
       <div class="cine-base"><div id="filmeCaps"></div></div>
       <div id="filmeVeu"><span id="filmeVeuTxt"></span></div>
     </div>
-    <div id="ajuda" class="so-arrumar">Clique: selecionar · arraste: mover · R: girar · Del: remover · 1 2 3: modos · F: foto</div>
+    <div id="ajuda" class="so-arrumar">Clique seleciona · arraste o selecionado para mover · setas azuis: tamanho · R: girar · Del: remover · +/−: zoom</div>
   </main>
 
   <aside id="painel"></aside>
@@ -506,6 +544,18 @@ details.mais > .conteudo { padding-bottom: 10px; }
   </nav>
 </div>
 
+<!-- Menu "Mais": botões grandes; no celular sobe de baixo -->
+<div id="menuMais" hidden>
+  <div class="folha-menu" role="dialog" aria-label="Mais opções">
+    <header><b>Mais opções</b><button id="menuFechar" aria-label="Fechar">✕</button></header>
+    <button id="bPNG"><span>🖼</span><b>Salvar imagem</b><small>PNG da vista atual, com as áreas</small></button>
+    <button id="bSalvar"><span>💾</span><b>Salvar agora</b><small>o layout já se salva sozinho neste aparelho</small></button>
+    <button id="bExportar"><span>⬇</span><b>Exportar layout</b><small>arquivo .json para levar a outro aparelho</small></button>
+    <button id="bImportar"><span>⬆</span><b>Importar layout</b><small>abrir um .json exportado</small></button>
+    <button id="bGLB"><span>📦</span><b>Importar modelo 3D</b><small>arquivo .glb de um móvel pronto</small></button>
+    <button id="bOriginal" class="perigo"><span>↺</span><b>Voltar ao original</b><small>desfaz tudo e reabre a planta final</small></button>
+  </div>
+</div>
 <div id="toast" role="status"></div>
 <input type="file" id="arqJSON" accept=".json,application/json" hidden>
 <input type="file" id="arqGLB" accept=".glb,.gltf" hidden>

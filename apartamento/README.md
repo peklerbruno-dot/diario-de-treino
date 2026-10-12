@@ -83,6 +83,21 @@ Saíram o pendente de papel de arroz e a costela-de-adão.
 - **Chuveiro** na parede do fundo do box; **ar-condicionado split** na parede do fundo da sala
   (sobre o banco) e na parede do pé da cama, no quarto.
 
+## Usabilidade (celular e PC)
+
+- **Nada se mexe sem querer:** o primeiro toque só seleciona; arrastar um móvel só funciona com
+  ele já selecionado (arrastar em outro lugar gira a câmera).
+- **Tamanho com as mãos:** o móvel selecionado mostra setas azuis nas laterais (e no topo, na vista
+  3D). Arraste uma seta e a largura, profundidade ou altura muda de 1 em 1 cm, com o lado oposto
+  parado; a medida aparece no alto da tela.
+- **Navegar:** botões ＋/－ (ou teclas + e −), toque duplo aproxima naquele ponto, os botões dos
+  cômodos enquadram cada ambiente (no Visitar levam até lá caminhando) e **Focar** enquadra o
+  móvel selecionado.
+- **Celular, modo Arrumar:** o painel do móvel é uma gaveta baixa (nome, ações, setas de mover
+  5 cm e medidas); "mais opções" expande. A vista sobe para o móvel ficar visível acima dela.
+  Os conflitos ficam numa etiqueta que abre com um toque.
+- **Menu ⋯ Mais:** imagem PNG, salvar, exportar/importar layout, modelo 3D e voltar ao original.
+
 ## Como usar
 
 | Ação | Como |
