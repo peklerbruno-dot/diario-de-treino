@@ -9212,16 +9212,10 @@ const portaBancada = (s, w, lado) => {
   ];
 };
 const BANCADA_ELETROS = [
-  // lava e seca 60 × 55 × 85, no piso, com a porta redonda
-  { f: 'caixa', l: 59.5, p: 'P-4', a: 'A-4.5', x: '-L/2+30', z: -2, cor: '#eceeef', acab: 'laca', r: 1 },
-  { f: 'caixa', l: 57, p: 1, a: 9, y: 'A-15', x: '-L/2+30', z: 'P/2-3.5', cor: '#dfe3e6', acab: 'laca' },
-  { f: 'cil', raio: 2.6, a: 2, eixo: 'z', y: 'A-10.5', x: '-L/2+48', z: 'P/2-2', cor: '#9a9ea3', acab: 'metal' },
-  { f: 'cil', raio: 16, a: 3, eixo: 'z', y: 40, x: '-L/2+30', z: 'P/2-2', cor: '#cfd4d8', acab: 'metal', mov: { gira: -100, eixo: 'y', px: '-L/2+14', pz: 'P/2-2' } },
-  { f: 'cil', raio: 11.5, a: 3.4, eixo: 'z', y: 44.5, x: '-L/2+30', z: 'P/2-2', cor: '#2a3540', acab: 'vidro', mov: { gira: -100, eixo: 'y', px: '-L/2+14', pz: 'P/2-2' } },
-  // duas portas sob a cuba e o porta-temperos
-  ...portaBancada('-L/2+60', 31, -1),
-  ...portaBancada('-L/2+91', 31, 1),
-  ...portaBancada('-L/2+122', 'L-192', 1),
+  // da ponta da geladeira: três portas iguais (a do meio fica sob a cuba)
+  ...portaBancada('-L/2', '(L-70)/3', -1),
+  ...portaBancada('-L/2+(L-70)/3', '(L-70)/3', 1),
+  ...portaBancada('-L/2+2*(L-70)/3', '(L-70)/3', 1),
   // forno de embutir 60 × 55 × 60 sob o cooktop (porta abre para baixo) e gaveta embaixo
   { f: 'caixa', l: 59, p: 1.8, a: 18, y: 11, x: 'L/2-40', z: 'P/2-1', cor: 'principal', acab: '@' },
   { f: 'caixa', l: 40, p: 2, a: 1.2, y: 25, x: 'L/2-40', z: 'P/2+0.6', cor: '#26324a', acab: 'laca' },
@@ -9742,9 +9736,9 @@ const CATALOGO = [
     uso: [frente(90, 'Corredor da cozinha')],
     variantes: [
       { id: 'portas', nome: '4 portas', partes: [...BANCADA_CORPO, ...BANCADA_4PORTAS, ...bancadaTopo("-L/2+75")] },
-      // da ponta da geladeira para a do shaft: lava e seca (60), 2 portas sob a
-      // cuba (62), porta-temperos, forno de embutir (60) sob o cooktop, arremate
-      { id: 'eletros', nome: 'Com forno e lava e seca', partes: [...BANCADA_CORPO, ...BANCADA_ELETROS, ...bancadaTopo('-L/2+92')] },
+      // da ponta da geladeira para a do shaft: 3 portas (a do meio sob a cuba),
+      // forno de embutir (60) sob o cooktop e arremate
+      { id: 'eletros', nome: 'Com forno', partes: [...BANCADA_CORPO, ...BANCADA_ELETROS, ...bancadaTopo('-L/2+75')] },
     ],
   },
   {
