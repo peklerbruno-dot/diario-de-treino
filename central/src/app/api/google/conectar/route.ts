@@ -3,10 +3,17 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { temSessao } from "@/lib/auth";
 import { googleConfigurado, urlDeConsentimento } from "@/lib/google";
-import { enderecoDeRetorno } from "../retorno/endereco";
+import { enderecoDeRetorno, enderecoFixo } from "../retorno/endereco";
 
 /** Começo do OAuth: manda para a tela de permissão do Google. */
 export async function GET(req: Request) {
+  // Aberto pelo endereço longo de um deploy? Vai para o fixo antes: o cookie
+  // do "state" precisa nascer no mesmo endereço para onde o Google devolve,
+  // senão a volta não o encontra e a conexão falha.
+  const fixo = enderecoFixo(req);
+  if (new URL(fixo).host !== new URL(req.url).host) {
+    return NextResponse.redirect(`${fixo}/api/google/conectar`);
+  }
   if (!(await temSessao())) return NextResponse.redirect(new URL("/entrar", req.url));
   if (!googleConfigurado()) {
     return NextResponse.redirect(new URL("/ajustes?erro=Faltam+GOOGLE_CLIENT_ID+e+GOOGLE_CLIENT_SECRET", req.url));
