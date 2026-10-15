@@ -15,7 +15,11 @@ export function middleware(req: NextRequest) {
     pathname === "/apple-touch-icon.png" ||
     pathname.startsWith("/icone");
 
-  if (!temCookie && pathname.startsWith("/api/")) {
+  // O começo e a volta do login do Google são navegação, não chamada do app:
+  // sem sessão, vão para a entrada em vez de mostrar um JSON de erro.
+  const navegacao = pathname.startsWith("/api/google/");
+
+  if (!temCookie && pathname.startsWith("/api/") && !navegacao) {
     return NextResponse.json({ erro: "Sem sessão." }, { status: 401 });
   }
   if (!temCookie && !publica) {
