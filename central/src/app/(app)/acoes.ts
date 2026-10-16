@@ -255,3 +255,26 @@ export async function refazerTriagem(): Promise<void> {
   await bd.conversa.updateMany({ data: { classificadaMsgId: null } });
   revalidatePath("/ajustes");
 }
+
+// ——— Tarefas ———
+
+export async function criarTarefa(titulo: string, prazo: string | null): Promise<void> {
+  await exigirSessao();
+  const t = titulo.trim().slice(0, 300);
+  if (!t) return;
+  const dia = prazo && /^\d{4}-\d{2}-\d{2}$/.test(prazo) ? new Date(`${prazo}T00:00:00Z`) : null;
+  await bd.tarefa.create({ data: { titulo: t, prazo: dia } });
+  revalidatePath("/", "layout");
+}
+
+export async function concluirTarefa(id: string, feita: boolean): Promise<void> {
+  await exigirSessao();
+  await bd.tarefa.update({ where: { id }, data: { feitaEm: feita ? new Date() : null } });
+  revalidatePath("/", "layout");
+}
+
+export async function apagarTarefa(id: string): Promise<void> {
+  await exigirSessao();
+  await bd.tarefa.delete({ where: { id } });
+  revalidatePath("/", "layout");
+}

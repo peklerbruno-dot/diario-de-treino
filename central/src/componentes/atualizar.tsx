@@ -71,7 +71,7 @@ export function Atualizar({ ultima }: { ultima: string | null }) {
   }, [rodar]);
 
   return (
-    <div className="max-w-[12rem] text-right text-xs text-fosco">
+    <div className="max-w-[14rem] text-mini text-fosco">
       <p>{rodando ? "Atualizando…" : desde ? `Atualizado ${quando(desde)}` : "Ainda não atualizado"}</p>
       {aviso && !rodando && <p className="mt-0.5 text-alerta">{aviso}</p>}
     </div>

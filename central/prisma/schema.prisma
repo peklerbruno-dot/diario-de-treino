@@ -95,3 +95,16 @@ model Correcao {
   para           String
   criadoEm       DateTime @default(now())
 }
+
+/// Uma tarefa sua, escrita à mão. As que vêm dos e-mails não ficam aqui:
+/// são a "próxima ação" de cada conversa, e marcá-las resolve a conversa.
+model Tarefa {
+  id       String    @id @default(cuid())
+  titulo   String
+  /// Só o dia (meia-noite UTC), como os prazos das conversas.
+  prazo    DateTime?
+  feitaEm  DateTime?
+  criadoEm DateTime  @default(now())
+
+  @@index([feitaEm])
+}

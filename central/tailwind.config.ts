@@ -1,30 +1,46 @@
 import type { Config } from "tailwindcss";
 
-/** As cores vivem em variáveis CSS (src/app/globals.css), para o modo escuro trocar tudo num lugar só. */
+/**
+ * As cores vivem em variáveis CSS (src/app/globals.css) e o Tailwind só lhes dá
+ * nome: o modo escuro troca tudo num lugar só.
+ */
 export default {
   content: ["./src/**/*.{ts,tsx}"],
+  safelist: ["bg-atencao", "bg-alerta", "bg-azul", "bg-ok", "bg-regua"],
   theme: {
     extend: {
       colors: {
-        papel: "var(--papel)",
-        cartao: "var(--cartao)",
+        fundo: "var(--fundo)",
+        lateral: "var(--lateral)",
+        superficie: "var(--superficie)",
         tinta: "var(--tinta)",
         grafite: "var(--grafite)",
         fosco: "var(--fosco)",
-        regua: "var(--regua)",
         linha: "var(--linha)",
+        regua: "var(--regua)",
+        realce: "var(--realce)",
         destaque: "var(--destaque)",
         "destaque-tinta": "var(--destaque-tinta)",
         atencao: "var(--atencao)",
         alerta: "var(--alerta)",
+        azul: "var(--azul)",
         ok: "var(--ok)",
       },
       fontFamily: {
-        texto: ["-apple-system", "BlinkMacSystemFont", "SF Pro Text", "Segoe UI", "system-ui", "sans-serif"],
-        titulo: ["ui-serif", "New York", "Charter", "Georgia", "serif"],
+        texto: [
+          "Inter",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "SF Pro Text",
+          "Segoe UI Variable Text",
+          "Segoe UI",
+          "system-ui",
+          "sans-serif",
+        ],
       },
-      borderRadius: { cartao: "18px" },
-      boxShadow: { cartao: "var(--sombra)" },
+      fontSize: {
+        mini: ["11px", "15px"],
+      },
     },
   },
   plugins: [],

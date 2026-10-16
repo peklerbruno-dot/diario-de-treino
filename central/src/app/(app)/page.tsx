@@ -1,25 +1,34 @@
 import Link from "next/link";
-import { CartaoConversa, Secao, Vazio } from "@/componentes/cartao-conversa";
-import { compromissos } from "@/lib/agenda";
+import { LinhaConversa } from "@/componentes/linha-conversa";
+import { Prazo, Secao, Titulo, Vazio } from "@/componentes/pecas";
+import { ListaDeTarefas, NovaTarefa } from "@/componentes/tarefas";
+import { compromissos, porDia, type Compromisso } from "@/lib/agenda";
 import { bd } from "@/lib/bd";
-import { DEPENDEM_DE_MIM, categoria } from "@/lib/categorias";
+import { DEPENDEM_DE_MIM } from "@/lib/categorias";
 import { ORDEM, VISIVEL } from "@/lib/consultas";
-import { FUSO, agoraPorExtenso, diasDesde } from "@/lib/datas";
+import { corDaConta } from "@/lib/cores";
+import { agoraPorExtenso, diaEmSaoPaulo, diasDesde, horaCurta, prazoPorExtenso, somarDias } from "@/lib/datas";
+import { tarefasAgrupadas } from "@/lib/tarefas";
 
 export const dynamic = "force-dynamic";
 
 const DIAS_PARA_COBRAR = 3;
 
-export default async function Painel() {
+/**
+ * Hoje: a resposta a "o que eu faço agora?". À esquerda, o que depende de
+ * você (e-mails e tarefas); à direita, o dia na agenda, os prazos que vêm e
+ * quem está te devendo resposta.
+ */
+export default async function Hoje() {
   const contas = await bd.conta.findMany({ orderBy: { criadoEm: "asc" } });
   if (!contas.length) {
     return (
-      <div className="mt-8 rounded-cartao bg-cartao p-5 shadow-cartao">
-        <h2 className="font-titulo text-2xl">Bem-vindo</h2>
-        <p className="mt-2 text-grafite">
-          Conecte suas contas Google (pessoal, CIP, USP) para a Central ler as caixas, a agenda e começar a triagem.
+      <div className="mx-auto max-w-xl py-10">
+        <Titulo>Bem-vindo à Central</Titulo>
+        <p className="text-grafite">
+          Conecte suas contas Google (pessoal, CIP, USP, CEJ) para a Central ler as caixas e as agendas e começar a triagem.
         </p>
-        <Link href="/ajustes" className="mt-4 inline-block rounded-xl bg-destaque px-4 py-2.5 font-semibold text-destaque-tinta">
+        <Link href="/ajustes" className="mt-5 inline-block rounded-md bg-destaque px-4 py-2 font-semibold text-destaque-tinta">
           Conectar contas
         </Link>
       </div>
@@ -27,112 +36,123 @@ export default async function Painel() {
   }
 
   const agora = new Date();
-  const fimDeAmanha = new Date(agora.getTime() + 2 * 86_400_000);
-  const em14 = new Date(agora.getTime() + 14 * 86_400_000);
-  const [paraMim, prazos, aguardando, contagem, agenda] = await Promise.all([
+  const hoje = diaEmSaoPaulo(agora);
+  const amanha = somarDias(hoje, 1);
+  const [paraMim, prazos, aguardando, tarefas, agenda] = await Promise.all([
+    bd.conversa.findMany({ where: { ...VISIVEL, categoria: { in: DEPENDEM_DE_MIM } }, include: { conta: true }, orderBy: ORDEM, take: 12 }),
     bd.conversa.findMany({
-      where: { ...VISIVEL, categoria: { in: DEPENDEM_DE_MIM } },
-      include: { conta: true },
-      orderBy: ORDEM,
-      take: 15,
-    }),
-    bd.conversa.findMany({
-      where: { ...VISIVEL, prazo: { not: null, lte: em14 } },
+      where: { ...VISIVEL, prazo: { not: null, lte: new Date(`${somarDias(hoje, 14)}T00:00:00Z`) } },
       include: { conta: true },
       orderBy: { prazo: "asc" },
       take: 8,
     }),
     bd.conversa.findMany({
-      where: {
-        ...VISIVEL,
-        categoria: "aguardando",
-        ultimaData: { lte: new Date(agora.getTime() - DIAS_PARA_COBRAR * 86_400_000) },
-      },
+      where: { ...VISIVEL, categoria: "aguardando", ultimaData: { lte: new Date(agora.getTime() - DIAS_PARA_COBRAR * 86_400_000) } },
       include: { conta: true },
       orderBy: { ultimaData: "asc" },
-      take: 8,
+      take: 6,
     }),
-    bd.conversa.groupBy({ by: ["categoria"], where: VISIVEL, _count: true }),
-    compromissos(contas, agora, fimDeAmanha),
+    tarefasAgrupadas(),
+    compromissos(contas, new Date(`${hoje}T03:00:00Z`), new Date(`${somarDias(hoje, 2)}T03:00:00Z`)),
   ]);
-
-  const n = (id: string) => contagem.find((c) => c.categoria === id)?._count ?? 0;
+  const dias = porDia(agenda);
   const desconectadas = contas.filter((c) => c.erro);
-  const hoje = agora.toLocaleDateString("en-CA", { timeZone: FUSO });
+  const tarefasDeHoje = [...tarefas.atrasadas, ...tarefas.hoje];
 
   return (
-    <>
-      <p className="mt-4 text-sm text-grafite first-letter:uppercase">{agoraPorExtenso(agora)}</p>
+    <div className="mx-auto max-w-6xl">
+      <Titulo sub={agoraPorExtenso(agora)}>Hoje</Titulo>
 
       {desconectadas.map((c) => (
-        <Link key={c.id} href="/ajustes" className="mt-3 block rounded-xl border border-atencao px-4 py-3 text-sm text-atencao">
-          A conta {c.rotulo} ({c.email}) precisa ser reconectada. Toque aqui.
+        <Link key={c.id} href="/ajustes" className="mb-4 block rounded-md border border-atencao px-4 py-2.5 text-sm text-atencao">
+          A conta {c.rotulo} ({c.email}) precisa ser reconectada. Clique aqui.
         </Link>
       ))}
 
-      <div className="mt-4 grid grid-cols-4 gap-2">
-        {(["responder", "acao", "agenda", "aguardando"] as const).map((id) => (
-          <Link key={id} href={`/caixa?categoria=${id}`} className="rounded-cartao bg-cartao px-3 py-3 shadow-cartao">
-            <p className="text-2xl font-semibold">{n(id)}</p>
-            <p className="text-xs text-grafite">
-              {categoria(id).icone} {categoria(id).nome}
-            </p>
-          </Link>
-        ))}
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-12">
+        <div>
+          <Secao titulo="Precisa de você" conta={paraMim.length} acao={<Link href="/caixa" className="text-destaque hover:underline">Ver e-mails</Link>}>
+            {paraMim.length ? (
+              paraMim.map((c) => <LinhaConversa key={c.id} c={c} cor={corDaConta(contas, c.contaId)} href={`/caixa?c=${c.id}`} />)
+            ) : (
+              <Vazio>Nada pendente nos e-mails.</Vazio>
+            )}
+          </Secao>
+
+          <Secao titulo="Tarefas de hoje" conta={tarefasDeHoje.length} acao={<Link href="/tarefas" className="text-destaque hover:underline">Todas</Link>}>
+            <ListaDeTarefas itens={tarefasDeHoje} vazio="Nenhuma tarefa com prazo até hoje." />
+            <NovaTarefa diaPadrao={hoje} />
+          </Secao>
+        </div>
+
+        <aside>
+          <Secao titulo="Agenda de hoje">
+            <Dia lista={dias.get(hoje) ?? []} vazio="Dia livre." />
+          </Secao>
+          <Secao titulo="Amanhã">
+            <Dia lista={dias.get(amanha) ?? []} vazio="Nada marcado." />
+          </Secao>
+
+          {prazos.length > 0 && (
+            <Secao titulo="Prazos · 14 dias" conta={prazos.length}>
+              <ul>
+                {prazos.map((c) => (
+                  <li key={c.id} className="border-b border-linha py-2">
+                    <Link href={`/caixa?c=${c.id}`} className="block hover:text-destaque">
+                      <p className="truncate text-sm">{c.proximaAcao || c.assunto}</p>
+                      <p className="flex gap-2">
+                        <Prazo {...prazoPorExtenso(c.prazo!)} />
+                        <span className="text-mini font-semibold uppercase" style={{ color: corDaConta(contas, c.contaId) }}>
+                          {c.conta.rotulo}
+                        </span>
+                      </p>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </Secao>
+          )}
+
+          {aguardando.length > 0 && (
+            <Secao titulo="Esperando resposta" conta={aguardando.length}>
+              <ul>
+                {aguardando.map((c) => (
+                  <li key={c.id} className="border-b border-linha py-2">
+                    <Link href={`/caixa?c=${c.id}`} className="block hover:text-destaque">
+                      <p className="flex justify-between gap-2 text-sm">
+                        <span className="truncate">{c.remetente.replace(/^Para: /, "")}</span>
+                        <span className="numeros shrink-0 text-mini text-fosco">há {diasDesde(c.ultimaData)} dias</span>
+                      </p>
+                      <p className="truncate text-mini text-grafite">{c.resumo || c.assunto}</p>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </Secao>
+          )}
+        </aside>
       </div>
+    </div>
+  );
+}
 
-      <Secao titulo="Precisa de você" acao={<Link href="/caixa" className="text-sm text-destaque">Ver todos</Link>}>
-        {paraMim.length ? (
-          paraMim.map((c) => <CartaoConversa key={c.id} c={c} mostrarCategoria />)
-        ) : (
-          <Vazio>Nada pendente. 🎉</Vazio>
-        )}
-      </Secao>
-
-      {prazos.length > 0 && (
-        <Secao titulo="Prazos nos próximos 14 dias">
-          {prazos.map((c) => (
-            <CartaoConversa key={c.id} c={c} mostrarCategoria />
-          ))}
-        </Secao>
-      )}
-
-      <Secao titulo="Hoje e amanhã">
-        {agenda.length ? (
-          agenda.map((e, i) => {
-            const dia = e.inicio.toLocaleDateString("en-CA", { timeZone: FUSO });
-            return (
-              <a key={i} href={e.link} target="_blank" rel="noreferrer" className="flex gap-3 px-4 py-2.5 text-sm">
-                <span className="w-24 shrink-0 text-grafite">
-                  {dia === hoje ? "Hoje" : "Amanhã"}{" "}
-                  {e.diaInteiro ? "" : e.inicio.toLocaleTimeString("pt-BR", { timeZone: FUSO, hour: "2-digit", minute: "2-digit" })}
-                </span>
-                <span className="min-w-0 flex-1 truncate">{e.titulo}</span>
-                <span className="shrink-0 text-xs text-fosco">{e.conta}</span>
-              </a>
-            );
-          })
-        ) : (
-          <Vazio>Nenhum compromisso.</Vazio>
-        )}
-      </Secao>
-
-      {aguardando.length > 0 && (
-        <Secao titulo="Esperando resposta há dias">
-          {aguardando.map((c) => (
-            <Link key={c.id} href={`/conversa/${c.id}`} className="block px-4 py-3">
-              <div className="flex justify-between text-xs text-fosco">
-                <span className="rounded-md bg-linha px-1.5 py-0.5 font-semibold text-grafite">{c.conta.rotulo}</span>
-                <span>há {diasDesde(c.ultimaData)} dias</span>
-              </div>
-              <p className="mt-1 truncate font-semibold">{c.remetente.replace(/^Para: /, "")}</p>
-              <p className="truncate text-sm text-grafite">{c.resumo || c.assunto}</p>
-            </Link>
-          ))}
-        </Secao>
-      )}
-
-
-    </>
+function Dia({ lista, vazio }: { lista: Compromisso[]; vazio: string }) {
+  if (!lista.length) return <Vazio>{vazio}</Vazio>;
+  const agora = Date.now();
+  return (
+    <ul>
+      {lista.map((e, i) => {
+        const passou = !e.diaInteiro && e.fim.getTime() < agora;
+        return (
+          <li key={i}>
+            <a href={e.link} target="_blank" rel="noreferrer" className={`flex items-center gap-3 border-b border-linha py-2 hover:text-destaque ${passou ? "opacity-50" : ""}`}>
+              <span className="numeros w-11 shrink-0 text-sm text-grafite">{e.diaInteiro ? "dia" : horaCurta(e.inicio)}</span>
+              <span className="h-4 w-[3px] shrink-0 rounded-full" style={{ background: e.cor }} />
+              <span className="min-w-0 flex-1 truncate text-sm">{e.titulo}</span>
+            </a>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
