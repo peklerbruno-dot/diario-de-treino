@@ -121,3 +121,15 @@ export function porDia(lista: Compromisso[]): Map<string, Compromisso[]> {
   }
   return mapa;
 }
+
+/** Pares de compromissos com hora que se sobrepõem — os choques do dia. */
+export function choques(lista: Compromisso[]): [Compromisso, Compromisso][] {
+  const comHora = lista.filter((e) => !e.diaInteiro).sort((a, b) => a.inicio.getTime() - b.inicio.getTime());
+  const pares: [Compromisso, Compromisso][] = [];
+  for (let i = 0; i < comHora.length; i++) {
+    for (let j = i + 1; j < comHora.length && comHora[j].inicio < comHora[i].fim; j++) {
+      pares.push([comHora[i], comHora[j]]);
+    }
+  }
+  return pares;
+}

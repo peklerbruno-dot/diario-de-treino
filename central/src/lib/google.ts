@@ -233,6 +233,18 @@ export async function atualizarRascunhoNoGmail(conta: Conta, draftId: string, th
   });
 }
 
+/**
+ * Envia uma mensagem. Usado só para o resumo da manhã, que vai da conta para
+ * ela mesma — a Central não envia nada a terceiros.
+ */
+export async function enviarParaSiMesmo(conta: Conta, raw: string): Promise<void> {
+  await chamar(conta, `${GMAIL}/messages/send`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ raw }),
+  });
+}
+
 export async function baixarAnexo(conta: Conta, mensagemId: string, anexoId: string): Promise<Buffer> {
   const r = await json<{ data: string }>(chamar(conta, `${GMAIL}/messages/${mensagemId}/attachments/${anexoId}`));
   return Buffer.from(r.data, "base64url");
@@ -289,6 +301,22 @@ export async function criarEventoDeDiaInteiro(conta: Conta, dia: string, titulo:
         description: descricao,
         start: { date: dia },
         end: { date: fim.toISOString().slice(0, 10) },
+      }),
+    }),
+  );
+}
+
+/** Um compromisso com hora marcada, como o que veio num e-mail. */
+export async function criarEvento(conta: Conta, titulo: string, inicio: Date, fim: Date, descricao: string) {
+  return json<EventoGoogle>(
+    chamar(conta, "https://www.googleapis.com/calendar/v3/calendars/primary/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        summary: titulo,
+        description: descricao,
+        start: { dateTime: inicio.toISOString(), timeZone: "America/Sao_Paulo" },
+        end: { dateTime: fim.toISOString(), timeZone: "America/Sao_Paulo" },
       }),
     }),
   );

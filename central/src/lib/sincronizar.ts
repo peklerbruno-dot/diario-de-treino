@@ -16,6 +16,8 @@ const DIAS_DOS_ENVIADOS = 21;
 const MAX_CAIXA = 50;
 const MAX_ENVIADOS = 30;
 const POR_LOTE = 8;
+/** O resumo da manhã que a Central manda para você não entra na triagem. */
+const SEM_RESUMO = '-(from:me subject:"Seu dia:")';
 /**
  * Quantas conversas a triagem lê por rodada. A primeira rodada de três contas
  * passa de duzentas, e a Vercel corta a rota em cinco minutos: aqui vão as mais
@@ -49,8 +51,8 @@ export interface ResultadoDaRodada {
 
 async function sincronizarConta(conta: Conta): Promise<{ conversas: number; paraTriar: ConversaParaTriar[] }> {
   const [daCaixa, enviados] = await Promise.all([
-    listarThreads(conta, `in:inbox newer_than:${DIAS_DA_CAIXA}d`, MAX_CAIXA),
-    listarThreads(conta, `in:sent newer_than:${DIAS_DOS_ENVIADOS}d`, MAX_ENVIADOS),
+    listarThreads(conta, `in:inbox newer_than:${DIAS_DA_CAIXA}d ${SEM_RESUMO}`, MAX_CAIXA),
+    listarThreads(conta, `in:sent newer_than:${DIAS_DOS_ENVIADOS}d ${SEM_RESUMO}`, MAX_ENVIADOS),
   ]);
   const naCaixa = new Set(daCaixa);
   const ids = [...new Set([...daCaixa, ...enviados])];
@@ -142,6 +144,10 @@ async function aplicarTriagem(paraTriar: ConversaParaTriar[]): Promise<{ triadas
             resumo: t.resumo,
             proximaAcao: t.proximaAcao,
             prazo: t.prazo ? new Date(`${t.prazo}T00:00:00Z`) : null,
+            // São Paulo não tem horário de verão desde 2019: UTC−3 o ano todo.
+            eventoTitulo: t.evento?.titulo ?? null,
+            eventoInicio: t.evento ? new Date(`${t.evento.inicio}:00-03:00`) : null,
+            eventoFim: t.evento ? new Date(`${t.evento.fim}:00-03:00`) : null,
             classificadaMsgId: atual.ultimaMensagemId,
           },
         });

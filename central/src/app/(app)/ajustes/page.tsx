@@ -3,8 +3,10 @@ import { bd } from "@/lib/bd";
 import { quando } from "@/lib/datas";
 import { googleConfigurado } from "@/lib/google";
 import { iaConfigurada } from "@/lib/ia";
-import { adicionarInstrucao, refazerTriagem, renomearConta, salvarEstilo } from "../acoes";
-import { AprenderEstilo, RemoverConta, RemoverInstrucao } from "./botoes";
+import { adicionarInstrucao, refazerTriagem, renomearConta, salvarEstilo, salvarResumo } from "../acoes";
+import { lerAjuste } from "@/lib/ajustes";
+import { contaDoResumo } from "@/lib/resumo";
+import { AprenderEstilo, EnviarResumoAgora, RemoverConta, RemoverInstrucao } from "./botoes";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +21,7 @@ export default async function Ajustes({ searchParams }: { searchParams: Busca })
     bd.instrucao.findMany({ orderBy: { criadoEm: "asc" } }),
     bd.correcao.count(),
   ]);
+  const [resumoLigado, contaResumo] = [(await lerAjuste("resumo.ligado", "1")) === "1", await contaDoResumo(contas)];
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -94,11 +97,38 @@ export default async function Ajustes({ searchParams }: { searchParams: Busca })
         </a>
         <p className="mt-2 text-[13px] text-fosco">
           Na tela do Google, escolha a conta e deixe todas as permissões marcadas. Repita para cada conta (pessoal, CIP,
-          USP). A Central lê e cria rascunhos, mas nunca envia nada sozinha.
+          USP). A Central lê e cria rascunhos; o único e-mail que ela envia é o resumo da manhã, para você mesmo.
         </p>
       </section>
 
-      <section className="mt-8">
+      <section className="mt-10">
+        <h2 className="mb-2 text-[13px] font-semibold text-fosco">Resumo da manhã</h2>
+        <p className="mb-3 text-[15px] text-grafite">
+          Todo dia, a partir das 7h, um e-mail curto com a agenda, o que fazer e quem te deve resposta. Ele vai da conta escolhida para ela mesma.
+        </p>
+        <form action={salvarResumo} className="flex flex-wrap items-center gap-x-5 gap-y-3">
+          <label className="flex items-center gap-2 text-[15px]">
+            <input type="checkbox" name="ligado" defaultChecked={resumoLigado} className="h-4 w-4 accent-[var(--destaque)]" />
+            Ligado
+          </label>
+          <label className="flex items-center gap-2 text-[15px] text-grafite">
+            Receber em
+            <select name="conta" defaultValue={contaResumo?.id} className={`${campo} py-1`}>
+              {contas.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.rotulo} ({c.email})
+                </option>
+              ))}
+            </select>
+          </label>
+          <button className="rounded-md border border-linha px-3 py-1.5 text-sm font-medium hover:bg-realce">Salvar</button>
+        </form>
+        <div className="mt-3">
+          <EnviarResumoAgora />
+        </div>
+      </section>
+
+      <section className="mt-10">
         <h2 className="mb-2 text-[13px] font-semibold text-fosco">Regras da triagem</h2>
         <p className="mt-1 text-sm text-grafite">
           Escreva como você decide. Ex.: “Tudo da Nancy (nrozench@usp.br) é prioridade alta”, “Boletim do CEJ com [Teste] no

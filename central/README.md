@@ -52,7 +52,7 @@ o que já combinou fora do e-mail (numa conversa ou ligação), e a Central escr
 
 Você edita ali mesmo e grava **no Gmail, como rascunho**, dentro da conversa e
 para as pessoas certas (responder a todos, sem você). Quem envia é você, de lá.
-A Central não tem botão de enviar, e não há envio em lugar nenhum do código.
+A Central não tem botão de enviar resposta: o único e-mail que ela manda é o resumo da manhã, da sua conta para ela mesma.
 
 **Aprende com você.** Duas formas, e as duas valem para as próximas triagens:
 
@@ -64,6 +64,34 @@ A Central não tem botão de enviar, e não há envio em lugar nenhum do código
 **Drive e Agenda.** Anexos vão para o Drive com um toque (pasta
 `Central/<categoria>`, na conta da conversa). Um prazo detectado num e-mail vira
 compromisso de dia inteiro na Agenda, com o link da conversa.
+
+**Ações direto na lista.** O “⋯” de cada conversa resolve, arquiva, abre no
+Gmail ou muda a categoria sem abrir a conversa. A divisória entre a lista e a
+conversa se arrasta para dar mais espaço a um lado ou ao outro (duplo clique
+volta ao padrão).
+
+**Cobrança.** Nas conversas que esperam resposta dos outros, “Rascunhar
+cobrança” escreve um lembrete gentil, no seu estilo, para você só revisar e
+mandar.
+
+**Resumo da manhã.** Todo dia, a partir das 7h, um e-mail curto da conta
+escolhida para ela mesma: agenda, o que fazer e quem te deve resposta. Liga,
+desliga e escolhe a conta em Ajustes. É o único e-mail que a Central envia, e
+só para você.
+
+**Sobre a pessoa.** Na conversa aberta: quantas conversas vocês tiveram, o que
+mais está em aberto com ela e a sua nota (que o rascunho também lê).
+
+**Agenda inteligente.** Quando um e-mail marca ou confirma um compromisso com
+data e hora, a conversa mostra “Pôr na agenda”. No Hoje, compromissos que se
+chocam aparecem numa linha.
+
+**Pergunte à Central.** No topo do Hoje: pergunte em português sobre os seus
+e-mails. A pergunta vira uma busca no Gmail de todas as contas, e a resposta
+vem citando as mensagens de onde saiu.
+
+**Ditado por voz.** No campo do rascunho, “Ditar” escreve o que você falar
+(reconhecimento de fala do próprio navegador, em português).
 
 ## O que ela guarda, e o que não
 
@@ -120,9 +148,3 @@ npm run typecheck
 
 Para rodar na máquina: um Postgres, as variáveis do `.env.example` e
 `npx prisma migrate deploy && npm run dev`.
-
-## Próximos passos possíveis
-
-- Resumo da manhã por e-mail ou notificação.
-- Contatos com memória: quem é, de onde, o que está em aberto com cada um.
-- Busca em linguagem natural em tudo ("o que a Nancy disse sobre a banca?").

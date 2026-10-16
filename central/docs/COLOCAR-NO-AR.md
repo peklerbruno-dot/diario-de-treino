@@ -115,8 +115,9 @@ faturamento no AI Studio; o uso de uma pessoa sai por centavos.
    de e-mail das três contas: são umas duzentas conversas, triadas 64 por vez.
    Toque em **Atualizar** de novo enquanto ela avisar que há conversas na fila.
 
-Depois disso a Central se atualiza sozinha toda manhã, às 6h. Durante o dia, é
-tocar em **Atualizar**.
+Depois disso a Central se atualiza sozinha: toda vez que você abre o app, a
+cada 15 minutos com ele aberto, e uma vez por dia às 7h, quando também manda o
+resumo da manhã (liga e desliga em Ajustes).
 
 ## Passo 6 — No iPhone
 

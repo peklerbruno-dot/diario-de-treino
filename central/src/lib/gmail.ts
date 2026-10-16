@@ -191,3 +191,31 @@ export function destinatariosDaResposta(
   const cc = [...new Set(outros)].filter((e) => e !== eu && e !== deQuem && !e.startsWith("undisclosed"));
   return { para: [deQuem], cc };
 }
+
+/**
+ * Uma mensagem com texto e HTML (multipart/alternative) — para o resumo da
+ * manhã, que tem listas e fica melhor formatado. Quem não mostra HTML lê o texto.
+ */
+export function montarMimeHtml(m: { para: string[]; assunto: string; texto: string; html: string }): string {
+  const fronteira = `central-${Date.now().toString(36)}`;
+  const parte = (tipo: string, corpo: string) =>
+    [
+      `--${fronteira}`,
+      `Content-Type: ${tipo}; charset="UTF-8"`,
+      "Content-Transfer-Encoding: base64",
+      "",
+      Buffer.from(corpo.replace(/\r?\n/g, "\r\n"), "utf8").toString("base64").replace(/.{76}/g, "$&\r\n"),
+    ].join("\r\n");
+  const linhas = [
+    `To: ${m.para.join(", ")}`,
+    `Subject: ${cabecalhoCodificado(m.assunto)}`,
+    "MIME-Version: 1.0",
+    `Content-Type: multipart/alternative; boundary="${fronteira}"`,
+    "",
+    parte("text/plain", m.texto),
+    parte("text/html", m.html),
+    `--${fronteira}--`,
+    "",
+  ];
+  return Buffer.from(linhas.join("\r\n"), "utf8").toString("base64url");
+}
