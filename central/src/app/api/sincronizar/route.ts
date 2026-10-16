@@ -5,11 +5,17 @@ export const dynamic = "force-dynamic";
 // Três contas e algumas dezenas de conversas para triar levam tempo.
 export const maxDuration = 300;
 
-/** O agendador diário da Vercel chega com "Bearer <CRON_SECRET>". */
+/**
+ * Quem pode rodar sem sessão: o agendador diário da Vercel, que chega com
+ * "Bearer <CRON_SECRET>", e um agendador de fora (cron-job.org, a cada meia
+ * hora), que pode mandar o mesmo segredo no endereço: ?chave=<CRON_SECRET>.
+ */
 function ehOAgendador(req: Request): boolean {
   const segredo = process.env.CRON_SECRET;
-  const veio = req.headers.get("authorization") ?? "";
-  return Boolean(segredo) && iguais(veio, `Bearer ${segredo}`);
+  if (!segredo) return false;
+  const cabecalho = req.headers.get("authorization") ?? "";
+  const naUrl = new URL(req.url).searchParams.get("chave") ?? "";
+  return iguais(cabecalho, `Bearer ${segredo}`) || iguais(naUrl, segredo);
 }
 
 async function rodar(req: Request) {
