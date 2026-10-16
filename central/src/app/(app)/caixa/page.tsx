@@ -8,10 +8,11 @@ import { FLUXOS, categoriasDoFluxo } from "@/lib/categorias";
 import { ORDEM, VISIVEL } from "@/lib/consultas";
 import { corDaConta } from "@/lib/cores";
 import { DetalheConversa } from "../conversa/detalhe";
+import { PainelDividido } from "@/componentes/painel-dividido";
 
 export const dynamic = "force-dynamic";
 
-type Busca = Promise<{ fluxo?: string; conta?: string; resolvidas?: string; c?: string }>;
+type Busca = Promise<{ fluxo?: string; conta?: string; resolvidas?: string; c?: string; cobrar?: string }>;
 
 /**
  * E-mails: a lista à esquerda, a conversa aberta à direita. Filtros só dois,
@@ -78,23 +79,26 @@ export default async function Emails({ searchParams }: { searchParams: Busca }) 
   );
 
   return (
-    <div className="lg:-my-12 lg:grid lg:h-screen lg:grid-cols-[minmax(320px,400px)_1fr]">
-      <div className={`${q.c ? "hidden lg:block" : ""} lg:overflow-y-auto lg:border-r lg:border-linha lg:py-12 lg:pr-8`}>
-        <h1 className="mb-6 text-[28px] font-semibold tracking-tight">E-mails</h1>
-        {lista}
-      </div>
-      <div className={`${q.c ? "" : "hidden lg:block"} lg:overflow-y-auto lg:py-12 lg:pl-12`}>
-        {q.c ? (
-          <div className="max-w-[680px]">
+    <PainelDividido
+      mostrarDireita={Boolean(q.c)}
+      esquerda={
+        <>
+          <h1 className="mb-6 text-[28px] font-semibold tracking-tight">E-mails</h1>
+          {lista}
+        </>
+      }
+      direita={
+        q.c ? (
+          <div className="max-w-[760px]">
             <Link href={link({ c: undefined })} className="mb-6 inline-flex items-center gap-1 text-[15px] text-fosco lg:hidden">
               <IconeVoltar /> E-mails
             </Link>
-            <DetalheConversa id={q.c} />
+            <DetalheConversa id={q.c} cobrar={q.cobrar === "1"} />
           </div>
         ) : (
           <div className="grid h-full place-items-center text-[15px] text-fosco">Escolha uma conversa.</div>
-        )}
-      </div>
-    </div>
+        )
+      }
+    />
   );
 }

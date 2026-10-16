@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { aprenderEstilo, removerConta, removerInstrucao } from "../acoes";
+import { aprenderEstilo, enviarResumoAgora, removerConta, removerInstrucao } from "../acoes";
 
 export function RemoverConta({ id, email }: { id: string; email: string }) {
   const [pendente, comecar] = useTransition();
@@ -53,5 +53,25 @@ export function AprenderEstilo({ id }: { id: string }) {
       </button>
       {erro && <span className="self-center text-[13px] text-atencao">{erro}</span>}
     </>
+  );
+}
+
+export function EnviarResumoAgora() {
+  const [estado, setEstado] = useState<{ rodando?: boolean; texto?: string }>({});
+  return (
+    <p className="text-[14px] text-fosco">
+      <button
+        disabled={estado.rodando}
+        onClick={async () => {
+          setEstado({ rodando: true });
+          const r = await enviarResumoAgora();
+          setEstado({ texto: r.ok ? `Enviado para ${r.para}. Confira a caixa de entrada.` : r.erro });
+        }}
+        className="underline hover:text-tinta disabled:opacity-50"
+      >
+        {estado.rodando ? "Enviando…" : "Mandar um agora para ver como fica"}
+      </button>
+      {estado.texto && <span className="ml-2">{estado.texto}</span>}
+    </p>
   );
 }

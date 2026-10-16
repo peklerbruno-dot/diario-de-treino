@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { CampoDePergunta } from "@/componentes/campo-de-pergunta";
 import { Secao, Vazio } from "@/componentes/pecas";
 import { ListaDeTarefas, NovaTarefa, type ItemDeTarefa } from "@/componentes/tarefas";
-import { compromissos, porDia, type Compromisso } from "@/lib/agenda";
+import { choques, compromissos, porDia, type Compromisso } from "@/lib/agenda";
 import { bd } from "@/lib/bd";
 import { VISIVEL } from "@/lib/consultas";
 import { agoraPorExtenso, diaEmSaoPaulo, horaCurta, somarDias } from "@/lib/datas";
@@ -65,8 +66,17 @@ export default async function Hoje() {
         </p>
       </header>
 
+      <div className="mb-10">
+        <CampoDePergunta compacto />
+      </div>
+
       <Secao titulo="Agenda" acao={<Link href="/agenda" className="hover:text-tinta">Ver semana</Link>}>
         {doDia.length ? <Agenda lista={doDia} /> : <Vazio>Nada mais na agenda hoje.</Vazio>}
+        {choques(doDia).map(([a, b], i) => (
+          <p key={i} className="mt-1 text-[14px] text-atencao">
+            {a.titulo} e {b.titulo} se chocam às {horaCurta(b.inicio)}.
+          </p>
+        ))}
       </Secao>
 
       <Secao titulo="Para fazer" acao={<Link href="/tarefas" className="hover:text-tinta">Todas as tarefas</Link>}>

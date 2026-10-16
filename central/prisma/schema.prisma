@@ -62,6 +62,11 @@ model Conversa {
   /// Está na caixa de entrada do Gmail. Arquivou lá, some daqui — menos as
   /// que esperam resposta dos outros, que vêm dos enviados.
   naCaixa            Boolean   @default(true)
+  /// Um compromisso proposto no e-mail (convite, reunião marcada), para virar
+  /// evento na agenda com um clique. Só existe quando há data e hora concretas.
+  eventoTitulo       String?
+  eventoInicio       DateTime?
+  eventoFim          DateTime?
   atualizadoEm       DateTime  @updatedAt
   rascunhos          Rascunho[]
 
@@ -107,4 +112,18 @@ model Tarefa {
   criadoEm DateTime  @default(now())
 
   @@index([feitaEm])
+}
+
+/// Preferências simples, chave e valor (o resumo da manhã, por exemplo).
+model Ajuste {
+  chave String @id
+  valor String
+}
+
+/// O que você anotou sobre uma pessoa. O resto (quantas conversas, o que está
+/// em aberto) se calcula das conversas, na hora.
+model Contato {
+  email      String   @id
+  nota       String   @default("")
+  atualizado DateTime @updatedAt
 }

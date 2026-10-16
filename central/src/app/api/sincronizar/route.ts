@@ -1,5 +1,7 @@
 import { iguais, temSessao } from "@/lib/auth";
+import { talvezEnviarResumo } from "@/lib/resumo";
 import { sincronizarTudo } from "@/lib/sincronizar";
+import { enderecoFixo } from "../google/retorno/endereco";
 
 export const dynamic = "force-dynamic";
 // Três contas e algumas dezenas de conversas para triar levam tempo.
@@ -22,7 +24,16 @@ async function rodar(req: Request) {
   if (!ehOAgendador(req) && !(await temSessao())) {
     return Response.json({ erro: "Sem sessão." }, { status: 401 });
   }
-  return Response.json(await sincronizarTudo());
+  const resultado = await sincronizarTudo();
+  // Depois de ler as caixas (para o resumo sair com tudo em dia), o resumo
+  // da manhã — uma vez por dia, a partir das 7h, se estiver ligado.
+  try {
+    await talvezEnviarResumo(enderecoFixo(req));
+  } catch (e) {
+    console.error("[resumo]", e);
+    resultado.erros.push(`Resumo da manhã: ${(e as Error).message}`);
+  }
+  return Response.json(resultado);
 }
 
 export const GET = rodar;

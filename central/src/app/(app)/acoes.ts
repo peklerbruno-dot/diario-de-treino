@@ -1,6 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+import { gravarAjuste } from "@/lib/ajustes";
+import { enviarResumo } from "@/lib/resumo";
 import { agendaEmTexto, compromissos } from "@/lib/agenda";
 import { exigirSessao } from "@/lib/auth";
 import { bd } from "@/lib/bd";
@@ -11,6 +14,7 @@ import {
   arquivarThread,
   atualizarRascunhoNoGmail,
   baixarAnexo,
+  criarEvento,
   criarEventoDeDiaInteiro,
   criarRascunhoNoGmail,
   lerThread,
@@ -50,12 +54,13 @@ export async function gerarRascunho(
     ]);
     const agora = new Date();
     const agenda = await compromissos(contas, agora, new Date(agora.getTime() + 14 * 86_400_000));
+    const nota = (await bd.contato.findUnique({ where: { email: c.remetenteEmail } }))?.nota;
     const texto = await rascunhar({
       meuEmail: c.conta.email,
       conta: c.conta.rotulo,
       assunto: c.assunto,
       mensagens: mensagensEmTexto(thread.messages ?? [], 8, 6000),
-      contexto,
+      contexto: nota ? `${contexto}\n\n(Nota do BP sobre ${c.remetente}: ${nota})`.trim() : contexto,
       estilo: c.conta.estilo,
       agenda: agendaEmTexto(agenda),
       regras: regras.map((r) => r.texto),
@@ -277,4 +282,49 @@ export async function apagarTarefa(id: string): Promise<void> {
   await exigirSessao();
   await bd.tarefa.delete({ where: { id } });
   revalidatePath("/", "layout");
+}
+
+// ——— Resumo da manhã ———
+
+export async function salvarResumo(dados: FormData): Promise<void> {
+  await exigirSessao();
+  await gravarAjuste("resumo.ligado", dados.get("ligado") === "on" ? "1" : "0");
+  const conta = String(dados.get("conta") ?? "");
+  if (conta) await gravarAjuste("resumo.conta", conta);
+  revalidatePath("/ajustes");
+}
+
+export async function enviarResumoAgora(): Promise<Resultado<{ para: string }>> {
+  await exigirSessao();
+  try {
+    const h = await headers();
+    const base = process.env.APP_URL?.replace(/\/+$/, "") || `https://${h.get("host")}`;
+    const para = await enviarResumo(base);
+    return { ok: true, para };
+  } catch (e) {
+    return falha(e);
+  }
+}
+
+// ——— Contatos ———
+
+export async function salvarNotaDoContato(email: string, nota: string): Promise<void> {
+  await exigirSessao();
+  const e = email.trim().toLowerCase();
+  if (!e.includes("@")) return;
+  const n = nota.trim().slice(0, 1000);
+  await bd.contato.upsert({ where: { email: e }, create: { email: e, nota: n }, update: { nota: n } });
+}
+
+/** Põe na agenda o compromisso que a triagem achou no e-mail. */
+export async function porEventoNaAgenda(conversaId: string): Promise<Resultado<{ link: string }>> {
+  await exigirSessao();
+  try {
+    const c = await conversaComConta(conversaId);
+    if (!c.eventoInicio || !c.eventoFim || !c.eventoTitulo) throw new Error("Esta conversa não tem compromisso com hora.");
+    const e = await criarEvento(c.conta, c.eventoTitulo, c.eventoInicio, c.eventoFim, `Conversa: ${linkDoGmail(c.conta.email, c.threadId)}`);
+    return { ok: true, link: e.htmlLink ?? "" };
+  } catch (e) {
+    return falha(e);
+  }
 }

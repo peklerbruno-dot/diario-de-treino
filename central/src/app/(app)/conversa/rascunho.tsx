@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gerarRascunho, salvarRascunho } from "../acoes";
+import { BotaoDeVoz } from "@/componentes/voz";
 
 /**
  * Onde a resposta nasce: você conta o que quer dizer (ou o que já combinou
@@ -13,12 +14,18 @@ export function PainelDeRascunho({
   id,
   ultimo,
   semEstilo,
+  cobranca,
 }: {
   id: string;
   ultimo: { texto: string; contexto: string } | null;
   semEstilo: boolean;
+  /** A conversa espera resposta dos outros: o rascunho vira um lembrete. */
+  cobranca?: { dias: number; automatica: boolean } | null;
 }) {
-  const [contexto, setContexto] = useState(ultimo?.contexto ?? "");
+  const pedidoDeCobranca = cobranca
+    ? `Escreva um lembrete curto e gentil cobrando retorno da minha última mensagem, enviada há ${cobranca.dias} dias. Sem tom de reclamação.`
+    : "";
+  const [contexto, setContexto] = useState(ultimo?.contexto ?? pedidoDeCobranca);
   const [texto, setTexto] = useState(ultimo?.texto ?? "");
   const [estado, setEstado] = useState<"parado" | "escrevendo" | "salvando">("parado");
   const [aviso, setAviso] = useState<{ texto: string; link?: string; ruim?: boolean } | null>(
@@ -41,10 +48,20 @@ export function PainelDeRascunho({
     setAviso(r.ok ? { texto: "Rascunho salvo no Gmail. Revise e envie de lá.", link: r.link } : { texto: r.erro, ruim: true });
   }
 
+  // Veio do "Rascunhar cobrança" da lista: já escreve sozinho, uma vez.
+  const jaGerou = useRef(false);
+  useEffect(() => {
+    if (cobranca?.automatica && !ultimo && !jaGerou.current) {
+      jaGerou.current = true;
+      escrever(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const ocupado = estado !== "parado";
   return (
     <section className="mt-10">
-      <h2 className="mb-2 text-[13px] font-semibold text-fosco">Responder</h2>
+      <h2 className="mb-2 text-[13px] font-semibold text-fosco">{cobranca ? `Cobrar resposta · esperando há ${cobranca.dias} dias` : "Responder"}</h2>
       <textarea
         id="contexto"
         value={contexto}
@@ -60,13 +77,14 @@ export function PainelDeRascunho({
           disabled={ocupado}
           className="rounded-lg bg-tinta px-3.5 py-1.5 text-[14px] font-medium text-fundo disabled:opacity-50"
         >
-          {estado === "escrevendo" ? "Escrevendo…" : texto ? "Escrever de novo" : "Rascunhar resposta"}
+          {estado === "escrevendo" ? "Escrevendo…" : texto ? "Escrever de novo" : cobranca ? "Rascunhar lembrete" : "Rascunhar resposta"}
         </button>
         {texto && (
           <button onClick={() => escrever(true)} disabled={ocupado} className="text-[14px] text-fosco hover:text-tinta disabled:opacity-50">
             Refazer com o contexto
           </button>
         )}
+        <BotaoDeVoz aoFalar={(t) => setContexto((c) => (c ? `${c} ${t}` : t))} />
       </div>
 
       {texto && (

@@ -6,6 +6,7 @@ import {
   destinatariosDaResposta,
   enderecos,
   montarMime,
+  montarMimeHtml,
   semCitacao,
   separarEndereco,
   type MensagemGmail,
@@ -126,5 +127,18 @@ describe("resposta", () => {
     expect(texto).toContain("In-Reply-To: <abc@mail>");
     const corpo = texto.split("\r\n\r\n")[1].replace(/\r\n/g, "");
     expect(Buffer.from(corpo, "base64").toString("utf8")).toBe("Olá\r\nAté logo");
+  });
+});
+
+describe("mensagem com HTML", () => {
+  it("leva as duas versões, texto e HTML, com acento", () => {
+    const raw = montarMimeHtml({ para: ["eu@x.com"], assunto: "Seu dia: 2 compromissos", texto: "Agenda\nReunião", html: "<p>Reunião</p>" });
+    const t = Buffer.from(raw, "base64url").toString("utf8");
+    expect(t).toContain("multipart/alternative");
+    const partes = t.split(/--central-[a-z0-9]+/).filter((p) => p.includes("Content-Type: text/"));
+    expect(partes).toHaveLength(2);
+    const corpo = (p: string) => Buffer.from(p.split("\r\n\r\n")[1].replace(/\r\n/g, ""), "base64").toString("utf8");
+    expect(corpo(partes[0])).toBe("Agenda\r\nReunião");
+    expect(corpo(partes[1])).toBe("<p>Reunião</p>");
   });
 });
