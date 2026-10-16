@@ -11,14 +11,14 @@ interface Resultado {
   erro?: string;
 }
 
-/** Mais velho que isto, a Central busca de novo ao ser aberta. */
-const VELHO_MS = 10 * 60_000;
+/** Mais velho que isto, a Central busca de novo ao ser aberta (cada busca com e-mail novo gasta cota do Gemini). */
+const VELHO_MS = 30 * 60_000;
 /** Aberta e parada na tela, busca de novo a cada quinze minutos. */
-const INTERVALO_MS = 15 * 60_000;
+const INTERVALO_MS = 30 * 60_000;
 
 /**
  * Sem botão: a Central se atualiza sozinha ao abrir (se a última busca tiver
- * mais de dez minutos), ao voltar para a aba, e a cada quinze minutos aberta.
+ * mais de meia hora), ao voltar para a aba, e a cada meia hora aberta.
  * Fora disso, quem atualiza é o agendador (ver docs/COLOCAR-NO-AR.md).
  */
 export function Atualizar({ ultima }: { ultima: string | null }) {
@@ -43,7 +43,7 @@ export function Atualizar({ ultima }: { ultima: string | null }) {
         router.refresh();
         // A primeira leitura tem mais conversas do que cabe numa rodada:
         // continua sozinha até a fila acabar (com um teto, por segurança).
-        if (j.naFila && !j.erros.length && fila < 5) {
+        if (j.naFila && !j.erros.length && fila < 3) {
           ocupado.current = false;
           return rodar(fila + 1);
         }

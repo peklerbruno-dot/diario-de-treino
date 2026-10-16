@@ -15,7 +15,7 @@ const DIAS_DA_CAIXA = 14;
 const DIAS_DOS_ENVIADOS = 21;
 const MAX_CAIXA = 50;
 const MAX_ENVIADOS = 30;
-const POR_LOTE = 8;
+const POR_LOTE = 15;
 /** O resumo da manhã que a Central manda para você não entra na triagem. */
 const SEM_RESUMO = '-(from:me subject:"Seu dia:")';
 /**
@@ -23,7 +23,7 @@ const SEM_RESUMO = '-(from:me subject:"Seu dia:")';
  * passa de duzentas, e a Vercel corta a rota em cinco minutos: aqui vão as mais
  * recentes, e o resto fica para a próxima (que tria só o que faltou).
  */
-const MAX_TRIAGEM = 64;
+const MAX_TRIAGEM = 45;
 
 /** Roda `fazer` sobre a lista com no máximo `n` ao mesmo tempo. */
 async function emParalelo<T, R>(lista: T[], n: number, fazer: (x: T) => Promise<R>): Promise<R[]> {
@@ -121,8 +121,11 @@ async function aplicarTriagem(paraTriar: ConversaParaTriar[]): Promise<{ triadas
 
   const erros: string[] = [];
   let triadas = 0;
-  // Dois de cada vez: o plano gratuito do Gemini limita os pedidos por minuto.
-  await emParalelo(lotes, 2, async (lote) => {
+  // Um lote por vez: o plano gratuito do Gemini limita os pedidos por minuto,
+  // e lotes grandes (15 conversas) gastam menos pedidos da cota do dia.
+  let parar = false;
+  await emParalelo(lotes, 1, async (lote) => {
+    if (parar) return;
     try {
       const resultado = await triar(
         lote,
@@ -155,6 +158,8 @@ async function aplicarTriagem(paraTriar: ConversaParaTriar[]): Promise<{ triadas
       }
     } catch (e) {
       console.error("[triagem]", e);
+      // Sem cota, não adianta tentar os lotes seguintes: ficam para a próxima rodada.
+      if (e instanceof CotaEsgotada) parar = true;
       const msg =
         e instanceof CotaEsgotada || e instanceof GeminiSobrecarregado ? e.message : `Triagem de ${lote.length} conversas falhou: ${(e as Error).message}`;
       // A cota esgotada derruba todos os lotes ao mesmo tempo: um aviso basta.
