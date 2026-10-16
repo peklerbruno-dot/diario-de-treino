@@ -7,8 +7,9 @@ import { arquivarNoGmail, corrigirCategoria, marcarResolvida } from "@/app/(app)
 import { CATEGORIAS } from "@/lib/categorias";
 
 /**
- * As ações de uma conversa direto na lista, sem abri-la. No computador, um
- * botão "⋯" que aparece ao passar o mouse; no celular, sempre visível.
+ * As ações de uma conversa direto na lista, sem abri-la: as principais
+ * (resolver, arquivar, abrir no Gmail — e cobrar, quando espera resposta)
+ * sempre à vista; mudar de categoria no "⋯".
  */
 export function AcoesRapidas({
   id,
@@ -54,15 +55,30 @@ export function AcoesRapidas({
     });
 
   const item = "block w-full px-3 py-1.5 text-left text-[14px] hover:bg-realce disabled:opacity-40";
+  const botao = "rounded-md px-2 py-1 text-[13px] text-grafite hover:bg-linha hover:text-tinta disabled:opacity-40";
   return (
-    <div ref={caixa} className="relative">
+    <div ref={caixa} className="relative flex flex-wrap items-center gap-1">
+      {/* Os principais, sempre à vista. */}
+      {cobrar && (
+        <Link href={cobrar} className={botao}>
+          Cobrar
+        </Link>
+      )}
+      <button className={botao} disabled={pendente} onClick={() => fazer(() => marcarResolvida(id, !resolvida))}>
+        {resolvida ? "Reabrir" : "Resolver"}
+      </button>
+      <button className={botao} disabled={pendente} onClick={() => fazer(() => arquivarNoGmail(id))}>
+        Arquivar
+      </button>
+      <a href={linkGmail} target="_blank" rel="noreferrer" className={botao}>
+        Abrir no Gmail
+      </a>
+      {/* O resto (mudar de categoria) no "⋯". */}
       <button
-        onClick={(e) => {
-          e.preventDefault();
-          setAberto((a) => !a);
-        }}
-        aria-label="Ações"
-        className={`grid h-7 w-7 place-items-center rounded-md text-fosco hover:bg-linha hover:text-tinta lg:opacity-0 lg:group-hover:opacity-100 ${aberto ? "bg-linha text-tinta lg:opacity-100" : ""}`}
+        onClick={() => setAberto((a) => !a)}
+        aria-label="Mais ações"
+        title="Mover para outra categoria"
+        className={`grid h-7 w-7 place-items-center rounded-md text-fosco hover:bg-linha hover:text-tinta ${aberto ? "bg-linha text-tinta" : ""}`}
       >
         <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor" aria-hidden>
           <circle cx="4.5" cy="10" r="1.5" />
@@ -70,30 +86,16 @@ export function AcoesRapidas({
           <circle cx="15.5" cy="10" r="1.5" />
         </svg>
       </button>
+      {pendente && <span className="text-[13px] text-fosco">…</span>}
+      {erro && <span className="text-[13px] text-atencao">{erro}</span>}
       {aberto && (
-        <div className="absolute right-0 top-8 z-30 w-56 rounded-lg border border-linha bg-superficie py-1 shadow-lg">
-          {cobrar && (
-            <Link href={cobrar} className={item} onClick={() => setAberto(false)}>
-              Rascunhar cobrança
-            </Link>
-          )}
-          <button className={item} disabled={pendente} onClick={() => fazer(() => marcarResolvida(id, !resolvida))}>
-            {resolvida ? "Reabrir" : "Marcar como resolvida"}
-          </button>
-          <button className={item} disabled={pendente} onClick={() => fazer(() => arquivarNoGmail(id))}>
-            Arquivar
-          </button>
-          <a href={linkGmail} target="_blank" rel="noreferrer" className={item}>
-            Abrir no Gmail
-          </a>
-          <div className="my-1 border-t border-linha" />
+        <div className="absolute left-0 top-8 z-30 w-52 rounded-lg border border-linha bg-superficie py-1 shadow-lg">
           <p className="px-3 pb-0.5 pt-1 text-[12px] text-fosco">Mover para</p>
           {CATEGORIAS.filter((c) => c.id !== categoria).map((c) => (
             <button key={c.id} className={item} disabled={pendente} onClick={() => fazer(() => corrigirCategoria(id, c.id))}>
               {c.nome}
             </button>
           ))}
-          {erro && <p className="px-3 py-1.5 text-[13px] text-atencao">{erro}</p>}
         </div>
       )}
     </div>

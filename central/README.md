@@ -121,10 +121,12 @@ Duas coisas vêm junto com o "grátis":
    Para fechar essa porta sem trocar nada no código: ativar o faturamento no AI
    Studio (o uso de uma pessoa sai por centavos, e no plano pago o Google não usa
    os dados).
-2. **Há limite por minuto e por dia.** Uma rodada gasta uns oito pedidos, e a
-   cota diária do modelo padrão passa de duzentos: sobra. Se estourar, a Central
-   avisa e a cota renova de madrugada. Os limites atuais da sua chave aparecem
-   em https://aistudio.google.com/rate-limit.
+2. **Há limite por minuto e por dia, por modelo.** A triagem, que gasta mais
+   pedidos, usa o modelo de cota maior (flash-lite), em lotes de 15 conversas;
+   os rascunhos usam o que escreve melhor (flash). Quando a cota de um acaba, a
+   chamada passa para o outro. Se os dois acabarem, a Central avisa se é por
+   um minuto ou até a madrugada. Os limites reais da sua chave aparecem em
+   https://aistudio.google.com/rate-limit.
 
 ## Como funciona por dentro
 
