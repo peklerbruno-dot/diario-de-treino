@@ -47,11 +47,11 @@ export function AprenderEstilo({ id }: { id: string }) {
           if (r.ok) router.refresh();
           else setErro(r.erro);
         }}
-        className="rounded-xl bg-destaque px-3 py-2 text-sm font-semibold text-destaque-tinta disabled:opacity-60"
+        className="rounded-md bg-destaque px-3 py-1.5 text-sm font-semibold text-destaque-tinta disabled:opacity-60"
       >
         {rodando ? "Lendo seus enviados…" : "Aprender meu estilo"}
       </button>
-      {erro && <span className="self-center text-xs text-atencao">{erro}</span>}
+      {erro && <span className="self-center text-mini text-atencao">{erro}</span>}
     </>
   );
 }

@@ -24,9 +24,21 @@ Gemini classifica cada conversa:
 Cada conversa ganha um resumo de uma linha (o que importa *agora*, não o
 histórico), a próxima ação em imperativo e, se houver, o prazo.
 
-**Painel.** Os números do dia, o que precisa de você (urgente primeiro), os
-prazos das próximas duas semanas, a agenda de hoje e amanhã das três contas
-juntas, e quem está te devendo resposta há mais de três dias.
+**Hoje.** O que depende de você (e-mails e tarefas) à esquerda; à direita,
+a agenda de hoje e amanhã das contas juntas, os prazos das próximas duas
+semanas e quem está te devendo resposta há mais de três dias.
+
+**Agenda.** Um calendário só para todas as contas, cada uma com sua cor (a
+ideia do Notion Calendar): semana com horários no computador, lista por dia no
+celular, e mês. Os prazos que a triagem achou nos e-mails e as suas tarefas
+com data aparecem no mesmo calendário.
+
+**Tarefas.** As que você escreve e a próxima ação de cada e-mail, juntas e
+agrupadas por quando (atrasadas, hoje, próximos 7 dias, sem data). Marcar a
+de um e-mail resolve a conversa.
+
+**E-mails.** Quatro fluxos — Para você, Esperando, Para ler, Registros — com
+a lista à esquerda e a conversa aberta à direita no computador.
 
 **Rascunhos.** Na conversa, você conta em poucas palavras o que quer dizer, ou
 o que já combinou fora do e-mail (numa conversa, ligação ou WhatsApp: dá para

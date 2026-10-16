@@ -53,3 +53,30 @@ export function prazoPorExtenso(prazo: Date, agora = new Date()): { texto: strin
 
 /** Dias inteiros desde uma data. */
 export const diasDesde = (d: Date, agora = new Date()) => Math.floor((agora.getTime() - d.getTime()) / 86_400_000);
+
+/** O fim do dia de hoje em São Paulo, no formato dos prazos (dia à meia-noite UTC). */
+export const fimDeHojeUTC = (agora = new Date()) => new Date(`${diaEmSaoPaulo(agora)}T00:00:00Z`);
+
+/** Um dia "AAAA-MM-DD" somado de n dias. */
+export function somarDias(dia: string, n: number): string {
+  const d = new Date(`${dia}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+/** A segunda-feira da semana de um dia "AAAA-MM-DD". */
+export function segundaDaSemana(dia: string): string {
+  const semana = new Date(`${dia}T12:00:00Z`).getUTCDay(); // 0 = domingo
+  return somarDias(dia, semana === 0 ? -6 : 1 - semana);
+}
+
+/** "AAAA-MM-DD" de uma data, no fuso de São Paulo. */
+export const diaDe = (d: Date) => diaEmSaoPaulo(d);
+
+/** Minutos desde a meia-noite, no fuso de São Paulo. */
+export function minutosDoDia(d: Date): number {
+  const [h, m] = d.toLocaleTimeString("en-GB", { timeZone: FUSO, hour: "2-digit", minute: "2-digit" }).split(":").map(Number);
+  return (h % 24) * 60 + m;
+}
+
+export const horaCurta = (d: Date) => d.toLocaleTimeString("pt-BR", { timeZone: FUSO, hour: "2-digit", minute: "2-digit" });

@@ -2,52 +2,65 @@
 @tailwind components;
 @tailwind utilities;
 
-/* A paleta do Termômetro: fundo cinza frio, cartões brancos com sombra. */
+/*
+ * A paleta: papel quente e tinta escura, uma cor de destaque só (verde-musgo),
+ * vermelho reservado a prazo e urgência. Linhas finas separam as coisas, em
+ * vez de cartões com sombra.
+ */
 :root {
   color-scheme: light;
-  --papel: #f2f2f6;
-  --cartao: #ffffff;
-  --tinta: #0b0b0d;
-  --grafite: #5b5b62;
-  --fosco: #6b6b73;
-  --regua: #d9d9de;
-  --linha: #ececed;
-  --destaque: #0a66d6;
+  --fundo: #fbfaf8;
+  --lateral: #f3f2ee;
+  --superficie: #ffffff;
+  --tinta: #1f1e1c;
+  --grafite: #57554f;
+  --fosco: #8a8780;
+  --linha: #ebe9e4;
+  --regua: #d6d3cb;
+  --realce: #efede7;
+  --destaque: #2f5d50;
   --destaque-tinta: #ffffff;
-  --atencao: #c2372f;
-  --alerta: #8a5a00;
-  --ok: #046b3a;
-  --sombra: 0 1px 2px rgba(16, 16, 20, 0.05), 0 10px 24px rgba(16, 16, 20, 0.06);
+  --atencao: #c4432b;
+  --alerta: #b5730f;
+  --azul: #3e6fb0;
+  --ok: #3b7a57;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --papel: #0e0e11;
-    --cartao: #1a1a1f;
-    --tinta: #ffffff;
-    --grafite: #b6b6bf;
-    --fosco: #85858f;
-    --regua: #34343c;
-    --linha: #2a2a31;
-    --destaque: #4a9bff;
-    --destaque-tinta: #0b0b0d;
-    --atencao: #ff6b63;
-    --alerta: #d9a441;
-    --ok: #3fbf7f;
-    --sombra: 0 0 0 1px rgba(255, 255, 255, 0.06);
+    --fundo: #171716;
+    --lateral: #1d1d1b;
+    --superficie: #1f1f1d;
+    --tinta: #edebe6;
+    --grafite: #b7b4ad;
+    --fosco: #85827b;
+    --linha: #2c2b28;
+    --regua: #3d3c38;
+    --realce: #2a2926;
+    --destaque: #86bba8;
+    --destaque-tinta: #10201b;
+    --atencao: #ec7a63;
+    --alerta: #ddaa4a;
+    --azul: #7ea6dc;
+    --ok: #77c296;
   }
 }
 
 html,
 body {
-  background: var(--papel);
+  background: var(--fundo);
   color: var(--tinta);
 }
 
 body {
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   -webkit-text-size-adjust: 100%;
+  font-feature-settings: "cv11", "ss01";
+}
+
+/* Números que se comparam em coluna: dígitos da mesma largura. */
+.numeros {
+  font-variant-numeric: tabular-nums;
 }
 
 /* 16 px nos campos: abaixo disso o Safari do iPhone dá zoom ao focar. */
@@ -57,7 +70,23 @@ select {
   font-size: 16px;
 }
 
+@media (min-width: 1024px) {
+  input,
+  textarea,
+  select {
+    font-size: 14px;
+  }
+}
+
 button,
 a {
   touch-action: manipulation;
+}
+
+/* A barra de abas do celular fica acima da faixa do gesto. */
+.seguro-embaixo {
+  padding-bottom: max(env(safe-area-inset-bottom), 8px);
+}
+.seguro-em-cima {
+  padding-top: env(safe-area-inset-top);
 }

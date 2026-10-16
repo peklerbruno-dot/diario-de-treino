@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { gerarRascunho, salvarRascunho } from "../../acoes";
+import { gerarRascunho, salvarRascunho } from "../acoes";
 
 /**
  * Onde a resposta nasce: você conta o que quer dizer (ou o que já combinou
@@ -43,8 +43,8 @@ export function PainelDeRascunho({
 
   const ocupado = estado !== "parado";
   return (
-    <section className="mt-6 rounded-cartao bg-cartao p-4 shadow-cartao">
-      <h2 className="font-titulo text-xl">Responder</h2>
+    <section className="mt-8">
+      <h2 className="mb-1 border-b border-linha pb-1.5 text-mini font-semibold uppercase tracking-[0.08em] text-fosco">Responder</h2>
       <label className="mt-3 block text-sm text-grafite" htmlFor="contexto">
         O que você quer dizer, ou o que já combinou fora do e-mail (conversa, ligação, WhatsApp). Pode deixar em branco.
       </label>
@@ -54,18 +54,18 @@ export function PainelDeRascunho({
         onChange={(e) => setContexto(e.target.value)}
         rows={3}
         placeholder="Ex.: confirmar presença, dizer que mando o arquivo até sexta…"
-        className="mt-1 w-full rounded-xl border border-regua bg-papel px-3 py-2 outline-none focus:border-destaque"
+        className="mt-1 w-full rounded-md border border-linha bg-superficie px-3 py-2 outline-none focus:border-destaque"
       />
       <div className="mt-2 flex gap-2">
         <button
           onClick={() => escrever(false)}
           disabled={ocupado}
-          className="rounded-xl bg-destaque px-4 py-2 text-sm font-semibold text-destaque-tinta disabled:opacity-60"
+          className="rounded-md bg-destaque px-3.5 py-1.5 text-sm font-semibold text-destaque-tinta disabled:opacity-60"
         >
           {estado === "escrevendo" ? "Escrevendo…" : texto ? "Escrever de novo" : "Rascunhar resposta"}
         </button>
         {texto && (
-          <button onClick={() => escrever(true)} disabled={ocupado} className="rounded-xl bg-linha px-4 py-2 text-sm font-semibold disabled:opacity-60">
+          <button onClick={() => escrever(true)} disabled={ocupado} className="rounded-md border border-linha px-3.5 py-1.5 hover:bg-realce text-sm font-semibold disabled:opacity-60">
             Refazer com o contexto
           </button>
         )}
@@ -77,19 +77,19 @@ export function PainelDeRascunho({
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
             rows={Math.min(18, Math.max(6, texto.split("\n").length + 1))}
-            className="mt-3 w-full rounded-xl border border-regua bg-papel px-3 py-2 text-[16px] leading-relaxed outline-none focus:border-destaque"
+            className="mt-3 w-full rounded-md border border-linha bg-superficie px-3 py-2 text-[16px] leading-relaxed outline-none focus:border-destaque"
           />
           <div className="mt-2 flex flex-wrap gap-2">
             <button
               onClick={salvar}
               disabled={ocupado || !texto.trim()}
-              className="rounded-xl bg-tinta px-4 py-2 text-sm font-semibold text-papel disabled:opacity-60"
+              className="rounded-md bg-tinta px-3.5 py-1.5 text-sm font-semibold text-fundo disabled:opacity-60"
             >
               {estado === "salvando" ? "Salvando…" : "Salvar como rascunho no Gmail"}
             </button>
             <button
               onClick={() => navigator.clipboard?.writeText(texto)}
-              className="rounded-xl bg-linha px-4 py-2 text-sm font-semibold"
+              className="rounded-md border border-linha px-3.5 py-1.5 hover:bg-realce text-sm font-semibold"
             >
               Copiar
             </button>
@@ -111,7 +111,7 @@ export function PainelDeRascunho({
         </p>
       )}
       {semEstilo && (
-        <p className="mt-3 text-xs text-fosco">
+        <p className="mt-3 text-mini text-fosco">
           Dica: em <Link href="/ajustes" className="underline">Ajustes</Link>, “Aprender meu estilo” faz os rascunhos soarem mais como você.
         </p>
       )}
