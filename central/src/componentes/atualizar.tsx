@@ -71,9 +71,13 @@ export function Atualizar({ ultima }: { ultima: string | null }) {
   }, [rodar]);
 
   return (
-    <div className="max-w-[14rem] text-mini text-fosco">
+    <div className="text-[13px] text-fosco">
       <p>{rodando ? "Atualizando…" : desde ? `Atualizado ${quando(desde)}` : "Ainda não atualizado"}</p>
-      {aviso && !rodando && <p className="mt-0.5 text-alerta">{aviso}</p>}
+      {aviso && !rodando && (
+        <p className="mt-0.5 hidden text-fosco lg:block" title={aviso}>
+          Parte não atualizou; tenta de novo sozinha.
+        </p>
+      )}
     </div>
   );
 }

@@ -4,7 +4,8 @@ import { corDaConta } from "@/lib/cores";
 import { prazoPorExtenso } from "@/lib/datas";
 import { anexos as anexosDe, cabecalho, corpoEmTexto, semCitacao, separarEndereco } from "@/lib/gmail";
 import { lerThread, type ThreadGmail } from "@/lib/google";
-import { Conta, Etiqueta, Prazo } from "@/componentes/pecas";
+import { Ponto, Prazo } from "@/componentes/pecas";
+import { categoria } from "@/lib/categorias";
 import { Acoes } from "./acoes-da-conversa";
 import { Anexos } from "./anexos";
 import { PainelDeRascunho } from "./rascunho";
@@ -36,23 +37,22 @@ export async function DetalheConversa({ id }: { id: string }) {
 
   return (
     <article>
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <Conta rotulo={c.conta.rotulo} cor={cor} />
-        <Etiqueta id={c.categoria} />
-        {c.corrigida && <span className="text-mini text-fosco">corrigida por você</span>}
-        {c.prioridade === 1 && <span className="text-mini font-semibold text-atencao">urgente</span>}
-      </div>
-      <h1 className="mt-2 text-[22px] font-semibold leading-snug tracking-tight">{c.assunto}</h1>
+      <p className="flex items-center gap-2 text-[13px] text-fosco">
+        <Ponto cor={cor} />
+        {c.conta.rotulo} · {categoria(c.categoria).nome}
+        {prazo && (
+          <>
+            {" · "}
+            <Prazo {...prazo} />
+          </>
+        )}
+      </p>
+      <h1 className="mt-2 text-[24px] font-semibold leading-snug tracking-tight">{c.assunto}</h1>
 
-      {(c.resumo || c.proximaAcao || prazo) && (
-        <div className="mt-4 border-l-[3px] pl-4" style={{ borderColor: cor }}>
-          {c.resumo && <p className="text-[15px] leading-relaxed">{c.resumo}</p>}
-          {c.proximaAcao && <p className="mt-1.5 text-[15px] font-semibold">→ {c.proximaAcao}</p>}
-          {prazo && (
-            <p className="mt-1">
-              <Prazo {...prazo} />
-            </p>
-          )}
+      {(c.resumo || c.proximaAcao) && (
+        <div className="mt-5 space-y-1.5 text-[16px] leading-relaxed">
+          {c.resumo && <p className="text-grafite">{c.resumo}</p>}
+          {c.proximaAcao && <p>{c.proximaAcao}.</p>}
         </div>
       )}
 
@@ -72,20 +72,26 @@ export async function DetalheConversa({ id }: { id: string }) {
 
       {anexos.length > 0 && <Anexos id={c.id} anexos={anexos} />}
 
-      <h2 className="mb-2 mt-10 border-b border-linha pb-1.5 text-mini font-semibold uppercase tracking-[0.08em] text-fosco">
-        A conversa · {mensagens.length} {mensagens.length === 1 ? "mensagem" : "mensagens"}
-      </h2>
-      {erro && <p className="mt-2 text-sm text-atencao">Não deu para ler do Gmail: {erro}</p>}
+      {mensagens.length > 0 && (
+        <h2 className="mb-1 mt-12 text-[13px] font-semibold text-fosco">
+          {mensagens.length} {mensagens.length === 1 ? "mensagem" : "mensagens"}
+        </h2>
+      )}
+      {erro && (
+        <p className="mt-12 text-[15px] text-fosco" title={erro}>
+          Não deu para carregar as mensagens agora. Abra no Gmail ou tente daqui a pouco.
+        </p>
+      )}
       <div>
         {mensagens.map((m) => {
           const de = separarEndereco(cabecalho(m, "From"));
           const minha = de.email === c.conta.email.toLowerCase();
           const texto = semCitacao(corpoEmTexto(m));
           return (
-            <div key={m.id} className="border-b border-linha py-4">
+            <div key={m.id} className="border-t border-linha py-5">
               <div className="flex items-baseline justify-between gap-3">
-                <span className="truncate text-sm font-semibold">{minha ? "Você" : de.nome}</span>
-                <span className="numeros shrink-0 text-mini text-fosco">
+                <span className="truncate text-[15px] font-medium">{minha ? "Você" : de.nome}</span>
+                <span className="numeros shrink-0 text-[13px] text-fosco">
                   {new Date(Number(m.internalDate)).toLocaleString("pt-BR", {
                     timeZone: "America/Sao_Paulo",
                     day: "numeric",
@@ -95,7 +101,7 @@ export async function DetalheConversa({ id }: { id: string }) {
                   })}
                 </span>
               </div>
-              <p className={`mt-2 whitespace-pre-wrap break-words text-[15px] leading-relaxed lg:text-sm ${minha ? "text-grafite" : ""}`}>
+              <p className={`mt-2 whitespace-pre-wrap break-words text-[15px] leading-relaxed ${minha ? "text-grafite" : ""}`}>
                 {texto || "(sem texto)"}
               </p>
             </div>

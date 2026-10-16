@@ -37,14 +37,14 @@ export default async function Ajustes({ searchParams }: { searchParams: Busca })
       )}
 
       <section className="mt-6">
-        <h2 className="mb-1 border-b border-linha pb-1.5 text-mini font-semibold uppercase tracking-[0.08em] text-fosco">Contas</h2>
+        <h2 className="mb-2 text-[13px] font-semibold text-fosco">Contas</h2>
         <div className="mt-2 space-y-3">
           {contas.map((c) => (
             <div key={c.id} className="border-b border-linha py-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="truncate font-semibold">{c.email}</p>
-                  <p className="text-mini text-fosco">
+                  <p className="text-[13px] text-fosco">
                     {c.ultimaSincronia ? `Atualizada ${quando(c.ultimaSincronia)}` : "Ainda não atualizada"}
                   </p>
                 </div>
@@ -92,14 +92,14 @@ export default async function Ajustes({ searchParams }: { searchParams: Busca })
         >
           + Conectar conta Google
         </a>
-        <p className="mt-2 text-mini text-fosco">
+        <p className="mt-2 text-[13px] text-fosco">
           Na tela do Google, escolha a conta e deixe todas as permissões marcadas. Repita para cada conta (pessoal, CIP,
           USP). A Central lê e cria rascunhos, mas nunca envia nada sozinha.
         </p>
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-1 border-b border-linha pb-1.5 text-mini font-semibold uppercase tracking-[0.08em] text-fosco">Regras da triagem</h2>
+        <h2 className="mb-2 text-[13px] font-semibold text-fosco">Regras da triagem</h2>
         <p className="mt-1 text-sm text-grafite">
           Escreva como você decide. Ex.: “Tudo da Nancy (nrozench@usp.br) é prioridade alta”, “Boletim do CEJ com [Teste] no
           assunto é ruído”.
@@ -116,13 +116,13 @@ export default async function Ajustes({ searchParams }: { searchParams: Busca })
             <button className="rounded-md border border-linha px-3 py-1.5 text-sm font-medium hover:bg-realce">Adicionar</button>
           </form>
         </div>
-        <p className="mt-2 text-mini text-fosco">
+        <p className="mt-2 text-[13px] text-fosco">
           Além das regras, cada vez que você corrige a categoria de uma conversa a Central aprende com isso ({correcoes}{" "}
           {correcoes === 1 ? "correção" : "correções"} até agora).
         </p>
         <form action={refazerTriagem} className="mt-2 px-1">
           <button className="text-sm font-semibold text-destaque">Refazer a triagem com as regras atuais</button>
-          <span className="text-mini text-fosco"> (vale na próxima atualização)</span>
+          <span className="text-[13px] text-fosco"> (vale na próxima atualização)</span>
         </form>
       </section>
 

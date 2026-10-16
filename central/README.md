@@ -41,8 +41,7 @@ de um e-mail resolve a conversa.
 a lista à esquerda e a conversa aberta à direita no computador.
 
 **Rascunhos.** Na conversa, você conta em poucas palavras o que quer dizer, ou
-o que já combinou fora do e-mail (numa conversa, ligação ou WhatsApp: dá para
-colar o trecho), e a Central escreve a resposta:
+o que já combinou fora do e-mail (numa conversa ou ligação), e a Central escreve a resposta:
 
 - no idioma e no tom da conversa;
 - no **seu estilo**, aprendido dos seus e-mails enviados (Ajustes → Aprender meu
@@ -124,10 +123,6 @@ Para rodar na máquina: um Postgres, as variáveis do `.env.example` e
 
 ## Próximos passos possíveis
 
-- **WhatsApp**: hoje o caminho é colar o trecho no campo de contexto. O próximo
-  passo é importar a conversa exportada (o .txt de "Exportar conversa") como
-  contexto permanente de um contato. Ler o WhatsApp diretamente não entra:
-  as bibliotecas que fazem isso violam os termos e podem banir o número.
 - Resumo da manhã por e-mail ou notificação.
 - Contatos com memória: quem é, de onde, o que está em aberto com cada um.
 - Busca em linguagem natural em tudo ("o que a Nancy disse sobre a banca?").

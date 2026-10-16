@@ -1,54 +1,44 @@
-import { categoria, COR_DO_TOM } from "@/lib/categorias";
+import { categoria } from "@/lib/categorias";
 
-/** A etiqueta da categoria: um ponto de cor e o nome, sem emoji. */
-export function Etiqueta({ id }: { id: string }) {
-  const c = categoria(id);
-  return (
-    <span className="inline-flex items-center gap-1.5 text-mini font-medium text-grafite">
-      <span className={`h-1.5 w-1.5 rounded-full ${COR_DO_TOM[c.tom]}`} />
-      {c.nome}
-    </span>
-  );
-}
+/**
+ * As peças de texto da Central. A regra: uma cor de destaque só (a da conta,
+ * num ponto pequeno), vermelho apenas para o que venceu ou vence hoje, e o
+ * resto em tinta e cinza. Hierarquia se faz com tamanho e peso, não com cor.
+ */
 
-/** O nome curto da conta, com a cor dela. */
-export function Conta({ rotulo, cor }: { rotulo: string; cor: string }) {
-  return (
-    <span className="inline-flex items-center gap-1 text-mini font-semibold uppercase tracking-wide" style={{ color: cor }}>
-      {rotulo}
-    </span>
-  );
+export const nomeDaCategoria = (id: string) => categoria(id).nome;
+
+/** O ponto da conta: 7 px, a única cor numa linha. */
+export function Ponto({ cor, titulo }: { cor: string; titulo?: string }) {
+  return <span className="inline-block h-[7px] w-[7px] shrink-0 rounded-full" style={{ background: cor }} title={titulo} />;
 }
 
 export function Titulo({ children, sub }: { children: React.ReactNode; sub?: React.ReactNode }) {
   return (
-    <header className="mb-6">
-      <h1 className="text-[26px] font-semibold tracking-tight lg:text-[28px]">{children}</h1>
-      {sub && <p className="mt-0.5 text-sm text-fosco first-letter:uppercase">{sub}</p>}
+    <header className="mb-8">
+      <h1 className="text-[28px] font-semibold tracking-tight">{children}</h1>
+      {sub && <p className="mt-1 text-[15px] text-fosco first-letter:uppercase">{sub}</p>}
     </header>
   );
 }
 
-/** Uma seção: título pequeno em caixa-alta e o conteúdo separado por linhas finas. */
+/** Uma seção: um título pequeno, sem caixa-alta nem linha, e o conteúdo. */
 export function Secao({
   titulo,
-  conta,
   acao,
   children,
   className = "",
 }: {
   titulo: string;
-  conta?: number;
   acao?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
 }) {
   return (
-    <section className={`mb-8 ${className}`}>
-      <div className="mb-1.5 flex items-baseline gap-2 border-b border-linha pb-1.5">
-        <h2 className="text-mini font-semibold uppercase tracking-[0.08em] text-fosco">{titulo}</h2>
-        {conta !== undefined && <span className="numeros text-mini text-fosco">{conta}</span>}
-        {acao && <div className="ml-auto text-sm">{acao}</div>}
+    <section className={`mb-10 ${className}`}>
+      <div className="mb-2 flex items-baseline justify-between">
+        <h2 className="text-[13px] font-semibold text-fosco">{titulo}</h2>
+        {acao && <div className="text-[13px] text-fosco">{acao}</div>}
       </div>
       {children}
     </section>
@@ -56,12 +46,13 @@ export function Secao({
 }
 
 export function Vazio({ children }: { children: React.ReactNode }) {
-  return <p className="py-4 text-sm text-fosco">{children}</p>;
+  return <p className="py-2 text-[15px] text-fosco">{children}</p>;
 }
 
-/** O prazo de uma conversa ou tarefa: vermelho se venceu ou é hoje/amanhã. */
-export function Prazo({ texto, vencido, perto }: { texto: string; vencido: boolean; perto: boolean }) {
-  return (
-    <span className={`numeros text-mini font-medium ${vencido || perto ? "text-atencao" : "text-alerta"}`}>{texto}</span>
-  );
+/** O prazo, discreto: "até sex., 18/10" em cinza; vermelho só se venceu ou é hoje. */
+export function Prazo({ texto, vencido }: { texto: string; vencido: boolean; perto?: boolean }) {
+  const [dia, falta] = texto.split(" · ");
+  if (vencido) return <span className="numeros whitespace-nowrap text-atencao">{falta}</span>;
+  if (falta === "hoje") return <span className="whitespace-nowrap text-atencao">vence hoje</span>;
+  return <span className="numeros whitespace-nowrap text-fosco">até {falta === "amanhã" ? "amanhã" : dia}</span>;
 }

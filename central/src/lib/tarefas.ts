@@ -29,7 +29,7 @@ export async function tarefasAgrupadas(): Promise<Grupos> {
       take: 10,
     }),
     bd.conversa.findMany({
-      where: { ...VISIVEL, categoria: { in: DEPENDEM_DE_MIM }, proximaAcao: { not: "" } },
+      where: { ...VISIVEL, categoria: { in: DEPENDEM_DE_MIM } },
       include: { conta: true },
       orderBy: [{ prazo: { sort: "asc", nulls: "last" } }, { prioridade: "asc" }, { ultimaData: "desc" }],
     }),
@@ -54,9 +54,9 @@ export async function tarefasAgrupadas(): Promise<Grupos> {
     pôr(
       {
         chave: `c:${c.id}`,
-        titulo: c.proximaAcao,
+        titulo: c.proximaAcao || `Responder a ${c.remetente}`,
         prazo: c.prazo ? prazoPorExtenso(c.prazo) : null,
-        origem: { rotulo: c.conta.rotulo, cor: corDaConta(contas, c.contaId), href: `/caixa?c=${c.id}` },
+        origem: { quem: c.remetente.replace(/^Para: /, ""), conta: c.conta.rotulo, cor: corDaConta(contas, c.contaId), href: `/caixa?c=${c.id}` },
         feita: false,
       },
       c.prazo,
