@@ -7,7 +7,7 @@ import { Ponto } from "./pecas";
 
 /**
  * Uma conversa na lista, em duas linhas: quem e quando; e, em cinza, o que
- * importa nela (o resumo da triagem). À direita, o "⋯" com as ações, para
+ * importa nela (o resumo da triagem). Embaixo, as ações principais, para
  * resolver sem abrir.
  */
 export function LinhaConversa({
@@ -23,8 +23,8 @@ export function LinhaConversa({
 }) {
   const esperando = c.categoria === "aguardando";
   return (
-    <div className={`group -mx-3 flex items-start gap-1 rounded-lg pr-1 transition-colors hover:bg-realce ${ativa ? "bg-realce" : ""}`}>
-      <Link href={href} scroll={false} className="min-w-0 flex-1 py-2.5 pl-3">
+    <div className={`-mx-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-realce ${ativa ? "bg-realce" : ""}`}>
+      <Link href={href} scroll={false} className="block">
         <div className="flex items-center gap-2.5">
           <Ponto cor={cor} titulo={c.conta.rotulo} />
           <span className={`min-w-0 flex-1 truncate text-[15px] ${c.resolvida ? "text-fosco line-through" : "font-medium"}`}>
@@ -36,7 +36,7 @@ export function LinhaConversa({
         </div>
         <p className="truncate pl-[17px] text-[14px] text-fosco">{c.resumo || c.assunto}</p>
       </Link>
-      <div className="pt-2">
+      <div className="-ml-2 mt-1 pl-[17px]">
         <AcoesRapidas
           id={c.id}
           categoria={c.categoria}
