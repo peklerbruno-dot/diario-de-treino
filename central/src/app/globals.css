@@ -10,14 +10,14 @@
 :root {
   color-scheme: light;
   --fundo: #fbfaf8;
-  --lateral: #f3f2ee;
+  --lateral: #fbfaf8;
   --superficie: #ffffff;
   --tinta: #1f1e1c;
   --grafite: #57554f;
   --fosco: #8a8780;
-  --linha: #ebe9e4;
+  --linha: #efede8;
   --regua: #d6d3cb;
-  --realce: #efede7;
+  --realce: #f2f0eb;
   --destaque: #2f5d50;
   --destaque-tinta: #ffffff;
   --atencao: #c4432b;
@@ -30,7 +30,7 @@
   :root {
     color-scheme: dark;
     --fundo: #171716;
-    --lateral: #1d1d1b;
+    --lateral: #171716;
     --superficie: #1f1f1d;
     --tinta: #edebe6;
     --grafite: #b7b4ad;

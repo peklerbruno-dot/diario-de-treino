@@ -5,36 +5,23 @@ import { useState, useTransition } from "react";
 import { CATEGORIAS } from "@/lib/categorias";
 import { arquivarNoGmail, corrigirCategoria, marcarResolvida, porPrazoNaAgenda } from "../acoes";
 
-const botao = "rounded-md border border-linha bg-superficie px-3 py-1.5 text-sm font-medium hover:bg-realce disabled:opacity-50";
+const acao = "text-[14px] text-fosco hover:text-tinta disabled:opacity-40";
 
+/** As ações da conversa, em texto, numa linha só. A categoria se troca no próprio rótulo. */
 export function Acoes(p: { id: string; categoria: string; resolvida: boolean; temPrazo: boolean; linkGmail: string }) {
   const router = useRouter();
   const [pendente, comecar] = useTransition();
   const [aviso, setAviso] = useState<{ texto: string; link?: string } | null>(null);
-
   const fazer = (f: () => Promise<unknown>) => comecar(async () => void (await f()));
 
   return (
-    <div className="mt-5">
-      <div className="flex flex-wrap gap-2">
-        <select
-          defaultValue={p.categoria}
-          disabled={pendente}
-          onChange={(e) => fazer(() => corrigirCategoria(p.id, e.target.value))}
-          className="rounded-md border border-linha bg-superficie px-2 py-1.5 text-sm"
-          aria-label="Categoria"
-        >
-          {CATEGORIAS.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.nome}
-            </option>
-          ))}
-        </select>
-        <button className={botao} disabled={pendente} onClick={() => fazer(() => marcarResolvida(p.id, !p.resolvida))}>
-          {p.resolvida ? "↺ Reabrir" : "✓ Resolvida"}
+    <div className="mt-6">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+        <button className={acao} disabled={pendente} onClick={() => fazer(() => marcarResolvida(p.id, !p.resolvida))}>
+          {p.resolvida ? "Reabrir" : "Marcar como resolvida"}
         </button>
         <button
-          className={botao}
+          className={acao}
           disabled={pendente}
           onClick={() =>
             fazer(async () => {
@@ -44,11 +31,11 @@ export function Acoes(p: { id: string; categoria: string; resolvida: boolean; te
             })
           }
         >
-          Arquivar no Gmail
+          Arquivar
         </button>
         {p.temPrazo && (
           <button
-            className={botao}
+            className={acao}
             disabled={pendente}
             onClick={() =>
               fazer(async () => {
@@ -60,15 +47,30 @@ export function Acoes(p: { id: string; categoria: string; resolvida: boolean; te
             Pôr prazo na agenda
           </button>
         )}
-        <a href={p.linkGmail} target="_blank" rel="noreferrer" className={botao}>
-          Abrir no Gmail ↗
+        <a href={p.linkGmail} target="_blank" rel="noreferrer" className={acao}>
+          Abrir no Gmail
         </a>
+        <label className="flex items-center gap-1 text-[14px] text-fosco">
+          Categoria:
+          <select
+            defaultValue={p.categoria}
+            disabled={pendente}
+            onChange={(e) => fazer(() => corrigirCategoria(p.id, e.target.value))}
+            className="cursor-pointer bg-transparent text-[14px] text-grafite outline-none hover:text-tinta"
+          >
+            {CATEGORIAS.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.nome}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
       {aviso && (
-        <p className="mt-2 text-sm text-grafite">
+        <p className="mt-2 text-[14px] text-grafite">
           {aviso.texto}{" "}
           {aviso.link && (
-            <a href={aviso.link} target="_blank" rel="noreferrer" className="text-destaque">
+            <a href={aviso.link} target="_blank" rel="noreferrer" className="underline">
               Ver
             </a>
           )}

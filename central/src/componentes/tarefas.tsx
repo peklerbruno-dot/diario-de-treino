@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { useOptimistic, useState, useTransition } from "react";
 import { apagarTarefa, concluirTarefa, criarTarefa, marcarResolvida } from "@/app/(app)/acoes";
+import { Ponto, Prazo } from "./pecas";
 
 export interface ItemDeTarefa {
   /** "t:<id>" para tarefa sua, "c:<id>" para a próxima ação de um e-mail. */
   chave: string;
   titulo: string;
   prazo?: { texto: string; vencido: boolean; perto: boolean } | null;
-  origem?: { rotulo: string; cor: string; href: string } | null;
+  /** De onde veio, quando veio de um e-mail: quem escreveu, a cor da conta. */
+  origem?: { quem: string; conta: string; cor: string; href: string } | null;
   feita: boolean;
 }
 
@@ -37,41 +39,39 @@ export function ListaDeTarefas({ itens, vazio }: { itens: ItemDeTarefa[]; vazio?
             else await marcarResolvida(id, !i.feita);
           });
         return (
-          <li key={i.chave} className="group flex items-start gap-3 border-b border-linha py-2.5">
+          <li key={i.chave} className="group -mx-3 flex items-start gap-3 rounded-lg px-3 py-2.5 hover:bg-realce">
             <button
               onClick={alternar}
               aria-label={i.feita ? "Desmarcar" : "Marcar como feita"}
-              className={`mt-0.5 grid h-[18px] w-[18px] shrink-0 place-items-center rounded-[5px] border transition-colors ${
-                i.feita ? "border-destaque bg-destaque text-destaque-tinta" : "border-regua hover:border-destaque"
+              className={`mt-[3px] grid h-[17px] w-[17px] shrink-0 place-items-center rounded-full border transition-colors ${
+                i.feita ? "border-fosco bg-fosco text-fundo" : "border-regua hover:border-grafite"
               }`}
             >
               {i.feita && (
-                <svg viewBox="0 0 12 12" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth={2}>
+                <svg viewBox="0 0 12 12" className="h-2.5 w-2.5" fill="none" stroke="currentColor" strokeWidth={2.2}>
                   <path d="m2.5 6.2 2.3 2.3 4.7-5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               )}
             </button>
             <div className="min-w-0 flex-1">
-              <p className={`text-[15px] leading-snug lg:text-sm ${i.feita ? "text-fosco line-through" : ""}`}>{i.titulo}</p>
-              {(i.origem || i.prazo) && (
-                <p className="mt-0.5 flex flex-wrap items-center gap-x-3 text-mini">
+              <p className={`text-[15px] leading-snug ${i.feita ? "text-fosco line-through" : ""}`}>{i.titulo}</p>
+              {(i.origem || i.prazo) && !i.feita && (
+                <p className="mt-0.5 flex items-center gap-2 text-[13px] text-fosco">
                   {i.origem && (
-                    <Link href={i.origem.href} className="font-semibold uppercase tracking-wide hover:underline" style={{ color: i.origem.cor }}>
-                      E-mail · {i.origem.rotulo}
+                    <Link href={i.origem.href} className="flex min-w-0 items-center gap-2 hover:text-tinta">
+                      <Ponto cor={i.origem.cor} titulo={i.origem.conta} />
+                      <span className="truncate">{i.origem.quem}</span>
                     </Link>
                   )}
-                  {i.prazo && (
-                    <span className={`numeros font-medium ${i.prazo.vencido || i.prazo.perto ? "text-atencao" : "text-alerta"}`}>
-                      {i.prazo.texto}
-                    </span>
-                  )}
+                  {i.origem && i.prazo && <span>·</span>}
+                  {i.prazo && <Prazo {...i.prazo} />}
                 </p>
               )}
             </div>
             {tipo === "t" && (
               <button
                 onClick={() => comecar(() => apagarTarefa(id))}
-                className="text-mini text-fosco opacity-0 transition-opacity hover:text-atencao group-hover:opacity-100"
+                className="text-[13px] text-fosco opacity-0 transition-opacity hover:text-atencao group-hover:opacity-100"
                 aria-label="Apagar tarefa"
               >
                 apagar
@@ -99,25 +99,29 @@ export function NovaTarefa({ diaPadrao }: { diaPadrao?: string }) {
           setTitulo("");
         });
       }}
-      className="flex items-center gap-2 border-b border-linha py-2"
+      className="-mx-3 flex items-center gap-3 px-3 py-2"
     >
-      <span className="grid h-[18px] w-[18px] shrink-0 place-items-center text-fosco">+</span>
+      <span className="grid h-[17px] w-[17px] shrink-0 place-items-center rounded-full border border-dashed border-regua text-[12px] leading-none text-fosco">+</span>
       <input
         value={titulo}
         onChange={(e) => setTitulo(e.target.value)}
-        placeholder="Nova tarefa"
-        className="min-w-0 flex-1 bg-transparent py-1 outline-none placeholder:text-fosco"
+        placeholder="Adicionar tarefa"
+        className="min-w-0 flex-1 bg-transparent py-0.5 text-[15px] outline-none placeholder:text-fosco"
       />
-      <input
-        type="date"
-        value={dia}
-        onChange={(e) => setDia(e.target.value)}
-        className="rounded-md bg-transparent px-1 py-1 text-sm text-grafite outline-none"
-        aria-label="Prazo"
-      />
-      <button disabled={pendente || !titulo.trim()} className="rounded-md bg-destaque px-3 py-1.5 text-sm font-semibold text-destaque-tinta disabled:opacity-40">
-        Adicionar
-      </button>
+      {titulo.trim() && (
+        <>
+          <input
+            type="date"
+            value={dia}
+            onChange={(e) => setDia(e.target.value)}
+            className="bg-transparent text-[13px] text-fosco outline-none"
+            aria-label="Prazo"
+          />
+          <button disabled={pendente} className="text-[13px] font-medium text-destaque disabled:opacity-40">
+            Salvar
+          </button>
+        </>
+      )}
     </form>
   );
 }

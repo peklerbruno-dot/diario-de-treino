@@ -51,7 +51,7 @@ export function AprenderEstilo({ id }: { id: string }) {
       >
         {rodando ? "Lendo seus enviados…" : "Aprender meu estilo"}
       </button>
-      {erro && <span className="self-center text-mini text-atencao">{erro}</span>}
+      {erro && <span className="self-center text-[13px] text-atencao">{erro}</span>}
     </>
   );
 }
