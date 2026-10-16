@@ -3,7 +3,7 @@ import type { Conta } from "@prisma/client";
 import { bd } from "./bd";
 import { mensagensEmTexto, mensagensReais, resumirThread } from "./conversas";
 import { ContaDesconectada, lerThread, listarThreads, type ThreadGmail } from "./google";
-import { CotaEsgotada, triar, type ConversaParaTriar } from "./ia";
+import { CotaEsgotada, GeminiSobrecarregado, triar, type ConversaParaTriar } from "./ia";
 
 /**
  * A rodada: para cada conta, busca o que mudou no Gmail, guarda o resumo de
@@ -150,7 +150,7 @@ async function aplicarTriagem(paraTriar: ConversaParaTriar[]): Promise<{ triadas
     } catch (e) {
       console.error("[triagem]", e);
       const msg =
-        e instanceof CotaEsgotada ? e.message : `Triagem de ${lote.length} conversas falhou: ${(e as Error).message}`;
+        e instanceof CotaEsgotada || e instanceof GeminiSobrecarregado ? e.message : `Triagem de ${lote.length} conversas falhou: ${(e as Error).message}`;
       // A cota esgotada derruba todos os lotes ao mesmo tempo: um aviso basta.
       if (!erros.includes(msg)) erros.push(msg);
     }

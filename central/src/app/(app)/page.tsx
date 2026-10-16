@@ -4,7 +4,7 @@ import { compromissos } from "@/lib/agenda";
 import { bd } from "@/lib/bd";
 import { DEPENDEM_DE_MIM, categoria } from "@/lib/categorias";
 import { ORDEM, VISIVEL } from "@/lib/consultas";
-import { FUSO, agoraPorExtenso, diasDesde, quando } from "@/lib/datas";
+import { FUSO, agoraPorExtenso, diasDesde } from "@/lib/datas";
 
 export const dynamic = "force-dynamic";
 
@@ -58,10 +58,6 @@ export default async function Painel() {
 
   const n = (id: string) => contagem.find((c) => c.categoria === id)?._count ?? 0;
   const desconectadas = contas.filter((c) => c.erro);
-  const ultima = contas
-    .map((c) => c.ultimaSincronia)
-    .filter((d): d is Date => d !== null)
-    .sort((a, b) => b.getTime() - a.getTime())[0];
   const hoje = agora.toLocaleDateString("en-CA", { timeZone: FUSO });
 
   return (
@@ -85,7 +81,7 @@ export default async function Painel() {
         ))}
       </div>
 
-      <Secao titulo="Precisa de você" acao={<Link href="/caixa" className="text-sm text-destaque">Caixa toda</Link>}>
+      <Secao titulo="Precisa de você" acao={<Link href="/caixa" className="text-sm text-destaque">Ver todos</Link>}>
         {paraMim.length ? (
           paraMim.map((c) => <CartaoConversa key={c.id} c={c} mostrarCategoria />)
         ) : (
@@ -136,9 +132,7 @@ export default async function Painel() {
         </Secao>
       )}
 
-      <p className="mt-6 text-center text-xs text-fosco">
-        {ultima ? `Última atualização: ${quando(ultima)}` : "Ainda não atualizou. Toque em Atualizar."}
-      </p>
+
     </>
   );
 }

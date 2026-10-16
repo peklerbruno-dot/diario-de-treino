@@ -39,10 +39,49 @@ export class CotaEsgotada extends Error {
 
 export class RecusaDoModelo extends Error {}
 
+/**
+ * O modelo reserva. Quando o principal está sobrecarregado (503, "high
+ * demand"), o "flash-lite" quase sempre está livre — e também é gratuito.
+ */
+const MODELO_RESERVA = process.env.GEMINI_MODELO_RESERVA || "gemini-flash-lite-latest";
+
+/** Sobrecarga do lado do Google: passa sozinha, vale tentar de novo. */
+const sobrecarga = (e: unknown) => e instanceof ApiError && (e.status === 503 || e.status === 500);
+const esperar = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+export class GeminiSobrecarregado extends Error {
+  constructor() {
+    super("O Gemini está sobrecarregado agora. A Central tenta de novo sozinha na próxima atualização.");
+  }
+}
+
+/**
+ * Uma chamada, com paciência: duas tentativas no modelo principal (a segunda
+ * depois de uns segundos) e, se ele seguir sobrecarregado, uma no reserva.
+ */
 async function gerar(sistema: string, pedido: string, extra: GenerateContentConfig = {}): Promise<string> {
+  const tentativas = [MODELO, MODELO, MODELO_RESERVA];
+  for (let i = 0; i < tentativas.length; i++) {
+    try {
+      return await gerarCom(tentativas[i], sistema, pedido, extra);
+    } catch (e) {
+      if (!sobrecarga(e)) throw e;
+      if (i === tentativas.length - 1) throw new GeminiSobrecarregado();
+      if (tentativas[i + 1] === tentativas[i]) await esperar(4000 + Math.random() * 2000);
+    }
+  }
+  throw new GeminiSobrecarregado();
+}
+
+async function gerarCom(
+  modelo: string,
+  sistema: string,
+  pedido: string,
+  extra: GenerateContentConfig,
+): Promise<string> {
   try {
     const r = await ia().models.generateContent({
-      model: MODELO,
+      model: modelo,
       contents: pedido,
       config: { systemInstruction: sistema, ...extra },
     });

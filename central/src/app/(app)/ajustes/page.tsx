@@ -21,7 +21,7 @@ export default async function Ajustes({ searchParams }: { searchParams: Busca })
 
   return (
     <>
-      {conectada && <p className="mt-4 rounded-xl border border-ok px-4 py-3 text-sm text-ok">Conta {conectada} conectada. Toque em Atualizar para ler a caixa.</p>}
+      {conectada && <p className="mt-4 rounded-xl border border-ok px-4 py-3 text-sm text-ok">Conta {conectada} conectada. A Central já está lendo a caixa dela.</p>}
       {erro && <p className="mt-4 rounded-xl border border-atencao px-4 py-3 text-sm text-atencao">{erro}</p>}
 
       {(!googleConfigurado() || !iaConfigurada()) && (
