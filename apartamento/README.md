@@ -77,15 +77,25 @@ se mudam direto no modo Arrumar (por isso não há mais a aba "afastada").
 
 ## Eletrodomésticos e instalações
 
-- **Bancada da cozinha** (variante "Com forno"), da ponta da geladeira para a do shaft: três
-  portas iguais (a do meio sob a cuba, a 75 cm da ponta), forno de embutir 60 cm sob o cooktop e
-  arremate de 9 cm. Não há máquina de lavar no apartamento. A variante "4 portas" é a original.
-- **Armário aéreo** com 40 cm de profundidade (variante "Com nicho do micro-ondas"): na ponta da
-  geladeira, longe do cooktop, um nicho aberto de 58 × 40 cm (vão interno, ~38 de fundo) para
-  um micro-ondas de até ~50 × 36 × 30 cm, com porta basculante baixa em cima; o resto são duas
-  portas basculantes. O micro-ondas fica a 150 cm do chão (base do aéreo).
-- **Depurador** de 60 cm embutido sob o armário aéreo, sobre o cooktop (a 54 cm do tampo: conferir
-  a altura mínima do fabricante).
+- **Cozinha — projeto do marceneiro** (variantes "Projeto" da bancada e do aéreo). Cotas em cm, x a
+  partir da ponta da geladeira (0) até a do pilar/shaft (215), altura a partir do piso:
+  - **Bancada:** tampo de granilite 86,5–90 (60 de fundo); rodapé preto 0–10 recuado 4; corpo de
+    57 de fundo. Módulos: gaveteiro A (0–50, 3 gavetas de 25,5), gabinete da cuba (50–110, 2 portas
+    de 30 × 76,5, cuba 52 × 42 com centro em x 80 e a 30 da parede, torneira atrás, triturador
+    embaixo), gaveteiro B (110–145, 3 gavetas), módulo do forno (145–205: gaveta de assadeiras
+    10–27, forno OE5EA 27–73, faixa fixa 73–86,5; cooktop BDD61AE com centro em x 175) e arremate
+    fixo (205–215). Sem máquina de lavar.
+  - **Aéreo (150–210):** módulo do micro-ondas (0–60, 50 de fundo; nicho de 60 × 45 com o ME20P
+    e nicho pequeno de 195 a 210), armário (60–145, 35 de fundo, 2 portas de 42,5 × 60 com puxador
+    embaixo e prateleira a ~180), módulo do depurador (145–205: vazio até 166, depurador DE6RB de
+    166 a 187,6, porta de 60 × 22 em cima) e painel fixo (205–215, de 166 a 210). Termina antes do
+    pilar.
+  - **Azulejo** 10 × 10 branco com rejunte azul-marinho: de 90 a 150, e até 166 atrás do cooktop.
+  - **Geladeira** IF41S (inox) ou IF41B (preta), 60,4 × 71,2 × 176,9, duplex com freezer em cima,
+    puxadores à esquerda e dobradiça à direita (abre para o lado da porta de entrada); 4 cm da
+    bancada e 5 cm da parede.
+  - **Objetos:** cafeteira entre x 5 e 30; o trecho de 116 a 145 fica livre para preparo.
+  - **Piso** da cozinha em vinílico de madeira, igual ao da sala.
 - **Chuveiro** na parede do fundo do box; **ar-condicionado split** na parede do fundo da sala
   (sobre o banco) e na parede do pé da cama, no quarto.
 
