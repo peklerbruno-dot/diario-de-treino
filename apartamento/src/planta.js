@@ -23,7 +23,7 @@
 // =====================================================================
 
 const PLANTA_ORIGINAL = {
-  revisao: 10,
+  revisao: 11,
   alturaParede: 260,
 
   // Local e orientação — usados para calcular o sol por data e hora.
@@ -64,7 +64,7 @@ const PLANTA_ORIGINAL = {
   ambientes: [
     { id: 'sala',     nome: 'Estar / jantar', piso: 'madeira',
       pontos: [[-6, -6], [330, -6], [330, 360], [426, 360], [426, 455], [-6, 455]] },
-    { id: 'cozinha',  nome: 'Cozinha',  piso: 'cimento',
+    { id: 'cozinha',  nome: 'Cozinha',  piso: 'madeira',
       pontos: [[330, -6], [388, -6], [388, 47], [426, 47], [426, 360], [330, 360]] },
     { id: 'quarto',   nome: 'Quarto',   piso: 'madeira',  pontos: [[-6, 455], [305, 455], [305, 706], [-6, 706]] },
     { id: 'banheiro', nome: 'Banheiro', piso: 'cimento',
@@ -120,13 +120,15 @@ const MOVEIS_FINAL = [
     cores: { principal: FREIJO, secundaria: '#ffffff' } },
   { tipo: 'modulo_cozinha', nome: 'Módulo ao lado do shaft', x: 374, z: 23, rot: 90, l: 46, p: 28, a: 90, acab: 'madeira',
     cores: { principal: FREIJO, secundaria: '#ffffff' } },
-  { tipo: 'bancada_cozinha', nome: 'Bancada (cooktop + cuba)', variante: 'eletros', x: 390, z: 153.5, rot: 90, espelhado: true, l: 215, p: 60, a: 90, acab: 'madeira',
+  { tipo: 'bancada_cozinha', nome: 'Bancada (cooktop + cuba)', variante: 'projeto', x: 390, z: 153.5, rot: 90, espelhado: true, l: 215, p: 60, a: 90, acab: 'madeira',
     cores: { principal: FREIJO, secundaria: '#ffffff' } },
-  { tipo: 'armario_aereo', nome: 'Armário aéreo azul', variante: 'micro', x: 400, z: 153.5, rot: 90, y: 150, l: 215, p: 40, a: 70, acab: 'laca',
+  { tipo: 'armario_aereo', nome: 'Armário aéreo azul', variante: 'projeto', x: 395, z: 153.5, rot: 90, espelhado: true, y: 150, l: 215, p: 50, a: 60, acab: 'laca',
     cores: { principal: AZUL, secundaria: '#e6e3dd' } },
-  // depurador embutido sob o aéreo, sobre o cooktop (40 cm da ponta do shaft)
-  { tipo: 'depurador', nome: 'Depurador', x: 405, z: 86, rot: 90, y: 144, l: 60, p: 30, a: 6 },
-  { tipo: 'geladeira', nome: 'Geladeira', variante: 'inverse', x: 383, z: 303, rot: 90, l: 70, p: 70, a: 185,
+  // depurador DE6RB no módulo do aéreo, sobre o cooktop (de 166 a 187,6; vazio de 150 a 166)
+  { tipo: 'depurador', nome: 'Depurador', x: 402.5, z: 86, rot: 90, y: 166, l: 59.8, p: 35, a: 21.6,
+    cores: { principal: '#1d1e20', secundaria: '#0e0e10' } },
+  // geladeira IF41S duplex 60,4 × 71,2 × 176,9: 4 cm da bancada e 5 cm da parede; abre para o lado da porta
+  { tipo: 'geladeira', nome: 'Geladeira', variante: 'duplex', x: 379.4, z: 295.2, rot: 90, l: 60.4, p: 71.2, a: 176.9,
     cores: { principal: '#c9ccd0', secundaria: '#7d8186' } },
   // ---- ar-condicionado: sala na parede do fundo (sopra ao longo do apartamento), quarto na parede do pé da cama
   { tipo: 'ar_split', nome: 'Ar-condicionado da sala', x: 184.5, z: 10, rot: 0, y: 222, l: 80, p: 20, a: 28 },

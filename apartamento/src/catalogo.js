@@ -194,6 +194,97 @@ const BANCADA_ELETROS = [
   // arremate fixo junto ao shaft
   { f: 'caixa', l: 9, p: 1.8, a: 'A-17', y: 11, x: 'L/2-5', z: 'P/2-1', cor: 'principal', acab: '@' },
 ];
+// ---- projeto da cozinha (cotas do marceneiro). XB(sx) = posição medida da
+// ponta da geladeira (sx 0) para a do shaft (sx 215); peça espelhada.
+const XB = (sx) => `-L/2+${sx}`;
+const FRENTE_Z = 26.1; // frentes: corpo de 57 a partir da parede (-P/2 = -30)
+const gavetas = (s0, w, n, y0, h, puxTopo = true) => Array.from({ length: n }, (_, k) => {
+  const y = y0 + k * (h / n), a = h / n - 0.4, cx = XB(s0 + w / 2), mov = { desliza: [0, 0, 40] };
+  return [
+    { f: 'caixa', l: w - 0.4, p: 1.8, a, y: y + 0.2, x: cx, z: FRENTE_Z, cor: 'principal', acab: '@', mov },
+    { f: 'caixa', l: Math.max(4, w - 14), p: 2, a: 1.2, y: puxTopo ? y + a - 3 : y + 2, x: cx, z: FRENTE_Z + 1.6, cor: '#26324a', acab: 'laca', mov },
+  ];
+}).flat();
+const portaAbrir = (s0, w, y, a, lado, z = FRENTE_Z, puxY = null) => {
+  const px = lado < 0 ? XB(s0 + 0.3) : XB(s0 + w - 0.3), mov = { gira: lado < 0 ? -105 : 105, eixo: 'y', px, pz: z };
+  const zp = typeof z === 'number' ? z + 1.6 : `${z}+1.6`;
+  return [
+    { f: 'caixa', l: w - 0.6, p: 1.8, a: a - 0.4, y: y + 0.2, x: XB(s0 + w / 2), z, cor: 'principal', acab: '@', mov },
+    puxY == null
+      ? { f: 'caixa', l: 2, p: 2, a: Math.min(24, a * 0.4), y: y + a - 4 - Math.min(24, a * 0.4), x: lado < 0 ? XB(s0 + w - 4) : XB(s0 + 4), z: zp, cor: '#26324a', acab: 'laca', mov }
+      // puxador horizontal numa borda (y dado)
+      : { f: 'caixa', l: Math.min(30, w - 10), p: 2, a: 1.2, y: puxY, x: XB(s0 + w / 2), z: zp, cor: '#26324a', acab: 'laca', mov },
+  ];
+};
+const BANCADA_PROJETO = [
+  // rodapé preto recuado 4 (56 de fundo), corpo de 57 × 76,5
+  { f: 'caixa', l: 'L', p: 56, a: 10, z: -2, cor: '#1e1e1f' },
+  { f: 'caixa', l: 'L', p: 1.8, a: 76.5, y: 10, z: -29.1, cor: '#e6e3dd' },
+  { f: 'caixa', l: 'L', p: 55.2, a: 1.8, y: 10, z: -2.4, cor: '#e6e3dd' },
+  ...[0, 50, 110, 145, 205, 215].map((sx) => ({ f: 'caixa', l: 1.8, p: 55.2, a: 76.5, y: 10, x: XB(sx === 215 ? 214.1 : sx === 0 ? 0.9 : sx), z: -2.4, cor: '#e6e3dd' })),
+  // 1. gaveteiro A (0–50): 3 gavetas de 25,5
+  ...gavetas(0, 50, 3, 10, 76.5),
+  // 2. gabinete da cuba (50–110): 2 portas de 30 × 76,5 e triturador sob a cuba
+  ...portaAbrir(50, 30, 10, 76.5, -1), ...portaAbrir(80, 30, 10, 76.5, 1),
+  { f: 'cil', raio: 11, a: 31, y: 42, x: XB(80), z: 0, cor: '#2a2b2e', acab: 'metal' },
+  { f: 'cil', raio: 2, a: 14, y: 72, x: XB(80), z: 0, cor: '#9a9a9a', acab: 'metal' },
+  // 3. gaveteiro B (110–145): 3 gavetas de 25,5
+  ...gavetas(110, 35, 3, 10, 76.5),
+  // 4. módulo do forno (145–205): gaveta de assadeiras, forno OE5EA, faixa fixa
+  ...gavetas(145, 60, 1, 10, 17),
+  { f: 'caixa', l: 59.6, p: 54, a: 45.6, y: 27.2, x: XB(175), z: -1, cor: '#151618', acab: 'metal' },
+  { f: 'caixa', l: 59.6, p: 2, a: 45.6, y: 27.2, x: XB(175), z: FRENTE_Z, cor: '#121315', acab: 'vidro', mov: { gira: 88, eixo: 'x', py: 27.2, pz: FRENTE_Z } },
+  { f: 'caixa', l: 54, p: 0.6, a: 7, y: 64, x: XB(175), z: FRENTE_Z + 1.2, cor: '#26282b', acab: 'metal', mov: { gira: 88, eixo: 'x', py: 27.2, pz: FRENTE_Z } },
+  { f: 'cil', raio: 0.9, a: 48, eixo: 'x', y: 68.5, x: XB(175), z: FRENTE_Z + 3, cor: '#3a3b3e', acab: 'metal', mov: { gira: 88, eixo: 'x', py: 27.2, pz: FRENTE_Z } },
+  { f: 'caixa', l: 59.6, p: 1.8, a: 13.1, y: 73.2, x: XB(175), z: FRENTE_Z, cor: 'principal', acab: '@' },
+  // 5. arremate fixo (205–215)
+  { f: 'caixa', l: 9.6, p: 1.8, a: 76.5, y: 10, x: XB(210), z: FRENTE_Z, cor: 'principal', acab: '@' },
+  // tampo de granilite 3,5
+  { f: 'caixa', l: 'L', p: 'P', a: 3.5, y: 86.5, cor: 'secundaria', acab: 'granilite' },
+  // azulejo: até 150, e até 166 atrás do cooktop
+  { f: 'caixa', l: 145, p: 1, a: 60, y: 90, x: XB(72.5), z: '-P/2+0.5', cor: '#ffffff', acab: 'azulejo_grade' },
+  { f: 'caixa', l: 60, p: 1, a: 76, y: 90, x: XB(175), z: '-P/2+0.5', cor: '#ffffff', acab: 'azulejo_grade' },
+  { f: 'caixa', l: 10, p: 1, a: 60, y: 90, x: XB(210), z: '-P/2+0.5', cor: '#ffffff', acab: 'azulejo_grade' },
+  // cuba 52 × 42 (centro em 80, a 30 da parede) e torneira atrás
+  { f: 'caixa', l: 52, p: 42, a: 0.6, y: 'A', x: XB(80), z: 0, cor: '#b9bdc2', acab: 'metal' },
+  { f: 'caixa', l: 46, p: 36, a: 0.8, y: 'A', x: XB(80), z: 0, cor: '#7d8186', acab: 'metal' },
+  { f: 'cil', raio: 1.4, a: 30, y: 'A', x: XB(80), z: '-P/2+5', cor: '#d0d3d7', acab: 'metal' },
+  { f: 'cil', raio: 1.1, a: 14, eixo: 'z', y: 'A+29', x: XB(80), z: '-P/2+11', cor: '#d0d3d7', acab: 'metal' },
+  // cooktop BDD61AE: mesa 56,5 × 46, centro em 175, a 30 da parede
+  { f: 'caixa', l: 56.5, p: 46, a: 0.8, y: 'A', x: XB(175), z: 0, cor: '#0e0e10', acab: 'vidro' },
+  ...[[-14, -10, 6], [14, -10, 4.5], [-14, 10, 4.5], [14, 10, 6]].map(([dx, dz, r]) => (
+    { f: 'cil', raio: r, a: 0.4, y: 'A+0.8', x: XB(175 + dx), z: dz, cor: '#3a3a3c', acab: 'metal' })),
+  // cafeteira entre 5 e 30 (ao lado da geladeira); 116–145 fica livre para preparo
+  { f: 'caixa', l: 22, p: 26, a: 34, y: 'A', x: XB(17.5), z: '-P/2+16', cor: '#1d1d1f', acab: 'laca', r: 2 },
+  { f: 'cil', raio: 6, a: 12, y: 'A+2', x: XB(17.5), z: '-P/2+31', cor: '#cfe6ee', acab: 'vidro' },
+];
+// Aéreo do projeto (base 150, topo 210): profundidade P = 50 só no módulo do
+// micro-ondas; o resto tem 35 a partir da parede.
+const AZ = (p) => `-P/2+${p / 2}`;
+const caixaAereo = (s0, w, p, y0, a) => [
+  { f: 'caixa', l: w, p: 1.6, a, y: y0, x: XB(s0 + w / 2), z: '-P/2+0.8', cor: 'secundaria' },
+  ...[0, 1].map((k) => ({ f: 'caixa', l: 1.8, p, a, y: y0, x: XB(k ? s0 + w - 0.9 : s0 + 0.9), z: AZ(p), cor: 'principal', acab: 'laca' })),
+  ...[0, 1].map((k) => ({ f: 'caixa', l: w, p, a: 1.8, y: k ? y0 + a - 1.8 : y0, x: XB(s0 + w / 2), z: AZ(p), cor: 'principal', acab: 'laca' })),
+];
+const AEREO_PROJETO = [
+  // 1. módulo do micro-ondas (0–60, 50 de fundo): nicho 60 × 45 e nicho pequeno em cima
+  ...caixaAereo(0, 60, 50, 0, 60),
+  { f: 'caixa', l: 56.4, p: 50, a: 1.8, y: 45, x: XB(30), z: AZ(50), cor: 'principal', acab: 'laca' },
+  { f: 'caixa', l: 46, p: 35, a: 27, y: 1.8, x: XB(30), z: AZ(50), cor: '#161719', acab: 'metal', r: 1 },
+  { f: 'caixa', l: 33, p: 0.6, a: 21, y: 4.8, x: XB(25), z: '-P/2+42.8', cor: '#0b0c0d', acab: 'vidro' },
+  { f: 'caixa', l: 9, p: 0.6, a: 21, y: 4.8, x: XB(47), z: '-P/2+42.8', cor: '#2e3033', acab: 'metal' },
+  // 2. armário (60–145, 35 de fundo): 2 portas de 42,5 × 60, puxador embaixo, prateleira a 180
+  ...caixaAereo(60, 85, 35, 0, 60),
+  { f: 'caixa', l: 81.4, p: 31, a: 1.6, y: 30, x: XB(102.5), z: AZ(33), cor: 'secundaria' },
+  { f: 'cil', n: 5, raio: 3.6, raio2: 4.2, a: 9, y: 1.8, x: `${XB(68)}+i*14`, z: AZ(30), cor: ['#ffffff', '#e8e2d6', '#3d5c6e'], acab: 'ceramica' },
+  ...portaAbrir(60, 42.5, 0, 60, -1, '-P/2+35.9', 1.5), ...portaAbrir(102.5, 42.5, 0, 60, 1, '-P/2+35.9', 1.5),
+  // 3. módulo do depurador (145–205): vazio até 166, depurador até 187,6, porta de 60 × 22
+  ...caixaAereo(145, 60, 35, 16, 44),
+  ...portaAbrir(145, 60, 38, 22, 1, '-P/2+35.9', 39),
+  // 4. painel fixo (205–215) de 166 a 210
+  { f: 'caixa', l: 10, p: 35, a: 44, y: 16, x: XB(210), z: AZ(35), cor: 'principal', acab: 'laca' },
+];
+
 const bancadaTopo = (cubaX) => [
       { f: 'caixa', l: 'L', p: 'P', a: 3.5, y: 'A-3.5', cor: 'secundaria', acab: 'granilite' },
       { f: 'caixa', l: 'L', p: 1, a: 55, y: 'A', z: '-P/2+0.5', cor: '#ffffff', acab: 'azulejo_grade' },
@@ -707,6 +798,8 @@ const CATALOGO = [
       // da ponta da geladeira para a do shaft: 3 portas (a do meio sob a cuba),
       // forno de embutir (60) sob o cooktop e arremate
       { id: 'eletros', nome: 'Com forno', partes: [...BANCADA_CORPO, ...BANCADA_ELETROS, ...bancadaTopo('-L/2+75')] },
+      // projeto do marceneiro: gaveteiro, cuba, gaveteiro, forno, arremate
+      { id: 'projeto', nome: 'Projeto (gavetas + forno)', partes: BANCADA_PROJETO },
     ],
   },
   {
@@ -733,6 +826,8 @@ const CATALOGO = [
         { f: 'caixa', l: 40, p: 1.6, a: 1.2, y: 46, x: 'L/2-31', z: 'P/2+0.8', cor: '#9a9a9a', acab: 'metal',
           mov: { gira: -80, eixo: 'x', py: 'A', pz: 'P/2' } },
       ] },
+      // projeto do marceneiro: micro-ondas (50 de fundo), armário, depurador, painel
+      { id: 'projeto', nome: 'Projeto (micro + depurador)', partes: AEREO_PROJETO },
     ],
   },
   {
