@@ -48,7 +48,17 @@ export async function tarefasAgrupadas(): Promise<Grupos> {
   };
 
   for (const t of tarefas) {
-    pôr({ chave: `t:${t.id}`, titulo: t.titulo, prazo: t.prazo ? prazoPorExtenso(t.prazo) : null, feita: false }, t.prazo);
+    pôr(
+      {
+        chave: `t:${t.id}`,
+        titulo: t.titulo,
+        prazo: t.prazo ? prazoPorExtenso(t.prazo) : null,
+        href: `/?p=t:${t.id}`,
+        comNota: Boolean(t.nota),
+        feita: false,
+      },
+      t.prazo,
+    );
   }
   for (const c of conversas) {
     pôr(
@@ -56,12 +66,13 @@ export async function tarefasAgrupadas(): Promise<Grupos> {
         chave: `c:${c.id}`,
         titulo: c.proximaAcao || `Responder a ${c.remetente}`,
         prazo: c.prazo ? prazoPorExtenso(c.prazo) : null,
-        origem: { quem: c.remetente.replace(/^Para: /, ""), conta: c.conta.rotulo, cor: corDaConta(contas, c.contaId), href: `/caixa?c=${c.id}` },
+        origem: { quem: c.remetente.replace(/^Para: /, ""), assunto: c.assunto, conta: c.conta.rotulo, cor: corDaConta(contas, c.contaId) },
+        href: `/?p=c:${c.id}`,
         feita: false,
       },
       c.prazo,
     );
   }
-  g.feitas = feitas.map((t) => ({ chave: `t:${t.id}`, titulo: t.titulo, feita: true }));
+  g.feitas = feitas.map((t) => ({ chave: `t:${t.id}`, titulo: t.titulo, href: `/?p=t:${t.id}`, feita: true }));
   return g;
 }

@@ -2,18 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { IconeAgenda, IconeAjustes, IconeEmails, IconeHoje, IconeTarefas } from "./icones";
+import { IconeAgenda, IconeAjustes, IconeEmails, IconeHoje } from "./icones";
 
 const ITENS = [
   { href: "/", nome: "Hoje", Icone: IconeHoje },
   { href: "/agenda", nome: "Agenda", Icone: IconeAgenda },
-  { href: "/tarefas", nome: "Tarefas", Icone: IconeTarefas },
   { href: "/caixa", nome: "E-mails", Icone: IconeEmails },
 ];
 
 const ativo = (pathname: string, href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
-/** A lateral do computador: quatro lugares e os ajustes. Nada de contadores. */
+/** A lateral do computador: três lugares e os ajustes. Nada de contadores. */
 export function Lateral({ rodape }: { rodape: React.ReactNode }) {
   const pathname = usePathname();
   const item = (sel: boolean) =>

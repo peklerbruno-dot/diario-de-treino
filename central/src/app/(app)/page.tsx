@@ -1,28 +1,35 @@
 import Link from "next/link";
 import { CampoDePergunta } from "@/componentes/campo-de-pergunta";
+import { DetalheTarefa } from "@/componentes/detalhe-tarefa";
+import { IconeVoltar } from "@/componentes/icones";
+import { PainelDividido } from "@/componentes/painel-dividido";
 import { Secao, Vazio } from "@/componentes/pecas";
-import { ListaDeTarefas, NovaTarefa, type ItemDeTarefa } from "@/componentes/tarefas";
+import { ListaDeTarefas, NovaTarefa } from "@/componentes/tarefas";
 import { choques, compromissos, porDia, type Compromisso } from "@/lib/agenda";
 import { bd } from "@/lib/bd";
 import { VISIVEL } from "@/lib/consultas";
-import { agoraPorExtenso, diaEmSaoPaulo, horaCurta, somarDias } from "@/lib/datas";
+import { agoraPorExtenso, diaEmSaoPaulo, FUSO, horaCurta, somarDias } from "@/lib/datas";
 import { tarefasAgrupadas } from "@/lib/tarefas";
+import { DetalheConversa } from "./conversa/detalhe";
 
 export const dynamic = "force-dynamic";
 
 const DIAS_PARA_COBRAR = 3;
 
 function saudacao(agora: Date) {
-  const h = Number(agora.toLocaleString("en-GB", { timeZone: "America/Sao_Paulo", hour: "2-digit", hour12: false }));
+  const h = Number(agora.toLocaleString("en-GB", { timeZone: FUSO, hour: "2-digit", hour12: false }));
   return h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite";
 }
 
+const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`;
+
 /**
- * Hoje responde uma pergunta só: o que eu faço agora? Uma coluna, duas
- * listas — o que está na agenda e o que está para fazer (tarefas suas e
- * e-mails que dependem de você, juntos). O resto mora nas outras telas.
+ * Hoje é a tela de decidir: a agenda e tudo o que depende de você — e-mails
+ * que pedem algo e tarefas suas — numa lista só, por quando. Tocar num item
+ * abre o dossiê ao lado (no celular, por cima): de onde veio, por quê, o que
+ * aconteceu até aqui e o que falta.
  */
-export default async function Hoje() {
+export default async function Hoje({ searchParams }: { searchParams: Promise<{ p?: string }> }) {
   const contas = await bd.conta.findMany({ orderBy: { criadoEm: "asc" } });
   if (!contas.length) {
     return (
@@ -36,60 +43,143 @@ export default async function Hoje() {
     );
   }
 
+  const { p: aberta } = await searchParams;
   const agora = new Date();
   const hoje = diaEmSaoPaulo(agora);
-  const [g, agenda, esperando] = await Promise.all([
+  const amanha = somarDias(hoje, 1);
+  const [g, agenda, esperando, semPendencia] = await Promise.all([
     tarefasAgrupadas(),
-    compromissos(contas, new Date(`${hoje}T03:00:00Z`), new Date(`${somarDias(hoje, 1)}T03:00:00Z`)),
+    compromissos(contas, new Date(`${hoje}T03:00:00Z`), new Date(`${somarDias(hoje, 2)}T03:00:00Z`)),
     bd.conversa.count({
       where: { ...VISIVEL, categoria: "aguardando", ultimaData: { lte: new Date(agora.getTime() - DIAS_PARA_COBRAR * 86_400_000) } },
     }),
+    // O que chegou e a triagem achou que não pede nada de você: para conferir.
+    bd.conversa.count({
+      where: {
+        naCaixa: true,
+        resolvida: false,
+        categoria: { in: ["informativo", "ler_depois", "ruido"] },
+        classificadaMsgId: { not: null },
+        ultimaData: { gte: new Date(agora.getTime() - 86_400_000) },
+      },
+    }),
   ]);
-  const doDia = (porDia(agenda).get(hoje) ?? []).filter((e) => e.diaInteiro || e.fim.getTime() > agora.getTime());
+  const dias = porDia(agenda);
+  const doDia = (dias.get(hoje) ?? []).filter((e) => e.diaInteiro || e.fim.getTime() > agora.getTime());
+  const deAmanha = dias.get(amanha) ?? [];
 
-  // Para fazer hoje: o que venceu ou vence hoje, e os e-mails que pedem você
-  // (com prazo nesta semana ou sem prazo). Tarefas suas sem data ficam em Tarefas.
-  const deEmail = (i: ItemDeTarefa) => i.chave.startsWith("c:");
-  const paraFazer = [...g.atrasadas, ...g.hoje, ...g.semana.filter(deEmail), ...g.semData.filter(deEmail)];
+  const grupos = [
+    { titulo: "Atrasadas", itens: g.atrasadas },
+    { titulo: "Hoje", itens: g.hoje },
+    { titulo: "Próximos 7 dias", itens: g.semana },
+    { titulo: "Sem data", itens: g.semData },
+    { titulo: "Mais adiante", itens: g.depois },
+    { titulo: "Feitas há pouco", itens: g.feitas },
+  ].filter((x) => x.itens.length);
+  const abertas = g.atrasadas.length + g.hoje.length + g.semana.length + g.semData.length + g.depois.length;
 
-  const partes = [
-    doDia.length ? `${doDia.length} ${doDia.length === 1 ? "compromisso" : "compromissos"}` : "agenda livre",
-    paraFazer.length ? `${paraFazer.length} ${paraFazer.length === 1 ? "coisa" : "coisas"} para fazer` : "nada pendente",
+  const resumo = [
+    doDia.length ? plural(doDia.length, "compromisso", "compromissos") : "agenda livre",
+    abertas ? plural(abertas, "pendência", "pendências") : "nada pendente",
+    ...(g.atrasadas.length ? [plural(g.atrasadas.length, "atrasada", "atrasadas")] : []),
   ];
 
-  return (
-    <div className="mx-auto max-w-[680px]">
-      <header className="mb-10">
-        <h1 className="text-[28px] font-semibold tracking-tight">{saudacao(agora)}, {process.env.DONO_NOME || "Bruno"}.</h1>
+  const blocoAgenda = (
+    <Secao titulo="Agenda de hoje" acao={<Link href="/agenda" className="hover:text-tinta">Ver semana</Link>}>
+      {doDia.length ? <Agenda lista={doDia} /> : <Vazio>Nada mais na agenda hoje.</Vazio>}
+      {choques(doDia).map(([a, b], i) => (
+        <p key={i} className="mt-1 text-[14px] text-atencao">
+          {a.titulo} e {b.titulo} se chocam às {horaCurta(b.inicio)}.
+        </p>
+      ))}
+    </Secao>
+  );
+
+  const lista = (
+    <>
+      <header className="mb-8">
+        <h1 className="text-[28px] font-semibold tracking-tight">
+          {saudacao(agora)}, {process.env.DONO_NOME || "Bruno"}.
+        </h1>
         <p className="mt-1 text-[15px] text-fosco first-letter:uppercase">
-          {agoraPorExtenso(agora).split(" às ")[0]} · {partes.join(", ")}.
+          {agoraPorExtenso(agora).split(" às ")[0]} · {resumo.join(", ")}.
         </p>
       </header>
 
-      <div className="mb-10">
-        <CampoDePergunta compacto />
+      <div className="lg:hidden">{blocoAgenda}</div>
+
+      <div className="mb-8">
+        <NovaTarefa />
       </div>
 
-      <Secao titulo="Agenda" acao={<Link href="/agenda" className="hover:text-tinta">Ver semana</Link>}>
-        {doDia.length ? <Agenda lista={doDia} /> : <Vazio>Nada mais na agenda hoje.</Vazio>}
-        {choques(doDia).map(([a, b], i) => (
-          <p key={i} className="mt-1 text-[14px] text-atencao">
-            {a.titulo} e {b.titulo} se chocam às {horaCurta(b.inicio)}.
-          </p>
-        ))}
-      </Secao>
+      {grupos.map((x) => (
+        <Secao key={x.titulo} titulo={x.titulo}>
+          <ListaDeTarefas itens={x.itens} aberta={aberta} />
+        </Secao>
+      ))}
+      {!abertas && <Vazio>Nada pendente. Bom momento para respirar.</Vazio>}
 
-      <Secao titulo="Para fazer" acao={<Link href="/tarefas" className="hover:text-tinta">Todas as tarefas</Link>}>
-        <ListaDeTarefas itens={paraFazer} vazio="Nada pendente. Bom momento para respirar." />
-        <NovaTarefa diaPadrao={hoje} />
-      </Secao>
+      <div className="space-y-2 text-[14px] text-fosco">
+        {esperando > 0 && (
+          <Link href="/caixa?fluxo=esperando" className="block hover:text-tinta">
+            {esperando === 1 ? "1 pessoa te deve resposta" : `${esperando} pessoas te devem resposta`} há mais de {DIAS_PARA_COBRAR} dias →
+          </Link>
+        )}
+        {semPendencia > 0 && (
+          <Link href="/caixa?fluxo=registro" className="block hover:text-tinta">
+            {semPendencia === 1 ? "1 e-mail" : `${semPendencia} e-mails`} das últimas 24 h não {semPendencia === 1 ? "virou" : "viraram"} pendência
+            (avisos, newsletters). Conferir →
+          </Link>
+        )}
+      </div>
 
-      {esperando > 0 && (
-        <Link href="/caixa?fluxo=esperando" className="text-[14px] text-fosco hover:text-tinta">
-          {esperando === 1 ? "1 pessoa te deve resposta" : `${esperando} pessoas te devem resposta`} há mais de {DIAS_PARA_COBRAR} dias →
-        </Link>
-      )}
-    </div>
+      <div className="mt-10">
+        <CampoDePergunta compacto />
+      </div>
+    </>
+  );
+
+  return (
+    <PainelDividido
+      mostrarDireita={Boolean(aberta)}
+      esquerda={lista}
+      direita={
+        aberta ? (
+          <div className="max-w-[760px]">
+            <Link href="/" scroll={false} className="mb-6 inline-flex items-center gap-1 text-[15px] text-fosco lg:hidden">
+              <IconeVoltar /> Hoje
+            </Link>
+            <Item chave={aberta} />
+          </div>
+        ) : (
+          <div className="max-w-[560px]">
+            {blocoAgenda}
+            <Secao titulo="Amanhã">{deAmanha.length ? <Agenda lista={deAmanha} /> : <Vazio>Nada marcado.</Vazio>}</Secao>
+          </div>
+        )
+      }
+    />
+  );
+}
+
+/** O dossiê do item aberto: a conversa de onde ele veio, ou a sua tarefa. */
+async function Item({ chave }: { chave: string }) {
+  const [tipo, id] = chave.split(":");
+  if (tipo === "c" && id) return <DetalheConversa id={id} />;
+  const t = tipo === "t" && id ? await bd.tarefa.findUnique({ where: { id } }) : null;
+  if (!t) return <p className="py-10 text-sm text-fosco">Não encontrei esse item.</p>;
+  return (
+    <DetalheTarefa
+      key={t.id}
+      t={{
+        id: t.id,
+        titulo: t.titulo,
+        prazo: t.prazo ? t.prazo.toISOString().slice(0, 10) : null,
+        nota: t.nota ?? "",
+        criadaEm: t.criadoEm.toLocaleDateString("pt-BR", { timeZone: FUSO, day: "numeric", month: "long" }),
+        feita: Boolean(t.feitaEm),
+      }}
+    />
   );
 }
 

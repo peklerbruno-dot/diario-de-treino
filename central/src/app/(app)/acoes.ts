@@ -278,6 +278,16 @@ export async function concluirTarefa(id: string, feita: boolean): Promise<void> 
   revalidatePath("/", "layout");
 }
 
+/** O que dá para mudar numa tarefa sua: o texto, o prazo e o porquê. */
+export async function salvarTarefa(id: string, dados: { titulo: string; prazo: string | null; nota: string }): Promise<void> {
+  await exigirSessao();
+  const titulo = dados.titulo.trim().slice(0, 300);
+  if (!titulo) return;
+  const prazo = dados.prazo && /^\d{4}-\d{2}-\d{2}$/.test(dados.prazo) ? new Date(`${dados.prazo}T00:00:00Z`) : null;
+  await bd.tarefa.update({ where: { id }, data: { titulo, prazo, nota: dados.nota.trim().slice(0, 4000) || null } });
+  revalidatePath("/", "layout");
+}
+
 export async function apagarTarefa(id: string): Promise<void> {
   await exigirSessao();
   await bd.tarefa.delete({ where: { id } });

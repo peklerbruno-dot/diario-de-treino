@@ -5,7 +5,9 @@ import { diasDesde, prazoPorExtenso } from "@/lib/datas";
 import { anexos as anexosDe, cabecalho, corpoEmTexto, semCitacao, separarEndereco } from "@/lib/gmail";
 import { lerThread, type ThreadGmail } from "@/lib/google";
 import { Ponto, Prazo } from "@/componentes/pecas";
-import { categoria } from "@/lib/categorias";
+import { DEPENDEM_DE_MIM, categoria, type Categoria } from "@/lib/categorias";
+import { Suspense } from "react";
+import { DossieCarregando, DossieDaConversa, ResumoCurto } from "./dossie";
 import { Acoes } from "./acoes-da-conversa";
 import { Anexos } from "./anexos";
 import { PainelDeRascunho } from "./rascunho";
@@ -15,7 +17,8 @@ import { compromissos } from "@/lib/agenda";
 import { FUSO } from "@/lib/datas";
 
 /**
- * Uma conversa aberta: o que a triagem concluiu, as ações, o rascunho da
+ * Uma conversa aberta: o que a triagem concluiu (e, se ela é uma pendência,
+ * o dossiê: por que é com você e o que aconteceu até aqui), as ações, o rascunho da
  * resposta, os anexos e, embaixo, as mensagens — lidas do Gmail na hora,
  * porque a Central não guarda corpo de e-mail.
  */
@@ -38,6 +41,7 @@ export async function DetalheConversa({ id, cobrar = false }: { id: string; cobr
   const mensagens = mensagensReais(thread?.messages);
   const anexos = mensagens.flatMap(anexosDe);
   const prazo = c.prazo ? prazoPorExtenso(c.prazo) : null;
+  const pendencia = [...DEPENDEM_DE_MIM, "aguardando"].includes(c.categoria as Categoria) && !c.resolvida;
 
   // O compromisso do e-mail, se for no futuro: já está em alguma agenda?
   let evento: { texto: string; jaNaAgenda: boolean } | null = null;
@@ -61,13 +65,24 @@ export async function DetalheConversa({ id, cobrar = false }: { id: string; cobr
           </>
         )}
       </p>
-      <h1 className="mt-2 text-[24px] font-semibold leading-snug tracking-tight">{c.assunto}</h1>
+      {pendencia && c.proximaAcao ? (
+        <>
+          <h1 className="mt-2 text-[24px] font-semibold leading-snug tracking-tight">{c.proximaAcao}</h1>
+          <p className="mt-1 text-[14px] text-fosco">
+            {c.remetente.replace(/^Para: /, "")} · {c.assunto}
+          </p>
+        </>
+      ) : (
+        <h1 className="mt-2 text-[24px] font-semibold leading-snug tracking-tight">{c.assunto}</h1>
+      )}
 
-      {(c.resumo || c.proximaAcao) && (
-        <div className="mt-5 space-y-1.5 text-[16px] leading-relaxed">
-          {c.resumo && <p className="text-grafite">{c.resumo}</p>}
-          {c.proximaAcao && <p>{c.proximaAcao}.</p>}
-        </div>
+      {/* O que está na sua lista ganha a história inteira; o resto, a frase da triagem. */}
+      {pendencia ? (
+        <Suspense key={`d-${c.id}`} fallback={<DossieCarregando c={c} />}>
+          <DossieDaConversa c={c} mensagens={mensagens} />
+        </Suspense>
+      ) : (
+        <ResumoCurto c={c} />
       )}
 
       {evento && <SugestaoDeEvento key={`e-${c.id}`} id={c.id} texto={evento.texto} jaNaAgenda={evento.jaNaAgenda} />}
