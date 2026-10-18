@@ -94,7 +94,9 @@ se mudam direto no modo Arrumar (por isso não há mais a aba "afastada").
   - **Geladeira** IF41S (inox) ou IF41B (preta), 60,4 × 71,2 × 176,9, duplex com freezer em cima,
     puxadores à esquerda e dobradiça à direita (abre para o lado da porta de entrada); 4 cm da
     bancada e 5 cm da parede.
-  - **Objetos:** cafeteira entre x 5 e 30; o trecho de 116 a 145 fica livre para preparo.
+  - **Purificador de água** (16 × 35 × 42, cinza) suspenso na parede sob o módulo do micro-ondas,
+    centrado em x 30, de 113 a 148 do piso: sobram 23 cm para o copo e o tampo fica livre. O trecho
+    de 116 a 145 também fica livre para preparo.
   - **Piso** da cozinha em vinílico de madeira, igual ao da sala.
 - **Chuveiro** na parede do fundo do box; **ar-condicionado split** na parede do fundo da sala
   (sobre o banco) e na parede do pé da cama, no quarto.

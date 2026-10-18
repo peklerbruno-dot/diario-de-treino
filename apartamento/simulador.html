@@ -9304,9 +9304,13 @@ const BANCADA_PROJETO = [
   { f: 'caixa', l: 56.5, p: 46, a: 0.8, y: 'A', x: XB(175), z: 0, cor: '#0e0e10', acab: 'vidro' },
   ...[[-14, -10, 6], [14, -10, 4.5], [-14, 10, 4.5], [14, 10, 6]].map(([dx, dz, r]) => (
     { f: 'cil', raio: r, a: 0.4, y: 'A+0.8', x: XB(175 + dx), z: dz, cor: '#3a3a3c', acab: 'metal' })),
-  // cafeteira entre 5 e 30 (ao lado da geladeira); 116–145 fica livre para preparo
-  { f: 'caixa', l: 22, p: 26, a: 34, y: 'A', x: XB(17.5), z: '-P/2+16', cor: '#1d1d1f', acab: 'laca', r: 2 },
-  { f: 'cil', raio: 6, a: 12, y: 'A+2', x: XB(17.5), z: '-P/2+31', cor: '#cfe6ee', acab: 'vidro' },
+  // purificador de água (16 × 35 × 42, cinza) suspenso na parede sob o
+  // módulo do micro-ondas: de 113 a 148, deixa 23 cm livres para o copo e o
+  // tampo inteiro livre; 116–145 também fica livre para preparo
+  { f: 'caixa', l: 16, p: 42, a: 35, y: 'A+23', x: XB(30), z: '-P/2+21', cor: '#8d9196', acab: 'metal', r: 1.5 },
+  { f: 'caixa', l: 12, p: 0.6, a: 9, y: 'A+46', x: XB(30), z: '-P/2+42.2', cor: '#1b1c1e', acab: 'vidro' },
+  { f: 'cil', raio: 0.8, a: 3, y: 'A+20.5', x: XB(30), z: '-P/2+36', cor: '#c9ccd0', acab: 'metal' },
+  { f: 'caixa', l: 3, p: 4, a: 12, y: 'A+30', x: XB(30), z: '-P/2+1.5', cor: '#5c5f63', acab: 'metal' },
 ];
 // Aéreo do projeto (base 150, topo 210): profundidade P = 50 só no módulo do
 // micro-ondas; o resto tem 35 a partir da parede.
