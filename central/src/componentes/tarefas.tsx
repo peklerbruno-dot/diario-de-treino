@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useOptimistic, useState, useTransition } from "react";
-import { apagarTarefa, concluirTarefa, criarTarefa, marcarResolvida } from "@/app/(app)/acoes";
+import { concluirTarefa, criarTarefa, marcarResolvida } from "@/app/(app)/acoes";
 import { Ponto, Prazo } from "./pecas";
 
 export interface ItemDeTarefa {
@@ -10,8 +10,12 @@ export interface ItemDeTarefa {
   chave: string;
   titulo: string;
   prazo?: { texto: string; vencido: boolean; perto: boolean } | null;
-  /** De onde veio, quando veio de um e-mail: quem escreveu, a cor da conta. */
-  origem?: { quem: string; conta: string; cor: string; href: string } | null;
+  /** De onde veio, quando veio de um e-mail: quem escreveu, sobre o quê, a cor da conta. */
+  origem?: { quem: string; assunto: string; conta: string; cor: string } | null;
+  /** Onde abre o dossiê do item. */
+  href: string;
+  /** Uma tarefa sua que tem nota (o porquê). */
+  comNota?: boolean;
   feita: boolean;
 }
 
@@ -20,7 +24,7 @@ export interface ItemDeTarefa {
  * risca na hora (sem esperar o servidor). A próxima ação de um e-mail se marca
  * como a conversa resolvida.
  */
-export function ListaDeTarefas({ itens, vazio }: { itens: ItemDeTarefa[]; vazio?: string }) {
+export function ListaDeTarefas({ itens, vazio, aberta }: { itens: ItemDeTarefa[]; vazio?: string; aberta?: string }) {
   const [, comecar] = useTransition();
   const [lista, marcar] = useOptimistic(itens, (atual, chave: string) =>
     atual.map((i) => (i.chave === chave ? { ...i, feita: !i.feita } : i)),
@@ -39,7 +43,10 @@ export function ListaDeTarefas({ itens, vazio }: { itens: ItemDeTarefa[]; vazio?
             else await marcarResolvida(id, !i.feita);
           });
         return (
-          <li key={i.chave} className="group -mx-3 flex items-start gap-3 rounded-lg px-3 py-2.5 hover:bg-realce">
+          <li
+            key={i.chave}
+            className={`group -mx-3 flex items-start gap-3 rounded-lg px-3 py-2.5 ${aberta === i.chave ? "bg-realce" : "hover:bg-realce"}`}
+          >
             <button
               onClick={alternar}
               aria-label={i.feita ? "Desmarcar" : "Marcar como feita"}
@@ -53,30 +60,25 @@ export function ListaDeTarefas({ itens, vazio }: { itens: ItemDeTarefa[]; vazio?
                 </svg>
               )}
             </button>
-            <div className="min-w-0 flex-1">
+            {/* A linha inteira abre o dossiê: de onde veio, por quê, o que houve. */}
+            <Link href={i.href} scroll={false} className="min-w-0 flex-1">
               <p className={`text-[15px] leading-snug ${i.feita ? "text-fosco line-through" : ""}`}>{i.titulo}</p>
-              {(i.origem || i.prazo) && !i.feita && (
+              {(i.origem || i.prazo || i.comNota) && !i.feita && (
                 <p className="mt-0.5 flex items-center gap-2 text-[13px] text-fosco">
                   {i.origem && (
-                    <Link href={i.origem.href} className="flex min-w-0 items-center gap-2 hover:text-tinta">
+                    <span className="flex min-w-0 items-center gap-2">
                       <Ponto cor={i.origem.cor} titulo={i.origem.conta} />
-                      <span className="truncate">{i.origem.quem}</span>
-                    </Link>
+                      <span className="truncate">
+                        {i.origem.quem} · {i.origem.assunto}
+                      </span>
+                    </span>
                   )}
-                  {i.origem && i.prazo && <span>·</span>}
+                  {!i.origem && i.comNota && <span>com nota</span>}
+                  {(i.origem || i.comNota) && i.prazo && <span>·</span>}
                   {i.prazo && <Prazo {...i.prazo} />}
                 </p>
               )}
-            </div>
-            {tipo === "t" && (
-              <button
-                onClick={() => comecar(() => apagarTarefa(id))}
-                className="text-[13px] text-fosco opacity-0 transition-opacity hover:text-atencao group-hover:opacity-100"
-                aria-label="Apagar tarefa"
-              >
-                apagar
-              </button>
-            )}
+            </Link>
           </li>
         );
       })}
@@ -105,7 +107,7 @@ export function NovaTarefa({ diaPadrao }: { diaPadrao?: string }) {
       <input
         value={titulo}
         onChange={(e) => setTitulo(e.target.value)}
-        placeholder="Adicionar tarefa"
+        placeholder="Anotar uma pendência"
         className="min-w-0 flex-1 bg-transparent py-0.5 text-[15px] outline-none placeholder:text-fosco"
       />
       {titulo.trim() && (

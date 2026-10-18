@@ -92,7 +92,7 @@ export async function marcos(contas: Conta[], de: string, ate: string): Promise<
       dia: c.prazo!.toISOString().slice(0, 10),
       titulo: c.proximaAcao || c.assunto,
       cor: corDaConta(contas, c.contaId),
-      href: `/caixa?c=${c.id}`,
+      href: `/?p=c:${c.id}`,
       feito: c.resolvida,
     })),
     ...tarefas.map((t) => ({
@@ -101,7 +101,7 @@ export async function marcos(contas: Conta[], de: string, ate: string): Promise<
       dia: t.prazo!.toISOString().slice(0, 10),
       titulo: t.titulo,
       cor: "var(--destaque)",
-      href: "/tarefas",
+      href: `/?p=t:${t.id}`,
       feito: Boolean(t.feitaEm),
     })),
   ];

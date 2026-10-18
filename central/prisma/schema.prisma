@@ -67,6 +67,10 @@ model Conversa {
   eventoTitulo       String?
   eventoInicio       DateTime?
   eventoFim          DateTime?
+  /// O dossiê da pendência (por quê, linha do tempo, combinado, falta),
+  /// gerado quando você abre a conversa e refeito só se chegar mensagem nova.
+  dossie             Json?
+  dossieMsgId        String?
   atualizadoEm       DateTime  @updatedAt
   rascunhos          Rascunho[]
 
@@ -108,6 +112,8 @@ model Tarefa {
   titulo   String
   /// Só o dia (meia-noite UTC), como os prazos das conversas.
   prazo    DateTime?
+  /// O porquê da tarefa, nas suas palavras.
+  nota     String?
   feitaEm  DateTime?
   criadoEm DateTime  @default(now())
 
