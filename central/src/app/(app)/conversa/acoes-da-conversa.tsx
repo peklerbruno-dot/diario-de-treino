@@ -6,7 +6,8 @@ import { CATEGORIAS } from "@/lib/categorias";
 import { MenuAdiar } from "@/componentes/deslizar";
 import { adiar, arquivarNoGmail, corrigirCategoria, marcarResolvida, porPrazoNaAgenda } from "../acoes";
 
-const acao = "text-[14px] text-fosco hover:text-tinta disabled:opacity-40";
+const acao =
+  "rounded-full border border-linha bg-superficie px-3 py-1 text-[14px] text-grafite hover:border-regua hover:text-tinta disabled:opacity-40";
 
 /** As ações da conversa, em texto, numa linha só. A categoria se troca no próprio rótulo. */
 export function Acoes(p: { id: string; categoria: string; resolvida: boolean; temPrazo: boolean; linkGmail: string }) {
@@ -18,7 +19,7 @@ export function Acoes(p: { id: string; categoria: string; resolvida: boolean; te
 
   return (
     <div className="mt-6">
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+      <div className="flex flex-wrap items-center gap-2">
         <button className={acao} disabled={pendente} onClick={() => fazer(() => marcarResolvida(p.id, !p.resolvida))}>
           {p.resolvida ? "Reabrir" : "Marcar como resolvida"}
         </button>
@@ -57,7 +58,7 @@ export function Acoes(p: { id: string; categoria: string; resolvida: boolean; te
         <a href={p.linkGmail} target="_blank" rel="noreferrer" className={acao}>
           Abrir no Gmail
         </a>
-        <label className="flex items-center gap-1 text-[14px] text-fosco">
+        <label className="flex items-center gap-1 px-1 text-[14px] text-fosco">
           Categoria:
           <select
             defaultValue={p.categoria}

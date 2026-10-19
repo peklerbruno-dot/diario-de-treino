@@ -3,7 +3,7 @@ import { CampoDePergunta } from "@/componentes/campo-de-pergunta";
 import { DetalheTarefa } from "@/componentes/detalhe-tarefa";
 import { IconeVoltar } from "@/componentes/icones";
 import { PainelDividido } from "@/componentes/painel-dividido";
-import { Secao, Vazio } from "@/componentes/pecas";
+import { Grupo, Secao, Vazio } from "@/componentes/pecas";
 import { ListaDeTarefas, NovaTarefa } from "@/componentes/tarefas";
 import { choques, compromissos, porDia, type Compromisso } from "@/lib/agenda";
 import { bd } from "@/lib/bd";
@@ -113,25 +113,33 @@ export default async function Hoje({ searchParams }: { searchParams: Promise<{ p
       </div>
 
       {grupos.map((x) => (
-        <Secao key={x.titulo} titulo={x.titulo}>
+        <Secao key={x.titulo} titulo={x.titulo} tom={x.titulo === "Atrasadas" ? "atencao" : undefined}>
           <ListaDeTarefas itens={x.itens} aberta={aberta} />
         </Secao>
       ))}
       {!abertas && <Vazio>Nada pendente. Bom momento para respirar.</Vazio>}
 
-      <div className="space-y-2 text-[14px] text-fosco">
-        {esperando > 0 && (
-          <Link href="/caixa?fluxo=esperando" className="block hover:text-tinta">
-            {esperando === 1 ? "1 pessoa te deve resposta" : `${esperando} pessoas te devem resposta`} há mais de {DIAS_PARA_COBRAR} dias →
-          </Link>
-        )}
-        {semPendencia > 0 && (
-          <Link href="/caixa?fluxo=registro" className="block hover:text-tinta">
-            {semPendencia === 1 ? "1 e-mail" : `${semPendencia} e-mails`} das últimas 24 h não {semPendencia === 1 ? "virou" : "viraram"} pendência
-            (avisos, newsletters). Conferir →
-          </Link>
-        )}
-      </div>
+      {(esperando > 0 || semPendencia > 0) && (
+        <Grupo className="text-[14px] text-grafite">
+          {esperando > 0 && (
+            <Link href="/caixa?fluxo=esperando" className="flex items-center gap-3 px-4 py-3 hover:bg-realce">
+              <span className="min-w-0 flex-1">
+                {esperando === 1 ? "1 pessoa te deve resposta" : `${esperando} pessoas te devem resposta`} há mais de {DIAS_PARA_COBRAR} dias
+              </span>
+              <span className="text-fosco">›</span>
+            </Link>
+          )}
+          {semPendencia > 0 && (
+            <Link href="/caixa?fluxo=registro" className="flex items-center gap-3 px-4 py-3 hover:bg-realce">
+              <span className="min-w-0 flex-1">
+                {semPendencia === 1 ? "1 e-mail" : `${semPendencia} e-mails`} das últimas 24 h não {semPendencia === 1 ? "virou" : "viraram"} pendência
+                (avisos, newsletters). Conferir
+              </span>
+              <span className="text-fosco">›</span>
+            </Link>
+          )}
+        </Grupo>
+      )}
 
       <div className="mt-10">
         <CampoDePergunta compacto />
@@ -183,18 +191,17 @@ async function Item({ chave }: { chave: string }) {
   );
 }
 
+/** A agenda num bloco: a hora, uma barrinha na cor da conta e o compromisso. */
 function Agenda({ lista }: { lista: Compromisso[] }) {
   return (
-    <ul>
+    <Grupo>
       {lista.map((e, i) => (
-        <li key={i}>
-          <a href={e.link} target="_blank" rel="noreferrer" className="-mx-3 flex items-baseline gap-4 rounded-lg px-3 py-2 hover:bg-realce">
-            <span className="numeros w-12 shrink-0 text-[14px] text-fosco">{e.diaInteiro ? "o dia" : horaCurta(e.inicio)}</span>
-            <span className="min-w-0 flex-1 truncate text-[15px]">{e.titulo}</span>
-            <span className="h-[7px] w-[7px] shrink-0 self-center rounded-full" style={{ background: e.cor }} title={e.conta} />
-          </a>
-        </li>
+        <a key={i} href={e.link} target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-3 hover:bg-realce">
+          <span className="numeros w-11 shrink-0 text-[14px] text-fosco">{e.diaInteiro ? "o dia" : horaCurta(e.inicio)}</span>
+          <span className="h-5 w-[3px] shrink-0 rounded-full" style={{ background: e.cor }} title={e.conta} />
+          <span className="min-w-0 flex-1 truncate text-[15px]">{e.titulo}</span>
+        </a>
       ))}
-    </ul>
+    </Grupo>
   );
 }

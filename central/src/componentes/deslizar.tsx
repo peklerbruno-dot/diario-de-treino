@@ -51,7 +51,7 @@ export function Deslizavel({
   const passou = Math.abs(dx) >= LIMITE;
 
   return (
-    <div className={`relative overflow-hidden rounded-lg lg:overflow-visible ${className}`}>
+    <div className={`relative overflow-hidden lg:overflow-visible ${className}`}>
       {lado && (
         <div
           className={`absolute inset-0 flex items-center px-5 text-[14px] font-medium text-white transition-opacity ${lado.fundo} ${
@@ -64,7 +64,7 @@ export function Deslizavel({
       )}
       <div
         style={{ transform: dx ? `translateX(${dx}px)` : undefined, touchAction: "pan-y", WebkitTouchCallout: "none" }}
-        className={`relative bg-fundo ${solto ? "transition-transform duration-200" : ""}`}
+        className={`relative bg-superficie ${solto ? "transition-transform duration-200" : ""}`}
         onTouchStart={(e) => {
           const t = e.touches[0];
           ini.current = { x: t.clientX, y: t.clientY };

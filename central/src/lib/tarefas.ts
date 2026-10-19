@@ -82,9 +82,12 @@ export async function tarefasAgrupadas(): Promise<Grupos> {
  * Uma anotação vira tarefa: o prazo escolhido, ou o que o próprio texto diz
  * ("até quinta"). Usada pelo campo do Hoje e pelo atalho do iPhone.
  */
+const maiuscula = (t: string) => (t ? t[0].toUpperCase() + t.slice(1) : t);
+
 export async function anotar(texto: string, prazo?: string | null) {
   const a = entenderAnotacao(texto.slice(0, 300), diaEmSaoPaulo());
-  const dia = prazo && /^\d{4}-\d{2}-\d{2}$/.test(prazo) ? prazo : a.prazo;
+  const escolhido = prazo && /^\d{4}-\d{2}-\d{2}$/.test(prazo) ? prazo : null;
+  const dia = escolhido ?? a.prazo;
   if (!a.titulo) return null;
-  return bd.tarefa.create({ data: { titulo: prazo ? texto.trim().slice(0, 300) : a.titulo, prazo: dia ? new Date(`${dia}T00:00:00Z`) : null } });
+  return bd.tarefa.create({ data: { titulo: escolhido ? maiuscula(texto.trim().slice(0, 300)) : a.titulo, prazo: dia ? new Date(`${dia}T00:00:00Z`) : null } });
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { entenderAnotacao } from "./anotar";
+import { entenderAnotacao, lerData } from "./anotar";
 
 const hoje = "2026-10-19"; // segunda-feira
 
@@ -32,5 +32,13 @@ describe("anotar", () => {
   it("não confunde palavra com data", () => {
     expect(entenderAnotacao("comprar sextante", hoje).prazo).toBeNull();
     expect(entenderAnotacao("ler o artigo de hojeiro", hoje).prazo).toBeNull();
+  });
+  it("lê a data que o atalho do iPhone manda, em qualquer formato", () => {
+    expect(lerData("2026-10-22T00:00:00-03:00")).toBe("2026-10-22");
+    expect(lerData("22/10/2026")).toBe("2026-10-22");
+    expect(lerData("22 de out. de 2026 00:00")).toBe("2026-10-22");
+    expect(lerData("22 de outubro de 2026")).toBe("2026-10-22");
+    expect(lerData("Oct 22, 2026 at 12:00 AM")).toBe("2026-10-22");
+    expect(lerData("amanhã")).toBeNull();
   });
 });
