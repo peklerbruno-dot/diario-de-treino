@@ -4,7 +4,7 @@ import { bd } from "./bd";
 import { corDaConta } from "./cores";
 import { FUSO, diaDe } from "./datas";
 import { eventosEntre, type EventoGoogle } from "./google";
-import { VISIVEL } from "./consultas";
+import { visivel } from "./consultas";
 
 export interface Compromisso {
   conta: string;
@@ -82,7 +82,7 @@ export interface Marco {
 export async function marcos(contas: Conta[], de: string, ate: string): Promise<Marco[]> {
   const intervalo = { gte: new Date(`${de}T00:00:00Z`), lte: new Date(`${ate}T00:00:00Z`) };
   const [conversas, tarefas] = await Promise.all([
-    bd.conversa.findMany({ where: { ...VISIVEL, prazo: intervalo } }),
+    bd.conversa.findMany({ where: { ...visivel(), prazo: intervalo } }),
     bd.tarefa.findMany({ where: { prazo: intervalo } }),
   ]);
   return [

@@ -3,7 +3,7 @@ import type { Conta } from "@prisma/client";
 import { compromissos, porDia } from "./agenda";
 import { gravarAjuste, lerAjuste } from "./ajustes";
 import { bd } from "./bd";
-import { VISIVEL } from "./consultas";
+import { visivel } from "./consultas";
 import { FUSO, agoraPorExtenso, diaEmSaoPaulo, diasDesde, horaCurta, somarDias } from "./datas";
 import { montarMimeHtml } from "./gmail";
 import { enviarParaSiMesmo } from "./google";
@@ -36,7 +36,7 @@ export async function montarResumo(baseUrl: string): Promise<{ assunto: string; 
     tarefasAgrupadas(),
     compromissos(contas, new Date(`${hoje}T03:00:00Z`), new Date(`${somarDias(hoje, 1)}T03:00:00Z`)),
     bd.conversa.findMany({
-      where: { ...VISIVEL, categoria: "aguardando", ultimaData: { lte: new Date(agora.getTime() - 3 * 86_400_000) } },
+      where: { ...visivel(), categoria: "aguardando", ultimaData: { lte: new Date(agora.getTime() - 3 * 86_400_000) } },
       orderBy: { ultimaData: "asc" },
       take: 5,
     }),

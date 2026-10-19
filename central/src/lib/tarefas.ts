@@ -2,8 +2,9 @@ import "server-only";
 import type { ItemDeTarefa } from "@/componentes/tarefas";
 import { bd } from "./bd";
 import { DEPENDEM_DE_MIM } from "./categorias";
-import { VISIVEL } from "./consultas";
+import { visivel } from "./consultas";
 import { corDaConta } from "./cores";
+import { entenderAnotacao } from "./anotar";
 import { diaEmSaoPaulo, prazoPorExtenso, somarDias } from "./datas";
 
 export interface Grupos {
@@ -29,7 +30,7 @@ export async function tarefasAgrupadas(): Promise<Grupos> {
       take: 10,
     }),
     bd.conversa.findMany({
-      where: { ...VISIVEL, categoria: { in: DEPENDEM_DE_MIM } },
+      where: { ...visivel(), categoria: { in: DEPENDEM_DE_MIM } },
       include: { conta: true },
       orderBy: [{ prazo: { sort: "asc", nulls: "last" } }, { prioridade: "asc" }, { ultimaData: "desc" }],
     }),
@@ -75,4 +76,15 @@ export async function tarefasAgrupadas(): Promise<Grupos> {
   }
   g.feitas = feitas.map((t) => ({ chave: `t:${t.id}`, titulo: t.titulo, href: `/?p=t:${t.id}`, feita: true }));
   return g;
+}
+
+/**
+ * Uma anotação vira tarefa: o prazo escolhido, ou o que o próprio texto diz
+ * ("até quinta"). Usada pelo campo do Hoje e pelo atalho do iPhone.
+ */
+export async function anotar(texto: string, prazo?: string | null) {
+  const a = entenderAnotacao(texto.slice(0, 300), diaEmSaoPaulo());
+  const dia = prazo && /^\d{4}-\d{2}-\d{2}$/.test(prazo) ? prazo : a.prazo;
+  if (!a.titulo) return null;
+  return bd.tarefa.create({ data: { titulo: prazo ? texto.trim().slice(0, 300) : a.titulo, prazo: dia ? new Date(`${dia}T00:00:00Z`) : null } });
 }

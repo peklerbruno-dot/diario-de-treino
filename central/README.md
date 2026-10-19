@@ -32,6 +32,22 @@ agrupada por quando (atrasadas, hoje, próximos 7 dias, sem data). Marcar a
 de um e-mail resolve a conversa. Embaixo, quantos e-mails das últimas 24 h a
 triagem achou que não pedem nada de você, para conferir.
 
+**Gestos no celular.** Deslizar uma linha para a direita conclui (ou resolve
+o e-mail); para a esquerda, arquiva o e-mail no Gmail (numa tarefa sua,
+adia). Segurar a linha abre o **adiar**: amanhã, no fim de semana, na semana
+que vem ou numa data. Uma conversa adiada some das listas até o dia, ou até
+chegar mensagem nova. No computador, os mesmos comandos estão nos botões.
+
+**Anotar.** No topo do Hoje, escreva (ou dite) como no WhatsApp: "mandar
+orçamento pro CEJ até quinta" vira a tarefa "Mandar orçamento pro CEJ" com
+prazo na quinta. Entende hoje, amanhã, dias da semana, "dia 25", "25/10",
+"semana que vem" e "fim do mês", sem gastar a cota do Gemini.
+
+**No iPhone: widget e atalho** (Ajustes). Um widget com a agenda e as
+pendências do dia, pelo app gratuito Scriptable, e um atalho "Anotar na
+Central" no app Atalhos (botão na tela de início, na tela bloqueada ou pela
+Siri). Os dois usam uma chave própria, que se troca em Ajustes.
+
 **O dossiê.** Tocar num item abre o porquê dele, ao lado (no celular, por
 cima): quem pediu o quê, o que aconteceu até aqui em linha do tempo, o que já
 foi combinado e o que falta. É escrito pelo Gemini só quando você abre, e

@@ -69,6 +69,9 @@ model Conversa {
   eventoFim          DateTime?
   /// O dossiê da pendência (por quê, linha do tempo, combinado, falta),
   /// gerado quando você abre a conversa e refeito só se chegar mensagem nova.
+  /// Adiada: some das listas até este dia (meia-noite de São Paulo) ou até
+  /// chegar mensagem nova.
+  adiadaAte          DateTime?
   dossie             Json?
   dossieMsgId        String?
   atualizadoEm       DateTime  @updatedAt

@@ -77,7 +77,7 @@ async function sincronizarConta(conta: Conta): Promise<{ conversas: number; para
     await bd.conversa.upsert({
       where: { contaId_threadId: { contaId: conta.id, threadId: t.id } },
       create: { contaId: conta.id, threadId: t.id, ...r, naCaixa: naCaixa.has(t.id) },
-      update: { ...r, naCaixa: naCaixa.has(t.id), ...(nova ? { resolvida: false } : {}) },
+      update: { ...r, naCaixa: naCaixa.has(t.id), ...(nova ? { resolvida: false, adiadaAte: null } : {}) },
     });
     if (nova || antes?.classificadaMsgId !== r.ultimaMensagemId) mudaram.push(t);
   }

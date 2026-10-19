@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { CATEGORIAS } from "@/lib/categorias";
-import { arquivarNoGmail, corrigirCategoria, marcarResolvida, porPrazoNaAgenda } from "../acoes";
+import { MenuAdiar } from "@/componentes/deslizar";
+import { adiar, arquivarNoGmail, corrigirCategoria, marcarResolvida, porPrazoNaAgenda } from "../acoes";
 
 const acao = "text-[14px] text-fosco hover:text-tinta disabled:opacity-40";
 
@@ -12,6 +13,7 @@ export function Acoes(p: { id: string; categoria: string; resolvida: boolean; te
   const router = useRouter();
   const [pendente, comecar] = useTransition();
   const [aviso, setAviso] = useState<{ texto: string; link?: string } | null>(null);
+  const [adiando, setAdiando] = useState(false);
   const fazer = (f: () => Promise<unknown>) => comecar(async () => void (await f()));
 
   return (
@@ -33,6 +35,11 @@ export function Acoes(p: { id: string; categoria: string; resolvida: boolean; te
         >
           Arquivar
         </button>
+        {!p.resolvida && (
+          <button className={acao} disabled={pendente} onClick={() => setAdiando(true)}>
+            Adiar
+          </button>
+        )}
         {p.temPrazo && (
           <button
             className={acao}
@@ -66,6 +73,20 @@ export function Acoes(p: { id: string; categoria: string; resolvida: boolean; te
           </select>
         </label>
       </div>
+      {adiando && (
+        <MenuAdiar
+          titulo="A conversa some das listas até o dia escolhido, ou até chegar mensagem nova."
+          onFechar={() => setAdiando(false)}
+          onEscolher={(dia) => {
+            setAdiando(false);
+            fazer(async () => {
+              await adiar(`c:${p.id}`, dia);
+              setAviso({ texto: "Adiada." });
+              router.refresh();
+            });
+          }}
+        />
+      )}
       {aviso && (
         <p className="mt-2 text-[14px] text-grafite">
           {aviso.texto}{" "}

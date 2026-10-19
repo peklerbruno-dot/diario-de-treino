@@ -7,6 +7,10 @@ import { adicionarInstrucao, refazerTriagem, renomearConta, salvarEstilo, salvar
 import { lerAjuste } from "@/lib/ajustes";
 import { contaDoResumo } from "@/lib/resumo";
 import { AprenderEstilo, EnviarResumoAgora, RemoverConta, RemoverInstrucao } from "./botoes";
+import { NoIphone } from "./iphone";
+import { headers } from "next/headers";
+import { chaveDoIphone } from "@/lib/iphone";
+import { scriptDoWidget } from "@/lib/widget-iphone";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +26,11 @@ export default async function Ajustes({ searchParams }: { searchParams: Busca })
     bd.correcao.count(),
   ]);
   const [resumoLigado, contaResumo] = [(await lerAjuste("resumo.ligado", "1")) === "1", await contaDoResumo(contas)];
+  const chave = await chaveDoIphone();
+  const h = await headers();
+  const endereco =
+    process.env.APP_URL?.trim().replace(/\/+$/, "") ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : `https://${h.get("host")}`);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -126,6 +135,11 @@ export default async function Ajustes({ searchParams }: { searchParams: Busca })
         <div className="mt-3">
           <EnviarResumoAgora />
         </div>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="mb-2 text-[13px] font-semibold text-fosco">No iPhone: widget e atalho</h2>
+        <NoIphone endereco={endereco} chave={chave} script={chave ? scriptDoWidget(endereco, chave) : ""} />
       </section>
 
       <section className="mt-10">

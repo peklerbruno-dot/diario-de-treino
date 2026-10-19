@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { arquivarNoGmail, corrigirCategoria, marcarResolvida } from "@/app/(app)/acoes";
+import { adiar, arquivarNoGmail, corrigirCategoria, marcarResolvida } from "@/app/(app)/acoes";
+import { MenuAdiar } from "./deslizar";
 import { CATEGORIAS } from "@/lib/categorias";
 
 /**
@@ -29,6 +30,7 @@ export function AcoesRapidas({
   const [aberto, setAberto] = useState(false);
   const [pendente, comecar] = useTransition();
   const [erro, setErro] = useState("");
+  const [adiando, setAdiando] = useState(false);
   const caixa = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -90,13 +92,32 @@ export function AcoesRapidas({
       {erro && <span className="text-[13px] text-atencao">{erro}</span>}
       {aberto && (
         <div className="absolute left-0 top-8 z-30 w-52 rounded-lg border border-linha bg-superficie py-1 shadow-lg">
-          <p className="px-3 pb-0.5 pt-1 text-[12px] text-fosco">Mover para</p>
+          <button
+            className={item}
+            onClick={() => {
+              setAberto(false);
+              setAdiando(true);
+            }}
+          >
+            Adiar…
+          </button>
+          <p className="mt-1 border-t border-linha px-3 pb-0.5 pt-2 text-[12px] text-fosco">Mover para</p>
           {CATEGORIAS.filter((c) => c.id !== categoria).map((c) => (
             <button key={c.id} className={item} disabled={pendente} onClick={() => fazer(() => corrigirCategoria(id, c.id))}>
               {c.nome}
             </button>
           ))}
         </div>
+      )}
+      {adiando && (
+        <MenuAdiar
+          titulo="Esta conversa some das listas até o dia escolhido, ou até chegar mensagem nova."
+          onFechar={() => setAdiando(false)}
+          onEscolher={(dia) => {
+            setAdiando(false);
+            fazer(() => adiar(`c:${id}`, dia));
+          }}
+        />
       )}
     </div>
   );
