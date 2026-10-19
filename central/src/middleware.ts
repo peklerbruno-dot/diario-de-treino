@@ -33,6 +33,7 @@ export function middleware(req: NextRequest) {
 
 export const config = {
   // /api/sincronizar fica de fora: o agendador diário da Vercel chega sem
-  // cookie, e a rota confere o CRON_SECRET por conta própria.
-  matcher: ["/((?!api/saude|api/sincronizar|favicon.ico).*)"],
+  // cookie, e a rota confere o CRON_SECRET por conta própria. /api/iphone
+  // também: o widget e o atalho chegam sem cookie e mostram a chave deles.
+  matcher: ["/((?!api/saude|api/sincronizar|api/iphone|favicon.ico).*)"],
 };

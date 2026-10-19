@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { gravarAjuste } from "@/lib/ajustes";
+import { anotar } from "@/lib/tarefas";
+import { novaChaveDoIphone } from "@/lib/iphone";
 import { enviarResumo } from "@/lib/resumo";
 import { agendaEmTexto, compromissos } from "@/lib/agenda";
 import { exigirSessao } from "@/lib/auth";
@@ -265,10 +267,21 @@ export async function refazerTriagem(): Promise<void> {
 
 export async function criarTarefa(titulo: string, prazo: string | null): Promise<void> {
   await exigirSessao();
-  const t = titulo.trim().slice(0, 300);
-  if (!t) return;
-  const dia = prazo && /^\d{4}-\d{2}-\d{2}$/.test(prazo) ? new Date(`${prazo}T00:00:00Z`) : null;
-  await bd.tarefa.create({ data: { titulo: t, prazo: dia } });
+  if (!titulo.trim()) return;
+  await anotar(titulo, prazo);
+  revalidatePath("/", "layout");
+}
+
+/**
+ * Adia um item até o dia escolhido. Uma conversa some das listas até lá (ou
+ * até chegar mensagem nova); uma tarefa sua só muda de prazo.
+ */
+export async function adiar(chave: string, dia: string): Promise<void> {
+  await exigirSessao();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dia)) return;
+  const [tipo, id] = chave.split(":");
+  if (tipo === "c") await bd.conversa.update({ where: { id }, data: { adiadaAte: new Date(`${dia}T03:00:00Z`) } });
+  else if (tipo === "t") await bd.tarefa.update({ where: { id }, data: { prazo: new Date(`${dia}T00:00:00Z`) } });
   revalidatePath("/", "layout");
 }
 
@@ -337,4 +350,13 @@ export async function porEventoNaAgenda(conversaId: string): Promise<Resultado<{
   } catch (e) {
     return falha(e);
   }
+}
+
+// ——— iPhone ———
+
+/** Gera (ou troca) a chave do widget e do atalho. A antiga para de valer. */
+export async function gerarChaveDoIphone(): Promise<void> {
+  await exigirSessao();
+  await novaChaveDoIphone();
+  revalidatePath("/ajustes");
 }

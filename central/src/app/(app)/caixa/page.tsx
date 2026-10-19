@@ -5,7 +5,7 @@ import { LinhaConversa } from "@/componentes/linha-conversa";
 import { Vazio } from "@/componentes/pecas";
 import { bd } from "@/lib/bd";
 import { FLUXOS, categoriasDoFluxo } from "@/lib/categorias";
-import { ORDEM, VISIVEL } from "@/lib/consultas";
+import { ORDEM, visivel } from "@/lib/consultas";
 import { corDaConta } from "@/lib/cores";
 import { DetalheConversa } from "../conversa/detalhe";
 import { PainelDividido } from "@/componentes/painel-dividido";
@@ -23,7 +23,7 @@ export default async function Emails({ searchParams }: { searchParams: Busca }) 
   const resolvidas = q.resolvidas === "1";
   const fluxo = FLUXOS.find((f) => f.id === q.fluxo)?.id ?? "voce";
 
-  const base: Prisma.ConversaWhereInput = resolvidas ? { resolvida: true } : VISIVEL;
+  const base: Prisma.ConversaWhereInput = resolvidas ? { resolvida: true } : visivel();
   const [contas, conversas] = await Promise.all([
     bd.conta.findMany({ orderBy: { criadoEm: "asc" } }),
     bd.conversa.findMany({

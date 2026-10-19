@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { bd } from "@/lib/bd";
-import { VISIVEL } from "@/lib/consultas";
+import { visivel } from "@/lib/consultas";
 import { NotaDoContato } from "./nota-do-contato";
 
 /**
@@ -14,7 +14,7 @@ export async function SobreContato({ email, nome, conversaAtual }: { email: stri
     bd.conversa.count({ where: { remetenteEmail: email } }),
     bd.conversa.findFirst({ where: { remetenteEmail: email }, orderBy: { ultimaData: "asc" }, select: { ultimaData: true } }),
     bd.conversa.findMany({
-      where: { ...VISIVEL, remetenteEmail: email, id: { not: conversaAtual } },
+      where: { ...visivel(), remetenteEmail: email, id: { not: conversaAtual } },
       orderBy: { ultimaData: "desc" },
       take: 4,
       select: { id: true, assunto: true, proximaAcao: true, resumo: true },

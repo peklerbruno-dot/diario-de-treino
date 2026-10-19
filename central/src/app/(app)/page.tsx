@@ -7,7 +7,7 @@ import { Secao, Vazio } from "@/componentes/pecas";
 import { ListaDeTarefas, NovaTarefa } from "@/componentes/tarefas";
 import { choques, compromissos, porDia, type Compromisso } from "@/lib/agenda";
 import { bd } from "@/lib/bd";
-import { VISIVEL } from "@/lib/consultas";
+import { visivel } from "@/lib/consultas";
 import { agoraPorExtenso, diaEmSaoPaulo, FUSO, horaCurta, somarDias } from "@/lib/datas";
 import { tarefasAgrupadas } from "@/lib/tarefas";
 import { DetalheConversa } from "./conversa/detalhe";
@@ -51,7 +51,7 @@ export default async function Hoje({ searchParams }: { searchParams: Promise<{ p
     tarefasAgrupadas(),
     compromissos(contas, new Date(`${hoje}T03:00:00Z`), new Date(`${somarDias(hoje, 2)}T03:00:00Z`)),
     bd.conversa.count({
-      where: { ...VISIVEL, categoria: "aguardando", ultimaData: { lte: new Date(agora.getTime() - DIAS_PARA_COBRAR * 86_400_000) } },
+      where: { ...visivel(), categoria: "aguardando", ultimaData: { lte: new Date(agora.getTime() - DIAS_PARA_COBRAR * 86_400_000) } },
     }),
     // O que chegou e a triagem achou que não pede nada de você: para conferir.
     bd.conversa.count({
