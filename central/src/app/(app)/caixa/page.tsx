@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { IconeVoltar } from "@/componentes/icones";
 import { LinhaConversa } from "@/componentes/linha-conversa";
-import { Vazio } from "@/componentes/pecas";
+import { Grupo, Vazio } from "@/componentes/pecas";
 import { bd } from "@/lib/bd";
 import { FLUXOS, categoriasDoFluxo } from "@/lib/categorias";
 import { ORDEM, visivel } from "@/lib/consultas";
@@ -45,19 +45,22 @@ export default async function Emails({ searchParams }: { searchParams: Busca }) 
     const s = p.toString();
     return s ? `/caixa?${s}` : "/caixa";
   };
-  const aba = (sel: boolean) => `shrink-0 text-[15px] ${sel ? "font-medium text-tinta" : "text-fosco hover:text-tinta"}`;
-  const filtro = (sel: boolean) => `shrink-0 text-[13px] ${sel ? "text-tinta" : "text-fosco hover:text-tinta"}`;
+  // A aba escolhida ganha um traço embaixo; os filtros de conta são pílulas.
+  const aba = (sel: boolean) =>
+    `-mb-px shrink-0 border-b-2 pb-2.5 text-[15px] ${sel ? "border-tinta font-medium text-tinta" : "border-transparent text-fosco hover:text-tinta"}`;
+  const filtro = (sel: boolean) =>
+    `shrink-0 rounded-full border px-3 py-1 text-[13px] ${sel ? "border-tinta bg-tinta text-fundo" : "border-linha bg-superficie text-grafite hover:border-regua"}`;
 
   const lista = (
     <>
-      <nav className="-mx-5 flex gap-5 overflow-x-auto px-5 lg:mx-0 lg:px-0">
+      <nav className="-mx-5 flex gap-5 overflow-x-auto border-b border-linha px-5 lg:mx-0 lg:px-0">
         {FLUXOS.map((f) => (
           <Link key={f.id} href={link({ fluxo: f.id, resolvidas: undefined, c: undefined })} className={aba(!resolvidas && fluxo === f.id)}>
             {f.nome}
           </Link>
         ))}
       </nav>
-      <nav className="-mx-5 mb-4 mt-2 flex gap-3 overflow-x-auto px-5 lg:mx-0 lg:px-0">
+      <nav className="-mx-5 mb-4 mt-3 flex items-center gap-2 overflow-x-auto px-5 lg:mx-0 lg:px-0">
         <Link href={link({ conta: undefined, c: undefined })} className={filtro(!q.conta)}>
           Todas as contas
         </Link>
@@ -66,12 +69,19 @@ export default async function Emails({ searchParams }: { searchParams: Busca }) 
             {c.rotulo}
           </Link>
         ))}
-        <Link href={link({ resolvidas: resolvidas ? undefined : "1", c: undefined })} className={`ml-auto ${filtro(resolvidas)}`}>
+        <Link
+          href={link({ resolvidas: resolvidas ? undefined : "1", c: undefined })}
+          className={`ml-auto shrink-0 text-[13px] ${resolvidas ? "font-medium text-tinta" : "text-fosco hover:text-tinta"}`}
+        >
           {resolvidas ? "Voltar às abertas" : "Resolvidas"}
         </Link>
       </nav>
       {conversas.length ? (
-        conversas.map((c) => <LinhaConversa key={c.id} c={c} cor={corDaConta(contas, c.contaId)} href={link({ c: c.id })} ativa={q.c === c.id} />)
+        <Grupo>
+          {conversas.map((c) => (
+            <LinhaConversa key={c.id} c={c} cor={corDaConta(contas, c.contaId)} href={link({ c: c.id })} ativa={q.c === c.id} />
+          ))}
+        </Grupo>
       ) : (
         <Vazio>Nada aqui.</Vazio>
       )}

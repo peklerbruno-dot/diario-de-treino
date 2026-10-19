@@ -26,7 +26,6 @@ export function LinhaDeslizavel({ id, titulo, resolvida, children }: { id: strin
   return (
     <>
       <Deslizavel
-        className="-mx-3"
         direita={resolvida ? undefined : { rotulo: "Resolver", fundo: "bg-ok", acao: () => fazer(() => marcarResolvida(id, true)) }}
         esquerda={resolvida ? undefined : { rotulo: "Arquivar", fundo: "bg-azul", acao: () => fazer(() => arquivarNoGmail(id)) }}
         segurar={resolvida ? undefined : () => setAdiando(true)}

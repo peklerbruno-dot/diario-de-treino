@@ -48,7 +48,7 @@ export function ListaDeTarefas({ itens, vazio, aberta }: { itens: ItemDeTarefa[]
 
   return (
     <>
-      <ul>
+      <ul className="divide-y divide-linha overflow-hidden rounded-xl border border-linha bg-superficie">
         {lista.map((i) => {
           const [tipo, id] = i.chave.split(":");
           const concluir = (sumir: boolean) =>
@@ -56,7 +56,6 @@ export function ListaDeTarefas({ itens, vazio, aberta }: { itens: ItemDeTarefa[]
           return (
             <li key={i.chave}>
               <Deslizavel
-                className="-mx-3"
                 direita={i.feita ? undefined : { rotulo: "Concluir", fundo: "bg-ok", acao: () => concluir(true) }}
                 esquerda={
                   i.feita
@@ -67,7 +66,7 @@ export function ListaDeTarefas({ itens, vazio, aberta }: { itens: ItemDeTarefa[]
                 }
                 segurar={i.feita ? undefined : () => setAdiando(i)}
               >
-                <div className={`group flex items-start gap-3 rounded-lg px-3 py-2.5 ${aberta === i.chave ? "bg-realce" : "hover:bg-realce"}`}>
+                <div className={`group flex items-start gap-3 px-4 py-3 ${aberta === i.chave ? "bg-realce" : "hover:bg-realce"}`}>
                   <button
                     onClick={() => concluir(false)}
                     aria-label={i.feita ? "Desmarcar" : "Marcar como feita"}
@@ -152,7 +151,7 @@ export function NovaTarefa() {
           setDia("");
         });
       }}
-      className="-mx-3 px-3 py-2"
+      className="rounded-xl border border-linha bg-superficie px-4 py-3"
     >
       <div className="flex items-center gap-3">
         <span className="grid h-[17px] w-[17px] shrink-0 place-items-center rounded-full border border-dashed border-regua text-[12px] leading-none text-fosco">+</span>
@@ -166,7 +165,7 @@ export function NovaTarefa() {
         <BotaoDeVoz aoFalar={(t) => setTitulo((atual) => (atual ? `${atual} ${t}` : t))} />
       </div>
       {titulo.trim() && (
-        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 pl-[29px] text-[13px] text-fosco">
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-linha pl-[29px] pt-2 text-[13px] text-fosco">
           {entendido?.prazo && (
             <span>
               até{" "}

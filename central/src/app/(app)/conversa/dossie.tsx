@@ -48,9 +48,9 @@ export function DossieCarregando({ c }: { c: Conversa }) {
 
 function Quadro({ d }: { d: Dossie }) {
   const rotulo = "w-[92px] shrink-0 text-[13px] font-semibold text-fosco pt-[3px]";
-  const linha = "flex flex-col gap-1 sm:flex-row sm:gap-4";
+  const linha = "flex flex-col gap-1 px-4 py-3.5 sm:flex-row sm:gap-4";
   return (
-    <dl className="mt-6 space-y-5 text-[15px] leading-relaxed">
+    <dl className="mt-6 divide-y divide-linha overflow-hidden rounded-xl border border-linha bg-superficie text-[15px] leading-relaxed">
       {d.porque && (
         <div className={linha}>
           <dt className={rotulo}>Por quê</dt>
@@ -65,7 +65,7 @@ function Quadro({ d }: { d: Dossie }) {
               {d.linha.map((p, i) => (
                 <li key={i} className="relative">
                   <span
-                    className={`absolute -left-[21px] top-[9px] h-[9px] w-[9px] rounded-full border-2 border-fundo ${
+                    className={`absolute -left-[21px] top-[9px] h-[9px] w-[9px] rounded-full border-2 border-superficie ${
                       i === d.linha.length - 1 ? "bg-tinta" : "bg-regua"
                     }`}
                   />
@@ -84,7 +84,7 @@ function Quadro({ d }: { d: Dossie }) {
         </div>
       )}
       {d.falta && (
-        <div className={linha}>
+        <div className={`${linha} bg-realce`}>
           <dt className={rotulo}>Falta</dt>
           <dd className="min-w-0 flex-1 font-medium">{d.falta}</dd>
         </div>

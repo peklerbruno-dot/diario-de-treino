@@ -8,9 +8,17 @@ import { categoria } from "@/lib/categorias";
 
 export const nomeDaCategoria = (id: string) => categoria(id).nome;
 
-/** O ponto da conta: 7 px, a única cor numa linha. */
+/** O ponto da conta: 8 px, a cor que diz de onde a coisa vem. */
 export function Ponto({ cor, titulo }: { cor: string; titulo?: string }) {
-  return <span className="inline-block h-[7px] w-[7px] shrink-0 rounded-full" style={{ background: cor }} title={titulo} />;
+  return <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ background: cor }} title={titulo} />;
+}
+
+/**
+ * Um bloco de itens, como as listas agrupadas do iPhone: fundo um tom acima
+ * do papel, borda fina e uma linha entre um item e outro.
+ */
+export function Grupo({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return <div className={`divide-y divide-linha overflow-hidden rounded-xl border border-linha bg-superficie ${className}`}>{children}</div>;
 }
 
 export function Titulo({ children, sub }: { children: React.ReactNode; sub?: React.ReactNode }) {
@@ -28,16 +36,19 @@ export function Secao({
   acao,
   children,
   className = "",
+  tom,
 }: {
   titulo: string;
+  /** "atencao" pinta o título de vermelho (atrasadas). */
+  tom?: "atencao";
   acao?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
 }) {
   return (
-    <section className={`mb-10 ${className}`}>
-      <div className="mb-2 flex items-baseline justify-between">
-        <h2 className="text-[13px] font-semibold text-fosco">{titulo}</h2>
+    <section className={`mb-8 ${className}`}>
+      <div className="mb-2 flex items-baseline justify-between px-1">
+        <h2 className={`text-[13px] font-semibold ${tom === "atencao" ? "text-atencao" : "text-grafite"}`}>{titulo}</h2>
         {acao && <div className="text-[13px] text-fosco">{acao}</div>}
       </div>
       {children}
@@ -46,7 +57,7 @@ export function Secao({
 }
 
 export function Vazio({ children }: { children: React.ReactNode }) {
-  return <p className="py-2 text-[15px] text-fosco">{children}</p>;
+  return <p className="px-1 py-2 text-[15px] text-fosco">{children}</p>;
 }
 
 /** O prazo, discreto: "até sex., 18/10" em cinza; vermelho só se venceu ou é hoje. */
