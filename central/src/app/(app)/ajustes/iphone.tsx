@@ -91,6 +91,11 @@ export function NoIphone({ endereco, chave, script }: { endereco: string; chave:
             Adicionar campo → Texto: chave <b>texto</b>, valor <b>Entrada Fornecida</b>.
           </li>
           <li className={passo}>
+            Para escolher a data num calendário: adicione outra <b>Pedir Entrada</b>, troque “Texto” por <b>Data</b> e arraste-a para logo depois
+            da primeira. No <b>Obter Conteúdo do URL</b>, adicione mais um campo Texto: chave <b>prazo</b>, valor <b>Data</b> (a resposta dessa
+            segunda pergunta).
+          </li>
+          <li className={passo}>
             Adicione <b>Obter Valor do Dicionário</b> com a chave <b>mensagem</b>, e depois <b>Mostrar Notificação</b> com esse valor.
           </li>
           <li className={passo}>

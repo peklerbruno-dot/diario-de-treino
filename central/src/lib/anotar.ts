@@ -102,3 +102,24 @@ export function entenderAnotacao(texto: string, hoje: string): Anotacao {
   }
   return { titulo: original ? original[0].toUpperCase() + original.slice(1) : "", prazo: null };
 }
+
+const MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+const MESES_EN = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+
+/**
+ * A data que vem do atalho do iPhone, no formato que o iOS escolher: ISO
+ * ("2026-10-22T00:00:00-03:00"), "22/10/2026", "22 de out. de 2026",
+ * "Oct 22, 2026". Devolve "AAAA-MM-DD", ou null se não reconhecer.
+ */
+export function lerData(texto: string): string | null {
+  const t = simples(texto.trim());
+  let m = t.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return dataValida(Number(m[1]), Number(m[2]), Number(m[3]));
+  m = t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+  if (m) return dataValida(m[3].length === 2 ? 2000 + Number(m[3]) : Number(m[3]), Number(m[2]), Number(m[1]));
+  m = t.match(/(\d{1,2})\s+de\s+([a-z]{3})[a-z]*\.?\s+de\s+(\d{4})/);
+  if (m && MESES.includes(m[2])) return dataValida(Number(m[3]), MESES.indexOf(m[2]) + 1, Number(m[1]));
+  m = t.match(/([a-z]{3})[a-z]*\.?\s+(\d{1,2}),?\s+(\d{4})/);
+  if (m && MESES_EN.includes(m[1])) return dataValida(Number(m[3]), MESES_EN.indexOf(m[1]) + 1, Number(m[2]));
+  return null;
+}
