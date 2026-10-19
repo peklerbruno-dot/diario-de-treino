@@ -16,12 +16,12 @@ const ativo = (pathname: string, href: string) => (href === "/" ? pathname === "
 export function Lateral({ rodape }: { rodape: React.ReactNode }) {
   const pathname = usePathname();
   const item = (sel: boolean) =>
-    `flex items-center gap-3 rounded-lg px-3 py-2 text-[15px] transition-colors ${
-      sel ? "bg-realce font-medium text-tinta" : "text-grafite hover:text-tinta"
+    `flex items-center gap-3 rounded-xl px-3 py-2 text-[15px] transition-colors ${
+      sel ? "cartao font-semibold text-destaque" : "text-grafite hover:text-tinta"
     }`;
   return (
     <aside className="sticky top-0 hidden h-screen w-[220px] shrink-0 flex-col border-r border-linha px-4 py-7 lg:flex">
-      <Link href="/" className="mb-8 px-3 text-[15px] font-semibold tracking-tight">
+      <Link href="/" className="serifa mb-8 px-3 text-[22px]">
         Central
       </Link>
       <nav className="space-y-1">
@@ -43,16 +43,16 @@ export function Lateral({ rodape }: { rodape: React.ReactNode }) {
   );
 }
 
-/** A barra de abas do celular, sem selos de número. */
+/** A barra de abas do celular: um cartão flutuante, sem selos de número. */
 export function Abas() {
   const pathname = usePathname();
   return (
-    <nav className="seguro-embaixo fixed inset-x-0 bottom-0 z-20 flex border-t border-linha bg-fundo lg:hidden">
+    <nav className="cartao fixed inset-x-3 bottom-[max(env(safe-area-inset-bottom),10px)] z-20 flex !rounded-[26px] py-1.5 lg:hidden">
       {[...ITENS, { href: "/ajustes", nome: "Ajustes", Icone: IconeAjustes }].map(({ href, nome, Icone }) => (
         <Link
           key={href}
           href={href}
-          className={`flex flex-1 flex-col items-center gap-0.5 pt-2 text-[10.5px] ${ativo(pathname, href) ? "text-tinta" : "text-fosco"}`}
+          className={`flex flex-1 flex-col items-center gap-0.5 py-1 text-[11px] ${ativo(pathname, href) ? "font-semibold text-destaque" : "text-fosco"}`}
         >
           <Icone className="h-[22px] w-[22px]" />
           {nome}

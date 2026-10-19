@@ -13,12 +13,12 @@ export function Formulario() {
         autoComplete="current-password"
         placeholder="Código de acesso"
         autoFocus
-        className="w-full rounded-md border border-regua bg-superficie px-4 py-2.5 outline-none focus:border-destaque"
+        className="cartao w-full px-4 py-3 outline-none"
       />
       {estado.motivo && <p className="text-sm text-atencao">{estado.motivo}</p>}
       <button
         disabled={pendente}
-        className="w-full rounded-md bg-destaque px-4 py-2.5 font-semibold text-destaque-tinta disabled:opacity-60"
+        className="w-full rounded-full bg-destaque px-4 py-3 font-semibold text-destaque-tinta disabled:opacity-60"
       >
         {pendente ? "Entrando…" : "Entrar"}
       </button>

@@ -24,8 +24,8 @@ export async function SobreContato({ email, nome, conversaAtual }: { email: stri
   const desde = primeira?.ultimaData.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo", month: "short", year: "numeric" });
 
   return (
-    <section className="mt-10">
-      <h2 className="mb-2 truncate text-[13px] font-semibold text-fosco">Sobre {nome}</h2>
+    <section className="cartao mt-5 p-4">
+      <h2 className="mb-2 truncate rotulo">Sobre {nome}</h2>
       <p className="text-[14px] text-fosco">
         {email} · {total} {total === 1 ? "conversa" : "conversas"}
         {desde && total > 1 ? ` desde ${desde}` : ""}

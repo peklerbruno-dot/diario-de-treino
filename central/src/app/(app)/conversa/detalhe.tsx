@@ -67,13 +67,13 @@ export async function DetalheConversa({ id, cobrar = false }: { id: string; cobr
       </p>
       {pendencia && c.proximaAcao ? (
         <>
-          <h1 className="mt-2 text-[24px] font-semibold leading-snug tracking-tight">{c.proximaAcao}</h1>
+          <h1 className="serifa mt-2 text-[26px] leading-snug">{c.proximaAcao}</h1>
           <p className="mt-1 text-[14px] text-fosco">
             {c.remetente.replace(/^Para: /, "")} · {c.assunto}
           </p>
         </>
       ) : (
-        <h1 className="mt-2 text-[24px] font-semibold leading-snug tracking-tight">{c.assunto}</h1>
+        <h1 className="serifa mt-2 text-[26px] leading-snug">{c.assunto}</h1>
       )}
 
       {/* O que está na sua lista ganha a história inteira; o resto, a frase da triagem. */}
@@ -109,7 +109,7 @@ export async function DetalheConversa({ id, cobrar = false }: { id: string; cobr
       {anexos.length > 0 && <Anexos key={`x-${c.id}`} id={c.id} anexos={anexos} />}
 
       {mensagens.length > 0 && (
-        <h2 className="mb-1 mt-12 text-[13px] font-semibold text-fosco">
+        <h2 className="mb-2 mt-10 px-1 rotulo">
           {mensagens.length} {mensagens.length === 1 ? "mensagem" : "mensagens"}
         </h2>
       )}
@@ -118,13 +118,13 @@ export async function DetalheConversa({ id, cobrar = false }: { id: string; cobr
           Não deu para carregar as mensagens agora. Abra no Gmail ou tente daqui a pouco.
         </p>
       )}
-      <div>
+      <div className={mensagens.length ? "cartao divide-y divide-linha overflow-hidden" : ""}>
         {mensagens.map((m) => {
           const de = separarEndereco(cabecalho(m, "From"));
           const minha = de.email === c.conta.email.toLowerCase();
           const texto = semCitacao(corpoEmTexto(m));
           return (
-            <div key={m.id} className="border-t border-linha py-5">
+            <div key={m.id} className="px-4 py-4">
               <div className="flex items-baseline justify-between gap-3">
                 <span className="truncate text-[15px] font-medium">{minha ? "Você" : de.nome}</span>
                 <span className="numeros shrink-0 text-[13px] text-fosco">

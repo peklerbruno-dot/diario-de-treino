@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 
 type Busca = Promise<{ conectada?: string; erro?: string }>;
 
-const campo = "rounded-md border border-linha bg-superficie px-3 py-1.5 outline-none focus:border-destaque";
+const campo = "rounded-xl border border-linha bg-fundo px-3 py-1.5 outline-none focus:border-destaque";
 
 export default async function Ajustes({ searchParams }: { searchParams: Busca }) {
   const { conectada, erro } = await searchParams;
@@ -49,7 +49,7 @@ export default async function Ajustes({ searchParams }: { searchParams: Busca })
       )}
 
       <section className="mt-6">
-        <h2 className="mb-2 text-[13px] font-semibold text-fosco">Contas</h2>
+        <h2 className="mb-2 rotulo">Contas</h2>
         <div className="mt-2 space-y-3">
           {contas.map((c) => (
             <div key={c.id} className="border-b border-linha py-4">
@@ -73,7 +73,7 @@ export default async function Ajustes({ searchParams }: { searchParams: Busca })
               <form action={renomearConta} className="mt-3 flex gap-2">
                 <input type="hidden" name="id" value={c.id} />
                 <input name="rotulo" defaultValue={c.rotulo} className={`${campo} w-32`} aria-label="Rótulo" />
-                <button className="rounded-md border border-linha px-3 py-1.5 text-sm font-medium hover:bg-realce">Renomear</button>
+                <button className="rounded-full bg-realce px-4 py-1.5 text-sm font-medium hover:bg-linha">Renomear</button>
               </form>
               <details className="mt-3">
                 <summary className="cursor-pointer text-sm font-semibold text-grafite">
@@ -90,7 +90,7 @@ export default async function Ajustes({ searchParams }: { searchParams: Busca })
                     className={`${campo} w-full text-sm`}
                   />
                   <div className="mt-2 flex gap-2">
-                    <button className="rounded-md border border-linha px-3 py-1.5 text-sm font-medium hover:bg-realce">Salvar estilo</button>
+                    <button className="rounded-full bg-realce px-4 py-1.5 text-sm font-medium hover:bg-linha">Salvar estilo</button>
                     <AprenderEstilo id={c.id} />
                   </div>
                 </form>
@@ -110,8 +110,8 @@ export default async function Ajustes({ searchParams }: { searchParams: Busca })
         </p>
       </section>
 
-      <section className="mt-10">
-        <h2 className="mb-2 text-[13px] font-semibold text-fosco">Resumo da manhã</h2>
+      <section className="cartao mt-5 p-5">
+        <h2 className="mb-2 rotulo">Resumo da manhã</h2>
         <p className="mb-3 text-[15px] text-grafite">
           Todo dia, a partir das 7h, um e-mail curto com a agenda, o que fazer e quem te deve resposta. Ele vai da conta escolhida para ela mesma.
         </p>
@@ -130,20 +130,20 @@ export default async function Ajustes({ searchParams }: { searchParams: Busca })
               ))}
             </select>
           </label>
-          <button className="rounded-md border border-linha px-3 py-1.5 text-sm font-medium hover:bg-realce">Salvar</button>
+          <button className="rounded-full bg-realce px-4 py-1.5 text-sm font-medium hover:bg-linha">Salvar</button>
         </form>
         <div className="mt-3">
           <EnviarResumoAgora />
         </div>
       </section>
 
-      <section className="mt-10">
-        <h2 className="mb-2 text-[13px] font-semibold text-fosco">No iPhone: widget e atalho</h2>
+      <section className="cartao mt-5 p-5">
+        <h2 className="mb-2 rotulo">No iPhone: widget e atalho</h2>
         <NoIphone endereco={endereco} chave={chave} script={chave ? scriptDoWidget(endereco, chave) : ""} />
       </section>
 
-      <section className="mt-10">
-        <h2 className="mb-2 text-[13px] font-semibold text-fosco">Regras da triagem</h2>
+      <section className="cartao mt-5 p-5">
+        <h2 className="mb-2 rotulo">Regras da triagem</h2>
         <p className="mt-1 text-sm text-grafite">
           Escreva como você decide. Ex.: “Tudo da Nancy (nrozench@usp.br) é prioridade alta”, “Boletim do CEJ com [Teste] no
           assunto é ruído”.
@@ -157,7 +157,7 @@ export default async function Ajustes({ searchParams }: { searchParams: Busca })
           ))}
           <form action={adicionarInstrucao} className="flex gap-2 py-3">
             <input name="texto" placeholder="Nova regra…" className={`${campo} min-w-0 flex-1`} />
-            <button className="rounded-md border border-linha px-3 py-1.5 text-sm font-medium hover:bg-realce">Adicionar</button>
+            <button className="rounded-full bg-realce px-4 py-1.5 text-sm font-medium hover:bg-linha">Adicionar</button>
           </form>
         </div>
         <p className="mt-2 text-[13px] text-fosco">

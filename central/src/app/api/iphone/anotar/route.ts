@@ -34,21 +34,22 @@ export async function POST(req: Request) {
     const campos = new URLSearchParams(bruto);
     texto = campos.get("texto") ?? [...campos.keys()].join(" ");
   }
-  const t = await anotar(texto, prazo);
-  if (!t) return Response.json({ erro: "Nada para anotar." }, { status: 400 });
+  const tarefas = await anotar(texto, prazo);
+  if (!tarefas.length) return Response.json({ erro: "Nada para anotar." }, { status: 400 });
   revalidatePath("/", "layout");
-  const ate = t.prazo
-    ? t.prazo.toLocaleDateString("pt-BR", { timeZone: "UTC", weekday: "long", day: "numeric", month: "numeric" })
-    : null;
   // Se veio uma data que não deu para ler, a resposta diz qual foi (para
   // acertar o atalho).
   if (prazoRecebido && !prazo) console.warn("[anotar] data não reconhecida:", prazoRecebido);
   const aviso = prazoRecebido && !prazo ? ` — não entendi a data "${prazoRecebido}"` : "";
+  const quando = (d: Date | null) =>
+    d ? d.toLocaleDateString("pt-BR", { timeZone: "UTC", weekday: "long", day: "numeric", month: "numeric" }) : null;
+  const linhas = tarefas.map((t) => (t.prazo ? `${t.titulo} (até ${quando(t.prazo)})` : t.titulo));
   return Response.json({
     ok: true,
-    titulo: t.titulo,
-    prazo: ate,
+    titulo: tarefas[0].titulo,
+    prazo: quando(tarefas[0].prazo),
     prazoRecebido: prazoRecebido || null,
-    mensagem: (ate ? `Anotado: ${t.titulo} (até ${ate})` : `Anotado: ${t.titulo}`) + aviso,
+    tarefas: tarefas.map((t) => ({ titulo: t.titulo, prazo: quando(t.prazo) })),
+    mensagem: (tarefas.length === 1 ? `Anotado: ${linhas[0]}` : `Anotadas ${tarefas.length}: ${linhas.join("; ")}`) + aviso,
   });
 }

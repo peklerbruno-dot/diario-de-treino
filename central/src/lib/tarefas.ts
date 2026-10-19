@@ -5,6 +5,7 @@ import { DEPENDEM_DE_MIM } from "./categorias";
 import { visivel } from "./consultas";
 import { corDaConta } from "./cores";
 import { entenderAnotacao } from "./anotar";
+import { iaConfigurada, interpretarAnotacao, type Anotada } from "./ia";
 import { diaEmSaoPaulo, prazoPorExtenso, somarDias } from "./datas";
 
 export interface Grupos {
@@ -56,6 +57,7 @@ export async function tarefasAgrupadas(): Promise<Grupos> {
         prazo: t.prazo ? prazoPorExtenso(t.prazo) : null,
         href: `/?p=t:${t.id}`,
         comNota: Boolean(t.nota),
+        itens: (t.nota ?? "").split("\n").filter((l) => l.startsWith("• ")).length,
         feita: false,
       },
       t.prazo,
@@ -79,15 +81,42 @@ export async function tarefasAgrupadas(): Promise<Grupos> {
 }
 
 /**
- * Uma anotação vira tarefa: o prazo escolhido, ou o que o próprio texto diz
- * ("até quinta"). Usada pelo campo do Hoje e pelo atalho do iPhone.
+ * Uma anotação vira tarefa (ou tarefas). O Gemini passa a limpo: corrige a
+ * escrita, põe em imperativo, separa em itens ou em tarefas. Sem ele (sem
+ * chave ou sem cota), vale o texto como veio, com a data que ele disser.
+ * Um prazo escolhido (no calendário) vale para todas e acima do texto.
+ * Usada pelo campo do Hoje e pelo atalho do iPhone.
  */
-const maiuscula = (t: string) => (t ? t[0].toUpperCase() + t.slice(1) : t);
-
 export async function anotar(texto: string, prazo?: string | null) {
-  const a = entenderAnotacao(texto.slice(0, 300), diaEmSaoPaulo());
+  const limpo = texto.trim().slice(0, 1000);
+  if (!limpo) return [];
   const escolhido = prazo && /^\d{4}-\d{2}-\d{2}$/.test(prazo) ? prazo : null;
-  const dia = escolhido ?? a.prazo;
-  if (!a.titulo) return null;
-  return bd.tarefa.create({ data: { titulo: escolhido ? maiuscula(texto.trim().slice(0, 300)) : a.titulo, prazo: dia ? new Date(`${dia}T00:00:00Z`) : null } });
+  let tarefas: Anotada[] = [];
+  if (iaConfigurada()) {
+    try {
+      tarefas = await interpretarAnotacao(limpo);
+    } catch (e) {
+      console.error("[anotar]", e);
+    }
+  }
+  if (!tarefas.length) {
+    const a = entenderAnotacao(limpo.slice(0, 300), diaEmSaoPaulo());
+    tarefas = [{ titulo: a.titulo, prazo: a.prazo, itens: [] }];
+  }
+  return Promise.all(
+    tarefas.map((t) => {
+      const dia = escolhido ?? t.prazo;
+      return bd.tarefa.create({
+        data: {
+          titulo: t.titulo,
+          prazo: dia ? new Date(`${dia}T00:00:00Z`) : null,
+          // Os itens moram na nota, um por linha, e a nota guarda também o
+          // que foi escrito, para conferir.
+          nota: [...t.itens.map((i) => `• ${i}`), t.itens.length || t.titulo !== limpo ? `Anotado: “${limpo}”` : ""]
+            .filter(Boolean)
+            .join("\n") || null,
+        },
+      });
+    }),
+  );
 }

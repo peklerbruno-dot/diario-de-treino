@@ -60,8 +60,8 @@ export function PainelDeRascunho({
 
   const ocupado = estado !== "parado";
   return (
-    <section className="mt-10">
-      <h2 className="mb-2 text-[13px] font-semibold text-fosco">{cobranca ? `Cobrar resposta · esperando há ${cobranca.dias} dias` : "Responder"}</h2>
+    <section className="cartao mt-5 p-4">
+      <h2 className="mb-2 rotulo">{cobranca ? `Cobrar resposta · esperando há ${cobranca.dias} dias` : "Responder"}</h2>
       <textarea
         id="contexto"
         value={contexto}
@@ -75,7 +75,7 @@ export function PainelDeRascunho({
         <button
           onClick={() => escrever(false)}
           disabled={ocupado}
-          className="rounded-lg bg-tinta px-3.5 py-1.5 text-[14px] font-medium text-fundo disabled:opacity-50"
+          className="rounded-full bg-destaque px-4 py-2 text-[14px] font-semibold text-white disabled:opacity-50"
         >
           {estado === "escrevendo" ? "Escrevendo…" : texto ? "Escrever de novo" : cobranca ? "Rascunhar lembrete" : "Rascunhar resposta"}
         </button>
@@ -99,7 +99,7 @@ export function PainelDeRascunho({
             <button
               onClick={salvar}
               disabled={ocupado || !texto.trim()}
-              className="rounded-lg bg-tinta px-3.5 py-1.5 text-[14px] font-medium text-fundo disabled:opacity-50"
+              className="rounded-full bg-destaque px-4 py-2 text-[14px] font-semibold text-white disabled:opacity-50"
             >
               {estado === "salvando" ? "Salvando…" : "Salvar como rascunho no Gmail"}
             </button>

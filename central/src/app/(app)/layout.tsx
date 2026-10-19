@@ -35,10 +35,10 @@ export default async function LayoutDoApp({ children }: { children: React.ReactN
       <Lateral rodape={status} />
       <div className="min-w-0 flex-1">
         <div className="seguro-em-cima sticky top-0 z-10 flex items-center justify-between bg-fundo px-5 py-3 lg:hidden">
-          <span className="text-[15px] font-semibold tracking-tight">Central</span>
+          <span className="serifa text-[19px]">Central</span>
           <div className="text-right">{status}</div>
         </div>
-        <main className="px-5 pb-28 pt-4 lg:px-12 lg:pb-16 lg:pt-12">{children}</main>
+        <main className="px-4 pb-32 pt-4 lg:px-12 lg:pb-16 lg:pt-12">{children}</main>
       </div>
       <Abas />
     </div>

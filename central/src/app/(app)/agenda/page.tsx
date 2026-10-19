@@ -48,7 +48,7 @@ export default async function Agenda({ searchParams }: { searchParams: Busca }) 
   return (
     <div>
       <header className="mb-6 flex flex-wrap items-baseline gap-x-6 gap-y-2">
-        <h1 className="text-[28px] font-semibold tracking-tight first-letter:uppercase">{rotuloMes(vista === "mes" ? primeiroDoMes : foco)}</h1>
+        <h1 className="serifa text-[34px] leading-tight first-letter:uppercase">{rotuloMes(vista === "mes" ? primeiroDoMes : foco)}</h1>
         <nav className="flex items-center gap-4 text-[14px] text-fosco">
           <Link href={link(anterior)} className="hover:text-tinta" aria-label="Anterior">
             <IconeVoltar className="h-4 w-4" />
@@ -60,9 +60,9 @@ export default async function Agenda({ searchParams }: { searchParams: Busca }) 
             <IconeSeta className="h-4 w-4" />
           </Link>
         </nav>
-        <nav className="ml-auto flex gap-4 text-[14px]">
+        <nav className="cartao ml-auto flex gap-1 p-1 text-[14px]">
           {(["semana", "mes"] as const).map((v) => (
-            <Link key={v} href={link(foco, v)} className={vista === v ? "font-medium text-tinta" : "text-fosco hover:text-tinta"}>
+            <Link key={v} href={link(foco, v)} className={`rounded-[14px] px-3 py-1 ${vista === v ? "bg-destaque font-semibold text-white" : "text-grafite hover:text-tinta"}`}>
               {v === "semana" ? "Semana" : "Mês"}
             </Link>
           ))}
@@ -158,13 +158,13 @@ function Semana({
   const agoraMin = minutosDoDia(new Date());
 
   return (
-    <div className="overflow-hidden border-t border-linha">
+    <div className="cartao overflow-hidden">
       <div className="grid grid-cols-[56px_repeat(7,minmax(0,1fr))] border-b border-linha">
         <div />
         {dias.map((d, i) => (
           <div key={d} className="border-l border-linha px-2 py-2">
             <p className="text-[12px] text-fosco">{NOMES_SEMANA[i]}</p>
-            <p className={`numeros mt-0.5 inline-grid h-7 min-w-7 place-items-center rounded-full px-1 text-[15px] ${d === hoje ? "bg-tinta font-medium text-fundo" : ""}`}>{numeroDia(d)}</p>
+            <p className={`numeros mt-0.5 inline-grid h-7 min-w-7 place-items-center rounded-full px-1 text-[15px] ${d === hoje ? "bg-destaque font-semibold text-white" : ""}`}>{numeroDia(d)}</p>
           </div>
         ))}
       </div>
@@ -262,22 +262,28 @@ function ListaDaSemana({
         const evs = doDia.get(d) ?? [];
         const ms = marcosDoDia(d);
         return (
-          <section key={d} className="mb-7">
-            <h2 className="mb-1 text-[13px] font-semibold text-fosco first-letter:uppercase">
+          <section key={d} className="mb-6">
+            <h2 className={`mb-2 px-1 rotulo first-letter:uppercase ${d === hoje ? "!text-destaque" : ""}`}>
               {d === hoje ? "Hoje · " : ""}
               {diaExtenso(d)}
             </h2>
-            {!evs.length && !ms.length && <p className="py-1 text-[15px] text-regua">—</p>}
-            {ms.map((m) => (
-              <ChipMarco key={m.tipo + m.id} m={m} />
-            ))}
-            {evs.map((e, i) => (
-              <a key={i} href={e.link} target="_blank" rel="noreferrer" className="flex items-center gap-3 py-1.5">
-                <span className="numeros w-12 shrink-0 text-[14px] text-fosco">{e.diaInteiro ? "o dia" : horaCurta(e.inicio)}</span>
-                <span className="min-w-0 flex-1 truncate text-[15px]">{e.titulo}</span>
-                <span className="h-[7px] w-[7px] shrink-0 rounded-full" style={{ background: e.cor }} title={e.conta} />
-              </a>
-            ))}
+            <div className="cartao divide-y divide-linha overflow-hidden">
+              {!evs.length && !ms.length && <p className="px-4 py-3 text-[15px] text-fosco">Nada marcado.</p>}
+              {ms.length > 0 && (
+                <div className="px-3 py-2">
+                  {ms.map((m) => (
+                    <ChipMarco key={m.tipo + m.id} m={m} />
+                  ))}
+                </div>
+              )}
+              {evs.map((e, i) => (
+                <a key={i} href={e.link} target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-3 hover:bg-realce">
+                  <span className="numeros w-11 shrink-0 text-[14px] text-fosco">{e.diaInteiro ? "o dia" : horaCurta(e.inicio)}</span>
+                  <span className="h-5 w-[3px] shrink-0 rounded-full" style={{ background: e.cor }} title={e.conta} />
+                  <span className="min-w-0 flex-1 truncate text-[15px]">{e.titulo}</span>
+                </a>
+              ))}
+            </div>
           </section>
         );
       })}
@@ -301,7 +307,7 @@ function Mes({
   link: (dia: string, v?: "semana" | "mes") => string;
 }) {
   return (
-    <div className="overflow-hidden border-t border-linha">
+    <div className="cartao overflow-hidden">
       <div className="grid grid-cols-7 border-b border-linha">
         {NOMES_SEMANA.map((n) => (
           <p key={n} className="px-2 py-2 text-[12px] text-fosco">
@@ -320,7 +326,7 @@ function Mes({
               href={link(d, "semana")}
               className={`min-h-[64px] border-b border-linha p-1.5 hover:bg-realce lg:min-h-[104px] ${i % 7 ? "border-l" : ""} ${d.slice(0, 7) !== mes ? "text-regua" : ""}`}
             >
-              <p className={`numeros mb-1 inline-grid h-6 min-w-6 place-items-center rounded-full px-1 text-[13px] ${d === hoje ? "bg-tinta font-medium text-fundo" : ""}`}>
+              <p className={`numeros mb-1 inline-grid h-6 min-w-6 place-items-center rounded-full px-1 text-[13px] ${d === hoje ? "bg-destaque font-semibold text-white" : ""}`}>
                 {numeroDia(d)}
               </p>
               {/* No celular, só pontinhos; no computador, os títulos. */}

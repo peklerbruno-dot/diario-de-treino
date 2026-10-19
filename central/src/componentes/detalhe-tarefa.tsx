@@ -37,13 +37,13 @@ export function DetalheTarefa({
           setSalvo(false);
         }}
         rows={Math.min(4, Math.max(1, Math.ceil(titulo.length / 36)))}
-        className="mt-2 w-full resize-none bg-transparent text-[24px] font-semibold leading-snug tracking-tight outline-none"
+        className="serifa mt-2 w-full resize-none bg-transparent text-[26px] leading-snug outline-none"
         aria-label="Tarefa"
       />
 
-      <dl className="mt-6 space-y-5 text-[15px]">
+      <dl className="cartao mt-6 space-y-5 p-4 text-[15px]">
         <div className="flex flex-col gap-1 sm:flex-row sm:gap-4">
-          <dt className="w-[92px] shrink-0 pt-[3px] text-[13px] font-semibold text-fosco">Prazo</dt>
+          <dt className="rotulo w-[92px] shrink-0 pt-[3px]">Prazo</dt>
           <dd className="flex items-center gap-3">
             <input
               type="date"
@@ -62,7 +62,7 @@ export function DetalheTarefa({
           </dd>
         </div>
         <div className="flex flex-col gap-1 sm:flex-row sm:gap-4">
-          <dt className="w-[92px] shrink-0 pt-[3px] text-[13px] font-semibold text-fosco">Por quê</dt>
+          <dt className="rotulo w-[92px] shrink-0 pt-[3px]">Por quê</dt>
           <dd className="min-w-0 flex-1">
             <textarea
               value={nota}
@@ -80,7 +80,7 @@ export function DetalheTarefa({
 
       <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[15px]">
         {mudou && (
-          <button onClick={salvar} disabled={pendente} className="rounded-lg bg-tinta px-4 py-1.5 font-medium text-fundo disabled:opacity-40">
+          <button onClick={salvar} disabled={pendente} className="rounded-full bg-destaque px-5 py-2 font-semibold text-white disabled:opacity-40">
             Salvar
           </button>
         )}

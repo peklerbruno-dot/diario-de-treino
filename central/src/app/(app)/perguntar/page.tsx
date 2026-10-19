@@ -10,7 +10,7 @@ export default async function Perguntar({ searchParams }: { searchParams: Promis
   const pergunta = (q ?? "").trim().slice(0, 300);
   return (
     <div className="mx-auto max-w-[680px]">
-      <h1 className="mb-6 text-[28px] font-semibold tracking-tight">Pergunte à Central</h1>
+      <h1 className="serifa mb-6 text-[34px] leading-tight">Pergunte à Central</h1>
       <CampoDePergunta inicial={pergunta} />
       {pergunta ? (
         <Suspense key={pergunta} fallback={<p className="mt-8 text-[15px] text-fosco">Procurando nos seus e-mails…</p>}>
@@ -34,7 +34,7 @@ async function Resultado({ pergunta }: { pergunta: string }) {
         <p className="whitespace-pre-wrap text-[16px] leading-relaxed">{r.texto}</p>
         {r.fontes.length > 0 && (
           <div className="mt-8">
-            <h2 className="mb-2 text-[13px] font-semibold text-fosco">Fontes</h2>
+            <h2 className="mb-2 rotulo">Fontes</h2>
             <ol>
               {r.fontes.map((f) => (
                 <li key={f.n}>

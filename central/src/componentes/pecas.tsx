@@ -13,18 +13,33 @@ export function Ponto({ cor, titulo }: { cor: string; titulo?: string }) {
   return <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ background: cor }} title={titulo} />;
 }
 
+
+/** As iniciais de alguém num círculo na cor da conta (como num app de contatos). */
+export function Avatar({ nome, cor, tamanho = 36 }: { nome: string; cor: string; tamanho?: number }) {
+  const partes = nome.replace(/^Para:\s*/, "").replace(/[^\p{L}\s]/gu, " ").trim().split(/\s+/).filter(Boolean);
+  const iniciais = ((partes[0]?.[0] ?? "?") + (partes.length > 1 ? partes[partes.length - 1][0] : (partes[0]?.[1] ?? ""))).toUpperCase();
+  return (
+    <span
+      className="grid shrink-0 place-items-center rounded-full font-semibold text-white"
+      style={{ background: cor, width: tamanho, height: tamanho, fontSize: tamanho * 0.36 }}
+      aria-hidden
+    >
+      {iniciais}
+    </span>
+  );
+}
 /**
- * Um bloco de itens, como as listas agrupadas do iPhone: fundo um tom acima
- * do papel, borda fina e uma linha entre um item e outro.
+ * Um bloco de itens, como as listas agrupadas do iPhone: um cartão branco,
+ * com uma linha fina entre um item e outro.
  */
 export function Grupo({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <div className={`divide-y divide-linha overflow-hidden rounded-xl border border-linha bg-superficie ${className}`}>{children}</div>;
+  return <div className={`cartao divide-y divide-linha overflow-hidden ${className}`}>{children}</div>;
 }
 
 export function Titulo({ children, sub }: { children: React.ReactNode; sub?: React.ReactNode }) {
   return (
     <header className="mb-8">
-      <h1 className="text-[28px] font-semibold tracking-tight">{children}</h1>
+      <h1 className="serifa text-[34px] leading-tight">{children}</h1>
       {sub && <p className="mt-1 text-[15px] text-fosco first-letter:uppercase">{sub}</p>}
     </header>
   );
@@ -48,8 +63,8 @@ export function Secao({
   return (
     <section className={`mb-8 ${className}`}>
       <div className="mb-2 flex items-baseline justify-between px-1">
-        <h2 className={`text-[13px] font-semibold ${tom === "atencao" ? "text-atencao" : "text-grafite"}`}>{titulo}</h2>
-        {acao && <div className="text-[13px] text-fosco">{acao}</div>}
+        <h2 className={`rotulo ${tom === "atencao" ? "!text-atencao" : ""}`}>{titulo}</h2>
+        {acao && <div className="text-[14px] font-semibold text-destaque">{acao}</div>}
       </div>
       {children}
     </section>
@@ -57,7 +72,7 @@ export function Secao({
 }
 
 export function Vazio({ children }: { children: React.ReactNode }) {
-  return <p className="px-1 py-2 text-[15px] text-fosco">{children}</p>;
+  return <p className="cartao px-4 py-4 text-[15px] text-fosco">{children}</p>;
 }
 
 /** O prazo, discreto: "até sex., 18/10" em cinza; vermelho só se venceu ou é hoje. */

@@ -16,8 +16,8 @@ export function Anexos({ id, anexos }: { id: string; anexos: Anexo[] }) {
   }
 
   return (
-    <section className="mt-10">
-      <h2 className="mb-1 text-[13px] font-semibold text-fosco">Anexos</h2>
+    <section className="cartao mt-5 p-4">
+      <h2 className="mb-1 rotulo">Anexos</h2>
       <div>
         {anexos.map((a) => {
           const e = estado[a.anexoId] ?? {};
