@@ -3,12 +3,26 @@
  * o monta já com o endereço e a chave; em Ajustes você copia e cola no
  * Scriptable. Ele funciona nos tamanhos pequeno, médio e grande e na tela
  * bloqueada, e se atualiza sozinho a cada 15 minutos (quando o iOS deixa).
+ *
+ * Tocar no widget abre a Central dentro do próprio Scriptable, em tela cheia.
+ * O iOS não deixa um widget abrir um app posto na tela de início pelo
+ * navegador: um endereço comum cairia no navegador padrão (o Chrome, no caso).
  */
 export function scriptDoWidget(endereco: string, chave: string): string {
   return `// Central — o seu dia num widget.
 // Gerado pela Central. Contém a sua chave: não compartilhe.
 const APP = ${JSON.stringify(endereco)};
 const CHAVE = ${JSON.stringify(chave)};
+
+// Tocar no widget roda este script no app: aí ele abre a Central em tela
+// cheia, sem passar pelo navegador. (Na primeira vez, peça o código de acesso.)
+if (config.runsInApp && !config.runsInWidget) {
+  const tela = new WebView();
+  await tela.loadURL(APP);
+  await tela.present(true);
+  Script.complete();
+  return;
+}
 
 const familia = config.widgetFamily || "large";
 let d;
@@ -27,7 +41,7 @@ const FOSCO = cor("#8a8780", "#85827b");
 const VERMELHO = cor("#c4432b", "#ec7a63");
 
 const w = new ListWidget();
-w.url = APP;
+w.url = URLScheme.forRunningScript();
 w.backgroundColor = FUNDO;
 w.refreshAfterDate = new Date(Date.now() + 15 * 60 * 1000);
 
@@ -104,7 +118,6 @@ if (familia.startsWith("accessory")) {
 }
 
 Script.setWidget(w);
-if (!config.runsInWidget) await w.presentLarge();
 Script.complete();
 `;
 }

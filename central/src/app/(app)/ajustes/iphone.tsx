@@ -70,7 +70,8 @@ export function NoIphone({ endereco, chave, script }: { endereco: string; chave:
             mais) → <b>Adicionar widget</b>.
           </li>
           <li className={passo}>
-            Toque no widget recém-posto (ainda no modo de edição) → em <b>Script</b>, escolha <b>Central</b>. Pronto: tocar nele abre a Central.
+            Toque no widget recém-posto (ainda no modo de edição) → em <b>Script</b>, escolha <b>Central</b>. Pronto: tocar nele abre a Central em
+            tela cheia, sem passar pelo navegador (na primeira vez, digite o código de acesso).
           </li>
         </ol>
       </div>
