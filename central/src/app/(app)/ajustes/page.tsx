@@ -10,7 +10,7 @@ import { AprenderEstilo, EnviarResumoAgora, RemoverConta, RemoverInstrucao } fro
 import { NoIphone } from "./iphone";
 import { headers } from "next/headers";
 import { chaveDoIphone } from "@/lib/iphone";
-import { scriptDoWidget } from "@/lib/widget-iphone";
+import { carregadorDoWidget } from "@/lib/widget-iphone";
 
 export const dynamic = "force-dynamic";
 
@@ -139,7 +139,7 @@ export default async function Ajustes({ searchParams }: { searchParams: Busca })
 
       <section className="cartao mt-5 p-5">
         <h2 className="mb-2 rotulo">No iPhone: widget e atalho</h2>
-        <NoIphone endereco={endereco} chave={chave} script={chave ? scriptDoWidget(endereco, chave) : ""} />
+        <NoIphone endereco={endereco} chave={chave} script={chave ? carregadorDoWidget(endereco, chave) : ""} />
       </section>
 
       <section className="cartao mt-5 p-5">

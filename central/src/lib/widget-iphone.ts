@@ -121,3 +121,42 @@ Script.setWidget(w);
 Script.complete();
 `;
 }
+
+/**
+ * O que você cola no Scriptable: uma parte fixa e pequena, que busca o script
+ * de verdade na Central a cada atualização (e guarda uma cópia para quando
+ * estiver sem internet). Assim as correções do widget chegam sozinhas, sem
+ * copiar e colar de novo.
+ */
+export function carregadorDoWidget(endereco: string, chave: string): string {
+  return `// Central — o seu dia num widget.
+// Esta é a parte fixa: o resto vem da Central a cada vez, então as
+// melhorias chegam sozinhas. Contém a sua chave: não compartilhe.
+const APP = ${JSON.stringify(endereco)};
+const CHAVE = ${JSON.stringify(chave)};
+
+const fm = FileManager.local();
+const copia = fm.joinPath(fm.documentsDirectory(), "central-widget.js");
+let codigo = null;
+try {
+  const r = new Request(APP + "/api/iphone/widget?chave=" + encodeURIComponent(CHAVE));
+  r.timeoutInterval = 20;
+  const texto = await r.loadString();
+  if (r.response.statusCode === 200) {
+    codigo = texto;
+    fm.writeString(copia, texto);
+  }
+} catch (e) {}
+if (!codigo && fm.fileExists(copia)) codigo = fm.readString(copia);
+
+if (codigo) {
+  await eval("(async () => {\\n" + codigo + "\\n})()");
+} else {
+  const w = new ListWidget();
+  const t = w.addText("Central: sem conexão agora.");
+  t.font = Font.systemFont(13);
+  Script.setWidget(w);
+  Script.complete();
+}
+`;
+}
