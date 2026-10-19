@@ -115,7 +115,7 @@ export function lerData(texto: string): string | null {
   const t = simples(texto.trim());
   let m = t.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (m) return dataValida(Number(m[1]), Number(m[2]), Number(m[3]));
-  m = t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+  m = t.match(/(?:^|\D)(\d{1,2})\/(\d{1,2})\/(\d{2,4})(?!\d)/);
   if (m) return dataValida(m[3].length === 2 ? 2000 + Number(m[3]) : Number(m[3]), Number(m[2]), Number(m[1]));
   m = t.match(/(\d{1,2})\s+de\s+([a-z]{3})[a-z]*\.?\s+de\s+(\d{4})/);
   if (m && MESES.includes(m[2])) return dataValida(Number(m[3]), MESES.indexOf(m[2]) + 1, Number(m[1]));

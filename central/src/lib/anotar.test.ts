@@ -39,6 +39,8 @@ describe("anotar", () => {
     expect(lerData("22 de out. de 2026 00:00")).toBe("2026-10-22");
     expect(lerData("22 de outubro de 2026")).toBe("2026-10-22");
     expect(lerData("Oct 22, 2026 at 12:00 AM")).toBe("2026-10-22");
+    expect(lerData("segunda-feira, 19/10/2026 às 00:00")).toBe("2026-10-19");
+    expect(lerData("segunda-feira, 19 de outubro de 2026 às 00:00")).toBe("2026-10-19");
     expect(lerData("amanhã")).toBeNull();
   });
 });

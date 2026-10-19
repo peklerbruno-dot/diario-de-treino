@@ -16,12 +16,16 @@ export async function POST(req: Request) {
   const bruto = await req.text();
   let texto = bruto;
   let prazo: string | null = null;
+  let prazoRecebido = "";
   if (tipo.includes("json")) {
     try {
       const corpo = JSON.parse(bruto) as { texto?: unknown; prazo?: unknown };
       texto = String(corpo.texto ?? "");
       // O prazo escolhido no calendário do atalho vale mais que o do texto.
-      if (corpo.prazo) prazo = lerData(String(corpo.prazo));
+      if (corpo.prazo) {
+        prazoRecebido = String(corpo.prazo);
+        prazo = lerData(prazoRecebido);
+      }
     } catch {
       texto = "";
     }
@@ -36,5 +40,15 @@ export async function POST(req: Request) {
   const ate = t.prazo
     ? t.prazo.toLocaleDateString("pt-BR", { timeZone: "UTC", weekday: "long", day: "numeric", month: "numeric" })
     : null;
-  return Response.json({ ok: true, titulo: t.titulo, prazo: ate, mensagem: ate ? `Anotado: ${t.titulo} (até ${ate})` : `Anotado: ${t.titulo}` });
+  // Se veio uma data que não deu para ler, a resposta diz qual foi (para
+  // acertar o atalho).
+  if (prazoRecebido && !prazo) console.warn("[anotar] data não reconhecida:", prazoRecebido);
+  const aviso = prazoRecebido && !prazo ? ` — não entendi a data "${prazoRecebido}"` : "";
+  return Response.json({
+    ok: true,
+    titulo: t.titulo,
+    prazo: ate,
+    prazoRecebido: prazoRecebido || null,
+    mensagem: (ate ? `Anotado: ${t.titulo} (até ${ate})` : `Anotado: ${t.titulo}`) + aviso,
+  });
 }
