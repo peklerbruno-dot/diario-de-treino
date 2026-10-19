@@ -45,22 +45,22 @@ export default async function Emails({ searchParams }: { searchParams: Busca }) 
     const s = p.toString();
     return s ? `/caixa?${s}` : "/caixa";
   };
-  // A aba escolhida ganha um traço embaixo; os filtros de conta são pílulas.
+  // Os fluxos num seletor (a aba escolhida, cheia de verde); as contas, em pílulas.
   const aba = (sel: boolean) =>
-    `-mb-px shrink-0 border-b-2 pb-2.5 text-[15px] ${sel ? "border-tinta font-medium text-tinta" : "border-transparent text-fosco hover:text-tinta"}`;
+    `flex-1 whitespace-nowrap rounded-[14px] px-2 py-2 text-center text-[14px] ${sel ? "bg-destaque font-semibold text-white" : "text-grafite hover:text-tinta"}`;
   const filtro = (sel: boolean) =>
-    `shrink-0 rounded-full border px-3 py-1 text-[13px] ${sel ? "border-tinta bg-tinta text-fundo" : "border-linha bg-superficie text-grafite hover:border-regua"}`;
+    `shrink-0 rounded-full px-3.5 py-1.5 text-[13px] ${sel ? "bg-tinta font-medium text-fundo" : "cartao text-grafite hover:text-tinta"}`;
 
   const lista = (
     <>
-      <nav className="-mx-5 flex gap-5 overflow-x-auto border-b border-linha px-5 lg:mx-0 lg:px-0">
+      <nav className="cartao flex gap-1 p-1">
         {FLUXOS.map((f) => (
           <Link key={f.id} href={link({ fluxo: f.id, resolvidas: undefined, c: undefined })} className={aba(!resolvidas && fluxo === f.id)}>
             {f.nome}
           </Link>
         ))}
       </nav>
-      <nav className="-mx-5 mb-4 mt-3 flex items-center gap-2 overflow-x-auto px-5 lg:mx-0 lg:px-0">
+      <nav className="-mx-4 mb-4 mt-3 flex items-center gap-2 overflow-x-auto px-4 py-1 lg:mx-0 lg:px-0">
         <Link href={link({ conta: undefined, c: undefined })} className={filtro(!q.conta)}>
           Todas as contas
         </Link>
@@ -93,7 +93,7 @@ export default async function Emails({ searchParams }: { searchParams: Busca }) 
       mostrarDireita={Boolean(q.c)}
       esquerda={
         <>
-          <h1 className="mb-6 text-[28px] font-semibold tracking-tight">E-mails</h1>
+          <h1 className="serifa mb-5 text-[34px] leading-tight">E-mails</h1>
           {lista}
         </>
       }

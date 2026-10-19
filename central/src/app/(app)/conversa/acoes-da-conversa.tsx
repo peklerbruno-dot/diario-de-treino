@@ -7,7 +7,7 @@ import { MenuAdiar } from "@/componentes/deslizar";
 import { adiar, arquivarNoGmail, corrigirCategoria, marcarResolvida, porPrazoNaAgenda } from "../acoes";
 
 const acao =
-  "rounded-full border border-linha bg-superficie px-3 py-1 text-[14px] text-grafite hover:border-regua hover:text-tinta disabled:opacity-40";
+  "rounded-full bg-superficie px-3.5 py-1.5 text-[14px] font-medium text-grafite shadow-[0_1px_2px_rgba(40,30,10,0.06)] hover:text-tinta disabled:opacity-40";
 
 /** As ações da conversa, em texto, numa linha só. A categoria se troca no próprio rótulo. */
 export function Acoes(p: { id: string; categoria: string; resolvida: boolean; temPrazo: boolean; linkGmail: string }) {

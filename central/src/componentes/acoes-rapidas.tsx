@@ -62,7 +62,7 @@ export function AcoesRapidas({
 
   const item = "block w-full px-3 py-1.5 text-left text-[14px] hover:bg-realce disabled:opacity-40";
   const botao =
-    "rounded-full border border-linha bg-fundo px-3 py-1 text-[13px] text-grafite hover:border-regua hover:text-tinta disabled:opacity-40";
+    "rounded-full bg-realce px-3 py-1.5 text-[13px] font-medium text-grafite hover:text-tinta disabled:opacity-40";
   return (
     <div ref={caixa} className="relative flex flex-wrap items-center gap-1.5">
       {/* Os principais, sempre à vista. */}
@@ -85,7 +85,7 @@ export function AcoesRapidas({
         onClick={() => setAberto((a) => !a)}
         aria-label="Mais ações"
         title="Mover para outra categoria"
-        className={`grid h-7 w-7 place-items-center rounded-full border border-linha bg-fundo text-fosco hover:border-regua hover:text-tinta ${aberto ? "border-regua text-tinta" : ""}`}
+        className={`grid h-8 w-8 place-items-center rounded-full bg-realce text-grafite hover:text-tinta ${aberto ? "text-tinta" : ""}`}
       >
         <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor" aria-hidden>
           <circle cx="4.5" cy="10" r="1.5" />
@@ -109,7 +109,7 @@ export function AcoesRapidas({
               >
                 Adiar…
               </button>
-              <p className="border-t border-linha pb-1 pt-3 text-[13px] font-semibold text-fosco">Mover para</p>
+              <p className="border-t border-linha pb-1 pt-3 rotulo">Mover para</p>
               <div className="divide-y divide-linha">
                 {CATEGORIAS.filter((c) => c.id !== categoria).map((c) => (
                   <button
@@ -131,7 +131,7 @@ export function AcoesRapidas({
           document.body,
         )}
       {aberto && (
-        <div className="absolute left-0 top-9 z-30 hidden w-52 rounded-lg border border-linha bg-superficie py-1 shadow-lg lg:block">
+        <div className="cartao absolute left-0 top-10 z-30 hidden w-52 py-1 lg:block">
           <button
             className={item}
             onClick={() => {

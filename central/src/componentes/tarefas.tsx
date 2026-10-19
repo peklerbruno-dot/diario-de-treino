@@ -20,6 +20,8 @@ export interface ItemDeTarefa {
   href: string;
   /** Uma tarefa sua que tem nota (o porquê). */
   comNota?: boolean;
+  /** Quantos itens (linhas "• ") a nota tem. */
+  itens?: number;
   feita: boolean;
 }
 
@@ -48,7 +50,7 @@ export function ListaDeTarefas({ itens, vazio, aberta }: { itens: ItemDeTarefa[]
 
   return (
     <>
-      <ul className="divide-y divide-linha overflow-hidden rounded-xl border border-linha bg-superficie">
+      <ul className="cartao divide-y divide-linha overflow-hidden">
         {lista.map((i) => {
           const [tipo, id] = i.chave.split(":");
           const concluir = (sumir: boolean) =>
@@ -70,8 +72,8 @@ export function ListaDeTarefas({ itens, vazio, aberta }: { itens: ItemDeTarefa[]
                   <button
                     onClick={() => concluir(false)}
                     aria-label={i.feita ? "Desmarcar" : "Marcar como feita"}
-                    className={`mt-[3px] grid h-[17px] w-[17px] shrink-0 place-items-center rounded-full border transition-colors ${
-                      i.feita ? "border-fosco bg-fosco text-fundo" : "border-regua hover:border-grafite"
+                    className={`mt-px grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full border-2 transition-colors ${
+                      i.feita ? "border-destaque bg-destaque text-white" : "border-regua hover:border-destaque"
                     }`}
                   >
                     {i.feita && (
@@ -93,7 +95,7 @@ export function ListaDeTarefas({ itens, vazio, aberta }: { itens: ItemDeTarefa[]
                             </span>
                           </span>
                         )}
-                        {!i.origem && i.comNota && <span>com nota</span>}
+                        {!i.origem && i.comNota && <span>{i.itens ? `${i.itens} itens` : "com nota"}</span>}
                         {(i.origem || i.comNota) && i.prazo && <span>·</span>}
                         {i.prazo && <Prazo {...i.prazo} />}
                       </p>
@@ -151,21 +153,21 @@ export function NovaTarefa() {
           setDia("");
         });
       }}
-      className="rounded-xl border border-linha bg-superficie px-4 py-3"
+      className="cartao px-4 py-3.5"
     >
       <div className="flex items-center gap-3">
-        <span className="grid h-[17px] w-[17px] shrink-0 place-items-center rounded-full border border-dashed border-regua text-[12px] leading-none text-fosco">+</span>
+        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-destaque text-[18px] leading-none text-white">+</span>
         <input
           value={titulo}
           onChange={(e) => setTitulo(e.target.value)}
-          placeholder="Anotar (ex.: mandar orçamento pro CEJ até quinta)"
+          placeholder="Anotar (ex.: orçamento pro CEJ até quinta)"
           className="min-w-0 flex-1 bg-transparent py-0.5 text-[15px] outline-none placeholder:text-fosco"
           enterKeyHint="done"
         />
         <BotaoDeVoz aoFalar={(t) => setTitulo((atual) => (atual ? `${atual} ${t}` : t))} />
       </div>
       {titulo.trim() && (
-        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-linha pl-[29px] pt-2 text-[13px] text-fosco">
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-linha pl-10 pt-2.5 text-[13px] text-fosco">
           {entendido?.prazo && (
             <span>
               até{" "}
@@ -184,8 +186,8 @@ export function NovaTarefa() {
             className="bg-transparent text-[13px] text-fosco outline-none"
             aria-label="Escolher prazo"
           />
-          <button disabled={pendente} className="ml-auto text-[14px] font-medium text-destaque disabled:opacity-40">
-            Salvar
+          <button disabled={pendente} className="ml-auto rounded-full bg-destaque px-4 py-1.5 text-[14px] font-semibold text-white disabled:opacity-40">
+            {pendente ? "Anotando…" : "Anotar"}
           </button>
         </div>
       )}

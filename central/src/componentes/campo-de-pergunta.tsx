@@ -19,7 +19,7 @@ export function CampoDePergunta({ inicial = "", compacto = false }: { inicial?: 
         onChange={(e) => setTexto(e.target.value)}
         placeholder="Pergunte algo sobre seus e-mails…"
         aria-label="Pergunte à Central"
-        className={`w-full rounded-lg border border-linha bg-superficie px-3.5 outline-none placeholder:text-fosco focus:border-regua ${compacto ? "py-2 text-[15px]" : "py-2.5 text-[16px]"}`}
+        className={`cartao w-full px-4 outline-none placeholder:text-fosco ${compacto ? "py-2 text-[15px]" : "py-2.5 text-[16px]"}`}
       />
     </form>
   );

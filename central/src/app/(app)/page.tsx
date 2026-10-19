@@ -8,7 +8,7 @@ import { ListaDeTarefas, NovaTarefa } from "@/componentes/tarefas";
 import { choques, compromissos, porDia, type Compromisso } from "@/lib/agenda";
 import { bd } from "@/lib/bd";
 import { visivel } from "@/lib/consultas";
-import { agoraPorExtenso, diaEmSaoPaulo, FUSO, horaCurta, somarDias } from "@/lib/datas";
+import { diaEmSaoPaulo, FUSO, horaCurta, somarDias } from "@/lib/datas";
 import { tarefasAgrupadas } from "@/lib/tarefas";
 import { DetalheConversa } from "./conversa/detalhe";
 
@@ -34,9 +34,9 @@ export default async function Hoje({ searchParams }: { searchParams: Promise<{ p
   if (!contas.length) {
     return (
       <div className="mx-auto max-w-xl pt-6">
-        <h1 className="text-[28px] font-semibold tracking-tight">Bem-vindo à Central</h1>
+        <h1 className="serifa text-[34px] leading-tight">Bem-vindo à Central</h1>
         <p className="mt-3 text-[15px] text-grafite">Conecte suas contas Google para a Central ler as caixas e as agendas.</p>
-        <Link href="/ajustes" className="mt-6 inline-block rounded-lg bg-tinta px-4 py-2 text-[15px] font-medium text-fundo">
+        <Link href="/ajustes" className="mt-6 inline-block rounded-full bg-destaque px-5 py-2.5 text-[15px] font-semibold text-white">
           Conectar contas
         </Link>
       </div>
@@ -97,13 +97,14 @@ export default async function Hoje({ searchParams }: { searchParams: Promise<{ p
 
   const lista = (
     <>
-      <header className="mb-8">
-        <h1 className="text-[28px] font-semibold tracking-tight">
+      <header className="mb-7">
+        <p className="serifa text-[17px] font-semibold text-fosco first-letter:uppercase">
+          {agora.toLocaleDateString("pt-BR", { timeZone: FUSO, weekday: "long", day: "numeric", month: "short" }).replace(".", "")}
+        </p>
+        <h1 className="serifa mt-0.5 text-[34px] leading-tight">
           {saudacao(agora)}, {process.env.DONO_NOME || "Bruno"}.
         </h1>
-        <p className="mt-1 text-[15px] text-fosco first-letter:uppercase">
-          {agoraPorExtenso(agora).split(" às ")[0]} · {resumo.join(", ")}.
-        </p>
+        <p className="mt-1.5 text-[15px] text-grafite first-letter:uppercase">{resumo.join(" · ")}</p>
       </header>
 
       <div className="lg:hidden">{blocoAgenda}</div>

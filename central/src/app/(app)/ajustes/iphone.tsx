@@ -17,7 +17,7 @@ function Copiar({ texto, rotulo }: { texto: string; rotulo: string }) {
           prompt("Copie daqui:", texto);
         }
       }}
-      className="rounded-md border border-linha px-3 py-1.5 text-sm font-medium hover:bg-realce"
+      className="rounded-full bg-realce px-3.5 py-1.5 text-sm font-medium hover:bg-linha"
     >
       {feito ? "Copiado ✓" : rotulo}
     </button>
@@ -41,7 +41,7 @@ export function NoIphone({ endereco, chave, script }: { endereco: string; chave:
         <button
           disabled={pendente}
           onClick={() => comecar(() => gerarChaveDoIphone())}
-          className="rounded-md bg-tinta px-4 py-2 text-sm font-medium text-fundo disabled:opacity-40"
+          className="rounded-full bg-destaque px-5 py-2 text-sm font-semibold text-white disabled:opacity-40"
         >
           Ligar widget e atalho
         </button>

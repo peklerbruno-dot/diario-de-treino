@@ -177,7 +177,7 @@ export function MenuAdiar({ titulo, onEscolher, onFechar }: { titulo: string; on
         role="dialog"
         aria-label="Adiar"
       >
-        <p className="text-[13px] font-semibold text-fosco">Adiar</p>
+        <p className="rotulo">Adiar</p>
         <p className="mt-0.5 line-clamp-2 text-[15px]">{titulo}</p>
         <div className="mt-4 divide-y divide-linha">
           {opcoes.map((o) => (

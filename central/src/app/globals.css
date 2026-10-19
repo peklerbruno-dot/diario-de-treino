@@ -3,22 +3,22 @@
 @tailwind utilities;
 
 /*
- * A paleta: papel quente e tinta escura, uma cor de destaque só (verde-musgo),
- * vermelho reservado a prazo e urgência. Linhas finas separam as coisas, em
- * vez de cartões com sombra.
+ * A paleta: papel quente, cartões brancos de canto bem redondo com uma sombra
+ * leve, tinta escura e um verde de destaque para o que é ação principal.
+ * Vermelho reservado a prazo e urgência.
  */
 :root {
   color-scheme: light;
-  --fundo: #fbfaf8;
-  --lateral: #fbfaf8;
+  --fundo: #f4f2ed;
+  --lateral: #f4f2ed;
   --superficie: #ffffff;
   --tinta: #1f1e1c;
   --grafite: #57554f;
   --fosco: #8a8780;
-  --linha: #efede8;
+  --linha: #ece9e2;
   --regua: #d6d3cb;
   --realce: #f2f0eb;
-  --destaque: #2f5d50;
+  --destaque: #23774c;
   --destaque-tinta: #ffffff;
   --atencao: #c4432b;
   --alerta: #b5730f;
@@ -38,7 +38,7 @@
     --linha: #2c2b28;
     --regua: #3d3c38;
     --realce: #2a2926;
-    --destaque: #86bba8;
+    --destaque: #6cc196;
     --destaque-tinta: #10201b;
     --atencao: #ec7a63;
     --alerta: #ddaa4a;
@@ -89,4 +89,35 @@ a {
 }
 .seguro-em-cima {
   padding-top: env(safe-area-inset-top);
+}
+
+/* O cartão: branco, canto de 20 px e uma sombra que só se sente. */
+.cartao {
+  background: var(--superficie);
+  border-radius: 20px;
+  box-shadow:
+    0 1px 2px rgba(40, 30, 10, 0.04),
+    0 6px 20px rgba(40, 30, 10, 0.05);
+}
+@media (prefers-color-scheme: dark) {
+  .cartao {
+    box-shadow: none;
+    border: 1px solid var(--linha);
+  }
+}
+
+/* Títulos de tela com serifa (no iPhone, a New York do próprio sistema). */
+.serifa {
+  font-family: ui-serif, "New York", "Iowan Old Style", Georgia, serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Rótulo de seção: pequeno, em caixa-alta espaçada. */
+.rotulo {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fosco);
 }
