@@ -91,7 +91,7 @@ if (familia.startsWith("accessory")) {
     const l = w.addStack();
     l.centerAlignContent();
     l.spacing = 6;
-    texto(l, e.hora, 12, FOSCO).font = Font.monospacedDigitSystemFont(12, 0);
+    texto(l, e.hora, 12, FOSCO);
     ponto(l, e.cor);
     texto(l, e.titulo, 13, TINTA);
     w.addSpacer(3);
