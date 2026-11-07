@@ -213,6 +213,105 @@ const CENARIOS_JANTAR = [
   comMesa('redonda-70', 'Redonda 70', mesaRedonda(70, 202, 83)),
 ];
 
+// ---------------------------------------------------------------------
+// ESTUDO PRELIMINAR 02 · le.vá arquitetura (opção 01) — medido na planta de
+// layout (1/50) e nos renders: nogueira, azul-marinho, granilite claro,
+// mesa redonda com cadeiras dobráveis, coifa de parede, torre da geladeira,
+// rack com prateleiras (até o teto ou suspensas do teto) e banheiro vinho.
+// ---------------------------------------------------------------------
+const NOGUEIRA = '#6b4430', AZUL_LEVA = '#46557a', GRANILITE = '#ece6dc';
+const caixaLeva = (nome, x, z, rot, y, l, p, a, cor) => ({ tipo: 'caixa', nome, x, z, rot, y, l, p, a, cores: { principal: cor, secundaria: cor } });
+const montante = (nome, x, z, y, a) => ({ tipo: 'cilindro', nome, x, z, rot: 0, y, l: 3.5, p: 3.5, a, cores: { principal: '#a7a9ab', secundaria: '#a7a9ab' } });
+const prateleiraLeva = (nome, x, y, l) => ({ tipo: 'prateleira', nome, x, z: 230, rot: 0, y, l, p: 32, a: 26, cores: { principal: NOGUEIRA, secundaria: '#a7a9ab' } });
+const ESTANTE_TETO = [
+  prateleiraLeva('Prateleira alta', 109, 195, 218), prateleiraLeva('Prateleira do meio', 109, 155, 218),
+  prateleiraLeva('Prateleira lateral', 192, 112, 48),
+  // montantes metálicos do rack até o teto
+  ...[52, 167, 215].map((x, i) => montante(`Montante ${i + 1}`, x, 230, 50, 210)),
+];
+const ESTANTE_SUSPENSA = [
+  prateleiraLeva('Prateleira suspensa alta', 109, 215, 218), prateleiraLeva('Prateleira suspensa baixa', 109, 175, 218),
+  // tirantes presos no teto
+  ...[[25, 218], [25, 242], [193, 218], [193, 242]].map(([x, z], i) => montante(`Tirante ${i + 1}`, x, z, 175, 85)),
+];
+const moveisLeva = (estante) => [
+  // ---- office e jantar: mesa de 100 × 45, banco de 130 e mesa redonda Ø80 com 2 cadeiras dobráveis
+  { tipo: 'revestimento', nome: 'Barrado pintado (bege)', x: 165, z: 0.5, rot: 0, l: 330, p: 1, a: 90, acab: 'laca',
+    cores: { principal: '#d8ceb3', secundaria: '#d8ceb3' } },
+  { tipo: 'mesa_computador', nome: 'Bancada de trabalho', variante: 'escrivaninha', x: 64, z: 22.5, rot: 0, l: 100, p: 45, a: 75,
+    cores: { principal: NOGUEIRA, secundaria: NOGUEIRA } },
+  { tipo: 'cadeira_escritorio', nome: 'Cadeira do escritório', x: 55, z: 75, rot: 180, l: 60, p: 60, a: 100, acab: 'couro',
+    cores: { principal: '#c9a24a', secundaria: '#b9bcc0' } },
+  { tipo: 'quadro', nome: 'Quadros sobre a mesa', variante: 'trio', x: 80, z: 1.5, rot: 0, y: 115, l: 70, p: 3, a: 45 },
+  { tipo: 'banco', nome: 'Banco de jantar', x: 179, z: 20, rot: 0, l: 130, p: 40, a: 45, acab: 'linho',
+    cores: { principal: '#b5532f', secundaria: NOGUEIRA } },
+  { tipo: 'mesa_redonda', nome: 'Mesa de jantar', variante: 'pe_central', x: 199, z: 75, rot: 0, l: 80, p: 80, a: 76,
+    cores: { principal: GRANILITE, secundaria: GRANILITE } },
+  { tipo: 'cadeira', nome: 'Cadeira de jantar', variante: 'madeira', x: 136, z: 80, rot: 270, l: 42, p: 48, a: 82,
+    cores: { principal: '#7d8794', secundaria: '#7d8794' } },
+  { tipo: 'cadeira', nome: 'Cadeira de jantar', variante: 'madeira', x: 205, z: 133, rot: 180, l: 42, p: 48, a: 82,
+    cores: { principal: '#7d8794', secundaria: '#7d8794' } },
+  { tipo: 'luminaria', nome: 'Pendente de papel', variante: 'papel', x: 199, z: 75, rot: 0, y: 160, l: 50, p: 50, a: 100 },
+  // ---- cozinha: península 152 × 45, bancada com forno sob o cooktop, aéreo azul só do lado da
+  // geladeira (com nicho do micro), coifa de parede, torre azul em volta da geladeira
+  { tipo: 'peninsula', nome: 'Península', x: 267, z: 76, rot: 270, l: 152, p: 45, a: 90, acab: 'madeira',
+    cores: { principal: NOGUEIRA, secundaria: GRANILITE } },
+  { tipo: 'modulo_cozinha', nome: 'Módulo ao lado do shaft', x: 374, z: 23, rot: 90, l: 46, p: 28, a: 90, acab: 'madeira',
+    cores: { principal: NOGUEIRA, secundaria: GRANILITE } },
+  { tipo: 'bancada_cozinha', nome: 'Bancada (cooktop + cuba)', variante: 'eletros', x: 390, z: 153.5, rot: 90, espelhado: true, l: 215, p: 60, a: 90, acab: 'madeira',
+    cores: { principal: NOGUEIRA, secundaria: GRANILITE } },
+  { tipo: 'armario_aereo', nome: 'Armário aéreo azul', variante: 'micro', x: 402.5, z: 205.5, rot: 90, y: 140, l: 111, p: 35, a: 70, acab: 'laca',
+    cores: { principal: AZUL_LEVA, secundaria: '#e6e3dd' } },
+  caixaLeva('Coifa de parede (inox)', 395, 86, 90, 155, 60, 50, 8, '#b9bdc2'),
+  caixaLeva('Chaminé da coifa', 409, 86, 90, 163, 26, 22, 97, '#b9bdc2'),
+  caixaLeva('Purificador de água', 399, 213, 90, 103, 16, 42, 35, '#8d9196'),
+  { tipo: 'geladeira', nome: 'Geladeira', variante: 'duplex', x: 383, z: 303, rot: 90, l: 60.4, p: 71.2, a: 176.9,
+    cores: { principal: '#c9ccd0', secundaria: '#7d8186' } },
+  caixaLeva('Torre da geladeira — lateral', 383, 263, 90, 0, 2, 74, 210, AZUL_LEVA),
+  caixaLeva('Torre da geladeira — lateral da porta', 383, 343, 90, 0, 2, 74, 210, AZUL_LEVA),
+  caixaLeva('Torre da geladeira — armário de cima', 383, 303, 90, 180, 78, 74, 30, AZUL_LEVA),
+  ...MOVEIS_FINAL.filter((m) => m.tipo === 'ar_split' || m.tipo === 'cortina'),
+  // ---- estar: rack de 218 com TV apoiada e prateleiras; sofá retrátil, tapete redondo xadrez
+  { tipo: 'rack_tv', nome: 'Rack', variante: 'basculante', x: 109, z: 230, rot: 0, l: 218, p: 40, a: 50,
+    cores: { principal: NOGUEIRA, secundaria: NOGUEIRA } },
+  { tipo: 'tv_parede', nome: 'TV da sala', x: 105, z: 232, rot: 0, y: 50, l: 110, p: 6, a: 64 },
+  { tipo: 'luminaria', nome: 'Abajur do rack', variante: 'abajur', x: 180, z: 232, rot: 0, y: 50, l: 25, p: 25, a: 45,
+    cores: { principal: '#efe2c8', secundaria: '#b5652f' } },
+  ...estante,
+  { tipo: 'planta', nome: 'Fícus', variante: 'ficus', x: 32, z: 181, rot: 0, l: 50, p: 50, a: 140 },
+  ...MOVEIS_FINAL.filter((m) => ['Sofá retrátil de veludo', 'Quadro azul e verde'].includes(m.nome)),
+  { tipo: 'luminaria', nome: 'Arandela articulada', variante: 'arandela', x: 60, z: 443, rot: 180, y: 145, l: 110, p: 14, a: 60,
+    cores: { principal: '#8f1f24', secundaria: '#8f1f24' } },
+  { tipo: 'tapete', nome: 'Tapete redondo xadrez', variante: 'redondo', x: 108, z: 300, rot: 0, l: 160, p: 160, a: 1,
+    cores: { principal: '#4e6b55', secundaria: CREME } },
+  // ---- quarto: cama 120 com cabeceira estofada, criado-mudo, banqueta vinho, tapete de sisal
+  { tipo: 'cama_box', nome: 'Cama box', variante: 'cabeceira', x: 121.5, z: 557.5, rot: 0, l: 120, p: 195, a: 60, acab: 'xadrez',
+    cores: { principal: '#5a5d5a', secundaria: '#e3dccd' } },
+  { tipo: 'criado_mudo', nome: 'Criado-mudo', variante: 'gaveta', x: 33, z: 485, rot: 0, l: 43, p: 40, a: 55,
+    cores: { principal: NOGUEIRA, secundaria: NOGUEIRA } },
+  { tipo: 'luminaria', nome: 'Abajur vinho', variante: 'abajur', x: 33, z: 480, rot: 0, y: 55, l: 24, p: 24, a: 40,
+    cores: { principal: '#efe2c8', secundaria: VINHO } },
+  { tipo: 'mesa_lateral', nome: 'Banqueta vinho', variante: 'carretel', x: 200.5, z: 483, rot: 0, l: 30, p: 30, a: 46,
+    cores: { principal: VINHO, secundaria: VINHO } },
+  { tipo: 'tapete', nome: 'Tapete de sisal', variante: 'listrado', x: 122, z: 582, rot: 0, l: 200, p: 200, a: 1,
+    cores: { principal: '#c9a76a', secundaria: '#b8945a' } },
+  { tipo: 'quadro', nome: 'Quadro sobre a cama', variante: 'tela', x: 121.5, z: 461.5, rot: 0, y: 130, l: 100, p: 3, a: 70,
+    cores: { principal: '#e8dfcf', secundaria: '#8a6a45' } },
+  ...MOVEIS_FINAL.filter((m) => m.nome === 'TV do quarto'),
+  { tipo: 'guarda_roupa', nome: 'Guarda-roupa de abrir', variante: 'abrir', x: 271.5, z: 617, rot: 90, l: 160, p: 55, a: 220, acab: 'madeira',
+    cores: { principal: NOGUEIRA, secundaria: '#8f6440' } },
+  // ---- banheiro: gabinete vinho, espelho com nicho de madeira e porcelanato claro
+  ...BANHEIRO.map((m) => (m.tipo === 'lavatorio' ? { ...m, cores: { principal: VINHO, secundaria: '#e9dcc4' } } : m)),
+  { tipo: 'espelho', nome: 'Espelho com nicho', variante: 'retangular', x: 418.5, z: 505, rot: 90, y: 105, l: 85, p: 3, a: 55,
+    cores: { principal: '#dfe7ea', secundaria: NOGUEIRA } },
+  ...MOVEIS_FINAL.filter((m) => m.tipo === 'revestimento').map((m) => ({ ...m, nome: m.nome.replace('Azulejo', 'Porcelanato'), acab: 'azulejo',
+    cores: { principal: '#efe6d8', secundaria: '#efe6d8' } })),
+];
+const CENARIOS_LEVA = [
+  { id: 'leva-02-teto', nome: 'Estudo le.vá', zonas: CENARIO_FINAL.zonas, moveis: moveisLeva(ESTANTE_TETO) },
+  { id: 'leva-02-suspensa', nome: 'Estudo le.vá (suspensa)', zonas: CENARIO_FINAL.zonas, moveis: moveisLeva(ESTANTE_SUSPENSA) },
+];
+
 // Atalhos do modo Visitar: onde ficar e para onde olhar em cada cômodo
 // (yaw: 0 = olhando para cima na planta; π/2 = para a esquerda).
 const VISTAS_VISITA = [
@@ -227,4 +326,5 @@ const VISTAS_VISITA = [
 const CENARIOS_ORIGINAIS = [
   CENARIO_FINAL,
   ...CENARIOS_JANTAR,
+  ...CENARIOS_LEVA,
 ];

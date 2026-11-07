@@ -75,6 +75,28 @@ No filme, a pessoa toma café no banco: entra pela faixa livre e escorrega até 
 Saíram o pendente de papel de arroz e a costela-de-adão. O tamanho e a posição da mesa redonda
 se mudam direto no modo Arrumar (por isso não há mais a aba "afastada").
 
+## Estudo le.vá 02 (abas "Estudo le.vá")
+
+Duas abas com o **Estudo Preliminar 02 da le.vá arquitetura** (opção 01), medido na planta de
+layout 1/50 e nos renders. Elas não mexem nas outras abas. As duas são iguais, menos a estante:
+na primeira as prateleiras ficam em montantes do rack até o teto; na "(suspensa)" ficam
+penduradas no teto.
+
+- **Jantar e office:** mesa de trabalho em nogueira 100 × 45, banco de 130 com almofadas
+  terracota, mesa redonda Ø80 de pé central com 2 cadeiras dobráveis, pendente de papel e barrado
+  pintado bege até 90 cm.
+- **Cozinha:** península 152 × 45, bancada em nogueira com forno sob o cooktop, aéreo azul só do
+  lado da geladeira (111 cm, com nicho do micro), coifa de parede inox, purificador na parede e
+  torre azul em volta da geladeira.
+- **Estar:** rack de 218 com a TV apoiada, abajur, fícus e tapete redondo xadrez verde.
+- **Quarto:** cama de 120 com cabeceira estofada, criado-mudo, banqueta vinho e tapete de sisal.
+- **Banheiro:** gabinete vinho, espelho com nicho de madeira e porcelanato claro.
+
+O modo Conferir aponta duas coisas do estudo:
+- **Corredor da cozinha:** fica com 70,5 cm, porque a península tem 45 de fundo.
+- **Banco:** fica preso entre a mesa de trabalho, a península e a mesa redonda, e para sentar é
+  preciso puxar a mesa.
+
 ## Eletrodomésticos e instalações
 
 - **Cozinha — projeto do marceneiro** (variantes "Projeto" da bancada e do aéreo). Cotas em cm, x a
