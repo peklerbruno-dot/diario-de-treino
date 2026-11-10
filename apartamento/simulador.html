@@ -226,7 +226,50 @@ body.cinema-filme #lateral { display: none; }
   .cine-legenda span { font-size: 14px; }
 }
 #medidasUso { position: absolute; inset: 0; pointer-events: none; z-index: 6; }
-body:not(.cinema-uso) #medidasUso { display: none; }
+body:not(.cinema-uso):not(.cinema-teste) #medidasUso { display: none; }
+.medida.grande { font-size: 15px; padding: 4px 10px; border-radius: 999px; }
+/* dia a dia */
+body.cinema-teste #controlesEsq, body.cinema-teste #bussola, body.cinema-teste #bGaveta { display: none !important; }
+#dia { position: absolute; left: 12px; top: 12px; z-index: 20; width: 330px; max-height: calc(100% - 24px); display: flex; flex-direction: column;
+  background: rgba(255,255,255,.97); border-radius: 16px; box-shadow: 0 8px 28px rgba(0,0,0,.2); overflow: hidden; font-size: 13px; }
+.dia-topo { display: flex; align-items: center; gap: 8px; padding: 10px 10px 10px 14px; background: #1d2530; color: #fff; }
+.dia-topo b { white-space: nowrap; }
+#diaAba { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: .8; }
+#diaResumo { display: flex; gap: 6px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+#diaResumo .ok { color: #6fdc9c; } #diaResumo .atencao { color: #f5c76a; } #diaResumo .problema { color: #ff8f8f; }
+.dia-topo button { border: 0; background: rgba(255,255,255,.14); color: #fff; width: 30px; height: 30px; border-radius: 50%; padding: 0; flex: none; }
+#diaLista { display: flex; flex-direction: column; gap: 2px; padding: 6px; overflow: auto; }
+.dia-item { display: flex; align-items: center; gap: 8px; border: 0; background: none; text-align: left; padding: 7px 8px; border-radius: 10px; border-left: 4px solid transparent; font-size: 13px; }
+.dia-item i { font-style: normal; width: 22px; text-align: center; }
+.dia-item span { flex: 1; min-width: 0; }
+.dia-item b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.dia-item.ok { border-left-color: #27ae60; } .dia-item.atencao { border-left-color: #e0a020; } .dia-item.problema { border-left-color: #e5484d; }
+.dia-item.ok b { color: #1e8449; } .dia-item.atencao b { color: #b7791f; } .dia-item.problema b { color: #c0392b; }
+.dia-item.ativo { background: #eef2f7; font-weight: 600; }
+#diaDetalhe { border-top: 1px solid #e6e8ec; padding: 10px 12px 12px; overflow: auto; flex: none; max-height: 46%; }
+#diaDetalhe p { margin: 0; line-height: 1.4; }
+.veredito { display: flex; gap: 8px; }
+.veredito i { font-style: normal; flex: none; width: 22px; height: 22px; border-radius: 50%; color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 12px; }
+.veredito.ok i { background: #27ae60; } .veredito.atencao i { background: #e0a020; } .veredito.problema i { background: #e5484d; }
+.dia-comp { margin-top: 10px; display: flex; flex-direction: column; gap: 3px; }
+.dia-comp small { color: #6b7280; margin-bottom: 2px; }
+.dia-comp button { display: flex; align-items: center; gap: 8px; border: 1px solid #e6e8ec; background: #fff; border-radius: 9px; padding: 6px 8px; text-align: left; font-size: 12.5px; }
+.dia-comp button i { font-style: normal; flex: none; width: 18px; height: 18px; border-radius: 50%; color: #fff; display: grid; place-items: center; font-size: 11px; font-weight: 700; background: #b6bcc6; }
+.dia-comp button.ok i { background: #27ae60; } .dia-comp button.atencao i { background: #e0a020; } .dia-comp button.problema i { background: #e5484d; }
+.dia-comp button span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dia-comp button b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.dia-comp button.ativo { border-color: #1d2530; background: #f3f5f8; font-weight: 600; }
+@media (max-width: 860px) {
+  body.cinema-teste #ferramentas { display: none !important; }
+  #dia { left: 0; right: 0; top: auto; bottom: 0; width: auto; max-height: 52%; border-radius: 16px 16px 0 0; }
+  #diaLista { flex-direction: row; overflow-x: auto; overflow-y: hidden; flex: none; padding: 8px; gap: 6px; scrollbar-width: none; }
+  .dia-item { flex: none; flex-direction: column; align-items: flex-start; gap: 1px; border-left: 0; border-top: 4px solid transparent; background: #f3f5f8; width: 118px; padding: 6px 8px; }
+  .dia-item.ok { border-top-color: #27ae60; } .dia-item.atencao { border-top-color: #e0a020; } .dia-item.problema { border-top-color: #e5484d; }
+  .dia-item i { display: none; }
+  .dia-item span { font-size: 12px; line-height: 1.2; min-height: 29px; }
+  .dia-item.ativo { background: #dfe6ef; }
+  #diaDetalhe { max-height: none; flex: 1; min-height: 0; }
+}
 .medida { position: absolute; left: 0; top: 0; font-size: 10.5px; font-weight: 600; line-height: 1.25; padding: 2px 6px; border-radius: 6px; width: max-content;
   color: #fff; font-variant-numeric: tabular-nums; box-shadow: 0 1px 4px rgba(0,0,0,.25); max-width: 200px; }
 .medida.abre { background: #c0661c; }
@@ -484,6 +527,7 @@ details.mais > .conteudo { padding-bottom: 10px; }
       <button id="bFoto" title="Foto realista (F)"><span aria-hidden="true">📷</span><span class="rot">Foto</span></button>
       <button id="bRegua" title="Régua: medir entre dois pontos (M)"><span aria-hidden="true">📐</span><span class="rot">Medir</span></button>
       <button id="bUso" title="Simular o uso: portas, armários, TV, cadeiras e fogão abrindo e fechando juntos"><span aria-hidden="true">▶</span><span class="rot">Usar</span></button>
+      <button id="bDia" title="Dia a dia: a pessoa testa cada situação (cozinhar, forno, banco…) e compara as abas"><span aria-hidden="true">🧍</span><span class="rot">Dia a dia</span></button>
       <button id="bFilme" title="Filme: um dia de uma pessoa no apartamento"><span aria-hidden="true">🎬</span><span class="rot">Filme</span></button>
       <button id="bEnquadrar" title="Ver o apartamento inteiro"><span aria-hidden="true">⤢</span><span class="rot">Inteiro</span></button>
     </div>
@@ -535,6 +579,12 @@ details.mais > .conteudo { padding-bottom: 10px; }
     <div id="usoBarra" hidden>
       <b>▶ Simulação de uso</b><span id="usoTxt"></span>
       <button id="usoMedidas" class="medir" title="Mostrar medidas: quanto abre e quanto sobra">📏</button><button id="usoPausa" aria-label="Pausar">⏸</button><button id="usoFechar" aria-label="Parar">✕</button>
+    </div>
+    <!-- Dia a dia: testes de uso com a pessoa, comparados entre as abas -->
+    <div id="dia" hidden>
+      <div class="dia-topo"><b>🧍 Dia a dia</b><span id="diaAba"></span><span id="diaResumo"></span><button id="diaPausa" aria-label="Pausar">⏸</button><button id="diaFechar" aria-label="Fechar">✕</button></div>
+      <div id="diaLista"></div>
+      <div id="diaDetalhe"></div>
     </div>
     <div id="medidasUso"></div>
     <div id="reguaRotulos"></div>
@@ -9054,7 +9104,7 @@ bool bvhIntersectFogVolumeHit(
 // Cada móvel é uma lista de formas. Medidas podem ser números (cm) ou
 // fórmulas com L, P e A (largura, profundidade e altura do móvel) — é o
 // que deixa redimensionar sem deformar pés e puxadores. Também valem
-// min, max, abs, floor, ceil, round, sin, cos, sqrt e PI.
+// min, max, abs, floor, ceil, round, sin, cos, atan, sqrt e PI.
 //
 // Eixos locais: x de -L/2 a L/2 (esquerda → direita), z de -P/2 (costas)
 // a P/2 (frente), y a partir da base do móvel.
@@ -9062,7 +9112,7 @@ bool bvhIntersectFogVolumeHit(
 // Formas:
 //   caixa:  { f:'caixa', x, z, y, l, p, a, r }   x,z = centro; y = base; r = cantos arredondados
 //   cil:    { f:'cil', x, z, y, raio, raio2, a, eixo }   raio2 = topo (cone); eixo 'x'/'z' = deitado (y = centro)
-//           ou { f:'cil', l, p, a, k }   cilindro elíptico (mesa oval), k = topo/base
+//           ou { f:'cil', l, p, a, k, lados }   cilindro elíptico (mesa oval), k = topo/base; lados: 4 = tronco de pirâmide
 //   esfera: { f:'esfera', x, z, y, raio, ex, ey, ez }   ex/ey/ez = achatamento
 //   torno:  { f:'torno', pts: [[raio, altura], …] }      perfil girado (vasos, cúpulas)
 // Em qualquer forma: rx, ry, rz (giro em graus), se (condição), n (repetições,
@@ -9359,6 +9409,48 @@ const bancadaTopo = (cubaX) => [
       { f: 'cil', raio: 6, a: 12, y: 'A+2', x: 'L/2-100', z: '-P/2+26', cor: '#cfe6ee', acab: 'vidro' },
       { f: 'cil', n: 3, raio: 5, a: '14+i*3', y: 'A', x: '-L/2+12+i*11', z: '-P/2+9', cor: ['#e9e2d3', '#8f3f22', '#e9e2d3'], acab: 'ceramica' },
       { f: 'torno', pts: [[0, 0], [4, 0], [4, 22], [1.5, 27], [1.5, 31], [0, 31]], x: 'L/2-122', y: 'A', z: '-P/2+8', cor: '#3c5a46', acab: 'vidro' },
+];
+
+// ---- Estudo le.vá: rack de 4 portas com TV apoiada, abajur e máquina de
+// escrever; e as duas prateleiras compridas com livros, vasos e jiboias
+const RACK_LEVA = [
+  { f: 'caixa', l: 'L-10', p: 'P-8', a: 6, cor: '#1b1a19' },
+  { f: 'caixa', l: 'L', p: 'P-1.8', a: 44, y: 6, z: -0.9, acab: 'madeira', r: 0.4 },
+  ...[0, 1, 2, 3].flatMap((k) => {
+    const mov = { gira: k % 2 ? 100 : -100, eixo: 'y', px: `-L/2+${k % 2 ? k + 1 : k}*L/4`, pz: 'P/2-0.9' };
+    return [
+      { f: 'caixa', l: 'L/4-0.6', p: 1.8, a: 39, y: 8.5, x: `-L/2+L/8+${k}*L/4`, z: 'P/2-0.9', acab: 'madeira', mov },
+      { f: 'esfera', raio: 1.3, y: 26, x: `-L/2+L/8+${k}*L/4`, z: 'P/2+0.9', cor: '#26324a', acab: 'laca', mov },
+    ];
+  }),
+  // TV de 50" nos pés
+  ...tv('min(112,L*0.52)', 56, 2).map((p) => ({ ...p, x: '-L*0.03' })),
+  { f: 'caixa', n: 2, l: 2, p: 22, a: 6.5, y: 50, x: '-L*0.03+(i*2-1)*min(112,L*0.52)*0.36', z: 2, cor: '#1a1a1c', acab: 'metal', r: 0.8 },
+  // abajur: base de madeira torneada e cúpula de linho
+  { f: 'torno', pts: [[0, 0], [5, 0], [5.5, 3], [2.6, 20], [1.2, 22], [0, 22]], x: 'L/2-36', y: 50, cor: '#b5652f', acab: 'madeira' },
+  { f: 'cil', raio: 12, raio2: 11, a: 16, y: 73, x: 'L/2-36', cor: '#efe2c8', acab: 'luz' },
+  // máquina de escrever
+  { f: 'caixa', l: 32, p: 28, a: 7, y: 50, x: '-L/2+24', cor: '#e9e2cf', acab: 'laca', r: 1.5 },
+  { f: 'caixa', l: 26, p: 12, a: 3, y: 56, x: '-L/2+24', z: 6, rx: 14, cor: '#1d1d1f', acab: 'laca' },
+  { f: 'cil', eixo: 'x', raio: 2.2, a: 30, y: 61, x: '-L/2+24', z: -8, cor: '#2b2b2b', acab: 'metal' },
+];
+const jiboia = (x, y, cor = '#7d8186') => [
+  { f: 'cil', raio: 7, raio2: 8.5, a: 11, x, y, cor, acab: 'ceramica' },
+  { f: 'esfera', n: 9, raio: 4, ex: 1, ey: 0.2, ez: 0.75, x: `${x}+sin(i*2.4)*8`, y: `${y}+11+(i%3)*2`, z: 'cos(i*2.4)*8', ry: 'i*67', rz: '18+(i%3)*10', cor: '#4f7a3f', acab: 'planta' },
+  { f: 'esfera', n: 14, raio: 3.2, ex: 1, ey: 0.15, ez: 0.7, x: `${x}+((i%3)-1)*5+sin(i)*2`, y: `${y}+6-i*2.7`, z: '9+(i%2)*3', ry: 'i*67', rz: '35+(i%4)*12', cor: '#4f7a3f', acab: 'planta' },
+];
+const prateleirasLeva = (y1, y2) => [
+  { f: 'caixa', n: 2, l: 'L', p: 'P-6', a: 3.5, y: `i ? ${y2} : ${y1}`, acab: 'madeira' },
+  // de cima: caixas, jiboia, livros em pé e vaso
+  { f: 'caixa', n: 2, l: '26-i*3', p: 18, a: 4.5, y: `${y1 + 3.5}+i*4.5`, x: '-L/2+26', cor: ['#d8d2c6', '#c9c2b3'], acab: 'tecido' },
+  ...jiboia('-L/2+L*0.3', y1 + 3.5),
+  { f: 'caixa', n: 10, l: 3, p: 'P*0.45', a: '19+(i%3)*2', y: y1 + 3.5, x: 'L*0.12+i*3.3', z: -2, cor: ['#3a3a3c', '#e9e2d3', '#d9d4cc', '#55585c'], acab: 'tecido' },
+  { f: 'torno', pts: [[0, 0], [7, 0], [9, 2], [5.5, 6], [6, 10], [12, 13], [11, 15], [0, 15]], x: 'L/2-22', y: y1 + 3.5, cor: '#4a5d4f', acab: 'ceramica' },
+  // de baixo: vasos vazados, livros deitados, caixa e jiboia
+  { f: 'torno', n: 2, pts: [[0, 0], [5, 0], [7.5, 6], [6, 13], [2.4, 19], [2.8, 21], [0, 21]], x: '-L/2+20+i*15', y: y2 + 3.5, cor: '#e3d8c8', acab: 'ceramica' },
+  { f: 'caixa', n: 3, l: '30-i*3', p: 20, a: 3, y: `${y2 + 3.5}+i*3`, x: '-L*0.14', ry: 'i*6-4', cor: ['#e9e2d3', '#d8cdb8', '#f1ece2'], acab: 'tecido' },
+  { f: 'caixa', n: 2, l: 24, p: 18, a: 5, y: `${y2 + 3.5}+i*5`, x: 'L*0.08', cor: ['#8a8378', '#9a9388'], acab: 'tecido' },
+  ...jiboia('L*0.25', y2 + 3.5),
 ];
 
 const CATALOGO = [
@@ -9743,6 +9835,16 @@ const CATALOGO = [
         { f: 'caixa', n: 9, l: 'L*0.13', p: 2.2, a: 5.5, x: 'sin((i-4)*0.3)*L*0.45', z: '-cos((i-4)*0.3)*L*0.45+4', y: 'A-8', ry: '-(i-4)*17', cor: 'secundaria', acab: 'madeira' },
         { f: 'caixa', n: 2, l: 2.4, p: 2.4, a: 'A-44', x: '(i*2-1)*L*0.4', z: '-L*0.3+4', y: 44, rx: -6, cor: 'secundaria', acab: 'madeira' },
         { f: 'caixa', n: 3, l: 1.6, p: 1.6, a: 'A-56', x: '(i-1)*L*0.17', z: '-L*0.43+4', y: 46, rx: -8, cor: 'secundaria', acab: 'madeira' },
+      ] },
+      // bistrô de metal: duas barras em X de cada lado, assento e encosto de ripas
+      { id: 'dobravel', nome: 'Dobrável (bistrô)', dim: { l: 42, p: 46, a: 82 }, partes: [
+        ...[-1, 1].flatMap((sx) => [
+          { f: 'caixa', l: 2, p: 1.6, a: 'sqrt(A*A+(P-8)*(P-8))', y: 'A/2-sqrt(A*A+(P-8)*(P-8))/2', x: `${sx}*(L/2-1)`, rx: '-atan((P-8)/A)*180/PI', cor: 'secundaria', acab: 'metal' },
+          { f: 'caixa', l: 2, p: 1.6, a: 'sqrt(45*45+(P-10)*(P-10))', y: '22.5-sqrt(45*45+(P-10)*(P-10))/2', x: `${sx}*(L/2-3.2)`, z: 1, rx: 'atan((P-10)/45)*180/PI', cor: 'secundaria', acab: 'metal' },
+        ]),
+        { f: 'caixa', n: 5, l: 'L-7', p: '(P-12)/5-1', a: 1.4, y: 45, z: '-P/2+8+(i+0.5)*(P-12)/5', acab: 'metal', r: 0.4 },
+        { f: 'caixa', n: 2, l: 'L-3', p: 1.4, a: 6.5, y: 'A-8-i*9', z: '(P-8)/2-(A-5-i*9)/A*(P-8)-1', rx: '-atan((P-8)/A)*180/PI', acab: 'metal', r: 0.5 },
+        { f: 'cil', n: 2, eixo: 'x', raio: 0.7, a: 'L-4', y: 11, z: '(i*2-1)*(P/2-9)', cor: 'secundaria', acab: 'metal' },
       ] },
       { id: 'banqueta', nome: 'Banqueta alta', dim: { l: 40, p: 40, a: 75 }, uso: [], partes: [
         { f: 'cil', l: 'L', p: 'P', a: 4, y: 'A-4', acab: '@' },
@@ -10155,6 +10257,63 @@ const CATALOGO = [
     ],
   },
   {
+    tipo: 'coifa', nome: 'Coifa de parede', cat: 'Cozinha', colide: false, elev: 140,
+    dim: { l: 60, p: 50, a: 120 }, cores: { principal: '#b9bdc2', secundaria: '#3a3c40' }, rotulosCores: ['Inox', 'Filtros'],
+    partes: [
+      { f: 'caixa', l: 'L', p: 'P', a: 5, acab: 'metal' },
+      { f: 'caixa', l: 'L-6', p: 'P-8', a: 0.6, y: -0.3, cor: 'secundaria', acab: 'metal' },
+      { f: 'cil', l: 'L', p: 'P', a: 24, y: 5, k: 0.42, lados: 4, acab: 'metal' },
+      // duto encostado na parede, até o teto
+      { f: 'caixa', l: 'L*0.42', p: 'P/2+P*0.21', a: 'A-24', y: 24, z: '(-P/2+P*0.21)/2', acab: 'metal' },
+    ],
+  },
+  {
+    tipo: 'purificador', nome: 'Purificador de água', cat: 'Cozinha', colide: false, elev: 103,
+    dim: { l: 16, p: 42, a: 35 }, cores: { principal: '#8d9196', secundaria: '#1b1c1e' }, rotulosCores: ['Corpo', 'Painel'],
+    partes: [
+      { f: 'caixa', l: 'L', p: 'P', a: 'A', acab: 'metal', r: 1.5 },
+      { f: 'caixa', l: 'L*0.75', p: 0.6, a: 'A*0.26', y: 'A*0.66', z: 'P/2+0.2', cor: 'secundaria', acab: 'vidro' },
+      { f: 'caixa', l: 'L*0.6', p: 'P*0.3', a: 'A*0.3', y: 'A*0.06', z: 'P/2-P*0.15+0.4', cor: 'secundaria', acab: 'metal', r: 1 },
+      { f: 'cil', raio: 0.8, a: 3, y: 'A*0.36-3', z: 'P/2-P*0.15', cor: '#c9ccd0', acab: 'metal' },
+    ],
+  },
+  {
+    // nicho de marcenaria em volta da geladeira: duas laterais e um armário em cima
+    tipo: 'torre_geladeira', nome: 'Torre da geladeira', cat: 'Cozinha', colide: false,
+    dim: { l: 78, p: 74, a: 235 }, cores: { principal: '#46557a', secundaria: '#e6e3dd' }, rotulosCores: ['Laca', 'Interior'],
+    acabamentos: ['laca', 'madeira'], acao: ['Abrir portas', 'Fechar portas'],
+    partes: [
+      { f: 'caixa', n: 2, l: 2, p: 'P', a: 'A', x: '(i*2-1)*(L/2-1)', acab: '@' },
+      { f: 'caixa', l: 'L-4', p: 2, a: 'A-183', y: 183, z: '-P/2+1', cor: 'secundaria' },
+      { f: 'caixa', n: 2, l: 'L-4', p: 'P-2', a: 2, y: 'i ? A-2 : 183', z: -1, acab: '@' },
+      ...[-1, 1].map((sx) => ({ f: 'caixa', l: 'L/2-2.4', p: 1.8, a: 'A-183.6', y: 183.3, x: `${sx}*(L/4-1)`, z: 'P/2-0.9', acab: '@',
+        mov: { gira: sx * 100, eixo: 'y', px: `${sx}*(L/2-2)`, pz: 'P/2-0.9' } })),
+    ],
+  },
+  {
+    // Estudo le.vá: rack baixo com a TV apoiada e prateleiras soltas por cima,
+    // presas em montantes até o teto ou penduradas do teto. A = pé-direito.
+    tipo: 'estante_leva', nome: 'Rack com prateleiras', cat: 'Sala',
+    dim: { l: 218, p: 40, a: 260 }, cores: { principal: '#6b4430', secundaria: '#a7a9ab' }, rotulosCores: ['Madeira', 'Metal'],
+    acao: ['Abrir portas', 'Fechar portas'],
+    luz: { x: 'L/2-36', y: 84, z: 0, intensidade: 55 },
+    variantes: [
+      { id: 'teto', nome: 'Montantes até o teto', partes: [
+        ...RACK_LEVA,
+        { f: 'caixa', n: 4, l: 3.5, p: 3.5, a: 'A-50', y: 50, x: '-L/2+2+(i==0 ? 0 : i==1 ? 0.235 : i==2 ? 0.775 : 0.983)*(L-4)', cor: 'secundaria', acab: 'metal' },
+        ...prateleirasLeva(215, 166),
+        { f: 'caixa', n: 2, l: 'L*0.235', p: 'P-6', a: 3.5, y: 107, x: '(i*2-1)*(L/2-L*0.1175)', acab: 'madeira' },
+        { f: 'caixa', n: 4, l: 3.4, p: 'P*0.5', a: '21+(i%2)*3', y: 110.5, x: '-L/2+8+i*3.8', z: -2, cor: TONS_LIVRO, acab: 'tecido' },
+        { f: 'cil', raio: 11, raio2: 13, a: 5, y: 110.5, x: 'L/2-L*0.11', cor: '#d9d4cc', acab: 'ceramica' },
+      ] },
+      { id: 'suspensa', nome: 'Prateleiras suspensas', partes: [
+        ...RACK_LEVA,
+        { f: 'cil', n: 6, raio: 0.9, a: 'A-166', y: 166, x: '(floor(i/2)-1)*L*0.43', z: '(i%2*2-1)*(P/2-6)', cor: 'secundaria', acab: 'metal' },
+        ...prateleirasLeva(215, 166),
+      ] },
+    ],
+  },
+  {
     tipo: 'aparador', nome: 'Aparador', cat: 'Decoração e luz',
     dim: { l: 120, p: 35, a: 80 }, cores: { principal: '#a9774e', secundaria: '#2b2b2b' }, rotulosCores: ['Madeira', 'Pés'],
     acao: ['Abrir portas', 'Fechar portas'], uso: [frente(40, 'Abrir as portas')],
@@ -10221,14 +10380,30 @@ const CATALOGO = [
   {
     tipo: 'modulo_cozinha', nome: 'Módulo estreito com tampo', cat: 'Cozinha',
     dim: { l: 46, p: 28, a: 90 }, cores: { principal: '#a8784f', secundaria: '#ffffff' }, rotulosCores: ['Armário', 'Tampo'],
-    acabamentos: ['madeira', 'laca'], acao: ['Abrir porta', 'Fechar porta'],
-    partes: [
-      { f: 'caixa', l: 'L', p: 'P-4', a: 10, z: -2, cor: '#1b1a19' },
-      { f: 'caixa', l: 'L', p: 'P-2', a: 'A-14', y: 10, z: -1, cor: 'principal', acab: '@' },
-      { f: 'caixa', l: 'L-1', p: 1.8, a: 'A-17', y: 11, z: 'P/2-0.9', cor: 'principal', acab: '@', mov: { gira: -100, eixo: 'y', px: '-L/2+0.5', pz: 'P/2-0.9' } },
-      { f: 'caixa', l: 'L', p: 'P', a: 3.5, y: 'A-3.5', cor: 'secundaria', acab: 'granilite' },
-      { f: 'caixa', l: 'L', p: 1, a: 55, y: 'A', z: '-P/2+0.5', cor: '#ffffff', acab: 'azulejo_grade' },
-      { f: 'cil', n: 3, raio: 3.5, a: '16-i*2', y: 'A', x: '(i-1)*10', z: -4, cor: ['#efe4d2', '#26324a', '#efe4d2'], acab: 'ceramica' },
+    acabamentos: ['madeira', 'laca'],
+    variantes: [
+      { id: 'porta', nome: 'Com porta', acao: ['Abrir porta', 'Fechar porta'], partes: [
+        { f: 'caixa', l: 'L', p: 'P-4', a: 10, z: -2, cor: '#1b1a19' },
+        { f: 'caixa', l: 'L', p: 'P', a: 3.5, y: 'A-3.5', cor: 'secundaria', acab: 'granilite' },
+        { f: 'caixa', l: 'L', p: 1, a: 55, y: 'A', z: '-P/2+0.5', cor: '#ffffff', acab: 'azulejo_grade' },
+        { f: 'cil', n: 3, raio: 3.5, a: '16-i*2', y: 'A', x: '(i-1)*10', z: -4, cor: ['#efe4d2', '#26324a', '#efe4d2'], acab: 'ceramica' },
+        { f: 'caixa', l: 'L', p: 'P-2', a: 'A-14', y: 10, z: -1, cor: 'principal', acab: '@' },
+        { f: 'caixa', l: 'L-1', p: 1.8, a: 'A-17', y: 11, z: 'P/2-0.9', cor: 'principal', acab: '@', mov: { gira: -100, eixo: 'y', px: '-L/2+0.5', pz: 'P/2-0.9' } },
+      ] },
+      // nicho aberto com duas prateleiras (potes e louça à mostra)
+      { id: 'aberto', nome: 'Nicho aberto', partes: [
+        { f: 'caixa', l: 'L', p: 'P-4', a: 10, z: -2, cor: '#1b1a19' },
+        { f: 'caixa', l: 'L', p: 'P', a: 3.5, y: 'A-3.5', cor: 'secundaria', acab: 'granilite' },
+        { f: 'caixa', l: 'L', p: 1, a: 55, y: 'A', z: '-P/2+0.5', cor: '#ffffff', acab: 'azulejo_grade' },
+        { f: 'cil', n: 3, raio: 3.5, a: '16-i*2', y: 'A', x: '(i-1)*10', z: -4, cor: ['#efe4d2', '#26324a', '#efe4d2'], acab: 'ceramica' },
+        { f: 'caixa', l: 'L', p: 1.6, a: 'A-14', y: 10, z: '-P/2+0.8', cor: 'principal', acab: '@' },
+        { f: 'caixa', n: 2, l: 1.8, p: 'P-2', a: 'A-14', y: 10, x: '(i*2-1)*(L/2-0.9)', z: -1, cor: 'principal', acab: '@' },
+        { f: 'caixa', n: 3, l: 'L-3.6', p: 'P-3', a: 1.8, y: '10+i*(A-15.5)/3', z: -0.5, cor: 'principal', acab: '@' },
+        { f: 'cil', n: 'max(1,floor((L-8)/11))', raio: 4.4, a: 15, y: '11.8+2*(A-15.5)/3', x: '-L/2+8+i*11', z: -2, cor: '#f3f1ec', acab: 'ceramica' },
+        { f: 'cil', n: 'max(1,floor((L-8)/11))', raio: 4.6, a: 1.6, y: '26.8+2*(A-15.5)/3', x: '-L/2+8+i*11', z: -2, cor: '#3a3a3c', acab: 'metal' },
+        { f: 'cil', n: 2, raio: 9, raio2: 10, a: '5+i*3', y: '11.8+(A-15.5)/3', x: '(i*2-1)*L*0.2', z: -1, cor: '#efe9df', acab: 'ceramica' },
+        { f: 'cil', n: 'max(1,floor((L-6)/9))', raio: 3.4, a: 10, y: 11.8, x: '-L/2+7+i*9', z: -2, cor: ['#a85c32', '#d8c079', '#6b4a2c', '#c9b089'], acab: 'vidro' },
+      ] },
     ],
   },
   {
@@ -10298,7 +10473,7 @@ const CATALOGO = [
 // =====================================================================
 
 const PLANTA_ORIGINAL = {
-  revisao: 11,
+  revisao: 12,
   alturaParede: 260,
 
   // Local e orientação — usados para calcular o sol por data e hora.
@@ -10495,20 +10670,6 @@ const CENARIOS_JANTAR = [
 // rack com prateleiras (até o teto ou suspensas do teto) e banheiro vinho.
 // ---------------------------------------------------------------------
 const NOGUEIRA = '#6b4430', AZUL_LEVA = '#46557a', GRANILITE = '#ece6dc';
-const caixaLeva = (nome, x, z, rot, y, l, p, a, cor) => ({ tipo: 'caixa', nome, x, z, rot, y, l, p, a, cores: { principal: cor, secundaria: cor } });
-const montante = (nome, x, z, y, a) => ({ tipo: 'cilindro', nome, x, z, rot: 0, y, l: 3.5, p: 3.5, a, cores: { principal: '#a7a9ab', secundaria: '#a7a9ab' } });
-const prateleiraLeva = (nome, x, y, l) => ({ tipo: 'prateleira', nome, x, z: 230, rot: 0, y, l, p: 32, a: 26, cores: { principal: NOGUEIRA, secundaria: '#a7a9ab' } });
-const ESTANTE_TETO = [
-  prateleiraLeva('Prateleira alta', 109, 195, 218), prateleiraLeva('Prateleira do meio', 109, 155, 218),
-  prateleiraLeva('Prateleira lateral', 192, 112, 48),
-  // montantes metálicos do rack até o teto
-  ...[52, 167, 215].map((x, i) => montante(`Montante ${i + 1}`, x, 230, 50, 210)),
-];
-const ESTANTE_SUSPENSA = [
-  prateleiraLeva('Prateleira suspensa alta', 109, 215, 218), prateleiraLeva('Prateleira suspensa baixa', 109, 175, 218),
-  // tirantes presos no teto
-  ...[[25, 218], [25, 242], [193, 218], [193, 242]].map(([x, z], i) => montante(`Tirante ${i + 1}`, x, z, 175, 85)),
-];
 const moveisLeva = (estante) => [
   // ---- office e jantar: mesa de 100 × 45, banco de 130 e mesa redonda Ø80 com 2 cadeiras dobráveis
   { tipo: 'revestimento', nome: 'Barrado pintado (bege)', x: 165, z: 0.5, rot: 0, l: 330, p: 1, a: 90, acab: 'laca',
@@ -10522,37 +10683,31 @@ const moveisLeva = (estante) => [
     cores: { principal: '#b5532f', secundaria: NOGUEIRA } },
   { tipo: 'mesa_redonda', nome: 'Mesa de jantar', variante: 'pe_central', x: 199, z: 75, rot: 0, l: 80, p: 80, a: 76,
     cores: { principal: GRANILITE, secundaria: GRANILITE } },
-  { tipo: 'cadeira', nome: 'Cadeira de jantar', variante: 'madeira', x: 136, z: 80, rot: 270, l: 42, p: 48, a: 82,
+  { tipo: 'cadeira', nome: 'Cadeira de jantar', variante: 'dobravel', x: 136, z: 80, rot: 270, l: 42, p: 46, a: 82,
     cores: { principal: '#7d8794', secundaria: '#7d8794' } },
-  { tipo: 'cadeira', nome: 'Cadeira de jantar', variante: 'madeira', x: 205, z: 133, rot: 180, l: 42, p: 48, a: 82,
+  { tipo: 'cadeira', nome: 'Cadeira de jantar', variante: 'dobravel', x: 205, z: 132, rot: 180, l: 42, p: 46, a: 82,
     cores: { principal: '#7d8794', secundaria: '#7d8794' } },
   { tipo: 'luminaria', nome: 'Pendente de papel', variante: 'papel', x: 199, z: 75, rot: 0, y: 160, l: 50, p: 50, a: 100 },
   // ---- cozinha: península 152 × 45, bancada com forno sob o cooktop, aéreo azul só do lado da
   // geladeira (com nicho do micro), coifa de parede, torre azul em volta da geladeira
   { tipo: 'peninsula', nome: 'Península', x: 267, z: 76, rot: 270, l: 152, p: 45, a: 90, acab: 'madeira',
     cores: { principal: NOGUEIRA, secundaria: GRANILITE } },
-  { tipo: 'modulo_cozinha', nome: 'Módulo ao lado do shaft', x: 374, z: 23, rot: 90, l: 46, p: 28, a: 90, acab: 'madeira',
+  { tipo: 'modulo_cozinha', nome: 'Nicho ao lado do shaft', variante: 'aberto', x: 374, z: 23, rot: 90, l: 46, p: 28, a: 90, acab: 'madeira',
     cores: { principal: NOGUEIRA, secundaria: GRANILITE } },
   { tipo: 'bancada_cozinha', nome: 'Bancada (cooktop + cuba)', variante: 'eletros', x: 390, z: 153.5, rot: 90, espelhado: true, l: 215, p: 60, a: 90, acab: 'madeira',
     cores: { principal: NOGUEIRA, secundaria: GRANILITE } },
-  { tipo: 'armario_aereo', nome: 'Armário aéreo azul', variante: 'micro', x: 402.5, z: 205.5, rot: 90, y: 140, l: 111, p: 35, a: 70, acab: 'laca',
+  { tipo: 'armario_aereo', nome: 'Armário aéreo azul', variante: 'micro', x: 402.5, z: 205.5, rot: 90, y: 140, l: 111, p: 35, a: 95, acab: 'laca',
     cores: { principal: AZUL_LEVA, secundaria: '#e6e3dd' } },
-  caixaLeva('Coifa de parede (inox)', 395, 86, 90, 155, 60, 50, 8, '#b9bdc2'),
-  caixaLeva('Chaminé da coifa', 409, 86, 90, 163, 26, 22, 97, '#b9bdc2'),
-  caixaLeva('Purificador de água', 399, 213, 90, 103, 16, 42, 35, '#8d9196'),
+  { tipo: 'coifa', nome: 'Coifa de parede', x: 395, z: 86, rot: 90, y: 140, l: 60, p: 50, a: 120 },
+  { tipo: 'purificador', nome: 'Purificador de água', x: 399, z: 213, rot: 90, y: 103, l: 16, p: 42, a: 35 },
   { tipo: 'geladeira', nome: 'Geladeira', variante: 'duplex', x: 383, z: 303, rot: 90, l: 60.4, p: 71.2, a: 176.9,
     cores: { principal: '#c9ccd0', secundaria: '#7d8186' } },
-  caixaLeva('Torre da geladeira — lateral', 383, 263, 90, 0, 2, 74, 210, AZUL_LEVA),
-  caixaLeva('Torre da geladeira — lateral da porta', 383, 343, 90, 0, 2, 74, 210, AZUL_LEVA),
-  caixaLeva('Torre da geladeira — armário de cima', 383, 303, 90, 180, 78, 74, 30, AZUL_LEVA),
+  { tipo: 'torre_geladeira', nome: 'Torre da geladeira', x: 383, z: 303, rot: 90, l: 78, p: 74, a: 235, acab: 'laca',
+    cores: { principal: AZUL_LEVA, secundaria: '#e6e3dd' } },
   ...MOVEIS_FINAL.filter((m) => m.tipo === 'ar_split' || m.tipo === 'cortina'),
   // ---- estar: rack de 218 com TV apoiada e prateleiras; sofá retrátil, tapete redondo xadrez
-  { tipo: 'rack_tv', nome: 'Rack', variante: 'basculante', x: 109, z: 230, rot: 0, l: 218, p: 40, a: 50,
-    cores: { principal: NOGUEIRA, secundaria: NOGUEIRA } },
-  { tipo: 'tv_parede', nome: 'TV da sala', x: 105, z: 232, rot: 0, y: 50, l: 110, p: 6, a: 64 },
-  { tipo: 'luminaria', nome: 'Abajur do rack', variante: 'abajur', x: 180, z: 232, rot: 0, y: 50, l: 25, p: 25, a: 45,
-    cores: { principal: '#efe2c8', secundaria: '#b5652f' } },
-  ...estante,
+  { tipo: 'estante_leva', nome: 'Rack com prateleiras', variante: estante, x: 109, z: 230, rot: 0, l: 218, p: 40, a: 260,
+    cores: { principal: NOGUEIRA, secundaria: '#a7a9ab' } },
   { tipo: 'planta', nome: 'Fícus', variante: 'ficus', x: 32, z: 181, rot: 0, l: 50, p: 50, a: 140 },
   ...MOVEIS_FINAL.filter((m) => ['Sofá retrátil de veludo', 'Quadro azul e verde'].includes(m.nome)),
   { tipo: 'luminaria', nome: 'Arandela articulada', variante: 'arandela', x: 60, z: 443, rot: 180, y: 145, l: 110, p: 14, a: 60,
@@ -10583,8 +10738,8 @@ const moveisLeva = (estante) => [
     cores: { principal: '#efe6d8', secundaria: '#efe6d8' } })),
 ];
 const CENARIOS_LEVA = [
-  { id: 'leva-02-teto', nome: 'Estudo le.vá', zonas: CENARIO_FINAL.zonas, moveis: moveisLeva(ESTANTE_TETO) },
-  { id: 'leva-02-suspensa', nome: 'Estudo le.vá (suspensa)', zonas: CENARIO_FINAL.zonas, moveis: moveisLeva(ESTANTE_SUSPENSA) },
+  { id: 'leva-02-teto', nome: 'Estudo le.vá', zonas: CENARIO_FINAL.zonas, moveis: moveisLeva('teto') },
+  { id: 'leva-02-suspensa', nome: 'Estudo le.vá (suspensa)', zonas: CENARIO_FINAL.zonas, moveis: moveisLeva('suspensa') },
 ];
 
 // Atalhos do modo Visitar: onde ficar e para onde olhar em cada cômodo
@@ -11047,6 +11202,7 @@ function focarAmbiente(a) {
 // está acima dela (a cena não muda de tamanho)
 function deslocamentoVista() {
   const p = $('#painel');
+  if (LEVE_TELA() && typeof cinema !== 'undefined' && cinema.modo === 'teste') return $('#dia').offsetHeight;
   return LEVE_TELA() && document.body.classList.contains('com-painel') && p ? p.offsetHeight : 0;
 }
 const LEVE_TELA = () => matchMedia('(max-width: 860px)').matches;
@@ -12023,8 +12179,8 @@ function material(cor, acab = 'padrao') {
 
 // ---- expressões do catálogo: números ou fórmulas com L, P, A (medidas do
 // móvel), i (índice de repetição) e funções matemáticas básicas.
-const NOMES_EXPR = ['L', 'P', 'A', 'i', 'min', 'max', 'abs', 'floor', 'ceil', 'round', 'sin', 'cos', 'sqrt', 'PI'];
-const VALORES_EXPR = [Math.min, Math.max, Math.abs, Math.floor, Math.ceil, Math.round, Math.sin, Math.cos, Math.sqrt, Math.PI];
+const NOMES_EXPR = ['L', 'P', 'A', 'i', 'min', 'max', 'abs', 'floor', 'ceil', 'round', 'sin', 'cos', 'atan', 'sqrt', 'PI'];
+const VALORES_EXPR = [Math.min, Math.max, Math.abs, Math.floor, Math.ceil, Math.round, Math.sin, Math.cos, Math.atan, Math.sqrt, Math.PI];
 const cacheExpr = new Map();
 function avaliar(v, L, P, A, i = 0) {
   if (typeof v === 'number') return v;
@@ -12152,7 +12308,10 @@ function criarParte(pt, m, def, i) {
     if (pt.l != null) { // elíptico: largura l e profundidade p
       const l = v('l'), p = v('p', l);
       if (l <= 0 || p <= 0) return null;
-      geo = new T.CylinderGeometry(0.5 * v('k', 1), 0.5, a, 40);
+      // lados: 4 = tronco de pirâmide de base retangular (coifa), com l e p medidos nas faces
+      const lados = pt.lados || 40, f = lados === 4 ? Math.SQRT2 : 1;
+      geo = new T.CylinderGeometry(0.5 * v('k', 1) * f, 0.5 * f, a, lados);
+      if (lados === 4) geo.rotateY(Math.PI / 4);
       geo.scale(l, 1, p);
     } else {
       const raio = v('raio'), raio2 = pt.raio2 == null ? raio : v('raio2');
@@ -12912,7 +13071,7 @@ let ultimoToque = null;
 function aoPressionar(e) {
   toques.set(e.pointerId, true);
   if (cinema.modo === 'filme') return;
-  if (foto.ativa || cinema.modo === 'uso') {
+  if (foto.ativa || cinema.modo === 'uso' || cinema.modo === 'teste') {
     if (vista.caminhar && toques.size === 1) {
       arr = { id: e.pointerId, x: e.clientX, y: e.clientY, alvo: null, movido: false, olhar: true, yaw0: andar.yaw, pitch0: andar.pitch };
       renderer.domElement.setPointerCapture(e.pointerId);
@@ -13228,7 +13387,7 @@ function renderAbas() {
   doc.cenarios.forEach((c, i) => {
     const b = el('button', {
       type: 'button', class: 'aba' + (i === doc.ativo ? ' ativa' : ''), title: 'Clique duplo para renomear',
-      onclick: () => { if (i !== doc.ativo) { doc.ativo = i; if (sel?.tipo === 'movel') sel = null; atualizarTudo(); } },
+      onclick: () => { if (cinema.modo === 'teste') { trocarAbaDia(i); return; } if (i !== doc.ativo) { doc.ativo = i; if (sel?.tipo === 'movel') sel = null; atualizarTudo(); } },
       ondblclick: () => {
         const n = prompt('Nome do cenário:', c.nome);
         if (n && n.trim()) alterar(() => { c.nome = n.trim(); });
@@ -13749,6 +13908,7 @@ function atualizarBotoes() {
   $('#bUso').classList.toggle('ligado', cinema.modo === 'uso');
   $('#bRegua').classList.toggle('ligado', regua.ativa);
   $('#bFilme').classList.toggle('ligado', cinema.modo === 'filme');
+  $('#bDia').classList.toggle('ligado', cinema.modo === 'teste');
   $('#bVista').disabled = vista.caminhar;
   $('#bCorte').disabled = vista.caminhar;
 }
@@ -13796,6 +13956,7 @@ function alternarPausaCinema() {
   cinema.pausa = !cinema.pausa;
   $('#usoPausa').textContent = cinema.pausa ? '▶' : '⏸';
   $('#filmePausa').textContent = cinema.pausa ? '▶' : '⏸';
+  $('#diaPausa').textContent = cinema.pausa ? '▶' : '⏸';
 }
 $('#bRegua').onclick = () => alternarRegua();
 $('#reguaLimpar').onclick = () => { regua.medidas = []; regua.a = null; desenharRegua(); };
@@ -13804,6 +13965,9 @@ $('#bZoomMais').onclick = () => zoomPasso(0.7);
 $('#bZoomMenos').onclick = () => zoomPasso(1.45);
 $('#bUso').onclick = () => { if (foto.ativa) return; cinema.modo === 'uso' ? pararCinema() : iniciarUso(); };
 $('#bFilme').onclick = () => { if (foto.ativa) return; cinema.modo === 'filme' ? pararCinema() : iniciarFilme(); };
+$('#bDia').onclick = () => { if (foto.ativa) return; cinema.modo === 'teste' ? pararCinema() : iniciarDia(); };
+$('#diaPausa').onclick = alternarPausaCinema;
+$('#diaFechar').onclick = pararCinema;
 $('#usoPausa').onclick = alternarPausaCinema;
 $('#usoFechar').onclick = pararCinema;
 $('#usoMedidas').onclick = alternarMedidas;
@@ -14181,6 +14345,7 @@ function tickCinema(dt) {
     if (u >= 1) { cinema.tarefas.splice(cinema.tarefas.indexOf(tf), 1); tf.res(); }
   }
   if (cinema.modo === 'uso') tickUso();
+  else if (cinema.modo === 'teste') tickPessoa(dt);
   else tickFilme(dt);
 }
 
@@ -14202,8 +14367,11 @@ function pararCinema() {
   for (const tf of cinema.tarefas) tf.rej(new Error('fim'));
   cinema.tarefas = [];
   cinema.modo = null;
-  document.body.classList.remove('cinema', 'cinema-uso', 'cinema-filme');
+  document.body.classList.remove('cinema', 'cinema-uso', 'cinema-filme', 'cinema-teste');
   $('#usoBarra').hidden = true;
+  $('#dia').hidden = true;
+  teste.rodada++;
+  aplicarDeslocamento();
   $('#filme').hidden = true;
   limparMedidas();
   if (pessoa.grupo.parent) cena.remove(pessoa.grupo);
@@ -15143,6 +15311,366 @@ function iniciarFilme() {
 }
 
 // =====================================================================
+// 9d. DIA A DIA — testes de uso com a pessoa, medidos na planta
+// =====================================================================
+// Cada teste é uma situação real (cozinhar, abrir o forno, sentar no
+// banco…): a pessoa faz a ação em laço, uma cota mostra o espaço que
+// sobra e um veredito diz se dá. Os números saem só da geometria da
+// aba, então o mesmo teste é medido em todas as abas para comparar
+// (ex.: a sua planta × o estudo da arquiteta).
+const teste = { lista: [], atual: null, rodada: 0, comparar: [] };
+const FRENTE = { 0: ['z', 1], 90: ['x', -1], 180: ['z', -1], 270: ['x', 1] };
+const PIOR = (...sts) => sts.reduce((a, b) => (NIVEL[b] > NIVEL[a] ? b : a), 'ok');
+const faixaSt = (v, bom, minimo) => (v >= bom ? 'ok' : v >= minimo ? 'atencao' : 'problema');
+const ehCadeira = (m) => m && (m.tipo === 'cadeira' || m.tipo === 'cadeira_escritorio');
+
+// espaço livre à frente do móvel, num trecho da frente (x local de lx0 a lx1)
+function livreNaFrente(m, lx0 = -m.l / 2, lx1 = m.l / 2, conta = () => true) {
+  const fr = FRENTE[((m.rot % 360) + 360) % 360];
+  if (!fr) return null;
+  const [eixo, s] = fr, r = retanguloPlanta(m, lx0, lx1, m.p / 2 - 1, m.p / 2);
+  const obst = obstaculosPara(m).filter((o) => !o.id || conta(movel(o.id)));
+  const { livre, quem } = livreNaDirecao(r, eixo, s, obst, 400);
+  const borda = bordaDe(r, eixo, s), meio = eixo === 'x' ? (r.z0 + r.z1) / 2 : (r.x0 + r.x1) / 2;
+  const pt = (d) => (eixo === 'x' ? [borda + s * d, meio] : [meio, borda + s * d]);
+  return { livre, quem: quem ? quem.replace(/^a parede .*/, 'a parede') : null, pt };
+}
+const cmTxt = (v) => (v >= 400 ? 'mais de 4 m' : `${fmt(Math.round(v))} cm`);
+
+function medirDia() {
+  conferir(); // áreas de uso e entrada do banco da aba ativa
+  const M = cen().moveis, lista = [];
+  const zona = (m, k) => ({ ...(livreZona.get(`${m.id}#${k}`) || {}), st: statusZona.get(`${m.id}#${k}`) || 'ok' });
+
+  // ---- cozinha: cooktop, forno e geladeira
+  const b = M.find((m) => m.tipo === 'bancada_cozinha');
+  if (b) {
+    const cx = b.variante === 'projeto' ? -b.l / 2 + 175 : b.l / 2 - 40, f = livreNaFrente(b, cx - 28, cx + 28);
+    if (f) {
+      const st = faixaSt(f.livre, 90, 70);
+      lista.push({ id: 'cozinhar', icone: '🍳', nome: 'Cozinhar no cooktop', valor: f.livre, st, cota: [f.pt(0), f.pt(f.livre)], foco: f.pt(f.livre / 2),
+        frase: `${cmTxt(f.livre)} livres na frente do cooktop${f.quem ? ` (limite: ${f.quem})` : ''}. ${{ ok: 'Dá para cozinhar e alguém passar por trás.', atencao: 'Uma pessoa cozinha bem; duas não se cruzam.', problema: 'Apertado até para uma pessoa só.' }[st]}`,
+        async cena() {
+          await andarAte(...f.pt(Math.min(34, f.livre / 2)));
+          await virar(...f.pt(-30));
+          await animar(0.5, (k) => fogo(b, k, cinema.t));
+          await mudarPose({ mexer: 1 }, 0.4);
+          await durante(3.2, () => fogo(b, 1, cinema.t));
+          await mudarPose({ mexer: 0 }, 0.4);
+          await animar(0.4, (k) => fogo(b, 1 - k, cinema.t));
+        } });
+      if (b.variante === 'eletros' || b.variante === 'projeto') {
+        const PORTA = 46, sobra = Math.max(0, f.livre - PORTA), st2 = faixaSt(sobra, 50, 30), deFrente = sobra >= 50;
+        const forno = (k) => abrirParte(b, k, (a) => a.eixo === 'x' && Math.abs(a.ang) > 1.3);
+        lista.push({ id: 'forno', icone: '🔥', nome: 'Tirar a assadeira do forno', valor: sobra, st: st2, cota: [f.pt(PORTA), f.pt(f.livre)], foco: f.pt(f.livre / 2),
+          frase: `A porta do forno desce ${PORTA} cm e sobram ${cmTxt(sobra)}${f.quem ? ` (limite: ${f.quem})` : ''}. ${{ ok: 'Você fica de frente para o forno.', atencao: 'Abre, mas você fica de lado para tirar a assadeira.', problema: 'Não cabe ninguém atrás da porta aberta: só de lado, esticando o braço.' }[st2]}`,
+          async cena() {
+            const lado = paraPlanta(b, cx - 52, b.p / 2 + Math.min(30, f.livre / 2));
+            await andarAte(...(deFrente ? f.pt(PORTA + Math.min(28, sobra / 2)) : lado));
+            await virar(...(deFrente ? f.pt(0) : paraPlanta(b, cx - 20, b.p / 2 - 10)));
+            await mudarPose({ alcancar: 0.7 }, 0.3);
+            await animar(0.9, forno);
+            await esperar(2.2);
+            await animar(0.8, (k) => forno(1 - k));
+            await mudarPose({ alcancar: 0 }, 0.3);
+          } });
+      }
+    }
+  }
+  const g = M.find((m) => m.tipo === 'geladeira'), fg = g && livreNaFrente(g);
+  if (fg) {
+    const sobra = Math.max(0, fg.livre - g.l), st = faixaSt(sobra, 45, 15), folgado = fg.livre >= g.l * 0.75 + 22;
+    lista.push({ id: 'geladeira', icone: '🧊', nome: 'Abrir a geladeira', valor: sobra, st, cota: [fg.pt(Math.min(g.l, fg.livre)), fg.pt(Math.min(fg.livre, 260))], foco: fg.pt(60),
+      frase: `A porta gira ${cmTxt(g.l)} e, aberta, sobram ${cmTxt(sobra)}${fg.quem ? ` (limite: ${fg.quem})` : ''}. ${{ ok: 'Abre inteira com você na frente.', atencao: 'Abre inteira, mas você fica espremido atrás da porta.', problema: 'A porta não abre inteira com alguém na frente.' }[st]}`,
+      async cena() {
+        await andarAte(...(folgado ? paraPlanta(g, -g.l / 4, g.p / 2 + g.l * 0.75 + 8) : paraPlanta(g, -g.l / 2 - 22, g.p / 2 + 28)));
+        await virar(...paraPlanta(g, 0, 0));
+        await mudarPose({ alcancar: 0.8 }, 0.3);
+        await usar(g, 1, 0.9);
+        await esperar(2.2);
+        await usar(g, 0, 0.8);
+        await mudarPose({ alcancar: 0 }, 0.3);
+      } });
+  }
+
+  // ---- escritório
+  const mesaT = M.find((m) => m.tipo === 'mesa_computador'), ft = mesaT && livreNaFrente(mesaT, undefined, undefined, (o) => !ehCadeira(o));
+  if (ft) {
+    const cad = M.filter(ehCadeira).map((c) => ({ c, d: Math.hypot(c.x - ft.pt(30)[0], c.z - ft.pt(30)[1]) })).filter((x) => x.d < 70).sort((a, z) => a.d - z.d)[0]?.c;
+    const stE = faixaSt(ft.livre, 100, 75), stT = mesaT.p >= 55 ? 'ok' : 'atencao', st = PIOR(stE, stT);
+    lista.push({ id: 'trabalhar', icone: '💻', nome: 'Trabalhar na mesa', valor: ft.livre, st, cota: [ft.pt(0), ft.pt(Math.min(ft.livre, 260))], foco: ft.pt(50),
+      frase: `Tampo de ${fmt(mesaT.l)} × ${fmt(mesaT.p)} cm${stT === 'ok' ? '' : ' (raso: cabe o notebook; monitor com teclado fica justo)'} e ${cmTxt(ft.livre)} livres atrás para a cadeira. ${{ ok: 'Você afasta a cadeira e levanta sem bater em nada.', atencao: 'Dá para levantar, com a cadeira quase encostando atrás.', problema: 'Falta espaço para afastar a cadeira.' }[stE]}`,
+      async cena() {
+        if (!cad) { await andarAte(...ft.pt(40)); await virar(...ft.pt(-20)); await esperar(2.5); return; }
+        const levantar = await sentar(cad);
+        await mudarPose({ digitar: 1 }, 0.4);
+        await esperar(3);
+        await mudarPose({ digitar: 0 }, 0.4);
+        await levantar();
+      } });
+  }
+
+  // ---- jantar: banco e cadeiras
+  const banco = M.find((m) => m.tipo === 'banco'), eb = banco && entradasBanco.get(banco.id);
+  const mesaJ = M.filter((m) => m.tipo === 'mesa_jantar' || m.tipo === 'mesa_redonda').sort((a, z) => Math.hypot(a.x - (banco?.x || 0), a.z - (banco?.z || 0)) - Math.hypot(z.x - (banco?.x || 0), z.z - (banco?.z || 0)))[0];
+  const cadsJ = mesaJ ? M.filter((m) => m.tipo === 'cadeira' && Math.hypot(m.x - mesaJ.x, m.z - mesaJ.z) < Math.max(mesaJ.l, mesaJ.p) / 2 + 55) : [];
+  if (eb && mesaJ) {
+    const entra = eb.faixa && eb.st !== 'problema', valor = eb.faixa ? eb.largura : Math.max(...eb.pontas);
+    lista.push({ id: 'banco', icone: '🍽️', nome: 'Sentar no banco para comer', valor, st: eb.st, foco: [(banco.x + mesaJ.x) / 2, (banco.z + mesaJ.z) / 2],
+      cota: entra ? (eb.eixo === 'x' ? [[eb.faixa[0], bordaDe(eb.pg, ...eb.frente) + eb.frente[1] * 12], [eb.faixa[1], bordaDe(eb.pg, ...eb.frente) + eb.frente[1] * 12]]
+        : [[bordaDe(eb.pg, ...eb.frente) + eb.frente[1] * 12, eb.faixa[0]], [bordaDe(eb.pg, ...eb.frente) + eb.frente[1] * 12, eb.faixa[1]]]) : null,
+      frase: entra ? `Você entra por um trecho livre de ${cmTxt(eb.largura)} na frente do banco e escorrega até a mesa. ${eb.st === 'ok' ? 'Entra de boa.' : 'Passa de lado, apertado.'}`
+        : `O banco fica fechado: pontas com ${fmt(eb.pontas[0])} e ${fmt(eb.pontas[1])} cm e${eb.faixa ? ` só ${fmt(eb.largura)} cm de` : ' nenhuma'} frente livre. Para sentar é preciso puxar a mesa toda vez.`,
+      async cena() {
+        // cadeiras no caminho saem da frente antes
+        await animar(0.6, (k) => cadsJ.forEach((c) => puxarCadeira(c, 62 * k)));
+        if (!entra) entradasBanco.set(banco.id, { ...entradasBanco.get(banco.id), faixa: null }); // sem passagem: puxa a mesa
+        const sair = await sentarNoBanco(banco, mesaJ);
+        await mudarPose({ comer: 1 }, 0.4);
+        await esperar(3);
+        await mudarPose({ comer: 0 }, 0.4);
+        await sair();
+        await animar(0.6, (k) => cadsJ.forEach((c) => puxarCadeira(c, 62 * (1 - k))));
+      } });
+  }
+  if (cadsJ.length) {
+    const zs = cadsJ.map((c) => ({ c, ...zona(c, 0) })).sort((a, z) => (a.livre ?? 99) - (z.livre ?? 99)), pior = zs[0];
+    const [fx, fz] = dirFrente(pior.c.rot), tras = (d) => [pior.c.x - fx * (pior.c.p / 2 + d), pior.c.z - fz * (pior.c.p / 2 + d)];
+    lista.push({ id: 'cadeiras', icone: '🪑', nome: 'Puxar a cadeira da mesa', valor: pior.livre ?? 80, st: PIOR(...zs.map((z) => z.st)), cota: [tras(0), tras(Math.max(1, pior.livre ?? 80))], foco: [pior.c.x, pior.c.z],
+      frase: `${cadsJ.length} cadeira${cadsJ.length > 1 ? 's' : ''} na mesa. Atrás da mais apertada há ${cmTxt(pior.livre ?? 80)}${pior.quem ? ` (limite: ${pior.quem})` : ''}; para sentar ela recua uns 40 cm. ${{ ok: 'Puxa e senta sem esbarrar.', atencao: 'Dá, mas a cadeira encosta no que está atrás.', problema: 'A cadeira não recua o bastante para sentar.' }[pior.st]}`,
+      async cena() {
+        const levantar = await sentar(pior.c, { puxar: Math.min(34, Math.max(18, (pior.livre ?? 40) - 4)) });
+        await mudarPose({ comer: 1 }, 0.4);
+        await esperar(2.6);
+        await mudarPose({ comer: 0 }, 0.4);
+        await levantar();
+      } });
+  }
+
+  // ---- estar
+  const sofa = M.find((m) => m.tipo === 'sofa' || m.tipo === 'sofa_chaise'), fs = sofa && livreNaFrente(sofa, -sofa.l / 2 + 10, sofa.l / 2 - 10);
+  if (fs) {
+    const abre = sofa.variante === 'retratil' ? 40 : 0, sobra = Math.max(0, fs.livre - abre), st = faixaSt(sobra, 60, 40);
+    lista.push({ id: 'sofa', icone: '🛋️', nome: abre ? 'Abrir o sofá e ver TV' : 'Sentar no sofá', valor: sobra, st, cota: [fs.pt(abre), fs.pt(Math.min(fs.livre, 260))], foco: fs.pt(30),
+      frase: `${abre ? `O assento avança ${abre} cm e sobram` : 'Sobram'} ${cmTxt(sobra)}${fs.quem ? ` (limite: ${fs.quem})` : ''}. ${{ ok: 'Passa alguém na frente com o sofá aberto.', atencao: 'Com o sofá aberto, passa de lado.', problema: 'Com o sofá aberto, a passagem fecha.' }[st]}`,
+      async cena() {
+        const de = paraPlanta(sofa, -sofa.l / 4, sofa.p / 2 + abre + 26), assento = paraPlanta(sofa, -sofa.l / 4, sofa.p / 2 - 30 + abre * 0.6);
+        await andarAte(...paraPlanta(sofa, sofa.l / 4, sofa.p / 2 + abre + 30));
+        await virar(...paraPlanta(sofa, sofa.l / 4, 0));
+        if (abre) { await mudarPose({ alcancar: 0.6 }, 0.3); await usar(sofa, 1, 1.1); await mudarPose({ alcancar: 0 }, 0.3); }
+        await andarDireto(...de);
+        await virar(...paraPlanta(sofa, -sofa.l / 4, sofa.p / 2 + 200));
+        await durante(0.9, (u) => { const k = ease(u); pessoa.grupo.position.x = de[0] + (assento[0] - de[0]) * k; pessoa.grupo.position.z = de[1] + (assento[1] - de[1]) * k; pessoa.ps.sentar = ease((u - 0.2) / 0.8); });
+        await mudarPose({ colo: 1 }, 0.4);
+        await esperar(3);
+        await mudarPose({ colo: 0 }, 0.3);
+        await durante(0.8, (u) => { const k = ease(u); pessoa.grupo.position.x = assento[0] + (de[0] - assento[0]) * k; pessoa.grupo.position.z = assento[1] + (de[1] - assento[1]) * k; pessoa.ps.sentar = 1 - ease(u / 0.8); });
+        if (abre) { await andarDireto(...paraPlanta(sofa, sofa.l / 4, sofa.p / 2 + abre + 30)); await virar(...paraPlanta(sofa, sofa.l / 4, 0)); await usar(sofa, 0, 1); }
+      } });
+  }
+
+  // ---- quarto
+  const gr = M.find((m) => m.tipo === 'guarda_roupa'), fgr = gr && livreNaFrente(gr);
+  if (fgr) {
+    const folha = gr.variante === 'abrir' ? gr.l / 4 : 0, sobra = Math.max(0, fgr.livre - folha), st = faixaSt(sobra, 45, 15);
+    lista.push({ id: 'armario', icone: '👕', nome: 'Abrir o guarda-roupa', valor: sobra, st, cota: [fgr.pt(folha), fgr.pt(Math.min(fgr.livre, 260))], foco: fgr.pt(30),
+      frase: `${folha ? `Cada porta avança ${cmTxt(folha)} e sobram` : 'Portas de correr; na frente há'} ${cmTxt(sobra)}${fgr.quem ? ` (limite: ${fgr.quem})` : ''}. ${{ ok: 'Abre tudo com você na frente.', atencao: 'Abre, mas você fica de lado e usa uma porta por vez.', problema: 'As portas quase encostam: difícil pegar roupa.' }[st]}`,
+      async cena() {
+        await andarAte(...paraPlanta(gr, -gr.l / 2 - 12, gr.p / 2 + Math.min(34, fgr.livre / 2)));
+        await virar(...paraPlanta(gr, -gr.l / 4, 0));
+        await mudarPose({ alcancar: 0.9 }, 0.3);
+        await usar(gr, 1, 1);
+        await esperar(2.4);
+        await usar(gr, 0, 0.9);
+        await mudarPose({ alcancar: 0 }, 0.3);
+      } });
+  }
+  const cama = M.find((m) => m.tipo === 'cama_box');
+  if (cama) {
+    const zs = zonasUso(cama).map((z, k) => ({ z, ...zona(cama, k) })).filter((x) => x.livre != null);
+    if (zs.length) {
+      const pior = [...zs].sort((a, z) => a.livre - z.livre)[0], meio = (z) => [(z.x0 + z.x1) / 2, (z.z0 + z.z1) / 2];
+      const horiz = pior.z.x1 - pior.z.x0 < pior.z.z1 - pior.z.z0, [mx, mz] = meio(pior.z), pg = pegada(cama);
+      const c0 = horiz ? [mx < cama.x ? pg.x0 : pg.x1, mz] : [mx, mz < cama.z ? pg.z0 : pg.z1], sg = horiz ? Math.sign(mx - cama.x) : Math.sign(mz - cama.z);
+      lista.push({ id: 'cama', icone: '🛏️', nome: 'Circular em volta da cama', valor: pior.livre, st: PIOR(...zs.map((z) => z.st)), foco: [cama.x, cama.z],
+        cota: [c0, horiz ? [c0[0] + sg * pior.livre, c0[1]] : [c0[0], c0[1] + sg * pior.livre]],
+        frase: `${zs.map((x) => `${x.z.nome.toLowerCase()} ${cmTxt(x.livre)}`).join(' · ')}. ${{ ok: 'Dá a volta na cama e arruma os dois lados.', atencao: 'Passa, mas de lado no trecho mais estreito.', problema: 'Um dos lados não dá passagem.' }[PIOR(...zs.map((z) => z.st))]}`,
+        async cena() { for (const x of [...zs, zs[0]]) { await andarAte(...meio(x.z)); await esperar(0.5); } } });
+    }
+  }
+
+  // ---- banheiro
+  const vaso = M.find((m) => m.tipo === 'vaso'), lav = M.find((m) => m.tipo === 'lavatorio'), zv = vaso && zona(vaso, 0);
+  if (vaso && zv.livre != null) {
+    const fv = livreNaFrente(vaso), giro = girosPortas().find((x) => x.ab.id === 'porta-banho');
+    const bate = giro ? M.filter((m) => (defCatalogo(m.tipo) || {}).colide !== false && pegada(m).y0 < 60 && bloqueiaGiro(pegada(m), giro)).map((m) => m.nome.toLowerCase()) : [];
+    lista.push({ id: 'banho', icone: '🚿', nome: 'Usar o banheiro', valor: zv.livre, st: PIOR(zv.st, bate.length ? 'problema' : 'ok'), cota: fv ? [fv.pt(0), fv.pt(Math.min(fv.livre, 200))] : null, foco: [vaso.x - 30, vaso.z - 30],
+      frase: `${cmTxt(fv ? fv.livre : zv.livre)} livres na frente do vaso (mínimo 40). ${bate.length ? `A porta bate em: ${bate.join(', ')}.` : 'A porta abre inteira sem bater em nada.'}`,
+      async cena() {
+        if (lav) { await andarAte(...naFrente(lav, 30)); await virar(lav.x, lav.z); await mudarPose({ mexer: 1 }, 0.3); await esperar(1.8); await mudarPose({ mexer: 0 }, 0.3); }
+        await andarAte(...naFrente(vaso, 24)); await virar(...naFrente(vaso, 120)); await esperar(1.2);
+      } });
+  }
+  return lista;
+}
+
+// abre só algumas partes do móvel (ex.: a porta do forno, sem as gavetas)
+function abrirParte(m, k, quais) {
+  const obj = objDe(m);
+  if (!obj) return;
+  sujarSombra();
+  for (const a of (obj.userData.anim || []).filter(quais)) {
+    a.g.rotation.set(0, 0, 0);
+    if (a.ang) a.g.rotation[a.eixo] = a.ang * k;
+    a.g.position.copy(a.pivo);
+    if (a.desl) a.g.position.addScaledVector(a.desl, k);
+  }
+}
+
+// o mesmo conjunto de testes em todas as abas (só geometria: não redesenha nada)
+function compararAbas() {
+  const era = doc.ativo;
+  teste.comparar = doc.cenarios.map((c, i) => { doc.ativo = i; return { i, nome: c.nome, testes: medirDia().map(({ id, valor, st }) => ({ id, valor, st })) }; });
+  doc.ativo = era;
+}
+
+function tickPessoa(dt) {
+  const p = pessoa;
+  let d = p.yawAlvo - p.yaw;
+  d = Math.atan2(Math.sin(d), Math.cos(d));
+  p.yaw += d * Math.min(1, dt * cinema.vel * 7);
+  p.grupo.rotation.y = p.yaw;
+  posePessoa(cinema.t);
+  p.grupo.rotation.x = -p.ps.deitar * Math.PI / 2;
+}
+
+function cancelarTarefas() {
+  for (const tf of cinema.tarefas) tf.rej(new Error('fim'));
+  cinema.tarefas = [];
+}
+// tudo de volta ao lugar, sem reconstruir a cena
+function arrumarCena() {
+  estadoFilme.clear();
+  for (const m of cen().moveis) {
+    const obj = objDe(m);
+    if (!obj) continue;
+    obj.position.set(m.x, m.y || 0, m.z);
+    if (obj.userData.anim?.length) aplicarAbertura(obj, m.aberto || 0);
+    if (obj.userData.chamas) obj.userData.chamas.visible = false;
+  }
+  pessoa.ps = { ...POSE_BASE };
+}
+
+function cameraTeste([x, z]) {
+  let dx = 215 - x, dz = 330 - z;
+  const n = Math.hypot(dx, dz);
+  if (n < 60) { dx = 0.5; dz = 0.87; } else { dx /= n; dz /= n; }
+  const longe = Math.min(1.7, Math.max(1, 1.05 / camPersp.aspect));
+  const alvo = new T.Vector3(x, 55, z);
+  moverCamera(alvo, new T.Vector3(x + dx * 290 * longe, 340 * longe, z + dz * 290 * longe));
+}
+
+function desenharCotaTeste(t) {
+  limparMedidas();
+  grpMedidas.visible = true;
+  $('#medidasUso').hidden = false;
+  if (!t.cota) return;
+  const [p1, p2] = t.cota;
+  cotaMedida(p1, p2, 2.5, t.st);
+  const fita = new T.Mesh(new T.PlaneGeometry(1, 1), MAT_MED[t.st]);
+  fita.rotation.x = -Math.PI / 2; fita.renderOrder = 2;
+  const horiz = Math.abs(p2[0] - p1[0]) > Math.abs(p2[1] - p1[1]);
+  fita.scale.set(horiz ? Math.abs(p2[0] - p1[0]) : 26, horiz ? 26 : Math.abs(p2[1] - p1[1]), 1);
+  fita.position.set((p1[0] + p2[0]) / 2, 1.2, (p1[1] + p2[1]) / 2);
+  grpMedidas.add(fita);
+  rotuloMedida(cmTxt(t.valor), (p1[0] + p2[0]) / 2, 6, (p1[1] + p2[1]) / 2, t.st).el.classList.add('grande');
+}
+
+async function rodarTeste(id) {
+  const minha = ++teste.rodada;
+  cancelarTarefas();
+  arrumarCena();
+  const t = teste.lista.find((x) => x.id === id) || teste.lista[0];
+  teste.atual = t?.id || null;
+  renderDia();
+  if (!t) return;
+  desenharCotaTeste(t);
+  cameraTeste(t.foco);
+  // começa perto da cena, num ponto livre
+  const ini = centroCel(...livreMaisPerto(celula(t.foco[0] + (215 - t.foco[0]) * 0.3, t.foco[1] + (330 - t.foco[1]) * 0.3)));
+  pessoa.grupo.position.set(ini[0], 0, ini[1]);
+  try {
+    while (cinema.modo === 'teste' && teste.rodada === minha) {
+      await t.cena();
+      await esperar(1.1);
+    }
+  } catch (e) { if (e?.message !== 'fim') console.error(e); }
+}
+
+function prepararDia() {
+  teste.lista = medirDia();
+  compararAbas();
+  conferir(); // deixa as medidas da aba ativa valendo de novo
+  montarMapa();
+  // o que fica acima da cabeça (pendente, prateleiras altas, quadros) some para não tapar a cena;
+  // a marcenaria alta da cozinha fica, encostada na parede
+  const caixa = new T.Box3();
+  for (const m of cen().moveis) {
+    if (['armario_aereo', 'coifa', 'depurador', 'torre_geladeira', 'purificador', 'geladeira', 'guarda_roupa', 'cortina', 'persiana', 'ar_split'].includes(m.tipo)) continue;
+    objDe(m)?.traverse((o) => { if (o.isMesh && caixa.setFromObject(o).min.y >= 100) o.visible = false; });
+  }
+  pessoa.ps = { ...POSE_BASE };
+  pessoa.grupo.rotation.set(0, 0, 0);
+  pessoa.yaw = pessoa.yawAlvo = 0;
+  cena.add(pessoa.grupo);
+}
+
+function iniciarDia(id) {
+  iniciarCinema('teste');
+  if (vista.caminhar) alternarCaminhada();
+  if (vista.topo) alternarVista();
+  if (!vista.corte) { vista.corte = true; construirPlanta(); }
+  prepararDia();
+  $('#dia').hidden = false;
+  $('#diaPausa').textContent = '⏸';
+  aplicarDeslocamento();
+  atualizarBotoes();
+  const pior = [...teste.lista].sort((a, z) => NIVEL[z.st] - NIVEL[a.st])[0];
+  rodarTeste(id || pior?.id);
+}
+
+function trocarAbaDia(i) {
+  if (i === doc.ativo) return;
+  cancelarTarefas();
+  teste.rodada++;
+  doc.ativo = i;
+  atualizarTudo();
+  prepararDia();
+  rodarTeste(teste.atual);
+}
+
+function renderDia() {
+  const ICO = { ok: '✓', atencao: '!', problema: '✕' };
+  const n = (st) => teste.lista.filter((t) => t.st === st).length;
+  $('#diaAba').textContent = cen().nome;
+  $('#diaResumo').replaceChildren(
+    el('span', { class: 'ok' }, `✓ ${n('ok')}`), el('span', { class: 'atencao' }, `! ${n('atencao')}`), el('span', { class: 'problema' }, `✕ ${n('problema')}`));
+  $('#diaLista').replaceChildren(...teste.lista.map((t) => el('button', { type: 'button', class: `dia-item ${t.st}${t.id === teste.atual ? ' ativo' : ''}`, onclick: () => rodarTeste(t.id) },
+    el('i', {}, t.icone), el('span', {}, t.nome), el('b', {}, cmTxt(t.valor)))));
+  const t = teste.lista.find((x) => x.id === teste.atual), det = $('#diaDetalhe');
+  det.textContent = '';
+  if (!t) { det.append(el('p', {}, 'Esta aba não tem móveis para testar.')); return; }
+  det.append(el('p', { class: `veredito ${t.st}` }, el('i', {}, ICO[t.st]), t.frase));
+  const outras = teste.comparar.map((c) => ({ ...c, t: c.testes.find((x) => x.id === t.id) }));
+  if (outras.length > 1) {
+    det.append(el('div', { class: 'dia-comp' }, el('small', {}, 'O mesmo teste nas outras abas (toque para trocar)'),
+      ...outras.map((c) => el('button', { type: 'button', class: `${c.t?.st || 'sem'}${c.i === doc.ativo ? ' ativo' : ''}`, onclick: () => trocarAbaDia(c.i) },
+        el('i', {}, c.t ? ICO[c.t.st] : '–'), el('span', {}, c.nome), el('b', {}, c.t ? cmTxt(c.t.valor) : 'não se aplica')))));
+  }
+  $('#diaLista').querySelector('.ativo')?.scrollIntoView({ block: 'nearest', inline: 'center' });
+}
+
+// =====================================================================
 // 10. ARQUIVOS — salvar no navegador, JSON, PNG e modelos .glb
 // =====================================================================
 let tSalvar;
@@ -15379,7 +15907,7 @@ renderer.setAnimationLoop(() => {
   if (cinema.modo || arr) sujarSombra(); // algo se mexendo: pessoa, portas, móvel arrastado
   if (cinema.modo) tickCinema(dt);
   if (cinema.modo === 'filme') { desenharQuadro(); return; }
-  if (cinema.modo === 'uso' && medidas.ligadas) posicionar(medidasTela);
+  if ((cinema.modo === 'uso' && medidas.ligadas) || cinema.modo === 'teste') posicionar(medidasTela);
   if (!vista.caminhar) ctlAtivo().update();
   desenharQuadro();
   posicionarRotulos();
@@ -15391,7 +15919,7 @@ renderer.setAnimationLoop(() => {
 });
 
 // acesso pelo console, útil para testes e ajustes finos
-window.simulador = { get doc() { return doc; }, atualizarTudo, selecionar, esticar, areaUtil, areaConstruida, alternarVista, enquadrar, exportarPNG, CFG, camera: camAtiva,
+window.simulador = { teste, iniciarDia, rodarTeste, get doc() { return doc; }, atualizarTudo, selecionar, esticar, areaUtil, areaConstruida, alternarVista, enquadrar, exportarPNG, CFG, camera: camAtiva,
   _grp: grpMoveis, olhar(px, py, pz, tx, ty, tz) { camPersp.position.set(px, py, pz); ctlPersp.target.set(tx, ty, tz); ctlPersp.update(); },
   alternarAbertura: (id) => alternarAbertura(movel(id)), alternarCaminhada, camadas, andar, aplicarCameraAndar, cinema, pessoa, alvo: (x, y) => alvoEm({ clientX: x, clientY: y }), get sel() { return sel; } };
 })();

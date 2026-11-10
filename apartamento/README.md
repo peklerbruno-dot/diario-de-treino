@@ -75,6 +75,28 @@ No filme, a pessoa toma café no banco: entra pela faixa livre e escorrega até 
 Saíram o pendente de papel de arroz e a costela-de-adão. O tamanho e a posição da mesa redonda
 se mudam direto no modo Arrumar (por isso não há mais a aba "afastada").
 
+## Dia a dia (botão 🧍)
+
+Testes de uso com a pessoa, medidos direto na planta da aba. Cada teste roda em laço, mostra
+no chão a cota do espaço que sobra e dá um veredito (verde, amarelo ou vermelho):
+
+| Teste | O que mede |
+| --- | --- |
+| Cozinhar no cooktop | espaço livre na frente do cooktop (bom: 90 cm; mínimo: 70) |
+| Tirar a assadeira do forno | o que sobra atrás da porta do forno aberta, que desce 46 cm |
+| Abrir a geladeira | o que sobra atrás da porta aberta |
+| Trabalhar na mesa | espaço atrás da mesa para a cadeira e profundidade do tampo |
+| Sentar no banco para comer | por onde se entra no banco, ou se é preciso puxar a mesa |
+| Puxar a cadeira da mesa | espaço atrás da cadeira mais apertada |
+| Abrir o sofá e ver TV | passagem que sobra com o assento estendido |
+| Abrir o guarda-roupa | o que sobra na frente das portas abertas |
+| Circular em volta da cama | laterais e pé da cama |
+| Usar o banheiro | frente do vaso e giro da porta |
+
+Embaixo do veredito aparece **o mesmo teste em todas as abas**; tocar numa delas troca de aba
+sem sair do teste. Serve para comparar a planta atual com o estudo da arquiteta. O que fica acima
+da cabeça (pendente, prateleiras altas) some durante o teste para não tapar a cena.
+
 ## Estudo le.vá 02 (abas "Estudo le.vá")
 
 Duas abas com o **Estudo Preliminar 02 da le.vá arquitetura** (opção 01), medido na planta de
@@ -83,12 +105,15 @@ na primeira as prateleiras ficam em montantes do rack até o teto; na "(suspensa
 penduradas no teto.
 
 - **Jantar e office:** mesa de trabalho em nogueira 100 × 45, banco de 130 com almofadas
-  terracota, mesa redonda Ø80 de pé central com 2 cadeiras dobráveis, pendente de papel e barrado
-  pintado bege até 90 cm.
-- **Cozinha:** península 152 × 45, bancada em nogueira com forno sob o cooktop, aéreo azul só do
-  lado da geladeira (111 cm, com nicho do micro), coifa de parede inox, purificador na parede e
-  torre azul em volta da geladeira.
-- **Estar:** rack de 218 com a TV apoiada, abajur, fícus e tapete redondo xadrez verde.
+  terracota, mesa redonda Ø80 de pé central com 2 cadeiras dobráveis de metal (variante
+  "Dobrável (bistrô)"), pendente de papel e barrado pintado bege até 90 cm.
+- **Cozinha:** península 152 × 45, bancada em nogueira com forno sob o cooktop, nicho aberto ao
+  lado do shaft, aéreo azul só do lado da geladeira (com nicho do micro), **coifa de parede**
+  piramidal com duto até o teto, **purificador** na parede e **torre da geladeira** (laterais e
+  armário de duas portas em cima).
+- **Estar:** peça única "Rack com prateleiras": rack de 4 portas com a TV apoiada, abajur e máquina
+  de escrever, e as prateleiras com livros, vasos e jiboias. Variantes: montantes até o teto ou
+  prateleiras suspensas. Mais fícus e tapete redondo xadrez verde.
 - **Quarto:** cama de 120 com cabeceira estofada, criado-mudo, banqueta vinho e tapete de sisal.
 - **Banheiro:** gabinete vinho, espelho com nicho de madeira e porcelanato claro.
 

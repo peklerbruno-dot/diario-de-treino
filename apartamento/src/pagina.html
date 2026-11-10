@@ -226,7 +226,50 @@ body.cinema-filme #lateral { display: none; }
   .cine-legenda span { font-size: 14px; }
 }
 #medidasUso { position: absolute; inset: 0; pointer-events: none; z-index: 6; }
-body:not(.cinema-uso) #medidasUso { display: none; }
+body:not(.cinema-uso):not(.cinema-teste) #medidasUso { display: none; }
+.medida.grande { font-size: 15px; padding: 4px 10px; border-radius: 999px; }
+/* dia a dia */
+body.cinema-teste #controlesEsq, body.cinema-teste #bussola, body.cinema-teste #bGaveta { display: none !important; }
+#dia { position: absolute; left: 12px; top: 12px; z-index: 20; width: 330px; max-height: calc(100% - 24px); display: flex; flex-direction: column;
+  background: rgba(255,255,255,.97); border-radius: 16px; box-shadow: 0 8px 28px rgba(0,0,0,.2); overflow: hidden; font-size: 13px; }
+.dia-topo { display: flex; align-items: center; gap: 8px; padding: 10px 10px 10px 14px; background: #1d2530; color: #fff; }
+.dia-topo b { white-space: nowrap; }
+#diaAba { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: .8; }
+#diaResumo { display: flex; gap: 6px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+#diaResumo .ok { color: #6fdc9c; } #diaResumo .atencao { color: #f5c76a; } #diaResumo .problema { color: #ff8f8f; }
+.dia-topo button { border: 0; background: rgba(255,255,255,.14); color: #fff; width: 30px; height: 30px; border-radius: 50%; padding: 0; flex: none; }
+#diaLista { display: flex; flex-direction: column; gap: 2px; padding: 6px; overflow: auto; }
+.dia-item { display: flex; align-items: center; gap: 8px; border: 0; background: none; text-align: left; padding: 7px 8px; border-radius: 10px; border-left: 4px solid transparent; font-size: 13px; }
+.dia-item i { font-style: normal; width: 22px; text-align: center; }
+.dia-item span { flex: 1; min-width: 0; }
+.dia-item b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.dia-item.ok { border-left-color: #27ae60; } .dia-item.atencao { border-left-color: #e0a020; } .dia-item.problema { border-left-color: #e5484d; }
+.dia-item.ok b { color: #1e8449; } .dia-item.atencao b { color: #b7791f; } .dia-item.problema b { color: #c0392b; }
+.dia-item.ativo { background: #eef2f7; font-weight: 600; }
+#diaDetalhe { border-top: 1px solid #e6e8ec; padding: 10px 12px 12px; overflow: auto; flex: none; max-height: 46%; }
+#diaDetalhe p { margin: 0; line-height: 1.4; }
+.veredito { display: flex; gap: 8px; }
+.veredito i { font-style: normal; flex: none; width: 22px; height: 22px; border-radius: 50%; color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 12px; }
+.veredito.ok i { background: #27ae60; } .veredito.atencao i { background: #e0a020; } .veredito.problema i { background: #e5484d; }
+.dia-comp { margin-top: 10px; display: flex; flex-direction: column; gap: 3px; }
+.dia-comp small { color: #6b7280; margin-bottom: 2px; }
+.dia-comp button { display: flex; align-items: center; gap: 8px; border: 1px solid #e6e8ec; background: #fff; border-radius: 9px; padding: 6px 8px; text-align: left; font-size: 12.5px; }
+.dia-comp button i { font-style: normal; flex: none; width: 18px; height: 18px; border-radius: 50%; color: #fff; display: grid; place-items: center; font-size: 11px; font-weight: 700; background: #b6bcc6; }
+.dia-comp button.ok i { background: #27ae60; } .dia-comp button.atencao i { background: #e0a020; } .dia-comp button.problema i { background: #e5484d; }
+.dia-comp button span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dia-comp button b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.dia-comp button.ativo { border-color: #1d2530; background: #f3f5f8; font-weight: 600; }
+@media (max-width: 860px) {
+  body.cinema-teste #ferramentas { display: none !important; }
+  #dia { left: 0; right: 0; top: auto; bottom: 0; width: auto; max-height: 52%; border-radius: 16px 16px 0 0; }
+  #diaLista { flex-direction: row; overflow-x: auto; overflow-y: hidden; flex: none; padding: 8px; gap: 6px; scrollbar-width: none; }
+  .dia-item { flex: none; flex-direction: column; align-items: flex-start; gap: 1px; border-left: 0; border-top: 4px solid transparent; background: #f3f5f8; width: 118px; padding: 6px 8px; }
+  .dia-item.ok { border-top-color: #27ae60; } .dia-item.atencao { border-top-color: #e0a020; } .dia-item.problema { border-top-color: #e5484d; }
+  .dia-item i { display: none; }
+  .dia-item span { font-size: 12px; line-height: 1.2; min-height: 29px; }
+  .dia-item.ativo { background: #dfe6ef; }
+  #diaDetalhe { max-height: none; flex: 1; min-height: 0; }
+}
 .medida { position: absolute; left: 0; top: 0; font-size: 10.5px; font-weight: 600; line-height: 1.25; padding: 2px 6px; border-radius: 6px; width: max-content;
   color: #fff; font-variant-numeric: tabular-nums; box-shadow: 0 1px 4px rgba(0,0,0,.25); max-width: 200px; }
 .medida.abre { background: #c0661c; }
@@ -484,6 +527,7 @@ details.mais > .conteudo { padding-bottom: 10px; }
       <button id="bFoto" title="Foto realista (F)"><span aria-hidden="true">📷</span><span class="rot">Foto</span></button>
       <button id="bRegua" title="Régua: medir entre dois pontos (M)"><span aria-hidden="true">📐</span><span class="rot">Medir</span></button>
       <button id="bUso" title="Simular o uso: portas, armários, TV, cadeiras e fogão abrindo e fechando juntos"><span aria-hidden="true">▶</span><span class="rot">Usar</span></button>
+      <button id="bDia" title="Dia a dia: a pessoa testa cada situação (cozinhar, forno, banco…) e compara as abas"><span aria-hidden="true">🧍</span><span class="rot">Dia a dia</span></button>
       <button id="bFilme" title="Filme: um dia de uma pessoa no apartamento"><span aria-hidden="true">🎬</span><span class="rot">Filme</span></button>
       <button id="bEnquadrar" title="Ver o apartamento inteiro"><span aria-hidden="true">⤢</span><span class="rot">Inteiro</span></button>
     </div>
@@ -535,6 +579,12 @@ details.mais > .conteudo { padding-bottom: 10px; }
     <div id="usoBarra" hidden>
       <b>▶ Simulação de uso</b><span id="usoTxt"></span>
       <button id="usoMedidas" class="medir" title="Mostrar medidas: quanto abre e quanto sobra">📏</button><button id="usoPausa" aria-label="Pausar">⏸</button><button id="usoFechar" aria-label="Parar">✕</button>
+    </div>
+    <!-- Dia a dia: testes de uso com a pessoa, comparados entre as abas -->
+    <div id="dia" hidden>
+      <div class="dia-topo"><b>🧍 Dia a dia</b><span id="diaAba"></span><span id="diaResumo"></span><button id="diaPausa" aria-label="Pausar">⏸</button><button id="diaFechar" aria-label="Fechar">✕</button></div>
+      <div id="diaLista"></div>
+      <div id="diaDetalhe"></div>
     </div>
     <div id="medidasUso"></div>
     <div id="reguaRotulos"></div>
