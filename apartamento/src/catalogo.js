@@ -4,7 +4,7 @@
 // Cada móvel é uma lista de formas. Medidas podem ser números (cm) ou
 // fórmulas com L, P e A (largura, profundidade e altura do móvel) — é o
 // que deixa redimensionar sem deformar pés e puxadores. Também valem
-// min, max, abs, floor, ceil, round, sin, cos, sqrt e PI.
+// min, max, abs, floor, ceil, round, sin, cos, atan, sqrt e PI.
 //
 // Eixos locais: x de -L/2 a L/2 (esquerda → direita), z de -P/2 (costas)
 // a P/2 (frente), y a partir da base do móvel.
@@ -12,7 +12,7 @@
 // Formas:
 //   caixa:  { f:'caixa', x, z, y, l, p, a, r }   x,z = centro; y = base; r = cantos arredondados
 //   cil:    { f:'cil', x, z, y, raio, raio2, a, eixo }   raio2 = topo (cone); eixo 'x'/'z' = deitado (y = centro)
-//           ou { f:'cil', l, p, a, k }   cilindro elíptico (mesa oval), k = topo/base
+//           ou { f:'cil', l, p, a, k, lados }   cilindro elíptico (mesa oval), k = topo/base; lados: 4 = tronco de pirâmide
 //   esfera: { f:'esfera', x, z, y, raio, ex, ey, ez }   ex/ey/ez = achatamento
 //   torno:  { f:'torno', pts: [[raio, altura], …] }      perfil girado (vasos, cúpulas)
 // Em qualquer forma: rx, ry, rz (giro em graus), se (condição), n (repetições,
@@ -309,6 +309,48 @@ const bancadaTopo = (cubaX) => [
       { f: 'cil', raio: 6, a: 12, y: 'A+2', x: 'L/2-100', z: '-P/2+26', cor: '#cfe6ee', acab: 'vidro' },
       { f: 'cil', n: 3, raio: 5, a: '14+i*3', y: 'A', x: '-L/2+12+i*11', z: '-P/2+9', cor: ['#e9e2d3', '#8f3f22', '#e9e2d3'], acab: 'ceramica' },
       { f: 'torno', pts: [[0, 0], [4, 0], [4, 22], [1.5, 27], [1.5, 31], [0, 31]], x: 'L/2-122', y: 'A', z: '-P/2+8', cor: '#3c5a46', acab: 'vidro' },
+];
+
+// ---- Estudo le.vá: rack de 4 portas com TV apoiada, abajur e máquina de
+// escrever; e as duas prateleiras compridas com livros, vasos e jiboias
+const RACK_LEVA = [
+  { f: 'caixa', l: 'L-10', p: 'P-8', a: 6, cor: '#1b1a19' },
+  { f: 'caixa', l: 'L', p: 'P-1.8', a: 44, y: 6, z: -0.9, acab: 'madeira', r: 0.4 },
+  ...[0, 1, 2, 3].flatMap((k) => {
+    const mov = { gira: k % 2 ? 100 : -100, eixo: 'y', px: `-L/2+${k % 2 ? k + 1 : k}*L/4`, pz: 'P/2-0.9' };
+    return [
+      { f: 'caixa', l: 'L/4-0.6', p: 1.8, a: 39, y: 8.5, x: `-L/2+L/8+${k}*L/4`, z: 'P/2-0.9', acab: 'madeira', mov },
+      { f: 'esfera', raio: 1.3, y: 26, x: `-L/2+L/8+${k}*L/4`, z: 'P/2+0.9', cor: '#26324a', acab: 'laca', mov },
+    ];
+  }),
+  // TV de 50" nos pés
+  ...tv('min(112,L*0.52)', 56, 2).map((p) => ({ ...p, x: '-L*0.03' })),
+  { f: 'caixa', n: 2, l: 2, p: 22, a: 6.5, y: 50, x: '-L*0.03+(i*2-1)*min(112,L*0.52)*0.36', z: 2, cor: '#1a1a1c', acab: 'metal', r: 0.8 },
+  // abajur: base de madeira torneada e cúpula de linho
+  { f: 'torno', pts: [[0, 0], [5, 0], [5.5, 3], [2.6, 20], [1.2, 22], [0, 22]], x: 'L/2-36', y: 50, cor: '#b5652f', acab: 'madeira' },
+  { f: 'cil', raio: 12, raio2: 11, a: 16, y: 73, x: 'L/2-36', cor: '#efe2c8', acab: 'luz' },
+  // máquina de escrever
+  { f: 'caixa', l: 32, p: 28, a: 7, y: 50, x: '-L/2+24', cor: '#e9e2cf', acab: 'laca', r: 1.5 },
+  { f: 'caixa', l: 26, p: 12, a: 3, y: 56, x: '-L/2+24', z: 6, rx: 14, cor: '#1d1d1f', acab: 'laca' },
+  { f: 'cil', eixo: 'x', raio: 2.2, a: 30, y: 61, x: '-L/2+24', z: -8, cor: '#2b2b2b', acab: 'metal' },
+];
+const jiboia = (x, y, cor = '#7d8186') => [
+  { f: 'cil', raio: 7, raio2: 8.5, a: 11, x, y, cor, acab: 'ceramica' },
+  { f: 'esfera', n: 9, raio: 4, ex: 1, ey: 0.2, ez: 0.75, x: `${x}+sin(i*2.4)*8`, y: `${y}+11+(i%3)*2`, z: 'cos(i*2.4)*8', ry: 'i*67', rz: '18+(i%3)*10', cor: '#4f7a3f', acab: 'planta' },
+  { f: 'esfera', n: 14, raio: 3.2, ex: 1, ey: 0.15, ez: 0.7, x: `${x}+((i%3)-1)*5+sin(i)*2`, y: `${y}+6-i*2.7`, z: '9+(i%2)*3', ry: 'i*67', rz: '35+(i%4)*12', cor: '#4f7a3f', acab: 'planta' },
+];
+const prateleirasLeva = (y1, y2) => [
+  { f: 'caixa', n: 2, l: 'L', p: 'P-6', a: 3.5, y: `i ? ${y2} : ${y1}`, acab: 'madeira' },
+  // de cima: caixas, jiboia, livros em pé e vaso
+  { f: 'caixa', n: 2, l: '26-i*3', p: 18, a: 4.5, y: `${y1 + 3.5}+i*4.5`, x: '-L/2+26', cor: ['#d8d2c6', '#c9c2b3'], acab: 'tecido' },
+  ...jiboia('-L/2+L*0.3', y1 + 3.5),
+  { f: 'caixa', n: 10, l: 3, p: 'P*0.45', a: '19+(i%3)*2', y: y1 + 3.5, x: 'L*0.12+i*3.3', z: -2, cor: ['#3a3a3c', '#e9e2d3', '#d9d4cc', '#55585c'], acab: 'tecido' },
+  { f: 'torno', pts: [[0, 0], [7, 0], [9, 2], [5.5, 6], [6, 10], [12, 13], [11, 15], [0, 15]], x: 'L/2-22', y: y1 + 3.5, cor: '#4a5d4f', acab: 'ceramica' },
+  // de baixo: vasos vazados, livros deitados, caixa e jiboia
+  { f: 'torno', n: 2, pts: [[0, 0], [5, 0], [7.5, 6], [6, 13], [2.4, 19], [2.8, 21], [0, 21]], x: '-L/2+20+i*15', y: y2 + 3.5, cor: '#e3d8c8', acab: 'ceramica' },
+  { f: 'caixa', n: 3, l: '30-i*3', p: 20, a: 3, y: `${y2 + 3.5}+i*3`, x: '-L*0.14', ry: 'i*6-4', cor: ['#e9e2d3', '#d8cdb8', '#f1ece2'], acab: 'tecido' },
+  { f: 'caixa', n: 2, l: 24, p: 18, a: 5, y: `${y2 + 3.5}+i*5`, x: 'L*0.08', cor: ['#8a8378', '#9a9388'], acab: 'tecido' },
+  ...jiboia('L*0.25', y2 + 3.5),
 ];
 
 const CATALOGO = [
@@ -693,6 +735,16 @@ const CATALOGO = [
         { f: 'caixa', n: 9, l: 'L*0.13', p: 2.2, a: 5.5, x: 'sin((i-4)*0.3)*L*0.45', z: '-cos((i-4)*0.3)*L*0.45+4', y: 'A-8', ry: '-(i-4)*17', cor: 'secundaria', acab: 'madeira' },
         { f: 'caixa', n: 2, l: 2.4, p: 2.4, a: 'A-44', x: '(i*2-1)*L*0.4', z: '-L*0.3+4', y: 44, rx: -6, cor: 'secundaria', acab: 'madeira' },
         { f: 'caixa', n: 3, l: 1.6, p: 1.6, a: 'A-56', x: '(i-1)*L*0.17', z: '-L*0.43+4', y: 46, rx: -8, cor: 'secundaria', acab: 'madeira' },
+      ] },
+      // bistrô de metal: duas barras em X de cada lado, assento e encosto de ripas
+      { id: 'dobravel', nome: 'Dobrável (bistrô)', dim: { l: 42, p: 46, a: 82 }, partes: [
+        ...[-1, 1].flatMap((sx) => [
+          { f: 'caixa', l: 2, p: 1.6, a: 'sqrt(A*A+(P-8)*(P-8))', y: 'A/2-sqrt(A*A+(P-8)*(P-8))/2', x: `${sx}*(L/2-1)`, rx: '-atan((P-8)/A)*180/PI', cor: 'secundaria', acab: 'metal' },
+          { f: 'caixa', l: 2, p: 1.6, a: 'sqrt(45*45+(P-10)*(P-10))', y: '22.5-sqrt(45*45+(P-10)*(P-10))/2', x: `${sx}*(L/2-3.2)`, z: 1, rx: 'atan((P-10)/45)*180/PI', cor: 'secundaria', acab: 'metal' },
+        ]),
+        { f: 'caixa', n: 5, l: 'L-7', p: '(P-12)/5-1', a: 1.4, y: 45, z: '-P/2+8+(i+0.5)*(P-12)/5', acab: 'metal', r: 0.4 },
+        { f: 'caixa', n: 2, l: 'L-3', p: 1.4, a: 6.5, y: 'A-8-i*9', z: '(P-8)/2-(A-5-i*9)/A*(P-8)-1', rx: '-atan((P-8)/A)*180/PI', acab: 'metal', r: 0.5 },
+        { f: 'cil', n: 2, eixo: 'x', raio: 0.7, a: 'L-4', y: 11, z: '(i*2-1)*(P/2-9)', cor: 'secundaria', acab: 'metal' },
       ] },
       { id: 'banqueta', nome: 'Banqueta alta', dim: { l: 40, p: 40, a: 75 }, uso: [], partes: [
         { f: 'cil', l: 'L', p: 'P', a: 4, y: 'A-4', acab: '@' },
@@ -1105,6 +1157,63 @@ const CATALOGO = [
     ],
   },
   {
+    tipo: 'coifa', nome: 'Coifa de parede', cat: 'Cozinha', colide: false, elev: 140,
+    dim: { l: 60, p: 50, a: 120 }, cores: { principal: '#b9bdc2', secundaria: '#3a3c40' }, rotulosCores: ['Inox', 'Filtros'],
+    partes: [
+      { f: 'caixa', l: 'L', p: 'P', a: 5, acab: 'metal' },
+      { f: 'caixa', l: 'L-6', p: 'P-8', a: 0.6, y: -0.3, cor: 'secundaria', acab: 'metal' },
+      { f: 'cil', l: 'L', p: 'P', a: 24, y: 5, k: 0.42, lados: 4, acab: 'metal' },
+      // duto encostado na parede, até o teto
+      { f: 'caixa', l: 'L*0.42', p: 'P/2+P*0.21', a: 'A-24', y: 24, z: '(-P/2+P*0.21)/2', acab: 'metal' },
+    ],
+  },
+  {
+    tipo: 'purificador', nome: 'Purificador de água', cat: 'Cozinha', colide: false, elev: 103,
+    dim: { l: 16, p: 42, a: 35 }, cores: { principal: '#8d9196', secundaria: '#1b1c1e' }, rotulosCores: ['Corpo', 'Painel'],
+    partes: [
+      { f: 'caixa', l: 'L', p: 'P', a: 'A', acab: 'metal', r: 1.5 },
+      { f: 'caixa', l: 'L*0.75', p: 0.6, a: 'A*0.26', y: 'A*0.66', z: 'P/2+0.2', cor: 'secundaria', acab: 'vidro' },
+      { f: 'caixa', l: 'L*0.6', p: 'P*0.3', a: 'A*0.3', y: 'A*0.06', z: 'P/2-P*0.15+0.4', cor: 'secundaria', acab: 'metal', r: 1 },
+      { f: 'cil', raio: 0.8, a: 3, y: 'A*0.36-3', z: 'P/2-P*0.15', cor: '#c9ccd0', acab: 'metal' },
+    ],
+  },
+  {
+    // nicho de marcenaria em volta da geladeira: duas laterais e um armário em cima
+    tipo: 'torre_geladeira', nome: 'Torre da geladeira', cat: 'Cozinha', colide: false,
+    dim: { l: 78, p: 74, a: 235 }, cores: { principal: '#46557a', secundaria: '#e6e3dd' }, rotulosCores: ['Laca', 'Interior'],
+    acabamentos: ['laca', 'madeira'], acao: ['Abrir portas', 'Fechar portas'],
+    partes: [
+      { f: 'caixa', n: 2, l: 2, p: 'P', a: 'A', x: '(i*2-1)*(L/2-1)', acab: '@' },
+      { f: 'caixa', l: 'L-4', p: 2, a: 'A-183', y: 183, z: '-P/2+1', cor: 'secundaria' },
+      { f: 'caixa', n: 2, l: 'L-4', p: 'P-2', a: 2, y: 'i ? A-2 : 183', z: -1, acab: '@' },
+      ...[-1, 1].map((sx) => ({ f: 'caixa', l: 'L/2-2.4', p: 1.8, a: 'A-183.6', y: 183.3, x: `${sx}*(L/4-1)`, z: 'P/2-0.9', acab: '@',
+        mov: { gira: sx * 100, eixo: 'y', px: `${sx}*(L/2-2)`, pz: 'P/2-0.9' } })),
+    ],
+  },
+  {
+    // Estudo le.vá: rack baixo com a TV apoiada e prateleiras soltas por cima,
+    // presas em montantes até o teto ou penduradas do teto. A = pé-direito.
+    tipo: 'estante_leva', nome: 'Rack com prateleiras', cat: 'Sala',
+    dim: { l: 218, p: 40, a: 260 }, cores: { principal: '#6b4430', secundaria: '#a7a9ab' }, rotulosCores: ['Madeira', 'Metal'],
+    acao: ['Abrir portas', 'Fechar portas'],
+    luz: { x: 'L/2-36', y: 84, z: 0, intensidade: 55 },
+    variantes: [
+      { id: 'teto', nome: 'Montantes até o teto', partes: [
+        ...RACK_LEVA,
+        { f: 'caixa', n: 4, l: 3.5, p: 3.5, a: 'A-50', y: 50, x: '-L/2+2+(i==0 ? 0 : i==1 ? 0.235 : i==2 ? 0.775 : 0.983)*(L-4)', cor: 'secundaria', acab: 'metal' },
+        ...prateleirasLeva(215, 166),
+        { f: 'caixa', n: 2, l: 'L*0.235', p: 'P-6', a: 3.5, y: 107, x: '(i*2-1)*(L/2-L*0.1175)', acab: 'madeira' },
+        { f: 'caixa', n: 4, l: 3.4, p: 'P*0.5', a: '21+(i%2)*3', y: 110.5, x: '-L/2+8+i*3.8', z: -2, cor: TONS_LIVRO, acab: 'tecido' },
+        { f: 'cil', raio: 11, raio2: 13, a: 5, y: 110.5, x: 'L/2-L*0.11', cor: '#d9d4cc', acab: 'ceramica' },
+      ] },
+      { id: 'suspensa', nome: 'Prateleiras suspensas', partes: [
+        ...RACK_LEVA,
+        { f: 'cil', n: 6, raio: 0.9, a: 'A-166', y: 166, x: '(floor(i/2)-1)*L*0.43', z: '(i%2*2-1)*(P/2-6)', cor: 'secundaria', acab: 'metal' },
+        ...prateleirasLeva(215, 166),
+      ] },
+    ],
+  },
+  {
     tipo: 'aparador', nome: 'Aparador', cat: 'Decoração e luz',
     dim: { l: 120, p: 35, a: 80 }, cores: { principal: '#a9774e', secundaria: '#2b2b2b' }, rotulosCores: ['Madeira', 'Pés'],
     acao: ['Abrir portas', 'Fechar portas'], uso: [frente(40, 'Abrir as portas')],
@@ -1171,14 +1280,30 @@ const CATALOGO = [
   {
     tipo: 'modulo_cozinha', nome: 'Módulo estreito com tampo', cat: 'Cozinha',
     dim: { l: 46, p: 28, a: 90 }, cores: { principal: '#a8784f', secundaria: '#ffffff' }, rotulosCores: ['Armário', 'Tampo'],
-    acabamentos: ['madeira', 'laca'], acao: ['Abrir porta', 'Fechar porta'],
-    partes: [
-      { f: 'caixa', l: 'L', p: 'P-4', a: 10, z: -2, cor: '#1b1a19' },
-      { f: 'caixa', l: 'L', p: 'P-2', a: 'A-14', y: 10, z: -1, cor: 'principal', acab: '@' },
-      { f: 'caixa', l: 'L-1', p: 1.8, a: 'A-17', y: 11, z: 'P/2-0.9', cor: 'principal', acab: '@', mov: { gira: -100, eixo: 'y', px: '-L/2+0.5', pz: 'P/2-0.9' } },
-      { f: 'caixa', l: 'L', p: 'P', a: 3.5, y: 'A-3.5', cor: 'secundaria', acab: 'granilite' },
-      { f: 'caixa', l: 'L', p: 1, a: 55, y: 'A', z: '-P/2+0.5', cor: '#ffffff', acab: 'azulejo_grade' },
-      { f: 'cil', n: 3, raio: 3.5, a: '16-i*2', y: 'A', x: '(i-1)*10', z: -4, cor: ['#efe4d2', '#26324a', '#efe4d2'], acab: 'ceramica' },
+    acabamentos: ['madeira', 'laca'],
+    variantes: [
+      { id: 'porta', nome: 'Com porta', acao: ['Abrir porta', 'Fechar porta'], partes: [
+        { f: 'caixa', l: 'L', p: 'P-4', a: 10, z: -2, cor: '#1b1a19' },
+        { f: 'caixa', l: 'L', p: 'P', a: 3.5, y: 'A-3.5', cor: 'secundaria', acab: 'granilite' },
+        { f: 'caixa', l: 'L', p: 1, a: 55, y: 'A', z: '-P/2+0.5', cor: '#ffffff', acab: 'azulejo_grade' },
+        { f: 'cil', n: 3, raio: 3.5, a: '16-i*2', y: 'A', x: '(i-1)*10', z: -4, cor: ['#efe4d2', '#26324a', '#efe4d2'], acab: 'ceramica' },
+        { f: 'caixa', l: 'L', p: 'P-2', a: 'A-14', y: 10, z: -1, cor: 'principal', acab: '@' },
+        { f: 'caixa', l: 'L-1', p: 1.8, a: 'A-17', y: 11, z: 'P/2-0.9', cor: 'principal', acab: '@', mov: { gira: -100, eixo: 'y', px: '-L/2+0.5', pz: 'P/2-0.9' } },
+      ] },
+      // nicho aberto com duas prateleiras (potes e louça à mostra)
+      { id: 'aberto', nome: 'Nicho aberto', partes: [
+        { f: 'caixa', l: 'L', p: 'P-4', a: 10, z: -2, cor: '#1b1a19' },
+        { f: 'caixa', l: 'L', p: 'P', a: 3.5, y: 'A-3.5', cor: 'secundaria', acab: 'granilite' },
+        { f: 'caixa', l: 'L', p: 1, a: 55, y: 'A', z: '-P/2+0.5', cor: '#ffffff', acab: 'azulejo_grade' },
+        { f: 'cil', n: 3, raio: 3.5, a: '16-i*2', y: 'A', x: '(i-1)*10', z: -4, cor: ['#efe4d2', '#26324a', '#efe4d2'], acab: 'ceramica' },
+        { f: 'caixa', l: 'L', p: 1.6, a: 'A-14', y: 10, z: '-P/2+0.8', cor: 'principal', acab: '@' },
+        { f: 'caixa', n: 2, l: 1.8, p: 'P-2', a: 'A-14', y: 10, x: '(i*2-1)*(L/2-0.9)', z: -1, cor: 'principal', acab: '@' },
+        { f: 'caixa', n: 3, l: 'L-3.6', p: 'P-3', a: 1.8, y: '10+i*(A-15.5)/3', z: -0.5, cor: 'principal', acab: '@' },
+        { f: 'cil', n: 'max(1,floor((L-8)/11))', raio: 4.4, a: 15, y: '11.8+2*(A-15.5)/3', x: '-L/2+8+i*11', z: -2, cor: '#f3f1ec', acab: 'ceramica' },
+        { f: 'cil', n: 'max(1,floor((L-8)/11))', raio: 4.6, a: 1.6, y: '26.8+2*(A-15.5)/3', x: '-L/2+8+i*11', z: -2, cor: '#3a3a3c', acab: 'metal' },
+        { f: 'cil', n: 2, raio: 9, raio2: 10, a: '5+i*3', y: '11.8+(A-15.5)/3', x: '(i*2-1)*L*0.2', z: -1, cor: '#efe9df', acab: 'ceramica' },
+        { f: 'cil', n: 'max(1,floor((L-6)/9))', raio: 3.4, a: 10, y: 11.8, x: '-L/2+7+i*9', z: -2, cor: ['#a85c32', '#d8c079', '#6b4a2c', '#c9b089'], acab: 'vidro' },
+      ] },
     ],
   },
   {
