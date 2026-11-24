@@ -136,7 +136,9 @@ export function lojaNoTexto(texto: string): string | null {
     /aprovad[oa]\s+em\s+([^\n]+)/i.exec(texto) ??
     /compra\s+de\s+R\$\s*[\d.,]+\s+em\s+([^\n]+)/i.exec(texto);
   if (!m) return null;
+  // "…em PADARIA para o cartão com final 1234": a loja acaba antes do "para o cartão".
   const loja = m[1]
+    .replace(/\s+para\s+o\s+cart[ãa]o.*$/i, "")
     .trim()
     .replace(/[.\s]+$/, "")
     .trim();
@@ -170,7 +172,13 @@ export function classificarNotificacao(
     /R\$\s*[\d.,]+\s+no\s+d[ée]bito|R\$\s*[\d.,]+\s+no\s+cr[ée]dito/i.test(texto);
   // A palavra "crédito" na notificação (o título diz "Compra no crédito
   // aprovada", ou o corpo "no crédito com NuPay") manda a compra para a fatura.
-  if (compra) return { ok: true, tipo: "DIARIO", nota: loja, credito: /cr[ée]dito/i.test(texto) };
+  if (compra)
+    return {
+      ok: true,
+      tipo: "DIARIO",
+      nota: loja,
+      credito: /cr[ée]dito|cart[ãa]o\s+(com\s+)?final/i.test(texto),
+    };
 
   if (
     /recebemos\s+sua\s+transfer|voc[êe]\s+recebeu|transfer[êe]ncia\s+recebida|pix\s+recebido/i.test(
@@ -407,6 +415,8 @@ export function recadoDoAtalho(
   lancamentos: Lancamento[],
   saldoDoDiaCents: number,
   categoria?: { nome?: string; naoAchada?: string },
+  /** Quando o lançamento não é de hoje: a data do saldo dita ("Saldo em 01/11"). */
+  saldoEm?: string,
 ): string {
   const total = lancamentos.reduce((soma, l) => soma + l.valorCents, 0);
   const quantos = lancamentos.length > 1 ? `${lancamentos.length} lançamentos, ` : "";
@@ -423,5 +433,5 @@ export function recadoDoAtalho(
       ? ` (não achei a categoria "${categoria.naoAchada}")`
       : "";
 
-  return `${quantos}${comCifrao(total)} ${como}${onde}. Saldo de hoje: ${comCifrao(saldoDoDiaCents)}.`;
+  return `${quantos}${comCifrao(total)} ${como}${onde}. ${saldoEm ? `Saldo em ${saldoEm}` : "Saldo de hoje"}: ${comCifrao(saldoDoDiaCents)}.`;
 }

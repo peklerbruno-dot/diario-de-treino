@@ -31,7 +31,7 @@ export function TelaDaFatura() {
   const cartao = lerCartao(estado.ajustes[CHAVE_DO_CARTAO]?.valor);
   const vivos = lancamentosVivos(estado);
   const faturas = useMemo(
-    () => (cartao ? faturasDoCartao(vivos, cartao, agora) : []),
+    () => (cartao ? faturasDoCartao(vivos, cartao, agora, estado.usuario?.id ?? "dono") : []),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [estado.lancamentos, estado.ajustes[CHAVE_DO_CARTAO]?.valor, agora],
   );
@@ -84,7 +84,7 @@ export function TelaDaFatura() {
       </Cartao>
 
       {fechadas.map((f) => (
-        <FaturaFechada key={f.id} fatura={f} />
+        <FaturaFechada key={f.id} fatura={f} aoAbrir={setAberta} />
       ))}
 
       {aAberta && (
@@ -133,7 +133,7 @@ export function TelaDaFatura() {
   );
 }
 
-function FaturaFechada({ fatura }: { fatura: Fatura }) {
+function FaturaFechada({ fatura, aoAbrir }: { fatura: Fatura; aoAbrir: (l: Lancamento) => void }) {
   const estado = useEstado();
   const categorias = categoriasDe(estado);
   const maiorGasto = nomeDoMaiorGasto(fatura, (id) => nomeDaCategoria(categorias, id));
@@ -162,6 +162,7 @@ function FaturaFechada({ fatura }: { fatura: Fatura }) {
           </Botao>
         </div>
       </Cartao>
+      <ListaDeCompras titulo="Compras desta fatura" fatura={fatura} aoAbrir={aoAbrir} />
     </section>
   );
 }
@@ -255,9 +256,13 @@ function CadastroDoCartao({
         <p className="text-[12.5px] leading-snug text-fosco">
           Compra feita no dia do fechamento já entra na fatura seguinte, como no Nubank.
         </p>
+        {!ok && (fecha !== "" || vence !== "") && (
+          <p className="text-[12.5px] leading-snug text-atencao">Use um dia de 1 a 31 nos dois.</p>
+        )}
         <div className="flex gap-2">
           <Botao
             tipo="primario"
+            disabled={!ok}
             onClick={() => {
               if (!ok) return;
               loja.definirAjuste(CHAVE_DO_CARTAO, escreverCartao({ fechaDia: f, venceDia: v }));

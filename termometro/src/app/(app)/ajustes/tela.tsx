@@ -39,7 +39,7 @@ import {
   RECADO_DA_SITUACAO,
   VERSAO_DO_APP,
 } from "@/lib/loja";
-import { categoriasDoTipo, idDoNome, type Categoria } from "@/lib/categorias";
+import { categoriasDoTipo, idDoNome, nomeDaCategoria, type Categoria } from "@/lib/categorias";
 import { calcularAnoEncadeado } from "@/lib/calculo";
 import { NOME_DO_TIPO, TIPOS, type Tipo } from "@/lib/tipos";
 
@@ -603,7 +603,18 @@ type EstadoDoApp = ReturnType<typeof useEstado>;
 /** Uma linha por lançamento, com ";" e vírgula decimal: é como o Excel em português espera. */
 function baixarPlanilha(estado: EstadoDoApp) {
   const linhas = [
-    ["Data", "Tipo", "Valor", "Nota", "Previsto", "Dinheiro seu", "Investimento", "Apartamento"],
+    [
+      "Data",
+      "Tipo",
+      "Valor",
+      "Nota",
+      "Categoria",
+      "No crédito",
+      "Previsto",
+      "Dinheiro seu",
+      "Investimento",
+      "Apartamento",
+    ],
   ];
   for (const l of lancamentosVivos(estado).sort((a, b) => a.data.localeCompare(b.data))) {
     linhas.push([
@@ -611,6 +622,8 @@ function baixarPlanilha(estado: EstadoDoApp) {
       NOME_DO_TIPO[l.tipo],
       (l.valorCents / 100).toFixed(2).replace(".", ","),
       l.nota ?? "",
+      l.categoria ? nomeDaCategoria(categoriasDe(estado), l.categoria) : "",
+      l.credito ? "sim" : "não",
       l.previsto ? "sim" : "não",
       l.rendaPropria ? "sim" : "não",
       l.investimento ? "sim" : "não",

@@ -26,9 +26,18 @@ export function TelaDaAgenda() {
   const agora = hoje();
   const { ano } = partesDaData(agora);
   const anoCalculado = useAnoCalculado(ano);
-  const [diaAberto, setDiaAberto] = useState<DiaCalculado | null>(null);
+  const anoSeguinte = useAnoCalculado(ano + 1);
+  // Guarda só a data: o dia é buscado de novo a cada desenho, e a folha mostra o
+  // que está valendo agora (depois de "Aconteceu", ela não fica com o botão velho).
+  const [dataAberta, setDataAberta] = useState<string | null>(null);
 
-  const meses = mesesQueVem(anoCalculado, agora);
+  const meses = [...mesesQueVem(anoCalculado, agora), ...mesesQueVem(anoSeguinte, agora)];
+  const diaAberto =
+    dataAberta === null
+      ? null
+      : ([anoCalculado, anoSeguinte]
+          .flatMap((a) => a.meses.flatMap((m) => m.dias))
+          .find((d) => d.data === dataAberta) ?? null);
   const total = meses.reduce((soma, m) => soma + m.saldoCents, 0);
 
   return (
@@ -46,7 +55,7 @@ export function TelaDaAgenda() {
       ) : (
         <>
           <p className="mt-2 text-[14.5px] leading-relaxed text-grafite">
-            Tudo o que está marcado daqui até o fim do ano, sem o gasto do dia a dia. No saldo,{" "}
+            Tudo o que está marcado daqui para a frente, sem o gasto do dia a dia. No saldo,{" "}
             <b className={total < 0 ? "text-atencao" : "text-entrada"}>
               {total < 0 ? "−" : "+"}R$ {emReais(Math.abs(total))}
             </b>
@@ -63,7 +72,7 @@ export function TelaDaAgenda() {
                       <button
                         key={l.id}
                         type="button"
-                        onClick={() => setDiaAberto(dia)}
+                        onClick={() => setDataAberta(dia.data)}
                         className="flex w-full items-baseline justify-between gap-3 border-b border-linha py-3 text-left last:border-b-0"
                       >
                         <span className="min-w-0">
@@ -86,7 +95,7 @@ export function TelaDaAgenda() {
         </>
       )}
 
-      {diaAberto && <FolhaDoDia dia={diaAberto} aoFechar={() => setDiaAberto(null)} />}
+      {diaAberto && <FolhaDoDia dia={diaAberto} aoFechar={() => setDataAberta(null)} />}
     </div>
   );
 }

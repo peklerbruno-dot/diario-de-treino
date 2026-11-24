@@ -539,3 +539,22 @@ describe("compra no crédito pela notificação", () => {
     expect(r.ok && r.lancamentos[0].credito).toBe(false);
   });
 });
+
+describe("detalhes da notificação e do recado", () => {
+  const hoje = { hoje: "2026-11-24", agora: "2026-11-24T12:00:00Z", novoId: () => "x" };
+
+  it("'para o cartão com final' é crédito, e não entra na loja", () => {
+    const r = lerPedidoDoAtalho(
+      { texto: "Compra de R$ 25,90 APROVADA em PADARIA SAO JOAO para o cartão com final 1234." },
+      hoje,
+    );
+    expect(r.ok && r.lancamentos[0]).toMatchObject({ credito: true, nota: "PADARIA SAO JOAO" });
+  });
+
+  it("o recado diz a data do saldo quando não é hoje", () => {
+    const r = lerPedidoDoAtalho({ valor: "50", data: "2026-11-01" }, hoje);
+    if (!r.ok) throw new Error("esperava ok");
+    expect(recadoDoAtalho(r.lancamentos, 100_000, undefined, "01/11")).toContain("Saldo em 01/11");
+    expect(recadoDoAtalho(r.lancamentos, 100_000)).toContain("Saldo de hoje");
+  });
+});

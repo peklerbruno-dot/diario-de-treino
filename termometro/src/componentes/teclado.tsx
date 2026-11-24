@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { avaliar, paraOVisor, teclar } from "@/lib/calculadora";
 import { comCifrao } from "@/lib/dinheiro";
 import { RodaDeValor } from "./roda-de-valor";
@@ -56,11 +56,36 @@ function lerModo(): Modo {
 export function Teclado({ valor, aoMudar }: { valor: string; aoMudar: (novo: string) => void }) {
   const conta = avaliar(valor);
   const varios = (conta?.parcelas.length ?? 0) > 1;
+  // A roda vai até R$ 9.999: acima disso, mexer nela salvaria um valor menor.
+  const grande = !!conta && conta.totalCents > 999_900;
 
   // O servidor renderiza com o teclado; quem preferiu rolar troca na primeira
   // pintura, em vez de a tela nascer diferente nos dois lados.
   const [modo, setModo] = useState<Modo>("teclado");
+  // O ouvinte de teclas é montado uma vez e lê sempre o valor de agora.
+  const valorRef = useRef(valor);
+  const aoMudarRef = useRef(aoMudar);
+  valorRef.current = valor;
+  aoMudarRef.current = aoMudar;
   useEffect(() => setModo(lerModo()), []);
+
+  // No computador, o teclado físico também vale — fora dos campos de texto.
+  useEffect(() => {
+    if (modo === "rolar" && !grande) return;
+    const aoTeclar = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const alvo = e.target as HTMLElement | null;
+      if (alvo && (/^(INPUT|TEXTAREA|SELECT)$/.test(alvo.tagName) || alvo.isContentEditable))
+        return;
+      const tecla = e.key === "Backspace" ? "⌫" : e.key;
+      if (/^[0-9+\-*/]$/.test(tecla) || tecla === "⌫") {
+        e.preventDefault();
+        aoMudarRef.current(teclar(valorRef.current, tecla));
+      }
+    };
+    document.addEventListener("keydown", aoTeclar);
+    return () => document.removeEventListener("keydown", aoTeclar);
+  }, [modo, grande]);
 
   function escolher(novo: Modo) {
     setModo(novo);
@@ -86,7 +111,7 @@ export function Teclado({ valor, aoMudar }: { valor: string; aoMudar: (novo: str
                 type="button"
                 aria-pressed={modo === m}
                 onClick={() => escolher(m)}
-                className={`min-h-[30px] rounded-full px-3 ${
+                className={`min-h-[40px] rounded-full px-3.5 ${
                   modo === m ? "bg-cartao font-semibold text-tinta shadow-baixa" : "text-fosco"
                 }`}
               >
@@ -105,6 +130,9 @@ export function Teclado({ valor, aoMudar }: { valor: string; aoMudar: (novo: str
           {conta ? (
             <>
               <span className="tabular">= {comCifrao(conta.totalCents)}</span>
+              {modo === "rolar" && grande && (
+                <span className="text-fosco">{" · "}acima de R$ 9.999 só pelo teclado</span>
+              )}
               {varios && (
                 <span className="text-fosco">
                   {" · "}vira {conta.parcelas.length} lançamentos
@@ -113,15 +141,17 @@ export function Teclado({ valor, aoMudar }: { valor: string; aoMudar: (novo: str
             </>
           ) : (
             <span className="text-fosco">
-              {modo === "rolar"
-                ? "Role cada coluna até o valor, em reais inteiros."
-                : "Digite o valor, em reais inteiros. Dá para somar: 195 + 15 + 83."}
+              {modo === "rolar" && grande
+                ? "Acima de R$ 9.999 o valor vai pelo teclado."
+                : modo === "rolar"
+                  ? "Role cada coluna até o valor, em reais inteiros."
+                  : "Digite o valor, em reais inteiros. Dá para somar: 195 + 15 + 83."}
             </span>
           )}
         </p>
       </div>
 
-      {modo === "rolar" ? (
+      {modo === "rolar" && !grande ? (
         <>
           <RodaDeValor
             reais={conta ? Math.floor(conta.totalCents / 100) : 0}

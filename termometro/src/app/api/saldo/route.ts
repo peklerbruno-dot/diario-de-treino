@@ -22,13 +22,17 @@ export async function GET(pedido: Request) {
   }
 
   const hoje = hojeNoFuso();
-  const { saldoDoDiaCents, sobra } = await saldoNoServidor(hoje, usuarioId);
+  const { ano, saldoDoDiaCents, sobra } = await saldoNoServidor(hoje, usuarioId);
   const { mes } = partesDaData(hoje);
+  // O mesmo número da tela Hoje: com o diário previsto dos dias que vêm. O
+  // `fechamentoCents` da sobra é o fechamento SEM ele, e só serve para a conta
+  // do "dá por dia".
+  const fechamentoCents = ano.meses[mes - 1]?.totais.saldoFechamentoCents ?? null;
 
   const partes = [`Você tem ${comCifrao(saldoDoDiaCents)}.`];
   if (sobra) {
     partes.push(
-      `${capitalizar(nomeDoMes(mes))} fecha em ${comCifrao(sobra.fechamentoCents)} se nada mudar.`,
+      `${capitalizar(nomeDoMes(mes))} fecha em ${comCifrao(fechamentoCents ?? sobra.fechamentoCents)} se nada mudar.`,
     );
     partes.push(
       sobra.noVermelho
@@ -44,7 +48,7 @@ export async function GET(pedido: Request) {
     recado: partes.join(" "),
     data: hoje,
     saldoDoDiaCents,
-    fechamentoDoMesCents: sobra?.fechamentoCents ?? null,
+    fechamentoDoMesCents: fechamentoCents,
     daPorDiaCents: sobra?.porDiaCents ?? null,
   });
 }

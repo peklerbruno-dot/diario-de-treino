@@ -70,17 +70,17 @@ export function Calendario({
 
               <span className={`tabular mt-0.5 block leading-[1.35] ${futuro ? "opacity-60" : ""}`}>
                 {dia.entradaCents > 0 && (
-                  <span className="block text-[9.5px] text-entrada lg:text-[11px]">
+                  <span className="block text-[10.5px] text-entrada lg:text-[11px]">
                     +{emReais(dia.entradaCents)}
                   </span>
                 )}
                 {dia.saidaCents > 0 && (
-                  <span className="block text-[9.5px] text-saida lg:text-[11px]">
+                  <span className="block text-[10.5px] text-saida lg:text-[11px]">
                     −{emReais(dia.saidaCents)}
                   </span>
                 )}
                 {dia.diarioCents > 0 && (
-                  <span className="block text-[9.5px] text-diario lg:text-[11px]">
+                  <span className="block text-[10.5px] text-diario lg:text-[11px]">
                     −{emReais(dia.diarioCents)}
                   </span>
                 )}

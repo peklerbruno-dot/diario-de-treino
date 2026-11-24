@@ -16,6 +16,7 @@ import {
 import { hoje as dataDeHoje } from "./datas";
 import { aoReal, comCifrao } from "./dinheiro";
 import { previstoParaConfirmar } from "./conciliar";
+import { reajustarPrevistos } from "./previsao-do-fixo";
 import {
   APAGADA_PELO_APP,
   CHAVE_DO_CARTAO,
@@ -242,14 +243,23 @@ export class Loja {
     this.relogioDoEnvio = setTimeout(() => void this.sincronizar(), ESPERA_ANTES_DE_SINCRONIZAR_MS);
   }
 
-  salvarLancamento(dados: Omit<Lancamento, "id" | "criadoEm" | "atualizadoEm"> & { id?: string }) {
+  salvarLancamento(
+    dados: Omit<Lancamento, "id" | "criadoEm" | "atualizadoEm"> & { id?: string },
+    opcoes: { conciliar?: boolean } = {},
+  ) {
     // Uma entrada ou saída nova que é a confirmação de um previsto (o salário
     // que caiu, a fatura que foi paga) confirma o previsto em vez de somar-se a
     // ele — senão o mesmo salário contaria duas vezes. Só para lançamento novo,
     // e nunca para o diário, que tem regra própria (o real substitui o dia).
-    if (!dados.id && !dados.previsto && dados.tipo !== "DIARIO") {
+    if (opcoes.conciliar !== false && !dados.id && !dados.previsto && dados.tipo !== "DIARIO") {
       const achado = previstoParaConfirmar(
-        { tipo: dados.tipo, data: dados.data, valorCents: aoReal(dados.valorCents) },
+        {
+          tipo: dados.tipo,
+          data: dados.data,
+          valorCents: aoReal(dados.valorCents),
+          nota: dados.nota,
+          categoria: dados.categoria,
+        },
         Object.values(this.estado.lancamentos),
       );
       if (achado) {
@@ -297,7 +307,12 @@ export class Loja {
     const cartao = lerCartao(this.estado.ajustes[CHAVE_DO_CARTAO]?.valor);
     if (!cartao) return;
     const quando = agora();
-    const plano = planoDaFatura(Object.values(this.estado.lancamentos), cartao, quando);
+    const plano = planoDaFatura(
+      Object.values(this.estado.lancamentos),
+      cartao,
+      quando,
+      this.estado.usuario?.id ?? "dono",
+    );
     if (plano.salvar.length === 0 && plano.apagar.length === 0) return;
 
     const lancamentos = { ...this.estado.lancamentos };
@@ -327,7 +342,7 @@ export class Loja {
    * estar em dia nem de ninguém a ter apagado antes.
    */
   pagarFatura(fatura: Fatura, dia: string) {
-    const id = idDaSaidaDaFatura(fatura.id);
+    const id = idDaSaidaDaFatura(fatura.id, this.estado.usuario?.id ?? "dono");
     this.salvarLancamento({
       id,
       data: dia,
@@ -467,6 +482,25 @@ export class Loja {
     };
     this.publicar({ fixos: { ...this.estado.fixos, [id]: f } });
     this.marcarPendente(`f:${id}`);
+    // A previsão já escrita acompanha o fixo (valor, dia, desligar).
+    const { salvar } = reajustarPrevistos({
+      anterior,
+      novo: f,
+      lancamentos: Object.values(this.estado.lancamentos),
+      hoje: dataDeHoje(),
+      ate: `${Number(dataDeHoje().slice(0, 4)) + 1}-12-31`,
+      agora: f.atualizadoEm ?? agora(),
+    });
+    if (salvar.length > 0) {
+      const lancamentos = { ...this.estado.lancamentos };
+      const pendentes = new Set(this.estado.pendentes);
+      for (const l of salvar) {
+        lancamentos[l.id] = l;
+        pendentes.add(`l:${l.id}`);
+      }
+      this.publicar({ lancamentos, pendentes: [...pendentes] });
+      this.agendarEnvio();
+    }
     return f;
   }
 

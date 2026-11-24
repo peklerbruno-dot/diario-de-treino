@@ -528,19 +528,12 @@ export function sobraPorDia(ano: AnoCalculado, hoje: string): SobraPorDia | null
  * errado há mais tempo.
  */
 export function previstosVencidos(lancamentos: readonly Lancamento[], hoje: string): Lancamento[] {
-  // Um previsto do diário já substituído por gasto real não tem o que conferir.
-  const substituidos = previstosSubstituidos(lancamentos);
-  // A estimativa do diário de hoje ainda está em andamento: o dia não acabou, e
-  // perguntar "aconteceu mesmo?" às seis da manhã não faz sentido. Só os dias
-  // que já passaram pedem conferência.
+  // A estimativa do diário (os R$ 60) não entra aqui: ela já não conta no saldo
+  // dos dias que passaram, então perguntar "aconteceu mesmo?" de cada um é só
+  // barulho, e "aconteceram todos" viraria dezenas de gastos que ninguém fez.
+  // Dá para confirmar um deles, se for o caso, na folha do dia.
   return lancamentos
-    .filter(
-      (l) =>
-        vivo(l) &&
-        l.previsto &&
-        (l.tipo === "DIARIO" ? l.data < hoje : l.data <= hoje) &&
-        !substituidos.has(l.id),
-    )
+    .filter((l) => vivo(l) && l.previsto && l.tipo !== "DIARIO" && l.data <= hoje)
     .sort((a, b) => a.data.localeCompare(b.data));
 }
 

@@ -19,6 +19,7 @@ import type { DiaCalculado, MesCalculado } from "@/lib/calculo";
 import { curta, hoje, nomeDoDiaDaSemana, nomeDoMes, partesDaData } from "@/lib/datas";
 import { comCifrao, emReais } from "@/lib/dinheiro";
 import { classeDoSaldo, corDoSaldo, faixaDoMes } from "@/lib/escala";
+import { lancamentosVivos } from "@/lib/loja";
 
 type Visao = "lista" | "calendario";
 
@@ -47,7 +48,7 @@ export function TelaDoMes() {
     setAno(ano + Math.floor(bruto / 12));
   }
 
-  const vazio = estado.carregado && Object.keys(estado.lancamentos).length === 0;
+  const vazio = estado.carregado && lancamentosVivos(estado).length === 0;
 
   return (
     <div>
@@ -66,9 +67,9 @@ export function TelaDoMes() {
       {vazio && (
         <div className="mt-4">
           <Aviso>
-            Ainda não há nada aqui. Em <strong>Ajustes → Importar planilha</strong> dá para trazer uma
-            planilha inteira de uma vez; ou toque em <strong>Lançar</strong> e registre o primeiro
-            valor.
+            Ainda não há nada aqui. Em <strong>Ajustes → Importar planilha</strong> dá para trazer
+            uma planilha inteira de uma vez; ou toque em <strong>Lançar</strong> e registre o
+            primeiro valor.
           </Aviso>
         </div>
       )}
@@ -115,7 +116,7 @@ function AlternarVisao({ visao, aoTrocar }: { visao: Visao; aoTrocar: (v: Visao)
           aria-label={nome}
           aria-pressed={visao === chave}
           onClick={() => aoTrocar(chave)}
-          className={`flex h-8 w-11 items-center justify-center rounded-full ${
+          className={`flex h-11 w-12 items-center justify-center rounded-full ${
             visao === chave ? "bg-heroi text-heroi-tinta" : "text-fosco"
           }`}
         >
@@ -292,6 +293,11 @@ function Rodape({ mes }: { mes: MesCalculado }) {
         <Linha rotulo="Média por dia" detalhe={`${mes.dias.length} dias`}>
           <span className="tabular text-[15px]">{comCifrao(t.mediaDiariaCents)}</span>
         </Linha>
+        {t.creditoCents > 0 && (
+          <Linha rotulo="No crédito" detalhe="vai para a fatura, fora do saldo">
+            <span className="tabular text-[15px]">{comCifrao(t.creditoCents)}</span>
+          </Linha>
+        )}
         <Linha rotulo="Entrada sua" detalhe="sem repasse de fora">
           <span className="tabular text-[15px]">{comCifrao(t.entradaPropriaCents)}</span>
         </Linha>
@@ -299,7 +305,9 @@ function Rodape({ mes }: { mes: MesCalculado }) {
           <span className="tabular text-[15px]">
             {comCifrao(t.investidoCents)}
             {t.investidoPercent !== null && (
-              <span className="ml-2 text-fosco">{t.investidoPercent.toFixed(1)}%</span>
+              <span className="ml-2 text-fosco">
+                {t.investidoPercent.toFixed(1).replace(".", ",")}%
+              </span>
             )}
           </span>
         </Linha>

@@ -91,7 +91,9 @@ export function TelaDeImportacao() {
     // versão apagada/editada que está lá. Com o carimbo do backup, o servidor
     // ignorava tudo em silêncio e o aparelho jurava "Tudo sincronizado".
     loja.salvarVariosLancamentos(backup.lancamentos.map(({ atualizadoEm: _, ...l }) => l));
-    for (const f of backup.fixos) loja.salvarFixo(f);
+    // Um fixo que estava apagado no backup continua apagado: `salvarFixo` o
+    // reviveria, e a próxima previsão escreveria treze meses dele.
+    for (const f of backup.fixos) if (!f.apagadoEm) loja.salvarFixo(f);
     for (const a of backup.ajustes) loja.definirAjuste(a.chave, a.valor);
     setPronto(
       `Backup restaurado: ${backup.lancamentos.length} lançamentos, ${backup.fixos.length} fixos ` +

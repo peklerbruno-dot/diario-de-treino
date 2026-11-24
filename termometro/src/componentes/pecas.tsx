@@ -123,7 +123,7 @@ export function Selo({
   const estilo = tom === "azul" ? "bg-saldo text-white" : "bg-linha text-grafite";
   return (
     <span
-      className={`ml-1.5 inline-block rounded-full px-[7px] py-[2px] align-[1px] text-[9.5px] font-bold uppercase tracking-wide ${estilo}`}
+      className={`ml-1.5 inline-block rounded-full px-[7px] py-[2px] align-[1px] text-[11px] font-bold uppercase tracking-wide ${estilo}`}
     >
       {children}
     </span>
@@ -203,6 +203,8 @@ export function CampoDeTexto({
       value={valor}
       maxLength={maxLength}
       placeholder={placeholder}
+      // Quem não vê a tela só tem o placeholder para saber o que o campo pede.
+      aria-label={placeholder}
       onChange={(e) => aoMudar(e.target.value)}
       className="mt-1.5 w-full rounded-folha border border-regua bg-cartao px-4 py-3 outline-none focus:border-saldo"
     />
@@ -258,7 +260,7 @@ export function Seta({
       type="button"
       aria-label={rotulo}
       onClick={onClick}
-      className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-cartao text-[19px] text-grafite shadow-baixa"
+      className="flex h-[44px] w-[44px] items-center justify-center rounded-full bg-cartao text-[19px] text-grafite shadow-baixa"
     >
       {children}
     </button>
@@ -353,7 +355,7 @@ export function Folha({
           <button
             type="button"
             onClick={aoFechar}
-            className="min-h-[36px] rounded-full bg-cartao px-4 text-[14px] text-grafite shadow-baixa"
+            className="min-h-[44px] rounded-full bg-cartao px-4 text-[14px] text-grafite shadow-baixa"
           >
             Fechar
           </button>
