@@ -30,6 +30,7 @@ const VAZIO: Estado = {
   ultimaSincronizacao: null,
   recadoDeErro: null,
   carregado: false,
+  sincronizou: false,
   usuario: null,
   ultimaAcao: null,
 };

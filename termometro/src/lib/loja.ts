@@ -77,6 +77,12 @@ export interface Estado {
   ultimaSincronizacao: string | null;
   recadoDeErro: string | null;
   carregado: boolean;
+  /**
+   * A primeira sincronização desta abertura já terminou (deu certo ou falhou).
+   * Antes dela, o que está na tela é o que o aparelho guardou — pode estar
+   * atrás do servidor, e a tela Hoje avisa em vez de jurar o número.
+   */
+  sincronizou: boolean;
   /** De quem são estes dados. Nulo antes de o app abrir. */
   usuario: QuemUsa | null;
   /**
@@ -99,6 +105,7 @@ const ESTADO_VAZIO: Estado = {
   ultimaSincronizacao: null,
   recadoDeErro: null,
   carregado: false,
+  sincronizou: false,
   usuario: null,
   ultimaAcao: null,
 };
@@ -532,7 +539,7 @@ export class Loja {
       return;
     }
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
-      this.publicar({ situacao: "sem-internet" }, false);
+      this.publicar({ situacao: "sem-internet", sincronizou: true }, false);
       return;
     }
 
@@ -584,7 +591,7 @@ export class Loja {
         // A sessão venceu no meio do uso. Navegar à força para /entrar jogava
         // fora o que estava sendo digitado; o dado está salvo no aparelho, e
         // um aviso na tela resolve sem destruir nada.
-        this.publicar({ situacao: "sessao-vencida" }, false);
+        this.publicar({ situacao: "sessao-vencida", sincronizou: true }, false);
         return;
       }
       if (!resposta.ok) {
@@ -651,6 +658,7 @@ export class Loja {
         situacao: "guardado",
         ultimaSincronizacao: agora(),
         recadoDeErro: null,
+        sincronizou: true,
       });
       // Compras no crédito feitas por outro aparelho (ou pela notificação do
       // banco) chegam aqui: a fatura delas é escrita agora.
@@ -661,6 +669,7 @@ export class Loja {
         {
           situacao: semRede ? "sem-internet" : "erro",
           recadoDeErro: erro instanceof Error ? erro.message : String(erro),
+          sincronizou: true,
         },
         false,
       );
