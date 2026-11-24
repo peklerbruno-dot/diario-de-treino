@@ -25,9 +25,7 @@ describe("previstoParaConfirmar", () => {
   it("aceita cair alguns dias antes ou depois, e valor um pouco diferente", () => {
     const novo = { tipo: "ENTRADA" as const, data: "2026-10-03", valorCents: 512_000 };
     expect(previstoParaConfirmar(novo, [prev({})])?.id).toBe("p1");
-    expect(
-      previstoParaConfirmar({ ...novo, data: "2026-10-11" }, [prev({})])?.id,
-    ).toBe("p1");
+    expect(previstoParaConfirmar({ ...novo, data: "2026-10-11" }, [prev({})])?.id).toBe("p1");
   });
 
   it("um Pix pequeno de um amigo não confirma o salário", () => {
@@ -38,7 +36,9 @@ describe("previstoParaConfirmar", () => {
 
   it("fora da janela de dias, não", () => {
     expect(
-      previstoParaConfirmar({ tipo: "ENTRADA", data: "2026-10-14", valorCents: 500_000 }, [prev({})]),
+      previstoParaConfirmar({ tipo: "ENTRADA", data: "2026-10-14", valorCents: 500_000 }, [
+        prev({}),
+      ]),
     ).toBeNull();
   });
 
@@ -50,10 +50,9 @@ describe("previstoParaConfirmar", () => {
 
   it("gasto do diário nunca confirma previsto", () => {
     expect(
-      previstoParaConfirmar(
-        { tipo: "DIARIO", data: "2026-10-05", valorCents: 6_000 },
-        [prev({ tipo: "DIARIO", valorCents: 6_000 })],
-      ),
+      previstoParaConfirmar({ tipo: "DIARIO", data: "2026-10-05", valorCents: 6_000 }, [
+        prev({ tipo: "DIARIO", valorCents: 6_000 }),
+      ]),
     ).toBeNull();
   });
 
@@ -68,7 +67,10 @@ describe("previstoParaConfirmar", () => {
     const longe = prev({ id: "longe", data: "2026-10-01" });
     const perto = prev({ id: "perto", data: "2026-10-04" });
     expect(
-      previstoParaConfirmar({ tipo: "ENTRADA", data: "2026-10-05", valorCents: 500_000 }, [longe, perto])?.id,
+      previstoParaConfirmar({ tipo: "ENTRADA", data: "2026-10-05", valorCents: 500_000 }, [
+        longe,
+        perto,
+      ])?.id,
     ).toBe("perto");
   });
 });
@@ -89,5 +91,60 @@ describe("confirmadoCom", () => {
       rendaPropria: true,
       fixoId: "f1",
     });
+  });
+});
+
+describe("saída precisa dizer que é a mesma coisa", () => {
+  const aluguel = prev({
+    id: "al",
+    tipo: "SAIDA",
+    nota: "Aluguel",
+    categoria: "casa",
+    valorCents: 200_000,
+  });
+  const novo = (o: object) => ({
+    tipo: "SAIDA" as const,
+    data: "2026-10-05",
+    valorCents: 180_000,
+    ...o,
+  });
+
+  it("conserto do carro perto do aluguel não é o aluguel", () => {
+    expect(
+      previstoParaConfirmar(novo({ nota: "Conserto do carro", categoria: "transporte" }), [
+        aluguel,
+      ]),
+    ).toBeNull();
+    expect(previstoParaConfirmar(novo({}), [aluguel])).toBeNull();
+  });
+
+  it("mesma categoria ou uma palavra da nota confirma", () => {
+    expect(previstoParaConfirmar(novo({ categoria: "casa" }), [aluguel])?.id).toBe("al");
+    expect(previstoParaConfirmar(novo({ nota: "aluguel de outubro" }), [aluguel])?.id).toBe("al");
+  });
+
+  it("a fatura prevista do cartão (sem fixo) é confirmada por uma saída 'fatura'", () => {
+    const fatura = prev({
+      id: "fatura-2026-10",
+      tipo: "SAIDA",
+      fixoId: null,
+      nota: "Fatura do cartão",
+      categoria: "fatura",
+      valorCents: 120_000,
+    });
+    expect(
+      previstoParaConfirmar(novo({ valorCents: 120_000, nota: "Fatura Nubank" }), [fatura])?.id,
+    ).toBe("fatura-2026-10");
+    expect(
+      previstoParaConfirmar(novo({ valorCents: 120_000, nota: "Mercado" }), [fatura]),
+    ).toBeNull();
+  });
+
+  it("entrada continua só por valor e data", () => {
+    expect(
+      previstoParaConfirmar({ tipo: "ENTRADA", data: "2026-10-05", valorCents: 500_000 }, [
+        prev({}),
+      ])?.id,
+    ).toBe("p1");
   });
 });

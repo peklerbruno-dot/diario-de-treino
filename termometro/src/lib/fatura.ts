@@ -75,7 +75,14 @@ export function cicloDaCompra(data: string, cartao: Cartao): Ciclo {
   };
 }
 
-export const idDaSaidaDaFatura = (ciclo: string) => `fatura-${ciclo}`;
+/**
+ * O id da saída prevista de uma fatura. O banco tem um id só para todo mundo, e
+ * duas pessoas fechando a fatura no mesmo mês iriam brigar pela mesma linha: a
+ * de quem chegasse depois era descartada em silêncio. Cada pessoa leva o seu id
+ * no meio. O dono mantém o formato de sempre, para não duplicar o que já existe.
+ */
+export const idDaSaidaDaFatura = (ciclo: string, usuarioId: string = "dono") =>
+  usuarioId === "dono" ? `fatura-${ciclo}` : `fatura-${usuarioId}-${ciclo}`;
 export const NOTA_DA_FATURA = "Fatura do cartão";
 
 /**
@@ -101,6 +108,7 @@ export function faturasDoCartao(
   lancamentos: readonly Lancamento[],
   cartao: Cartao,
   hoje: string,
+  usuarioId: string = "dono",
 ): Fatura[] {
   const porCiclo = new Map<string, { ciclo: Ciclo; compras: Lancamento[] }>();
   for (const l of lancamentos) {
@@ -127,7 +135,7 @@ export function faturasDoCartao(
         ...ciclo,
         compras,
         totalCents: compras.reduce((t, c) => t + c.valorCents, 0),
-        estado: pagas.has(idDaSaidaDaFatura(ciclo.id))
+        estado: pagas.has(idDaSaidaDaFatura(ciclo.id, usuarioId))
           ? "paga"
           : hoje < ciclo.fechamento
             ? "aberta"
@@ -151,6 +159,7 @@ export function planoDaFatura(
   existentes: readonly Lancamento[],
   cartao: Cartao,
   agora: string,
+  usuarioId: string = "dono",
 ): { salvar: Lancamento[]; apagar: string[] } {
   const porId = new Map(existentes.map((l) => [l.id, l]));
   const totais = new Map<string, { ciclo: Ciclo; total: number }>();
@@ -164,7 +173,7 @@ export function planoDaFatura(
 
   const salvar: Lancamento[] = [];
   for (const { ciclo, total } of totais.values()) {
-    const id = idDaSaidaDaFatura(ciclo.id);
+    const id = idDaSaidaDaFatura(ciclo.id, usuarioId);
     const atual = porId.get(id);
     if (atual && atual.apagadoEm && atual.fixoId !== APAGADA_PELO_APP) continue; // a pessoa a apagou
     if (atual && !atual.apagadoEm && !atual.previsto) continue; // já paga
@@ -196,13 +205,11 @@ export function planoDaFatura(
   }
 
   const apagar = existentes
-    .filter(
-      (l) =>
-        l.id.startsWith("fatura-") &&
-        vivo(l) &&
-        l.previsto &&
-        !totais.has(l.id.slice("fatura-".length)),
-    )
+    .filter((l) => {
+      if (!l.id.startsWith("fatura-") || !vivo(l) || !l.previsto) return false;
+      const ciclo = l.id.slice(-7); // "AAAA-MM"
+      return l.id === idDaSaidaDaFatura(ciclo, usuarioId) && !totais.has(ciclo);
+    })
     .map((l) => l.id);
 
   return { salvar, apagar };

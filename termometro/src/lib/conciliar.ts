@@ -10,7 +10,8 @@ import type { Lancamento, Tipo } from "./tipos";
  * valor novo e somava os dois: R$ 10.000 de salário num mês de R$ 5.000. Aqui
  * mora a pergunta "este valor que entrou é a confirmação de algum previsto?".
  *
- * Só vale para ENTRADA e SAIDA nascidas de um fixo: o diário tem regra própria
+ * Só vale para ENTRADA e SAIDA nascidas de um fixo (ou a fatura prevista do
+ * cartão): o diário tem regra própria
  * (o gasto real substitui a estimativa do dia) e um lançamento solto não é
  * previsão de nada. A régua é estreita de propósito — mesmo tipo, até uma
  * semana para um lado ou para o outro, valor até 25% de diferença —, porque o
@@ -26,8 +27,44 @@ const dias = (de: string, ate: string): number => {
   return Math.round((Date.UTC(a2, m2 - 1, d2) - Date.UTC(a, m - 1, d)) / 86_400_000);
 };
 
+const palavras = (t: string | null | undefined): Set<string> =>
+  new Set(
+    (t ?? "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter((w) => w.length >= 4),
+  );
+
+/**
+ * Para uma SAÍDA, valor e data não bastam: R$ 1.800 de conserto do carro, cinco
+ * dias antes de um aluguel previsto de R$ 2.000, não é o aluguel. A saída só
+ * confirma o previsto se disser que é a mesma coisa: a mesma categoria, uma
+ * palavra em comum na nota, ou — no caso da fatura do cartão, que nasce sem
+ * fixo — a palavra "fatura".
+ */
+function mesmaCoisa(
+  novo: { nota?: string | null; categoria?: string | null },
+  previsto: Lancamento,
+): boolean {
+  if (novo.categoria && previsto.categoria && novo.categoria === previsto.categoria) return true;
+  const a = palavras(novo.nota);
+  for (const w of palavras(previsto.nota)) if (a.has(w)) return true;
+  if (previsto.id.startsWith("fatura-")) {
+    return novo.categoria === "fatura" || /fatura/i.test(novo.nota ?? "");
+  }
+  return false;
+}
+
 export function previstoParaConfirmar(
-  novo: { tipo: Tipo; data: string; valorCents: number },
+  novo: {
+    tipo: Tipo;
+    data: string;
+    valorCents: number;
+    nota?: string | null;
+    categoria?: string | null;
+  },
   existentes: readonly Lancamento[],
 ): Lancamento | null {
   if (novo.tipo === "DIARIO" || novo.valorCents <= 0) return null;
@@ -37,8 +74,11 @@ export function previstoParaConfirmar(
   let melhorDiferenca = Number.POSITIVE_INFINITY;
 
   for (const l of existentes) {
-    if (l.apagadoEm || !l.previsto || !l.fixoId || l.tipo !== novo.tipo) continue;
+    if (l.apagadoEm || !l.previsto || l.tipo !== novo.tipo) continue;
+    // Nasceu de um fixo, ou é a saída prevista de uma fatura de cartão.
+    if (!l.fixoId && !l.id.startsWith("fatura-")) continue;
     if (l.valorCents <= 0) continue;
+    if (novo.tipo === "SAIDA" && !mesmaCoisa(novo, l)) continue;
 
     const distancia = Math.abs(dias(l.data, novo.data));
     if (distancia > JANELA_EM_DIAS) continue;

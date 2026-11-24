@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   cicloDaCompra,
+  idDaSaidaDaFatura,
   escreverCartao,
   faturasDoCartao,
   lerCartao,
@@ -111,6 +112,22 @@ describe("as faturas", () => {
       faturasDoCartao([...lista, paga], nubank, "2026-11-06").find((x) => x.id === "2026-10")
         ?.estado,
     ).toBe("paga");
+  });
+});
+
+describe("cada pessoa tem o seu id de fatura", () => {
+  it("o dono mantém o formato antigo; os outros levam o id no meio", () => {
+    expect(idDaSaidaDaFatura("2026-12")).toBe("fatura-2026-12");
+    expect(idDaSaidaDaFatura("2026-12", "dono")).toBe("fatura-2026-12");
+    expect(idDaSaidaDaFatura("2026-12", "u1")).toBe("fatura-u1-2026-12");
+  });
+
+  it("o plano de um convidado não mexe na fatura do dono", () => {
+    const compras = [compra("a", "2026-10-05", 4000)];
+    const doDono = planoDaFatura(compras, nubank, "2026-10-21T12:00:00Z", "dono").salvar[0];
+    const doConvidado = planoDaFatura([...compras, doDono], nubank, "2026-10-21T12:00:00Z", "u1");
+    expect(doConvidado.salvar[0].id).toBe("fatura-u1-2026-10");
+    expect(doConvidado.apagar).toEqual([]);
   });
 });
 

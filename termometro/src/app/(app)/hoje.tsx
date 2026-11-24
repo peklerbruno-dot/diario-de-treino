@@ -49,6 +49,7 @@ export function TelaDeHoje() {
   const [lancando, setLancando] = useState<Tipo | null>(null);
 
   const anoCalculado = useAnoCalculado(ano);
+  const anoSeguinte = useAnoCalculado(ano + 1);
   const { carregado, sincronizou } = useEstado();
   // Até a primeira sincronização terminar, o saldo é o que o aparelho guardou
   // da última visita, e pode estar atrás do servidor. Dizer isso é melhor do que
@@ -56,7 +57,7 @@ export function TelaDeHoje() {
   // resposta (sem sinal), vale o que há, sem aviso.
   const [esperou, setEsperou] = useState(false);
   useEffect(() => {
-    const t = setTimeout(() => setEsperou(true), 4000);
+    const t = setTimeout(() => setEsperou(true), 2500);
     return () => clearTimeout(t);
   }, []);
   const atualizando = !sincronizou && !esperou;
@@ -94,7 +95,7 @@ export function TelaDeHoje() {
               <Dinheiro cents={doDia.saldoCents} tamanho="gigante" />
             </p>
             <p className="mt-2 text-[13px] text-heroi-fosco">
-              No fim de {nomeDoMes(mes)}, se nada mudar:{" "}
+              No fim de {nomeDoMes(mes)}, com o diário previsto:{" "}
               <b className="tabular whitespace-nowrap text-heroi-tinta">
                 {comCifrao(doMes.totais.saldoFechamentoCents)}
               </b>
@@ -102,7 +103,7 @@ export function TelaDeHoje() {
             <DaPorDia ano={anoCalculado} agora={agora} />
           </Cartao>
 
-          <AvisoDoVermelho ano={anoCalculado} agora={agora} />
+          <AvisoDoVermelho ano={anoCalculado} proximo={anoSeguinte} agora={agora} />
           <FaturaAberta agora={agora} />
 
           <div className="mt-3 flex gap-2">
@@ -148,6 +149,7 @@ export function TelaDeHoje() {
                     <span className={l.previsto ? "text-grafite" : ""}>
                       {l.nota || NOME_DO_TIPO[l.tipo]}
                     </span>
+                    {l.credito && <Selo tom="quieto">crédito</Selo>}
                     {l.previsto && (
                       <Selo tom="quieto">
                         {doDia.diarioPrevistoFora && l.tipo === "DIARIO"
@@ -248,11 +250,15 @@ function FaturaAberta({ agora }: { agora: string }) {
   const estado = useEstado();
   const cartao = lerCartao(estado.ajustes[CHAVE_DO_CARTAO]?.valor);
   if (!cartao) return null;
-  const abertas = faturasDoCartao(lancamentosVivos(estado), cartao, agora).filter(
-    (f) => f.estado !== "paga",
-  );
+  const abertas = faturasDoCartao(
+    lancamentosVivos(estado),
+    cartao,
+    agora,
+    estado.usuario?.id ?? "dono",
+  ).filter((f) => f.estado !== "paga");
   // A que mais pesa agora: a fechada que espera pagamento, senão a aberta.
-  const f = abertas.find((x) => x.estado === "fechada") ?? abertas[0];
+  const maisPerto = [...abertas].sort((a, b) => a.vencimento.localeCompare(b.vencimento))[0];
+  const f = abertas.find((x) => x.estado === "fechada") ?? maisPerto;
   if (!f) return null;
   return (
     <Link href="/fatura" className="mt-2 block text-[13px] leading-snug text-grafite underline">
@@ -263,8 +269,17 @@ function FaturaAberta({ agora }: { agora: string }) {
 }
 
 /** O aviso que o motor sempre soube dar e nenhuma tela mostrava. */
-function AvisoDoVermelho({ ano, agora }: { ano: AnoCalculado; agora: string }) {
-  const dia = primeiroDiaNoVermelho(ano, agora);
+function AvisoDoVermelho({
+  ano,
+  proximo,
+  agora,
+}: {
+  ano: AnoCalculado;
+  proximo: AnoCalculado;
+  agora: string;
+}) {
+  // Em novembro, o vermelho de janeiro também é "daqui para a frente".
+  const dia = primeiroDiaNoVermelho(ano, agora) ?? primeiroDiaNoVermelho(proximo, agora);
   if (!dia) return null;
 
   return (
@@ -308,14 +323,14 @@ function Vencidos({ agora }: { agora: string }) {
               <button
                 type="button"
                 onClick={() => loja.confirmarLancamento(l.id)}
-                className="min-h-[38px] rounded-full bg-heroi px-3.5 text-[13px] font-semibold text-heroi-tinta"
+                className="min-h-[44px] rounded-full bg-heroi px-3.5 text-[13px] font-semibold text-heroi-tinta"
               >
                 Aconteceu
               </button>
               <button
                 type="button"
                 onClick={() => loja.apagarLancamento(l.id)}
-                className="min-h-[38px] rounded-full bg-papel px-3 text-[13px] text-grafite"
+                className="min-h-[44px] rounded-full bg-papel px-3 text-[13px] text-grafite"
               >
                 Não houve
               </button>

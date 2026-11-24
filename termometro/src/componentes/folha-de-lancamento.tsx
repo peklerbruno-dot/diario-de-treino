@@ -121,13 +121,17 @@ export function FolhaDeLancamento({
       // "Aconteceu mesmo?" cobra cada um na data.
       const base = comum.nota ?? "Parcela";
       for (let k = 0; k < vezes; k++) {
-        loja.salvarLancamento({
-          ...comum,
-          data: mesesDepois(quando, k),
-          nota: `${base} (${k + 1}/${vezes})`,
-          previsto: k > 0,
-          valorCents: conta.totalCents,
-        });
+        loja.salvarLancamento(
+          {
+            ...comum,
+            data: mesesDepois(quando, k),
+            nota: `${base} (${k + 1}/${vezes})`,
+            previsto: k > 0,
+            valorCents: conta.totalCents,
+          },
+          // Uma parcela é uma dívida nova, e não a confirmação de um fixo.
+          { conciliar: false },
+        );
       }
     } else {
       // "195+15+83" eram três gastos, e viram três lançamentos.

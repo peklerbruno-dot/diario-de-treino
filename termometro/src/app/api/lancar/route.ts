@@ -5,6 +5,7 @@ import { camposDoEndereco, hojeNoFuso, lerPedidoDoAtalho, recadoDoAtalho } from 
 import { categoriaDaLoja } from "@/lib/categoria-da-loja";
 import { confirmadoCom, janelaDeBusca, previstoParaConfirmar } from "@/lib/conciliar";
 import { CHAVE_DAS_CATEGORIAS, lerCategorias, nomeDaCategoria } from "@/lib/categorias";
+import { curta } from "@/lib/datas";
 import { saldoNoServidor } from "@/lib/saldo-no-servidor";
 
 /**
@@ -141,7 +142,8 @@ export async function POST(pedido: Request) {
         usuarioId,
         apagadoEm: null,
         previsto: true,
-        fixoId: { not: null },
+        // Nasceu de um fixo, ou é a saída prevista de uma fatura de cartão.
+        OR: [{ fixoId: { not: null } }, { id: { startsWith: "fatura-" } }],
         tipo: alvo.tipo,
         data: { gte: janela.de, lte: janela.ate },
       },
@@ -154,6 +156,7 @@ export async function POST(pedido: Request) {
         tipo: c.tipo,
         valorCents: c.valorCents,
         nota: c.nota,
+        categoria: c.categoria,
         previsto: c.previsto,
         fixoId: c.fixoId,
       })),
@@ -161,7 +164,12 @@ export async function POST(pedido: Request) {
     if (achado) {
       await bd.lancamento.update({
         where: { id: achado.id },
-        data: { data: alvo.data, valorCents: alvo.valorCents, previsto: false, atualizadoEm: new Date() },
+        data: {
+          data: alvo.data,
+          valorCents: alvo.valorCents,
+          previsto: false,
+          atualizadoEm: new Date(),
+        },
       });
       confirmado = achado.nota?.trim() || "o previsto";
       // O que fica no recado e no saldo é o previsto já confirmado.
@@ -199,17 +207,25 @@ export async function POST(pedido: Request) {
 
   const { saldoDoDiaCents: saldoDoDia } = await saldoNoServidor(data, usuarioId);
 
-  const recado = recadoDoAtalho(lancamentos, saldoDoDia, {
-    nome: lancamentos[0].categoria
-      ? nomeDaCategoria(categorias, lancamentos[0].categoria)
-      : undefined,
-    naoAchada: leitura.categoriaNaoAchada,
-  });
+  const recado = recadoDoAtalho(
+    lancamentos,
+    saldoDoDia,
+    {
+      nome: lancamentos[0].categoria
+        ? nomeDaCategoria(categorias, lancamentos[0].categoria)
+        : undefined,
+      naoAchada: leitura.categoriaNaoAchada,
+    },
+    data === hojeNoFuso() ? undefined : curta(data),
+  );
 
   return NextResponse.json({
     ok: true,
     recado: confirmado
-      ? recado.replace(" Saldo de hoje", ` Confirmei “${confirmado}”, que já estava previsto. Saldo de hoje`)
+      ? recado.replace(
+          " Saldo de hoje",
+          ` Confirmei “${confirmado}”, que já estava previsto. Saldo de hoje`,
+        )
       : recado,
     confirmouPrevisto: confirmado !== null,
     categoriaAprendida: aprendida,
@@ -231,7 +247,7 @@ export function GET() {
       '"data" (AAAA-MM-DD) e "nota". Sem "categoria", a nota (o nome da loja) busca a categoria que ela já teve. ' +
       'Em vez de "valor", dá para mandar "texto": uma frase com o valor dentro, como a ' +
       'notificação do banco — o app tira o número dela e, sem "tipo", decide se é compra (débito, ' +
-      'crédito, NuPay) ou Pix recebido; outra coisa não é lançada. ' +
+      "crédito, NuPay) ou Pix recebido; outra coisa não é lançada. " +
       "O código só é lido do cabeçalho ou do corpo, nunca do endereço.",
   });
 }

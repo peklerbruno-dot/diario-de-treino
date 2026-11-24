@@ -70,6 +70,7 @@ export function FolhaDoDia({ dia, aoFechar }: { dia: DiaCalculado; aoFechar: () 
                           : "estimativa, não conta até você lançar"
                         : "previsto"
                       : null,
+                    l.credito ? "no crédito (fora do saldo)" : null,
                     l.rendaPropria ? "dinheiro seu" : null,
                     l.investimento ? "investimento" : null,
                     l.apartamento ? "apartamento" : null,

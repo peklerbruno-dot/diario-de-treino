@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { hoje } from "@/lib/datas";
 import { loja, RECADO_DA_SITUACAO } from "@/lib/loja";
 import { useConferirVersao } from "./conferir-versao";
@@ -99,6 +99,20 @@ export function Casca({ children, usuario }: { children: React.ReactNode; usuari
   const montado = useMontado();
   const caminho = usePathname();
 
+  // Um app aberto às 23:59 e olhado às 00:01 continuava no dia de ontem: o
+  // "hoje" só era lido quando algo mandava desenhar a tela. Aqui a data é
+  // olhada a cada meio minuto e, ao virar, as telas são montadas de novo.
+  const [diaDeHoje, setDiaDeHoje] = useState(() => hoje());
+  useEffect(() => {
+    const t = setInterval(() => setDiaDeHoje(hoje()), 30_000);
+    const aoVoltar = () => setDiaDeHoje(hoje());
+    document.addEventListener("visibilitychange", aoVoltar);
+    return () => {
+      clearInterval(t);
+      document.removeEventListener("visibilitychange", aoVoltar);
+    };
+  }, []);
+
   // A aba Hoje tem os próprios botões de lançar; nas telas de leitura, a barra.
   // No computador o botão mora na lateral e vale para todas, porque lá ele não
   // disputa espaço com nada.
@@ -123,7 +137,7 @@ export function Casca({ children, usuario }: { children: React.ReactNode; usuari
           {montado && conferencia === "ok" ? (
             <>
               <ConviteParaInstalar />
-              {children}
+              <Fragment key={diaDeHoje}>{children}</Fragment>
             </>
           ) : (
             <Esqueleto atualizando={conferencia === "atualizando"} />
@@ -461,7 +475,7 @@ function Desfazer({ acimaDaBarra }: { acimaDaBarra: boolean }) {
         <button
           type="button"
           onClick={() => loja.desfazer()}
-          className="shrink-0 rounded-full bg-heroi-tinta/15 px-3.5 py-1 font-semibold"
+          className="min-h-[44px] shrink-0 rounded-full bg-heroi-tinta/15 px-4 font-semibold"
         >
           Desfazer
         </button>
@@ -471,7 +485,7 @@ function Desfazer({ acimaDaBarra }: { acimaDaBarra: boolean }) {
 }
 
 function Situacao({ acimaDaBarra }: { acimaDaBarra: boolean }) {
-  const { situacao, pendentes, recusados, lancamentos } = useEstado();
+  const { situacao, pendentes, recusados, lancamentos, ultimaAcao } = useEstado();
   if (situacao === "guardado" && recusados.length === 0) return null;
 
   const quantos = pendentes.length;
@@ -508,7 +522,13 @@ function Situacao({ acimaDaBarra }: { acimaDaBarra: boolean }) {
           "--baixo": acimaDaBarra ? ALTURA.avisoAcimaDaBarra : ALTURA.avisoSozinho,
         } as React.CSSProperties
       }
-      className="fixed inset-x-0 bottom-[var(--baixo)] z-30 px-4 lg:bottom-5 lg:left-[236px]"
+      // Com o "Desfazer" na tela (seis segundos depois de lançar), este aviso
+      // sobe um degrau em vez de ficar escondido atrás dele.
+      className={`fixed inset-x-0 z-30 px-4 lg:left-[236px] ${
+        ultimaAcao
+          ? "bottom-[calc(var(--baixo)+64px)] lg:bottom-[84px]"
+          : "bottom-[var(--baixo)] lg:bottom-5"
+      }`}
     >
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 rounded-folha bg-cartao px-3.5 py-2.5 text-[12.5px] shadow-cartao">
         <span
@@ -522,7 +542,10 @@ function Situacao({ acimaDaBarra }: { acimaDaBarra: boolean }) {
         {situacao === "sessao-vencida" ? (
           // Entrar de novo é uma navegação de verdade — mas escolhida, não
           // imposta no meio de uma digitação.
-          <a href="/entrar" className="rounded-full bg-linha px-3 py-1 font-medium text-tinta">
+          <a
+            href="/entrar"
+            className="inline-flex min-h-[44px] items-center rounded-full bg-linha px-4 font-medium text-tinta"
+          >
             Entrar
           </a>
         ) : (
@@ -530,7 +553,7 @@ function Situacao({ acimaDaBarra }: { acimaDaBarra: boolean }) {
             <button
               type="button"
               onClick={() => void loja.sincronizar()}
-              className="rounded-full bg-linha px-3 py-1 font-medium text-tinta"
+              className="min-h-[44px] rounded-full bg-linha px-4 font-medium text-tinta"
             >
               Tentar agora
             </button>

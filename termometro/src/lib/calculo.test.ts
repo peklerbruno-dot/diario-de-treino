@@ -667,8 +667,8 @@ describe("a estimativa do diário só conta dos dias que vêm", () => {
     expect(sobra?.fechamentoCents).toBe(ano.meses[9].totais.saldoFechamentoCents + 6000);
   });
 
-  it("a conferência não cobra o dia de hoje, só os que passaram", () => {
-    expect(previstosVencidos(lancamentos, "2026-10-08").map((l) => l.data)).toEqual(["2026-10-07"]);
+  it("a conferência não cobra a estimativa do diário, de nenhum dia", () => {
+    expect(previstosVencidos(lancamentos, "2026-10-08")).toEqual([]);
   });
 });
 
