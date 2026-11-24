@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AtalhosRapidos } from "@/componentes/atalhos-rapidos";
 import { FolhaDeLancamento } from "@/componentes/folha-de-lancamento";
 import { LancarPorValor } from "@/componentes/lancar-por-valor";
@@ -49,7 +49,17 @@ export function TelaDeHoje() {
   const [lancando, setLancando] = useState<Tipo | null>(null);
 
   const anoCalculado = useAnoCalculado(ano);
-  const { carregado } = useEstado();
+  const { carregado, sincronizou } = useEstado();
+  // Até a primeira sincronização terminar, o saldo é o que o aparelho guardou
+  // da última visita, e pode estar atrás do servidor. Dizer isso é melhor do que
+  // jurar um número que um minuto depois muda. Passados alguns segundos sem
+  // resposta (sem sinal), vale o que há, sem aviso.
+  const [esperou, setEsperou] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setEsperou(true), 4000);
+    return () => clearTimeout(t);
+  }, []);
+  const atualizando = !sincronizou && !esperou;
   const doMes = anoCalculado.meses[mes - 1];
   const doDia = doMes.dias[dia - 1];
 
@@ -74,8 +84,13 @@ export function TelaDeHoje() {
       <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
         <div>
           <Cartao escuro className="mt-4 px-5 py-4">
-            <Sobrescrito escuro>Saldo agora</Sobrescrito>
-            <p className="mt-1">
+            <Sobrescrito escuro>
+              Saldo agora
+              {atualizando && (
+                <span className="ml-2 normal-case tracking-normal">atualizando…</span>
+              )}
+            </Sobrescrito>
+            <p className={`mt-1 transition-opacity ${atualizando ? "opacity-40" : ""}`}>
               <Dinheiro cents={doDia.saldoCents} tamanho="gigante" />
             </p>
             <p className="mt-2 text-[13px] text-heroi-fosco">
@@ -395,7 +410,9 @@ function precisaDoComeco(estado: Estado, ano: number): boolean {
   // chegou": num aparelho novo, o dono veria o convite por um instante.
   if (!estado.carregado || !estado.ultimaSincronizacao) return false;
   if (lancamentosVivos(estado).length > 0) return false;
-  return saldoInicialExplicito(estado, ano) === null && saldoInicialExplicito(estado, ano - 1) === null;
+  return (
+    saldoInicialExplicito(estado, ano) === null && saldoInicialExplicito(estado, ano - 1) === null
+  );
 }
 
 function EsqueletoDeHoje() {

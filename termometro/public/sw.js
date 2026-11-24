@@ -16,12 +16,17 @@
  * uma versão nova no meio.
  */
 
+// v7: o iPhone abria o app com a cópia da última visita e só depois percebia que
+// era velha. Trocar o nome faz o service worker novo guardar de novo a página
+// de agora e jogar fora tudo o que havia. Quem renova a cópia, daqui em diante,
+// é também a própria página (ver `conferir-versao.ts`), porque o iPhone encerra
+// o service worker antes de a busca em segundo plano terminar.
 // O nome carrega versão de propósito: `activate` apaga todo cache com nome
 // diferente deste, então trocar o número aqui é como se joga fora tudo o que
 // ficou guardado de antes. Foi preciso quando uma etiqueta do `<head>` mudou e
 // a página velha continuou sendo servida do cache — a correção existia no
 // servidor e não chegava no aparelho.
-const CACHE = "termometro-v6";
+const CACHE = "termometro-v7";
 
 // Só resposta BOA entra no cache. Sem este filtro, um 500 do servidor ou o
 // redirecionamento para /entrar (sessão vencida) eram guardados POR CIMA da

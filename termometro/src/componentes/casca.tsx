@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { hoje } from "@/lib/datas";
 import { loja, RECADO_DA_SITUACAO } from "@/lib/loja";
+import { useConferirVersao } from "./conferir-versao";
 import { FolhaDeLancamento } from "./folha-de-lancamento";
 import { Marca } from "./marca";
 import {
@@ -94,6 +95,7 @@ const aqui = (href: string, caminho: string, naLateral: boolean) => {
 export function Casca({ children, usuario }: { children: React.ReactNode; usuario: QuemUsa }) {
   useIniciarLoja(usuario);
   useRegistrarServiceWorker();
+  const conferencia = useConferirVersao();
   const montado = useMontado();
   const caminho = usePathname();
 
@@ -118,13 +120,13 @@ export function Casca({ children, usuario }: { children: React.ReactNode; usuari
           }
           className="flex-1 px-4 pb-[var(--fundo)] pt-4 lg:mx-auto lg:w-full lg:max-w-5xl lg:px-10 lg:pb-14 lg:pt-8"
         >
-          {montado ? (
+          {montado && conferencia === "ok" ? (
             <>
               <ConviteParaInstalar />
               {children}
             </>
           ) : (
-            <Esqueleto />
+            <Esqueleto atualizando={conferencia === "atualizando"} />
           )}
         </div>
         {temBarraDeLancar && <BarraDeLancar />}
@@ -387,12 +389,17 @@ function useMontado(): boolean {
 }
 
 /** O lugar dos números enquanto eles não chegam — sem pulo de layout. */
-function Esqueleto() {
+function Esqueleto({ atualizando = false }: { atualizando?: boolean }) {
   return (
-    <div aria-hidden className="animate-pulse space-y-3 pt-2">
-      <div className="h-8 w-40 rounded-folha bg-linha" />
-      <div className="h-36 rounded-cartao bg-linha" />
-      <div className="h-64 rounded-cartao bg-linha" />
+    <div role="status" className="space-y-3 pt-2">
+      <div aria-hidden className="animate-pulse space-y-3">
+        <div className="h-8 w-40 rounded-folha bg-linha" />
+        <div className="h-36 rounded-cartao bg-linha" />
+        <div className="h-64 rounded-cartao bg-linha" />
+      </div>
+      {/* Só aparece quando há uma versão nova de verdade: num app em dia o
+          esqueleto é breve e fica calado. */}
+      {atualizando && <p className="text-center text-[14px] text-grafite">Atualizando o app…</p>}
     </div>
   );
 }
